@@ -1,0 +1,9 @@
+package com.compileordie.pvz2.models.zombies.types;
+
+public enum EffectType {
+    FREEZE,     // منجمد کامل
+    CHILLED,    // کند شده با یخ
+    HYPNOTIZED, // هیپنوتیزم شده
+    OCTOPUSED,  // گیر اختاپوس
+    CATIFIED    // نفرین گربه
+}
