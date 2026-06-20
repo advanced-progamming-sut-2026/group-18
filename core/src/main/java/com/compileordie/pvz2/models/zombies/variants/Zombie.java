@@ -19,6 +19,9 @@ public abstract class Zombie {
     protected List<StatusEffect> activeEffects;
     protected boolean skipThisTick;
 
+    // فیلد وضعیت خوردن گیاه برای مدیریت توقف حرکت
+    protected boolean isEating;
+
     public Zombie(int health, double speed, int base_damage, int row, double startX) {
         this.maxHealth = health;
         this.health = this.maxHealth;
@@ -29,11 +32,12 @@ public abstract class Zombie {
         this.positionX = startX;
         this.activeEffects = new ArrayList<>();
         this.skipThisTick = false;
+        this.isEating = false;
     }
 
     // آپدیت وضعیت زامبی و افکت‌های آن در هر فریم
     public void tick() {
-        // بررسی زنده یا بودن یا نبودن
+        // بررسی زنده بودن یا نبودن
         if (isDead()) {
             handleDeath();
             return;
@@ -61,22 +65,27 @@ public abstract class Zombie {
         }
     }
 
-    // TODO : باید اتفاقاتی که پس از مرگ برای زامبی میوفتد را هندل کنیم
-    public void handleDeath(){}
+    // اتفاقاتی که پس از مرگ برای زامبی می‌افتد
+    public void handleDeath() {}
 
     public void move() {
-        if (canMove()) {
-            this.positionX -= currentSpeed; // حرکت به سمت چپ (مزرعه گیاهان)
-        }
+        this.positionX -= currentSpeed; // حرکت به سمت چپ (مزرعه گیاهان)
     }
 
-    public void takeDamage(int amount, DamageType damageType) {
-        if (isDead()) return;
-        this.health -= amount;
-        if (this.health < 0) this.health = 0;
+    // متدهای مربوط به وضعیت خوردن گیاه توسط زامبی
+    public void startEating() {
+        this.isEating = true;
     }
 
-    // افکت به زامبی میرسد
+    public void stopEating() {
+        this.isEating = false;
+    }
+
+    public boolean isEating() {
+        return this.isEating;
+    }
+
+    // افکت به زامبی می‌رسد
     public void addEffect(StatusEffect effect) {
         activeEffects.add(effect);
         effect.applyToZombie(this);
@@ -94,13 +103,13 @@ public abstract class Zombie {
     }
 
     public boolean canMove() {
-        if (isDead()) return false;
+        // اگر زامبی مرده باشد یا در حال خوردن گیاه باشد، نمی‌تواند حرکت کند
+        if (isDead() || isEating) return false;
+
         for (StatusEffect effect : activeEffects) {
             if (effect.getEffectType() == EffectType.FREEZE) return false;
         }
         return true;
-        // TODO : بررسی کاملتر اثر افکت ها و داکیومنت نحوه حرکت زامبی برای اینکه ببینیم کجا میتونیم بریم کجا نمیتونیم بریم
-        // مثلا رسیدن به گیاه و ...
     }
 
     public void recalculateSpeed() {
@@ -116,7 +125,9 @@ public abstract class Zombie {
         this.currentSpeed = this.movementSpeed * speedModifier;
     }
 
-    public boolean isDead() { return this.health <= 0; }
+    public boolean isDead() {
+        return this.health <= 0;
+    }
 
     public boolean hasEffect(EffectType type) {
         if (activeEffects == null || activeEffects.isEmpty()) {
@@ -130,15 +141,19 @@ public abstract class Zombie {
         return false;
     }
 
-    public void setSkip(boolean s){this.skipThisTick = s; }
+    public void setSkip(boolean s) {
+        this.skipThisTick = s;
+    }
 
     // Getters and Setters
     public int getHealth() { return health; }
+    public int getAttackPower() { return attackPower; }
     public double getCurrentSpeed() { return currentSpeed; }
     public double getPositionX() { return positionX; }
     public void setPositionX(double positionX) { this.positionX = positionX; }
     public int getCurrentRow() { return currentRow; }
     public void setCurrentRow(int currentRow) { this.currentRow = currentRow; }
 
-    public abstract void takeDamge(int amount, DamageType damageType);
+    // متد انتزاعی اعمال دمیج با دیکته اصلاح‌شده
+    public abstract void takeDamage(int amount, DamageType damageType);
 }

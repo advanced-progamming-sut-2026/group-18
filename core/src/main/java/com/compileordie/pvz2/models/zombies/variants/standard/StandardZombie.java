@@ -45,15 +45,8 @@ public abstract class StandardZombie extends Zombie {
 
     public void enterEnrageMode(){};
 
-
-//    public void takeDamage(int amount, DamageType damageType) {
-//        if (isDead()) return;
-//        this.health -= amount;
-//        if (this.health < 0) this.health = 0;
-//    }
-
     @Override
-    public void takeDamge(int amount, DamageType damageType){
+    public void takeDamage(int amount, DamageType damageType){
         if (isDead()) return;
         int newAmount = amount;
         if (hasArmor()) {

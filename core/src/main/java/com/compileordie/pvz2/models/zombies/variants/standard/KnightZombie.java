@@ -41,7 +41,7 @@ public class KnightZombie extends StandardZombie {
     }
 
     @Override
-    public void takeDamge(int amount, DamageType damageType){
+    public void takeDamage(int amount, DamageType damageType){
         if (isDead()) return;
         int newAmount = amount;
         if (!isHelmetBroken()) {
