@@ -1,6 +1,6 @@
-package com.compileordie.pvz2.models.zombies;
-import com.compileordie.pvz2.models.zombies.types.EffectType;
-import com.compileordie.pvz2.models.zombies.variants.Zombie;
+package com.compileordie.pvz2.models.entities.zombies;
+import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
+import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
 public class StatusEffect {
     private final EffectType effectType;

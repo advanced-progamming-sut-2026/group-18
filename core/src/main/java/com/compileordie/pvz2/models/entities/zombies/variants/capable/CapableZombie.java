@@ -1,6 +1,6 @@
-package com.compileordie.pvz2.models.zombies.variants.capable;
+package com.compileordie.pvz2.models.entities.zombies.variants.capable;
 
-import com.compileordie.pvz2.models.zombies.variants.Zombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
 public abstract class CapableZombie extends Zombie {
     protected double abilityCooldown;

@@ -1,4 +1,4 @@
-package com.compileordie.pvz2.models.zombies.variants.standard;
+package com.compileordie.pvz2.models.entities.zombies.variants.standard;
 
 public class ConeHeadZombie extends StandardZombie {
 

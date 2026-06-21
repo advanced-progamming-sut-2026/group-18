@@ -1,7 +1,7 @@
-package com.compileordie.pvz2.models.zombies.variants.standard;
+package com.compileordie.pvz2.models.entities.zombies.variants.standard;
 
-import com.compileordie.pvz2.models.zombies.types.DamageType;
-import com.compileordie.pvz2.models.zombies.variants.Zombie;
+import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
 //Zs :
 //BasicZombie

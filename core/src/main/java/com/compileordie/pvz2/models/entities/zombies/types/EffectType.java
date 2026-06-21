@@ -1,4 +1,4 @@
-package com.compileordie.pvz2.models.zombies.types;
+package com.compileordie.pvz2.models.entities.zombies.types;
 
 public enum EffectType {
     FREEZE,     // منجمد کامل
