@@ -1,6 +1,6 @@
-package com.compileordie.pvz2.models.zombies.variants.standard;
+package com.compileordie.pvz2.models.entities.zombies.variants.standard;
 
-import com.compileordie.pvz2.models.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 
 public class ParasolZombie extends StandardZombie {
 

@@ -1,8 +1,9 @@
-package com.compileordie.pvz2.models.zombies.variants;
+package com.compileordie.pvz2.models.entities.zombies.variants;
 
-import com.compileordie.pvz2.models.zombies.StatusEffect;
-import com.compileordie.pvz2.models.zombies.types.DamageType;
-import com.compileordie.pvz2.models.zombies.types.EffectType;
+import com.compileordie.pvz2.models.entities.GameEntity;
+import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
+import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 
 import java.util.ArrayList;
 import java.util.Iterator;
