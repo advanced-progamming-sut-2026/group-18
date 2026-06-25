@@ -6,6 +6,9 @@ import com.compileordie.pvz2.models.AppModel;
 import java.util.Scanner;
 
 public class AppView {
+    private AppView() {
+    }
+
     private static void printIfPresent(String message) {
         if (message != null && !message.isEmpty()) {
             System.out.println(message);

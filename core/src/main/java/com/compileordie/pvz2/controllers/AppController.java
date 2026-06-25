@@ -3,15 +3,30 @@ package com.compileordie.pvz2.controllers;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.views.helpers.Menu;
 
+import java.util.StringJoiner;
+
 public class AppController {
+    private AppController() {
+    }
+
     public static String getBeforePrompt() {
-        // Can handle app messages before getting specific inputs (using a shared list of Strings)
-        return null;
+        StringJoiner joiner = new StringJoiner(System.lineSeparator());
+
+        while (AppModel.hasBeforePrompt()) {
+            joiner.add(AppModel.getBeforePrompt());
+        }
+
+        return joiner.toString();
     }
 
     public static String getAfterPrompt() {
-        // Can handle app messages before getting specific inputs (using a shared list of Strings)
-        return null;
+        StringJoiner joiner = new StringJoiner(System.lineSeparator());
+
+        while (AppModel.hasAfterPrompt()) {
+            joiner.add(AppModel.getAfterPrompt());
+        }
+
+        return joiner.toString();
     }
 
     public static String showCurrentMenu() {

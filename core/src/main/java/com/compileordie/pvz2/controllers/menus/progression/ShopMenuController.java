@@ -4,6 +4,9 @@ import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.views.helpers.Menu;
 
 public class ShopMenuController {
+    private ShopMenuController() {
+    }
+
     public static String exitMenu() {
         return AppController.changeMenu(Menu.COLLECTION);
     }

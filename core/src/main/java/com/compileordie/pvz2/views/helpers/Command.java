@@ -13,7 +13,7 @@ public enum Command {
         "\"(?<nickname>[^\"]+)\"\\s+-e\\s+(?<email>\\S+)\\s+-g\\s+(?<gender>\\S+)"),
     PICK_QUESTION("pick\\s+question\\s+-q\\s+(?<number>\\S+)\\s+-a\\s+(?<answer>\\S+)\\s+-c\\s+(?<answerConfirm>\\S+)"),
     // Login Menu
-    LOGIN("login\\s+-u\\s+(?<username>\\S+)\\s+-p\\s+(?<password>\\S+)\\s+-stay\\s+(?<stay>\\S+)"),
+    LOGIN("login\\s+-u\\s+(?<username>\\S+)\\s+-p\\s+(?<password>\\S+)(?:\\s+(?<stay>-stay-logged-in))?"),
     FORGET_PASSWORD("forget\\s+password\\s+-u\\s+(?<username>\\S+)\\s+-e\\s+(?<email>\\S+)"),
     ANSWER("answer\\s+-a\\s+(?<answer>\\S+)"),
     // Main Menu

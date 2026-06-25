@@ -1,6 +1,9 @@
 package com.compileordie.pvz2.controllers.menus.game;
 
 public class GameSessionMenuController {
+    private GameSessionMenuController() {
+    }
+
 
     public static String advanceTime(String count) {
         // TODO: To be implemented.
