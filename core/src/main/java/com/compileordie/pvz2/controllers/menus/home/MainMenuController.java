@@ -7,6 +7,9 @@ import com.compileordie.pvz2.views.helpers.Menu;
 import java.util.List;
 
 public class MainMenuController {
+    private MainMenuController() {
+    }
+
     public static String enterMenu(String name) {
         Menu menu = Menu.getByName(name);
         if (menu == null) {

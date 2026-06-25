@@ -17,7 +17,7 @@ public class LoginMenuView implements MenuView {
         if (Command.LOGIN.matches(command)) {
             String username = Command.LOGIN.getGroup(command, "username");
             String password = Command.LOGIN.getGroup(command, "password");
-            String stay = Command.LOGIN.getGroup(command, "stay");
+            boolean stay = Command.LOGIN.getGroup(command, "stay") != null;
             return LoginMenuController.loginUser(username, password, stay);
         }
         if (Command.FORGET_PASSWORD.matches(command)) {
@@ -28,6 +28,9 @@ public class LoginMenuView implements MenuView {
         if (Command.ANSWER.matches(command)) {
             String answer = Command.ANSWER.getGroup(command, "answer");
             return LoginMenuController.answerQuestionUser(answer);
+        }
+        if (LoginMenuController.isWaitingForNewPassword()) {
+            return LoginMenuController.setNewPassword(command);
         }
         return null;
     }

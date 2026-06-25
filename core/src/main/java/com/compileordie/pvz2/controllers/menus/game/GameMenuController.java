@@ -4,6 +4,9 @@ import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.views.helpers.Menu;
 
 public class GameMenuController {
+    private GameMenuController() {
+    }
+
     public static String enterMenu(String name) {
         Menu menu = Menu.getByName(name);
         if (menu == null) {

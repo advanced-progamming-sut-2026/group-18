@@ -4,6 +4,10 @@ import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.views.helpers.Menu;
 
 public class ProfileMenuController {
+    private ProfileMenuController() {
+    }
+
+
     public static String exitMenu(){
         return AppController.changeMenu(Menu.MAIN);
     }

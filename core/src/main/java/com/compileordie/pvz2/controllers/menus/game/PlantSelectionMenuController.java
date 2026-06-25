@@ -1,6 +1,9 @@
 package com.compileordie.pvz2.controllers.menus.game;
 
 public class PlantSelectionMenuController {
+    private PlantSelectionMenuController() {
+    }
+
     public static String showAllPlants() {
         // TODO: To be implemented.
         return "[TODO] This command is not implemented yet.";
