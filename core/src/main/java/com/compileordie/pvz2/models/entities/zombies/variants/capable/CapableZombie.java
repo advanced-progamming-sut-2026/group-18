@@ -2,19 +2,32 @@ package com.compileordie.pvz2.models.entities.zombies.variants.capable;
 
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
+//Zs :
+//RaZombie
+//ExplorerZombie
+//HunterZombie
+//FishermanZombie
+//OctopusZombie
+//WizardZombie
+//TurquoiseZombie
+//PianistZombie
+//JesterZombie
+
 public abstract class CapableZombie extends Zombie {
     protected double abilityCooldown;
     protected double currentCooldownTimer;
     protected int abilityRange;
     protected boolean isAbilityReady;
+    protected double delta;
 
     public CapableZombie(int health, double speed, int base_damage, int row, double startX,
-                         double abilityCooldown, int abilityRange) {
-        super(health, speed, base_damage, row, startX);
+                         double abilityCooldown, int abilityRange, double delta, double x, double y, int xSpeed, int ySpeed) {
+        super(health, speed, base_damage, row, startX, x, y, xSpeed, ySpeed);
         this.abilityCooldown = abilityCooldown;
         this.currentCooldownTimer = 0;
         this.abilityRange = abilityRange;
         this.isAbilityReady = true;
+        this.delta = delta;
     }
 
     @Override
@@ -23,7 +36,7 @@ public abstract class CapableZombie extends Zombie {
         if (isDead()) return;
 
         if (!isAbilityReady) {
-            updateCooldown();
+            updateCooldown(this.delta);
         }
 
         if (canUseAbility()) {
@@ -34,7 +47,7 @@ public abstract class CapableZombie extends Zombie {
     public abstract void useAbility();
 
     public boolean canUseAbility() {
-        return isAbilityReady && !isDead() && !isEating();
+        return isAbilityReady && !isDead();
     }
 
     public void resetCooldown() {
@@ -42,13 +55,17 @@ public abstract class CapableZombie extends Zombie {
         this.isAbilityReady = false;
     }
 
-    public void updateCooldown() {
-        if (currentCooldownTimer > 0) {
-            currentCooldownTimer -= 0.05; // فرض بر تیک کلاک بازی
+    public void updateCooldown(double delta) {
+        if (currentCooldownTimer >= 0) {
+            currentCooldownTimer -= delta;
             if (currentCooldownTimer <= 0) {
                 currentCooldownTimer = 0;
                 this.isAbilityReady = true;
             }
         }
+    }
+
+    public void setDelta(double delta){
+        this.delta = delta;
     }
 }

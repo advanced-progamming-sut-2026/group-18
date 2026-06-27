@@ -13,6 +13,7 @@ abstract public class GameEntity {
         this.ySpeed = ySpeed;
     }
 
+
     public double getX() {
         return x;
     }

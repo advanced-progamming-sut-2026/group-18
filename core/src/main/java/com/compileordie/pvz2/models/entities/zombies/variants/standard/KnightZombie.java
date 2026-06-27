@@ -6,8 +6,8 @@ public class KnightZombie extends StandardZombie {
     private int helmetArmorHealth;
     private int shoulderArmorHealth;
 
-    public KnightZombie(int health, double speed, int attackPower, int row, double startX, int helmet, int shoulder) {
-        super(health, speed, attackPower, row, startX, helmet+shoulder); // initial = helmet + shoulder
+    public KnightZombie(int health, double speed, int attackPower, int row, double startX, int helmet, int shoulder, double x, double y, int xSpeed, int ySpeed) {
+        super(health, speed, attackPower, row, startX, helmet+shoulder, x, y, xSpeed, ySpeed); // initial = helmet + shoulder
         this.helmetArmorHealth = helmet; // 1100
         this.shoulderArmorHealth = shoulder;  // 500
     }

@@ -4,51 +4,77 @@ import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 
 public class AllStarZombie extends StandardZombie {
     private boolean isCharging;
-    private double chargeSpeedScale;
-    private final int damage;
+    private final double chargeSpeedScale;
 
-    public AllStarZombie(int health, double speed, int attackPower, int row, double startX, int initialArmor, int chargeSpeedScale) {
-        super(health, speed, attackPower, row, startX, initialArmor);
-        this.isCharging = false;
+    public AllStarZombie(int health, double speed, int attackPower, int row, double startX,
+                         int initialArmor, double chargeSpeedScale, double x, double y,
+                         int xSpeed, int ySpeed) {
+        super(health, speed, attackPower, row, startX, initialArmor, x, y, xSpeed, ySpeed);
         this.chargeSpeedScale = chargeSpeedScale;
-        this.damage = attackPower;
-//        this.chargeSpeedScale = 3.0; ضریب سرعت تکل
         startCharge();
     }
 
     public void startCharge() {
-        this.attackPower = 9999999;
         this.isCharging = true;
-        this.currentSpeed = this.movementSpeed * chargeSpeedScale;
+        recalculateSpeed();
     }
 
     public void stopCharge() {
-        this.attackPower = damage;
         this.isCharging = false;
-        this.currentSpeed = this.movementSpeed;
+        recalculateSpeed();
+    }
+
+    /**
+     * این متد مستقیماً توسط سرویس بازی (مثلاً CombatService)
+     * در لحظه برخورد فیزیکی این زامبی با یک گیاه صدا زده می‌شود.
+     */
+    public void onPlantCollision(Object plant) {
+        if (plant != null) {
+            if (isCharging) {
+                // اگر در حال تکل زدن باشد، گیاه اول را فوراً نابود می‌کند و تکلش تمام می‌شود
+                destroyPlantInstantly(plant);
+                stopCharge();
+            } else {
+                // اگر شارژ تمام شده باشد، رفتار عادی زامبی (مثلاً جویدن) فعال می‌شود
+                // این کار معمولاً با فرستادن سیگنال به سرویس برای تغییر وضعیت زامبی به isEating انجام می‌شود.
+                startEatingPlant(plant);
+            }
+        }
     }
 
     @Override
     public void recalculateSpeed() {
-        // ابتدا محاسبه سرعت بر اساس افکت‌های سرما و کندی در کلاس والد
         super.recalculateSpeed();
-
-        // اگر در حال شارژ بود، ضریب سرعت تکل نیز روی سرعت فعلی ضرب می‌شود
         if (isCharging) {
             this.currentSpeed *= this.chargeSpeedScale;
         }
     }
 
     @Override
-    public void takeDamage(int amount, DamageType damageType){
+    public void takeDamage(int amount, DamageType damageType) {
         if (isDead()) return;
         int newAmount = amount;
         if (hasArmor()) {
             newAmount = takeArmorDamage(amount);
-            if (!hasArmor()) stopCharge();
+            if (!hasArmor()) {
+                stopCharge();
+            }
         }
         this.health -= newAmount;
         if (this.health < 0) this.health = 0;
-        return;
+    }
+
+    // ** مرتبط با سرویس خاص **
+    private void destroyPlantInstantly(Object plant) {
+        // لایه سرویس گیاه برخورد کرده را فوراً از نقشه حذف می‌کند
+    }
+
+    // ** مرتبط با سرویس خاص **
+    private void startEatingPlant(Object plant) {
+        // به سرویس اعلام می‌کند که زامبی متوقف شود و شروع به آسیب زدن عادی (جویدن) کند
+    }
+
+    public boolean isCharging() {
+        return this.isCharging;
     }
 }

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public abstract class Zombie {
+public abstract class Zombie extends GameEntity{
     protected int health;
     protected int maxHealth;
     protected double movementSpeed;
@@ -23,7 +23,8 @@ public abstract class Zombie {
     // فیلد وضعیت خوردن گیاه برای مدیریت توقف حرکت
     protected boolean isEating;
 
-    public Zombie(int health, double speed, int base_damage, int row, double startX) {
+    public Zombie(int health, double speed, int base_damage, int row, double startX, double x, double y, int xSpeed, int ySpeed) {
+        super(x, y, xSpeed, ySpeed);
         this.maxHealth = health;
         this.health = this.maxHealth;
         this.movementSpeed = speed;
@@ -154,7 +155,6 @@ public abstract class Zombie {
     public void setPositionX(double positionX) { this.positionX = positionX; }
     public int getCurrentRow() { return currentRow; }
     public void setCurrentRow(int currentRow) { this.currentRow = currentRow; }
-
     // متد انتزاعی اعمال دمیج با دیکته اصلاح‌شده
     public abstract void takeDamage(int amount, DamageType damageType);
 }
