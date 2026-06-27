@@ -4,8 +4,8 @@ import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 
 public class ParasolZombie extends StandardZombie {
 
-    public ParasolZombie(int health, double speed, int attackPower, int row, double startX, int initialArmor) {
-        super(health, speed, attackPower, row, startX, initialArmor);
+    public ParasolZombie(int health, double speed, int attackPower, int row, double startX, int initialArmor, double x, double y, int xSpeed, int ySpeed) {
+        super(health, speed, attackPower, row, startX, initialArmor, x, y, xSpeed, ySpeed);
     }
 
     public boolean isReplaied(DamageType type) {

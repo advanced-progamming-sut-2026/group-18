@@ -4,8 +4,8 @@ public class NewspaperZombie extends StandardZombie {
     private int newspaperHealth;
     private boolean isEnraged;
 
-    public NewspaperZombie(int health, double speed, int attackPower, int row, double startX, int initialArmor) {
-        super(health, speed, attackPower, row, startX, initialArmor);
+    public NewspaperZombie(int health, double speed, int attackPower, int row, double startX, int initialArmor, double x, double y, int xSpeed, int ySpeed) {
+        super(health, speed, attackPower, row, startX, initialArmor, x, y, xSpeed, ySpeed);
         this.isEnraged = false;
     }
 
