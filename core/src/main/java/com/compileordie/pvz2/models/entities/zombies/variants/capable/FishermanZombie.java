@@ -38,6 +38,15 @@ public class FishermanZombie extends CapableZombie {
     }
 
     @Override
+    public void move() {
+    }
+
+    @Override
+    public boolean canMove() {
+        return false;
+    }
+
+    @Override
     public void tick() {
         super.tick();
         if (isDead()) return;
