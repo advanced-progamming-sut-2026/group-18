@@ -28,18 +28,17 @@ public class AllStarZombie extends StandardZombie {
      * این متد مستقیماً توسط سرویس بازی (مثلاً CombatService)
      * در لحظه برخورد فیزیکی این زامبی با یک گیاه صدا زده می‌شود.
      */
-    public void onPlantCollision(Object plant) {
-        if (plant != null) {
+    public void onPlantCollision() {
             if (isCharging) {
                 // اگر در حال تکل زدن باشد، گیاه اول را فوراً نابود می‌کند و تکلش تمام می‌شود
-                destroyPlantInstantly(plant);
+                destroyPlantInstantly();
                 stopCharge();
             } else {
                 // اگر شارژ تمام شده باشد، رفتار عادی زامبی (مثلاً جویدن) فعال می‌شود
                 // این کار معمولاً با فرستادن سیگنال به سرویس برای تغییر وضعیت زامبی به isEating انجام می‌شود.
-                startEatingPlant(plant);
+                startEating();
             }
-        }
+
     }
 
     @Override
@@ -64,15 +63,12 @@ public class AllStarZombie extends StandardZombie {
         if (this.health < 0) this.health = 0;
     }
 
+
     // ** مرتبط با سرویس خاص **
-    private void destroyPlantInstantly(Object plant) {
+    private void destroyPlantInstantly() {
         // لایه سرویس گیاه برخورد کرده را فوراً از نقشه حذف می‌کند
     }
 
-    // ** مرتبط با سرویس خاص **
-    private void startEatingPlant(Object plant) {
-        // به سرویس اعلام می‌کند که زامبی متوقف شود و شروع به آسیب زدن عادی (جویدن) کند
-    }
 
     public boolean isCharging() {
         return this.isCharging;
