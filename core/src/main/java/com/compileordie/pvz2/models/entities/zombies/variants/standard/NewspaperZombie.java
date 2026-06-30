@@ -3,9 +3,10 @@ package com.compileordie.pvz2.models.entities.zombies.variants.standard;
 public class NewspaperZombie extends StandardZombie {
     private int newspaperHealth;
     private boolean isEnraged;
+    private double enrageSpeedMultiplier = 2.5;
 
-    public NewspaperZombie(int health, double speed, int attackPower, int row, double startX, int initialArmor) {
-        super(health, speed, attackPower, row, startX, initialArmor);
+    public NewspaperZombie(int health, double speed, int attackPower, int row, double startX, int initialArmor, double x, double y, int xSpeed, int ySpeed) {
+        super(health, speed, attackPower, row, startX, initialArmor, x, y, xSpeed, ySpeed);
         this.isEnraged = false;
     }
 
@@ -28,7 +29,7 @@ public class NewspaperZombie extends StandardZombie {
     @Override
     public void enterEnrageMode() {
         this.isEnraged = true;
-        this.currentSpeed = this.movementSpeed * 2.5;
+        this.currentSpeed = this.movementSpeed * this.enrageSpeedMultiplier;
     }
 
 }

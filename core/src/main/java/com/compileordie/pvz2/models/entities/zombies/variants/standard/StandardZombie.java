@@ -11,15 +11,15 @@ import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 //BlockheadZombie
 //NewspaperZombie
 //ParasolZombie
-//Imp
+//ImpZombie
 //ImpDragon
 //AllStarZombie
 
 public abstract class StandardZombie extends Zombie {
     protected int armorHealth;
 
-    public StandardZombie(int health, double speed, int attackPower, int row, double startX, int initialArmor) {
-        super(health, speed, attackPower, row, startX);
+    public StandardZombie(int health, double speed, int attackPower, int row, double startX, int initialArmor, double x, double y, int xSpeed, int ySpeed) {
+        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed);
         this.armorHealth = initialArmor;
     }
 
