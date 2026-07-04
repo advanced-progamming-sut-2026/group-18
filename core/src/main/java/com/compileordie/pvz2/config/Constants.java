@@ -5,11 +5,19 @@ public final class Constants {
     }
 
     public static final class Paths {
-        public static final String SECURITY_QUESTIONS = "security_questions.json";
-        public static final String SAVES = "saves/";
-        public static final String PREFERENCES = SAVES + "preferences.json";
-        public static final String AUTH = SAVES + "auth.json";
-        public static final String USERS = SAVES + "users/";
+        public static final class Saves {
+            public static final String ROOT = "saves/";
+            public static final String PREFERENCES = ROOT + "preferences.json";
+            public static final String AUTH = ROOT + "auth.json";
+            public static final String USERS = ROOT + "users/";
+        }
+
+        public static final class Configs {
+            public static final String ROOT = "configs/";
+            public static final String GAMEPLAY = ROOT + "gameplay.json";
+            public static final String ECONOMY = ROOT + "economy.json";
+            public static final String SECURITY_QUESTIONS = ROOT + "security_questions.json";
+        }
     }
 
     public static final class ArgonHashing {

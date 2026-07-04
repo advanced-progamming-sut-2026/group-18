@@ -41,7 +41,7 @@ public class LoginMenuController {
         if (menu != Menu.MAIN) {
             return "[ERROR] You can only enter Main Menu from here.";
         }
-        if (!AppModel.hasPlayer()) {
+        if (AppModel.isLoggedOut()) {
             return "[ERROR] You need to login first.";
         }
 
@@ -53,21 +53,18 @@ public class LoginMenuController {
     }
 
     public static String forgetPassword(String username, String email) {
-        if (!AppModel.hasPlayer()) {
-            return "[ERROR] You need to login first.";
-        }
         Player user = AuthManager.getUserByUsername(username);
-        if (!user.getUsername().equals(username)) {
+        if (!user.username.equals(username)) {
             return "[ERROR] User not found, try another username.";
         }
-        if (!user.getEmail().equals(email)) {
+        if (!user.email.equals(email)) {
             return "[ERROR] Email does not match.";
         }
 
         pendingChange = new PendingChange(user, false);
-        AppModel.addBeforePrompt(AppModel.getPlayer().getSecurityQuestion());
-        AppModel.addBeforePrompt("Use the command bellow: (answer is case-insensitive)");
-        AppModel.addBeforePrompt("answer -a <answer>");
+        AppModel.addAfterPrompt(user.securityQuestion);
+        AppModel.addAfterPrompt("Use the command bellow: (answer is case-insensitive)");
+        AppModel.addAfterPrompt("answer -a <answer>");
         return "Now answer the following security.";
     }
 
@@ -91,7 +88,7 @@ public class LoginMenuController {
     }
 
     public static String setNewPassword(String newPassword) {
-        String username = pendingChange.user.getUsername();
+        String username = pendingChange.user.username;
         AuthManager.setNewPassword(username, newPassword.toCharArray());
         return "Password successfully changed for user  '" + username + "'!";
     }

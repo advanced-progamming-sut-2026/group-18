@@ -3,46 +3,25 @@ package com.compileordie.pvz2.models;
 import com.compileordie.pvz2.models.user.Player;
 import com.compileordie.pvz2.views.helpers.Menu;
 
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class AppModel {
-    private static boolean appIsRunning = true;
-    private static Menu menu = Menu.SIGNUP;
-    private static Player player = null;
-    private static final Queue<String> beforePrompts = new LinkedList<>();
-    private static final Queue<String> afterPrompts = new LinkedList<>();
+    public static boolean isRunning = true;
+    public static Menu menu = Menu.SIGNUP;
+    public static Player player = null;
+    public static final Queue<String> beforePrompts = new LinkedList<>();
+    public static final Queue<String> afterPrompts = new LinkedList<>();
 
     private AppModel() {
     }
 
-    public static boolean isRunning() {
-        return appIsRunning;
-    }
-
     public static void stop() {
-        appIsRunning = false;
+        isRunning = false;
     }
 
-    public static Menu getMenu() {
-        return menu;
-    }
-
-    public static void setMenu(Menu menu) {
-        AppModel.menu = menu;
-    }
-
-    public static Player getPlayer() {
-        return player;
-    }
-
-    public static boolean hasPlayer() {
-        return player != null;
-    }
-
-    public static void setPlayer(Player player) {
-        AppModel.player = player;
+    public static boolean isLoggedOut() {
+        return player == null;
     }
 
     public static void clearPlayer() {
@@ -61,10 +40,6 @@ public class AppModel {
         beforePrompts.add(prompt);
     }
 
-    public static void addAllBeforePrompt(Collection<? extends String> prompts) {
-        beforePrompts.addAll(prompts);
-    }
-
     public static boolean hasAfterPrompt() {
         return !afterPrompts.isEmpty();
     }
@@ -75,9 +50,5 @@ public class AppModel {
 
     public static void addAfterPrompt(String prompt) {
         afterPrompts.add(prompt);
-    }
-
-    public static void addAllAfterPrompt(Collection<? extends String> prompts) {
-        afterPrompts.addAll(prompts);
     }
 }

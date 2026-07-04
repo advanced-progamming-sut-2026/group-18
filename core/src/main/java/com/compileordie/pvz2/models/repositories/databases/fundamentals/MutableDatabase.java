@@ -1,4 +1,4 @@
-package com.compileordie.pvz2.models.databases.fundamentals;
+package com.compileordie.pvz2.models.repositories.databases.fundamentals;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
