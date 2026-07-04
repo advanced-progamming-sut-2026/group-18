@@ -4,11 +4,11 @@
 A Java-based 2D tower defense game built from the ground up using the LibGDX framework. This project successfully recreates the core mechanics of *Plants vs. Zombies 2*, featuring grid-based plant placement, dynamic wave generation, and intelligent enemy pathing, all strictly adhering to a clean Model-View-Controller (MVC) architectural pattern.
 
 ## 👥 Team Compile or Die!
-| Name | Student ID |
-| :--- | :--- |
-| Seyed Mahdi Abedi | 404106066 |
-| Arsam Kooshky | 404171199 |
-| Seyed Amir Abbas Naghavi | 404106474 |
+| Name                     | Student ID |
+|:-------------------------|:----------:|
+| Seyed Mahdi Abedi        | 404106066  |
+| Arsam Kooshky            | 404171199  |
+| Seyed Amir Abbas Naghavi | 404106474  |
 
 ## 🚀 Features
 * **Classic Grid Combat:** Plant sunflowers, peashooters, and defensive units on a multi-lane lawn to fend off incoming hordes.
@@ -41,5 +41,10 @@ The project utilizes a standard LibGDX multi-module layout:
 * Git for version control.
 * Clone the repository and get started
 
-## 📝 License
-* This project is created for educational purposes as a university final project. All Plants vs. Zombies IP, characters, and concepts are the property of PopCap Games and Electronic Arts.
+## 📝 License & Copyright
+**Code:** All original Java source code within this repository is licensed under the MIT License.
+
+**Assets & IP Disclaimer:** This project was created strictly for educational purposes as a university assignment. All *Plants vs. Zombies* intellectual property, characters, environmental art, audio assets, and original game concepts are the exclusive property of **PopCap Games** and **Electronic Arts**.
+
+The game assets (images, sounds, fonts) included in this repository are **NOT** covered by the MIT License and are used under the assumption of Fair Use for non-commercial, educational purposes. No copyright infringement is intended.
+
