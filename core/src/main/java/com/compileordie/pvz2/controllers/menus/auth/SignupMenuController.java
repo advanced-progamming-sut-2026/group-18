@@ -2,13 +2,13 @@ package com.compileordie.pvz2.controllers.menus.auth;
 
 import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.models.AppModel;
-import com.compileordie.pvz2.models.databases.SecurityQuestionDatabase;
+import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 import com.compileordie.pvz2.models.user.Gender;
 import com.compileordie.pvz2.models.user.UserValidator;
 import com.compileordie.pvz2.models.user.authentication.AuthManager;
-import com.compileordie.pvz2.models.user.authentication.SecurityQuestion;
 import com.compileordie.pvz2.views.helpers.Menu;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class SignupMenuController {
@@ -83,12 +83,13 @@ public class SignupMenuController {
         }
 
         pendingUser = new PendingRegistration(username, password, nickname, email, genderType);
-        AppModel.addAllBeforePrompt(
-            new SecurityQuestionDatabase().load().stream()
-                .map(securityQuestion -> securityQuestion.getId() + " - " + securityQuestion.getText())
-                .toList());
-        AppModel.addBeforePrompt("Use the command bellow:");
-        AppModel.addBeforePrompt("pick question -q <question_number> -a <answer> -c <answer_confirm>");
+        int counter = 1;
+        for (String securityQuestion : ConfigManager.securityQuestion().questions) {
+            AppModel.addAfterPrompt(counter + " - " + securityQuestion);
+            counter++;
+        }
+        AppModel.addAfterPrompt("Use the command bellow:");
+        AppModel.addAfterPrompt("pick question -q <question_number> -a <answer> -c <answer_confirm>");
         return "Registration Step 1 complete!" + System.lineSeparator() + "Now pick and answer a security questions:";
     }
 
@@ -105,16 +106,24 @@ public class SignupMenuController {
         } catch (NumberFormatException e) {
             return "[ERROR] Invalid question number, please enter an integer.";
         }
-        SecurityQuestion securityQuestion = new SecurityQuestionDatabase().loadOne(number);
-        if (securityQuestion == null) {
+        ArrayList<String> securityQuestions = ConfigManager.securityQuestion().questions;
+        if (number > securityQuestions.size()) {
             return "[ERROR] Invalid question number, your number must be between 1 and "
-                + new SecurityQuestionDatabase().getNumberOfQuestions() + ".";
+                + securityQuestions.size() + ".";
         }
 
-        AuthManager.signupPlayer(pendingUser.username, pendingUser.password.toCharArray(), pendingUser.nickname, pendingUser.email, pendingUser.gender, number, answer);
+        String question = securityQuestions.get(number - 1);
+        AuthManager.signupPlayer(pendingUser.username,
+            pendingUser.password.toCharArray(),
+            pendingUser.nickname,
+            pendingUser.email,
+            pendingUser.gender,
+            question,
+            answer);
+        String username = pendingUser.username;
         pendingUser = null;
-        AppModel.setMenu(Menu.LOGIN);
-        return "Account created successfully for '" + pendingUser.username + "'."
+        AppModel.menu = Menu.LOGIN;
+        return "Account created successfully for '" + username + "'."
             + System.lineSeparator() + AppController.showCurrentMenu();
     }
 

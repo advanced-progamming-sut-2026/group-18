@@ -1,16 +1,16 @@
-package com.compileordie.pvz2.models.databases;
+package com.compileordie.pvz2.models.repositories.databases;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.compileordie.pvz2.config.Constants;
-import com.compileordie.pvz2.models.databases.fundamentals.MutableDatabase;
+import com.compileordie.pvz2.models.repositories.databases.fundamentals.MutableDatabase;
 import com.compileordie.pvz2.models.user.authentication.UserRegistry;
 
 import java.util.ArrayList;
 
 public class AuthDatabase extends MutableDatabase<ArrayList<UserRegistry>> {
     public AuthDatabase() {
-        super(Constants.Paths.AUTH);
+        super(Constants.Paths.Saves.AUTH);
     }
 
     @SuppressWarnings("unchecked")

@@ -14,7 +14,7 @@ public interface MenuView {
         if (menuResult != null) {
             return menuResult;
         } else {
-            return "Command is either invalid or does not belong to " + AppModel.getMenu().name() + " menu";
+            return "Command is either invalid or does not belong to " + AppModel.menu.getName() + " menu";
         }
     }
 }
