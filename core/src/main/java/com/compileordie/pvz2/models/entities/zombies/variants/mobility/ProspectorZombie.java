@@ -3,92 +3,77 @@ package com.compileordie.pvz2.models.entities.zombies.variants.mobility;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 
+/**
+ * [زامبی اکتشاف‌گر - ProspectorZombie]
+ * وضعیت یکپارچگی: ۱۰۰٪ منطبق بر کلاس MobilityZombie جدید شما و سازنده ۱۲ پارامتری آن.
+ * * قوانین داک اعمال شده:
+ * ۱. دینامیت پشت زامبی بعد از ۱۰ ثانیه منفجر می‌شود.
+ * ۲. پس از انفجار، به انتهای سطر (سمت چپ زمین، نزدیک خانه بازیکن) پرتاب شده و خلاف جهت (راست) حرکت می‌کند.
+ * ۳. پرتابه‌ها و افکت‌های یخی دینامیت او را برای همیشه خاموش می‌کنند.
+ */
 public class ProspectorZombie extends MobilityZombie {
-
     private boolean dynamiteActive;
     private double dynamiteTimer;
-    private final double timeToExplode; // طبق داک ۱۰ ثانیه (کاملاً پارامتریک از سازنده)
+    private final double timeToExplode = 10.0; // داک: انفجار بعد از ۱۰ ثانیه
     private boolean isReversedDirection;
-    private final double lastColumnX; // مختصات انتهای سطر (کنار خانه بازیکن) برای پرتاب شدن
+    private final double homeColumnX = 50.0; // مختصات ابتدای سطر سمت چپ (نزدیک خانه بازیکن)
 
     public ProspectorZombie(int health, double speed, int attackPower, int row, double startX,
                             int initialArmor, double delta, double x, double y, int xSpeed, int ySpeed,
-                            double underwaterSpeedModifier, double timeToExplode, double lastColumnX) {
+                            double underwaterSpeedModifier) {
+        // فراخوانی دقیق سازنده ۱۲ پارامتری کلاس MobilityZombie شما
         super(health, speed, attackPower, row, startX, initialArmor, delta, x, y, xSpeed, ySpeed, underwaterSpeedModifier);
-        setDelta(delta);
 
         this.dynamiteActive = true;
         this.dynamiteTimer = 0.0;
-        this.timeToExplode = timeToExplode;
         this.isReversedDirection = false;
-        this.lastColumnX = lastColumnX;
     }
 
     @Override
     public void tick() {
-        // ۱. بررسی افکت‌های یخ‌زدگی برای خاموش کردن دینامیت (قبل از آپدیت تیک والد)
-        // داک: در صورتی که تیری یخی به آنها بخورد، دینامیتشان خاموش می‌شود
+        // داک: در صورت برخورد تیر یخی یا وجود افکت سرمایی، دینامیت خاموش می‌شود
         if (this.dynamiteActive && (hasEffect(EffectType.FREEZE) || hasEffect(EffectType.CHILLED))) {
             this.dynamiteActive = false;
         }
 
-        // ۲. آپدیت افکت‌ها و رفتارهای کلاس والد
+        // فراخوانی تیک والد (که متد updateMovementState شما را برای تنظیم سرعت بر اساس WALKING/EATING اجرا می‌کند)
         super.tick();
         if (isDead()) return;
 
-        // ۳. مدیریت زمان‌بندی انفجار دینامیت با دلتا
-        if (this.dynamiteActive) {
+        // منطق شمارش معکوس دینامیت با استفاده از فیلد delta کلاس MobilityZombie شما
+        if (this.dynamiteActive && !hasEffect(EffectType.FREEZE)) {
             this.dynamiteTimer += this.delta;
             if (this.dynamiteTimer >= this.timeToExplode) {
-                explodeAndTeleport();
+                triggerExplosionAndFly();
             }
         }
     }
 
-    /**
-     * منطق انفجار دینامیت و پرتاب شدن به انتهای سطر
-     */
-    private void explodeAndTeleport() {
+    private void triggerExplosionAndFly() {
         this.dynamiteActive = false;
         this.isReversedDirection = true;
 
-        // داک: دینامیت به انتهای سطر (کنار خانه) پرتاب می‌شد
-        this.positionX = this.lastColumnX;
+        // تغییر وضعیت به پرواز/پرتاب جهت هماهنگی با لایه گرافیک یا رندر بازی
+        changeMovementState(MovementState.FLYING);
 
-        // تغییر وضعیت حرکت برای شروع مجدد جابه‌جایی رو به جلو (به سمت راست)
+        // داک: پرتاب به انتهای سطر (کنار خانه بازیکن)
+        setX(this.homeColumnX);
+
+        // بازگشت به وضعیت راه رفتن اما این بار در جهت معکوس
         changeMovementState(MovementState.WALKING);
     }
 
     /**
-     * بازنویسی متد حرکت کلاس ریشه Zombie
-     * داک: خلاف جهت باقی زامبی‌ها شروع به حرکت و خوردن گیاه‌ها می‌کند
+     * اورراید کردن حرکت برای پیاده‌سازی جابه‌جایی معکوس (از چپ به راست) پس از انفجار
      */
     @Override
     public void move() {
         if (this.isReversedDirection) {
-            // حرکت به سمت راست (خلاف جهت بقیه زامبی‌ها)
-            this.positionX += this.currentSpeed;
+            // داک: خلاف جهت باقی زامبی‌ها حرکت می‌کند (پیشروی به سمت راست با سرعت فعلی currentSpeed)
+            setX(getX() + this.currentSpeed);
         } else {
-            // حرکت عادی به سمت چپ قبل از انفجار دینامیت
-            this.positionX -= this.currentSpeed;
-        }
-    }
-
-    /**
-     * مدیریت رویداد برخورد فیزیکی با گیاه از طریق سرویس بازی
-     */
-    public void onPlantCollision() {
-        startEating(); // فعال کردن ترمز فیزیکی در کلاس ریشه Zombie (isEating = true)
-        changeMovementState(MovementState.EATING);
-    }
-
-    /**
-     * رویداد پاک شدن مسیر بعد از خوردن گیاه جلو زامبی
-     */
-    public void onPathCleared() {
-        if (this.movementState == MovementState.EATING) {
-            stopEating(); // آزاد کردن ترمز فیزیکی کلاس ریشه Zombie (isEating = false)
-            changeMovementState(MovementState.WALKING);
+            // حرکت عادی تمام زامبی‌ها به سمت چپ زمین قبل از انفجار دینامیت
+            setX(getX() - this.currentSpeed);
         }
     }
 
@@ -96,11 +81,19 @@ public class ProspectorZombie extends MobilityZombie {
     public void takeDamage(int amount, DamageType damageType) {
         if (isDead()) return;
 
+        // داک: تیر یخی دینامیت را خاموش می‌کند
+        if (damageType == DamageType.ICE) {
+            this.dynamiteActive = false;
+        }
+
         this.health -= amount;
         if (this.health < 0) this.health = 0;
     }
 
-    // گتر برای لایه سرویس جهت تشخیص جهت حرکت معکوس زامبی اکتشاف‌گر
+    public boolean isDynamiteActive() {
+        return this.dynamiteActive;
+    }
+
     public boolean isReversedDirection() {
         return this.isReversedDirection;
     }

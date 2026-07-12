@@ -7,51 +7,54 @@ public class KnightZombie extends StandardZombie {
     private int shoulderArmorHealth;
 
     public KnightZombie(int health, double speed, int attackPower, int row, double startX, int helmet, int shoulder, double x, double y, int xSpeed, int ySpeed) {
-        super(health, speed, attackPower, row, startX, helmet+shoulder, x, y, xSpeed, ySpeed); // initial = helmet + shoulder
-        this.helmetArmorHealth = helmet; // 1100
-        this.shoulderArmorHealth = shoulder;  // 500
+        super(health, speed, attackPower, row, startX, helmet + shoulder, x, y, xSpeed, ySpeed);
+        this.helmetArmorHealth = helmet;
+        this.shoulderArmorHealth = shoulder;
     }
 
-    public int damageHelmet(int amount) {
-        this.helmetArmorHealth -= amount;
-        takeArmorDamage(amount);
-        if (this.helmetArmorHealth <= 0) {
-            return (-helmetArmorHealth);
+    // فیکس باگ ریاضی شوالیه: کل دمیج زره به صورت زنجیره‌ای متوالی و بدون تکرار کسر می‌شود
+    @Override
+    public int takeArmorDamage(int amount) {
+        if (!hasArmor()) return amount;
+
+        int remainingDamage = amount;
+
+        // ۱. بررسی و کسر از کلاه شوالیه
+        if (!isHelmetBroken()) {
+            if (remainingDamage <= helmetArmorHealth) {
+                helmetArmorHealth -= remainingDamage;
+                this.armorHealth -= remainingDamage;
+                return 0;
+            } else {
+                remainingDamage -= helmetArmorHealth;
+                this.armorHealth -= helmetArmorHealth;
+                helmetArmorHealth = 0;
+            }
         }
-        return 0;
-    }
 
-    public int damageShoulderArmor(int amount) {
-        this.shoulderArmorHealth -= amount;
-        takeArmorDamage(amount);
-        if (this.shoulderArmorHealth <= 0) {
-            removeArmor();
-            return (-shoulderArmorHealth);
+        // ۲. کسر باقی‌مانده آسیب سرریز از زره شانه
+        if (!isShoulderArmorBroken()) {
+            if (remainingDamage <= shoulderArmorHealth) {
+                shoulderArmorHealth -= remainingDamage;
+                this.armorHealth -= remainingDamage;
+                return 0;
+            } else {
+                remainingDamage -= shoulderArmorHealth;
+                this.armorHealth -= shoulderArmorHealth;
+                shoulderArmorHealth = 0;
+                removeArmor(); // زره کاملاً نابود شد
+            }
         }
-        return 0;
 
+        return remainingDamage;
     }
 
-    public boolean isHelmetBroken() {
-        return this.helmetArmorHealth <= 0;
-    }
-
-    public boolean isShoulderArmorBroken() {
-        return this.shoulderArmorHealth <= 0;
-    }
+    public boolean isHelmetBroken() { return this.helmetArmorHealth <= 0; }
+    public boolean isShoulderArmorBroken() { return this.shoulderArmorHealth <= 0; }
 
     @Override
-    public void takeDamage(int amount, DamageType damageType){
-        if (isDead()) return;
-        int newAmount = amount;
-        if (!isHelmetBroken()) {
-            newAmount = damageHelmet(amount);
-        }
-        if (!isShoulderArmorBroken()){
-            newAmount = damageShoulderArmor(newAmount);
-        }
-        this.health -= newAmount;
-        if (this.health < 0) this.health = 0;
-        return;
+    public void takeDamage(int amount, DamageType damageType) {
+        // حذف کدهای کثیف قبلی؛ متد والد با ساختار جدید شوالیه کاملاً سازگار است و بدون باگ کار می‌کند
+        super.takeDamage(amount, damageType);
     }
 }

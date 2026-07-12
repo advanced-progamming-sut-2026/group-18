@@ -25,20 +25,16 @@ public class AllStarZombie extends StandardZombie {
     }
 
     /**
-     * این متد مستقیماً توسط سرویس بازی (مثلاً CombatService)
-     * در لحظه برخورد فیزیکی این زامبی با یک گیاه صدا زده می‌شود.
+     * متد برخورد طبق ساختار سرویس‌محور بازنویسی شد.
+     * این متد صرفاً وضعیت خود زامبی را مدیریت می‌کند.
+     * سرویس بازی (CombatService) به صورت بیرونی متوجه شارژ زامبی شده و گیاه را نابود می‌کند.
      */
     public void onPlantCollision() {
-            if (isCharging) {
-                // اگر در حال تکل زدن باشد، گیاه اول را فوراً نابود می‌کند و تکلش تمام می‌شود
-                destroyPlantInstantly();
-                stopCharge();
-            } else {
-                // اگر شارژ تمام شده باشد، رفتار عادی زامبی (مثلاً جویدن) فعال می‌شود
-                // این کار معمولاً با فرستادن سیگنال به سرویس برای تغییر وضعیت زامبی به isEating انجام می‌شود.
-                startEating();
-            }
-
+        if (isCharging) {
+            stopCharge(); // تکل تمام می‌شود
+        } else {
+            startEating(); // متوقف شدن برای جویدن عادی
+        }
     }
 
     @Override
@@ -52,25 +48,15 @@ public class AllStarZombie extends StandardZombie {
     @Override
     public void takeDamage(int amount, DamageType damageType) {
         if (isDead()) return;
-        int newAmount = amount;
-        if (hasArmor()) {
-            newAmount = takeArmorDamage(amount);
-            if (!hasArmor()) {
-                stopCharge();
-            }
+        int oldArmor = this.armorHealth;
+
+        super.takeDamage(amount, damageType);
+
+        // داک بازی: اگر کلاه ورزشی فوتبالیست حین دویدن بشکند، دویدنش متوقف می‌شود
+        if (oldArmor > 0 && !hasArmor()) {
+            stopCharge();
         }
-        this.health -= newAmount;
-        if (this.health < 0) this.health = 0;
     }
 
-
-    // ** مرتبط با سرویس خاص **
-    private void destroyPlantInstantly() {
-        // لایه سرویس گیاه برخورد کرده را فوراً از نقشه حذف می‌کند
-    }
-
-
-    public boolean isCharging() {
-        return this.isCharging;
-    }
+    public boolean isCharging() { return this.isCharging; }
 }

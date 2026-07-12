@@ -24,5 +24,11 @@ public abstract class MovableObject {
         return this.isDestroyed;
     }
 
-    public int getHealth() { return health; }
+    public int getHealth() {
+        return health;
+    }
+
+    public int getMaxHealth() {
+        return maxHealth;
+    }
 }

@@ -3,18 +3,6 @@ package com.compileordie.pvz2.models.entities.zombies.variants.standard;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
-//Zs :
-//BasicZombie
-//ConeHeadZombie
-//BucketHeadZombie
-//KnightZombie
-//BlockheadZombie
-//NewspaperZombie
-//ParasolZombie
-//ImpZombie
-//ImpDragon
-//AllStarZombie
-
 public abstract class StandardZombie extends Zombie {
     protected int armorHealth;
 
@@ -27,33 +15,30 @@ public abstract class StandardZombie extends Zombie {
         if (hasArmor()) {
             this.armorHealth -= amount;
             if (this.armorHealth <= 0) {
+                int overflow = -this.armorHealth;
                 removeArmor();
-                return (-armorHealth);
+                return overflow;
             }
             return 0;
         }
         return amount;
     }
 
-    public boolean hasArmor() {
-        return this.armorHealth > 0;
-    }
-
-    public void removeArmor() {
-        this.armorHealth = 0;
-    }
-
+    public boolean hasArmor() { return this.armorHealth > 0; }
+    public void removeArmor() { this.armorHealth = 0; }
     public void enterEnrageMode(){};
 
     @Override
-    public void takeDamage(int amount, DamageType damageType){
+    public void takeDamage(int amount, DamageType damageType) {
         if (isDead()) return;
         int newAmount = amount;
-        if (hasArmor()) {
+
+        // فیکس: آسیب‌های نادیده‌گیرنده زره مستقیماً به گوشت زامبی می‌خورند
+        if (damageType != DamageType.BYPASS_ARMOR && hasArmor()) {
             newAmount = takeArmorDamage(amount);
         }
+
         this.health -= newAmount;
         if (this.health < 0) this.health = 0;
-        return;
     }
 }
