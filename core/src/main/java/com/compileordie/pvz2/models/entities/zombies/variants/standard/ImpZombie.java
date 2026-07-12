@@ -10,9 +10,5 @@ public class ImpZombie extends StandardZombie {
         super(health, speed, attackPower, row, startX, 0, x, y, xSpeed, ySpeed);
     }
 
-    @Override
-    public void move() {
-        // حرکت عادی به سمت چپ (خانه بازیکن)
-        this.positionX -= this.currentSpeed;
-    }
+    // متد move کاملاً حذف شد چون دقیقاً همان رفتار کلاس والد را دارد و سیستم ارث‌بری خودکار آن را هندل می‌کند.
 }

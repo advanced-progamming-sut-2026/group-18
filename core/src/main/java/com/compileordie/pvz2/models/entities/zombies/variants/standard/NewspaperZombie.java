@@ -1,9 +1,7 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.standard;
 
 public class NewspaperZombie extends StandardZombie {
-    private int newspaperHealth;
     private boolean isEnraged;
-    private double enrageSpeedMultiplier = 2.5;
 
     public NewspaperZombie(int health, double speed, int attackPower, int row, double startX, int initialArmor, double x, double y, int xSpeed, int ySpeed) {
         super(health, speed, attackPower, row, startX, initialArmor, x, y, xSpeed, ySpeed);
@@ -15,11 +13,12 @@ public class NewspaperZombie extends StandardZombie {
         if (hasArmor()) {
             this.armorHealth -= amount;
             if (this.armorHealth <= 0) {
+                int overflow = -this.armorHealth;
                 removeArmor();
-                if (!hasArmor() && !isEnraged) {
+                if (!isEnraged) {
                     enterEnrageMode();
                 }
-                return (-armorHealth);
+                return overflow;
             }
             return 0;
         }
@@ -29,7 +28,15 @@ public class NewspaperZombie extends StandardZombie {
     @Override
     public void enterEnrageMode() {
         this.isEnraged = true;
-        this.currentSpeed = this.movementSpeed * this.enrageSpeedMultiplier;
+        recalculateSpeed(); // اعمال آنی سرعت خشم
     }
 
+    // فیکس حیاتی: بازنویسی متد بازخوانی سرعت برای جلوگیری از ریست شدن مالتیپلیر سرعت در هر تیک
+    @Override
+    public void recalculateSpeed() {
+        super.recalculateSpeed();
+        if (isEnraged) {
+            this.currentSpeed *= 2.5;
+        }
+    }
 }

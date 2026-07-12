@@ -6,45 +6,43 @@ public class ArcadeZombie extends VehicleZombie {
 
     public ArcadeZombie(int health, double speed, int attackPower, int row, double startX,
                         double x, double y, int xSpeed, int ySpeed, double delta, int bucketHeadHealth) {
-        // ایجاد دستگاه و فرستادن پارامترها به والد (VehicleZombie)
         super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, delta, new ArcadeMachine(bucketHeadHealth));
     }
 
-    /**
-     * طبق نمودار UML: هل دادن دستگاه آرکید رو به جلو
-     */
     public void pushMachine() {
         super.pushVehicle();
     }
 
-    /**
-     * مدیریت رویداد برخورد فیزیکی با موانع (گیاه یا زامبی هیپنوتیزم شده)
-     * این متد توسط سرویس مدیریت برخورد شما صدا زده می‌شود
-     * @return boolean اگر true باشد یعنی دستگاه سالم است و هدف باید درجا له (حذف) شود
-     */
-    // TODO : مرتبط با سرویس
-    public boolean onCollisionDetected() {
-        if (!this.isVehicleDestroyed) {
-            // داک: دستگاه سالم است، پس بدون توقف هل می‌دهد و هدف باید درجا له شود
+    @Override
+    public void move() {
+        if (!isVehicleDestroyed) {
             pushMachine();
-            return true; // سیگنال به سرویس برای نابودی فوری هدف
         } else {
-            // داک: دستگاه شکسته، پس مثل زامبی عادی ترمز می‌کند تا هدف را بجود
-            startEating();
-            return false; // سیگنال به سرویس که له کردنی در کار نیست
+            setX(getX() - this.currentSpeed);
         }
     }
 
     /**
-     * طبق نمودار UML: رویداد آسیب دیدن بدنه آرکید
+     * مدیریت رویداد برخورد فیزیکی با موانع (گیاهان یا زامبی‌های هیپنوتیزم شده)
+     * @return boolean اگر true باشد یعنی دستگاه سالم است و گیاه باید درجا له (حذف) شود
      */
+    public boolean onCollisionDetected() {
+        if (!this.isVehicleDestroyed) {
+            pushMachine();
+            return true; // سیگنال لایه سرویس برای نابودی آنی گیاه برخورد کرده
+        } else {
+            startEating(); // دستگاه شکسته، پس مثل زامبی عادی ایستاده و می‌جود
+            return false;
+        }
+    }
+
     public void onCabinetBreak(int damageAmount) {
         if (this.vehicle instanceof ArcadeMachine) {
             ArcadeMachine machine = (ArcadeMachine) this.vehicle;
             machine.takeDamage(damageAmount);
 
             if (machine.isDestroyed()) {
-                onVehicleDestroyed(); // فعال شدن فلگ شکستن وسیله در کلاس پدر
+                onVehicleDestroyed();
             }
         }
     }
@@ -53,13 +51,13 @@ public class ArcadeZombie extends VehicleZombie {
     public void takeDamage(int amount, DamageType damageType) {
         if (isDead()) return;
 
-        // مکانیزم سپر: تا دستگاه سالمه، آسیب‌ها به دستگاه می‌خورد
+        // تا زمان سلامت دستگاه، کل دمیج‌ها به عنوان سپر جذب کابین آرکید می‌شوند
         if (!this.isVehicleDestroyed) {
             onCabinetBreak(amount);
         } else {
-            // بعد از نابودی دستگاه، آسیب به خود زامبی می‌رسد
             this.health -= amount;
-            if (this.health < 0) this.health = 0;
         }
+
+        if (this.health < 0) this.health = 0;
     }
 }

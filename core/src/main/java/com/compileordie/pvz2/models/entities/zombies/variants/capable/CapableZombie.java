@@ -2,17 +2,6 @@ package com.compileordie.pvz2.models.entities.zombies.variants.capable;
 
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
-//Zs :
-//RaZombie
-//ExplorerZombie
-//HunterZombie
-//FishermanZombie
-//OctopusZombie
-//WizardZombie
-//TurquoiseZombie
-//PianistZombie
-//JesterZombie
-
 public abstract class CapableZombie extends Zombie {
     protected double abilityCooldown;
     protected double currentCooldownTimer;
@@ -35,17 +24,16 @@ public abstract class CapableZombie extends Zombie {
         super.tick();
         if (isDead()) return;
 
+        // مدیریت زمانی کول‌داون کاملاً مستقل عمل می‌کند
         if (!isAbilityReady) {
             updateCooldown(this.delta);
         }
-
-        if (canUseAbility()) {
-            useAbility();
-        }
     }
 
+    // متد انتزاعی که توسط ZombieAbilityService صدا زده می‌شود تا کار اصلی انجام شود
     public abstract void useAbility();
 
+    // سرویس بازی قبل از صدا زدن useAbility این شرط را چک می‌کند
     public boolean canUseAbility() {
         return isAbilityReady && !isDead();
     }
@@ -56,7 +44,7 @@ public abstract class CapableZombie extends Zombie {
     }
 
     public void updateCooldown(double delta) {
-        if (currentCooldownTimer >= 0) {
+        if (currentCooldownTimer > 0) {
             currentCooldownTimer -= delta;
             if (currentCooldownTimer <= 0) {
                 currentCooldownTimer = 0;
@@ -68,4 +56,6 @@ public abstract class CapableZombie extends Zombie {
     public void setDelta(double delta){
         this.delta = delta;
     }
+
+    public int getAbilityRange() { return this.abilityRange; }
 }
