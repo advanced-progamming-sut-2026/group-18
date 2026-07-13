@@ -25,4 +25,10 @@ public final class Constants {
         public static final int MEMORY = 20480;
         public static final int PARALLELISM = 1;
     }
+
+    public static final class Game {
+        public static final int boardRows = 5;
+        public static final int boardCols = 9;
+        public static final int tileSize = 1;
+    }
 }

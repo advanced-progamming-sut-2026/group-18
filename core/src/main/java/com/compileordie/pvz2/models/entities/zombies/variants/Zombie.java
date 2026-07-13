@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.entities.zombies.variants;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
@@ -129,4 +130,8 @@ public abstract class Zombie extends GameEntity {
     public void setCurrentRow(int currentRow) { this.currentRow = currentRow; }
 
     public abstract void takeDamage(int amount, DamageType damageType);
+
+    public int[] getCurrentTileCoordinates() {
+        return new int[]{(int) (this.getX() / Constants.Game.tileSize), (int) (this.getY() / Constants.Game.tileSize)};
+    }
 }
