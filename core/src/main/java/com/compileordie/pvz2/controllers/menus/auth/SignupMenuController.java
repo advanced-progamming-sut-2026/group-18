@@ -3,6 +3,7 @@ package com.compileordie.pvz2.controllers.menus.auth;
 import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
+import com.compileordie.pvz2.models.repositories.databases.AuthDatabase;
 import com.compileordie.pvz2.models.user.Gender;
 import com.compileordie.pvz2.models.user.UserValidator;
 import com.compileordie.pvz2.models.user.authentication.AuthManager;
@@ -61,8 +62,12 @@ public class SignupMenuController {
         if (!UserValidator.isUsernameValid(username)) {
             return "[ERROR] Invalid username format.";
         }
-        if (!UserValidator.isPasswordStrong(password)) {
-            return "[ERROR] Password is not strong enough.";
+        if (new AuthDatabase().loadOne(username) != null) {
+            return "[ERROR] This username is already taken.";
+        }
+        String passwordStrength = UserValidator.isPasswordStrong(password);
+        if (passwordStrength != null) {
+            return passwordStrength;
         }
         if (!UserValidator.isNicknameValid(nickname)) {
             return "[ERROR] Nickname must be 3 to 30 characters.";
@@ -76,10 +81,10 @@ public class SignupMenuController {
             default -> null;
         };
         if (genderType == null) {
-            return "[ERROR] Invalid gender type. There are 'male' and 'female', no more than that.";
+            return "[ERROR] (Call be transphobic but) Invalid gender type.";
         }
         if (!password.equals(passwordConfirm)) {
-            return "[ERORR] Passwords do not match.";
+            return "[ERROR] Passwords do not match.";
         }
 
         pendingUser = new PendingRegistration(username, password, nickname, email, genderType);
@@ -107,20 +112,20 @@ public class SignupMenuController {
             return "[ERROR] Invalid question number, please enter an integer.";
         }
         ArrayList<String> securityQuestions = ConfigManager.securityQuestion().questions;
-        if (number > securityQuestions.size()) {
+        if (number < 1 || number > securityQuestions.size()) {
             return "[ERROR] Invalid question number, your number must be between 1 and "
                 + securityQuestions.size() + ".";
         }
 
         String question = securityQuestions.get(number - 1);
-        AuthManager.signupPlayer(pendingUser.username,
-            pendingUser.password.toCharArray(),
-            pendingUser.nickname,
-            pendingUser.email,
-            pendingUser.gender,
+        AuthManager.signupPlayer(pendingUser.username(),
+            pendingUser.password().toCharArray(),
+            pendingUser.nickname(),
+            pendingUser.email(),
+            pendingUser.gender(),
             question,
             answer);
-        String username = pendingUser.username;
+        String username = pendingUser.username();
         pendingUser = null;
         AppModel.menu = Menu.LOGIN;
         return "Account created successfully for '" + username + "'."

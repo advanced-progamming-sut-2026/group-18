@@ -27,6 +27,7 @@ public class Player {
     public int completedTotalDailyQuests;
     public int completedTotalNonDailyQuests;
     public int bestScore;
+    public int difficultyLevel;
 
     public Player() {
     }
@@ -56,6 +57,7 @@ public class Player {
         this.completedTotalDailyQuests = 0;
         this.completedTotalNonDailyQuests = 0;
         this.bestScore = 0;
+        this.difficultyLevel = 3;
     }
 
     public boolean isSecurityAnswerCorrect(String answer) {
