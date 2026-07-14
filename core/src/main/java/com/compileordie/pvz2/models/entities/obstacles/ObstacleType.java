@@ -6,7 +6,7 @@ public enum ObstacleType {
     ICE_BLOCK,
     GRAVE;
 
-    public void tick(int ticks, GameBoard gameBoard) {
+    public void tick(int ticks, Obstacle self, GameBoard gameBoard) {
         // TODO: To be implemented.
     }
 }

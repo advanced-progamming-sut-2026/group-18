@@ -1,3 +1,12 @@
 {
-  "sunValue": 10
+  "normalSunValue": 25,
+  "specialSunValue": 100,
+  "radioactiveSunValue": 100,
+  "natualSunLifespan": 10.0,
+  "plantSunLifespan": 8.0,
+  "radioactiveSunZombieDamageAmount": 150,
+  "radioactiveSunZombieDamageArea": 5,
+  "radioactiveSunPlantDamageAmount": 80,
+  "radioactiveSunPlantDamageRange": 3
+
 }
