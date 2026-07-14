@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.controllers.menus.home;
 
+import com.compileordie.pvz2.config.PreferencesManager;
 import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.views.helpers.Menu;
@@ -28,6 +29,7 @@ public class MainMenuController {
 
     public static String logoutUser() {
         AppModel.clearPlayer();
+        PreferencesManager.clearDefaultUser();
         return AppController.changeMenu(Menu.SIGNUP);
     }
 }
