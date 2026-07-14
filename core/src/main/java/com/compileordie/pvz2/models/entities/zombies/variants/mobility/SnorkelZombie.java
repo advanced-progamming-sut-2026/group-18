@@ -1,14 +1,15 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.mobility;
 
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class SnorkelZombie extends MobilityZombie {
 
     public SnorkelZombie(int health, double speed, int attackPower, int row, double startX,
-                         int initialArmor, double delta, double x, double y, int xSpeed, int ySpeed,
+                         int initialArmor, double delta, double x, double y, double xSpeed, double ySpeed,
                          double underwaterSpeedModifier) {
         // فرستادن تمام پارامترها به والدِ موبیلیتی
-        super(health, speed, attackPower, row, startX, initialArmor, delta, x, y, xSpeed, ySpeed, underwaterSpeedModifier);
+        super(health, speed, attackPower, row, startX, initialArmor, delta, x, y, xSpeed, ySpeed, underwaterSpeedModifier, ZombieType.SNORKEL_ZOMBIE);
         setDelta(delta);
 
         // وضعیت اولیه هنگام ورود (اگر زمین پیش‌فرض آب باشد، شیرجه می‌زند)

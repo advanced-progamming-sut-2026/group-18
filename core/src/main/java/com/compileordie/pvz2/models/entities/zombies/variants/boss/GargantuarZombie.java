@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.boss;
 
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 
@@ -11,8 +12,8 @@ public class GargantuarZombie extends Zombie {
     private final int impTargetColumn;
 
     public GargantuarZombie(int health, double speed, int attackPower, int row, double startX,
-                            double x, double y, int xSpeed, int ySpeed) {
-        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed);
+                            double x, double y, double xSpeed, double ySpeed) {
+        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, ZombieType.GARGANTUAR);
         this.phase = 1;
         this.hasTriggeredSpecialAction = false;
         this.impThrown = false;

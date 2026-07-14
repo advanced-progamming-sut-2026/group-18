@@ -1,6 +1,8 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.vehicle;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.ImpZombie;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,16 +14,16 @@ public class BarrelRollerZombie extends VehicleZombie {
     private final int impAttackPower;
 
     public BarrelRollerZombie(int health, double speed, int attackPower, int row, double startX,
-                              double x, double y, int xSpeed, int ySpeed, double delta,
+                              double x, double y, double xSpeed, double ySpeed, double delta,
                               int barrelHealth, int impHealth, double impSpeed, int impAttackPower) {
-        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, delta, new Barrel(barrelHealth, row, x, y));
+        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, delta, new Barrel(barrelHealth, row, x, y), ZombieType.BARREL_ROLLER);
         this.impHealth = impHealth;
         this.impSpeed = impSpeed;
         this.impAttackPower = impAttackPower;
     }
 
-    public void pushBarrel() {
-        super.pushVehicle();
+    public void pushBarrel(int ticks) {
+        super.pushVehicle(ticks);
 
         if (this.vehicle instanceof Barrel) {
             ((Barrel) this.vehicle).updatePosition(this.getX());
@@ -29,11 +31,13 @@ public class BarrelRollerZombie extends VehicleZombie {
     }
 
     @Override
-    public void move() {
+    public void move(int ticks) {
         if (!isVehicleDestroyed) {
-            pushBarrel();
+            pushBarrel(ticks);
         } else {
-            setX(getX() - this.currentSpeed);
+            float dt = ticks * Constants.Game.TIME_COEFFICIENT;
+            setXSpeed(this.currentSpeed);
+            setX(getX() - getXSpeed() * dt);
         }
     }
 

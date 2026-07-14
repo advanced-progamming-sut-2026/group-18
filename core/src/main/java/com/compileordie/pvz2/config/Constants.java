@@ -30,5 +30,6 @@ public final class Constants {
         public static final int boardRows = 5;
         public static final int boardCols = 9;
         public static final int tileSize = 1;
+        public static final float TIME_COEFFICIENT = 0.1f;
     }
 }

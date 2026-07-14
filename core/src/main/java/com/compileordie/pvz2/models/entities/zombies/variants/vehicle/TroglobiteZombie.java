@@ -1,16 +1,18 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.vehicle;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class TroglobiteZombie extends VehicleZombie {
 
     public TroglobiteZombie(int health, double speed, int attackPower, int row, double startX,
-                            double x, double y, int xSpeed, int ySpeed, double delta, int iceBlockHealth) {
-        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, delta, new IceBlock(iceBlockHealth, row, x));
+                            double x, double y, double xSpeed, double ySpeed, double delta, int iceBlockHealth) {
+        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, delta, new IceBlock(iceBlockHealth, row, x), ZombieType.TROGLOBITE);
     }
 
-    public void pushIceBlock() {
-        super.pushVehicle();
+    public void pushIceBlock(int ticks) {
+        super.pushVehicle(ticks);
 
         // اصلاح باگ مختصات: آپدیت همزمان یخ با getX() فیزیک سراسری
         if (this.vehicle instanceof IceBlock) {
@@ -19,12 +21,13 @@ public class TroglobiteZombie extends VehicleZombie {
     }
 
     @Override
-    public void move() {
+    public void move(int ticks) {
         if (!isVehicleDestroyed) {
-            pushIceBlock();
+            pushIceBlock(ticks);
         } else {
-            // حرکت عادی غارنشین پیاده بدون یخ
-            setX(getX() - this.currentSpeed);
+            float dt = ticks * Constants.Game.TIME_COEFFICIENT;
+            setXSpeed(this.currentSpeed);
+            setX(getX() - getXSpeed() * dt);
         }
     }
 

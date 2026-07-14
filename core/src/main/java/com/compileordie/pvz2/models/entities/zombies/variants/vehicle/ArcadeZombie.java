@@ -1,24 +1,28 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.vehicle;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class ArcadeZombie extends VehicleZombie {
 
     public ArcadeZombie(int health, double speed, int attackPower, int row, double startX,
-                        double x, double y, int xSpeed, int ySpeed, double delta, int bucketHeadHealth) {
-        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, delta, new ArcadeMachine(bucketHeadHealth));
+                        double x, double y, double xSpeed, double ySpeed, double delta, int bucketHeadHealth) {
+        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, delta, new ArcadeMachine(bucketHeadHealth), ZombieType.ARCADE_ZOMBIE);
     }
 
-    public void pushMachine() {
-        super.pushVehicle();
+    public void pushMachine(int ticks) {
+        super.pushVehicle(ticks);
     }
 
     @Override
-    public void move() {
+    public void move(int ticks) {
         if (!isVehicleDestroyed) {
-            pushMachine();
+            pushMachine(ticks);
         } else {
-            setX(getX() - this.currentSpeed);
+            float dt = ticks * Constants.Game.TIME_COEFFICIENT;
+            setXSpeed(this.currentSpeed);
+            setX(getX() - getXSpeed() * dt);
         }
     }
 
@@ -28,7 +32,7 @@ public class ArcadeZombie extends VehicleZombie {
      */
     public boolean onCollisionDetected() {
         if (!this.isVehicleDestroyed) {
-            pushMachine();
+            pushMachine(1);
             return true; // سیگنال لایه سرویس برای نابودی آنی گیاه برخورد کرده
         } else {
             startEating(); // دستگاه شکسته، پس مثل زامبی عادی ایستاده و می‌جود

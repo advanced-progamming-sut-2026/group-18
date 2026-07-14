@@ -1,12 +1,13 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.capable;
 
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class RaZombie extends CapableZombie {
     private int stolenSunCount;
 
-    public RaZombie(int health, double speed, int attackPower, int row, double startX, double abilityCooldown, int abilityRange, double delta, double x, double y, int xSpeed, int ySpeed) {
-        super(health, speed, attackPower, row, startX, abilityCooldown, abilityRange, delta, x, y, xSpeed, ySpeed);
+    public RaZombie(int health, double speed, int attackPower, int row, double startX, double abilityCooldown, int abilityRange, double delta, double x, double y, double xSpeed, double ySpeed) {
+        super(health, speed, attackPower, row, startX, abilityCooldown, abilityRange, delta, x, y, xSpeed, ySpeed, ZombieType.RA_ZOMBIE);
         // پیشفرض پیشنهادی : هر 4 ثانیه یکبار خورشید به سمت خودش بکشد : abilityCooldown
 
         this.stolenSunCount = 0;

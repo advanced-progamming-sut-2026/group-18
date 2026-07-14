@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.capable;
 
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 /**
  * [زامبی ژانگولر - JesterZombie]
@@ -13,8 +14,8 @@ public class JesterZombie extends CapableZombie {
     private final double spinningSpeedMultiplier = 1.6; // داک: حین چرخیدن، سریع‌تر به جلو حرکت می‌کند
 
     public JesterZombie(int health, double speed, int attackPower, int row, double startX,
-                        double abilityCooldown, int abilityRange, double delta, double x, double y, int xSpeed, int ySpeed) {
-        super(health, speed, attackPower, row, startX, abilityCooldown, abilityRange, delta, x, y, xSpeed, ySpeed);
+                        double abilityCooldown, int abilityRange, double delta, double x, double y, double xSpeed, double ySpeed) {
+        super(health, speed, attackPower, row, startX, abilityCooldown, abilityRange, delta, x, y, xSpeed, ySpeed, ZombieType.JESTER_ZOMBIE);
         this.isSpinning = false;
     }
 
