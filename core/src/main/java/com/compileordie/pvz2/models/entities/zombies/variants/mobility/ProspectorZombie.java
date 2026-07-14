@@ -1,7 +1,9 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.mobility;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 /**
  * [زامبی اکتشاف‌گر - ProspectorZombie]
@@ -19,10 +21,10 @@ public class ProspectorZombie extends MobilityZombie {
     private final double homeColumnX = 50.0; // مختصات ابتدای سطر سمت چپ (نزدیک خانه بازیکن)
 
     public ProspectorZombie(int health, double speed, int attackPower, int row, double startX,
-                            int initialArmor, double delta, double x, double y, int xSpeed, int ySpeed,
+                            int initialArmor, double delta, double x, double y, double xSpeed, double ySpeed,
                             double underwaterSpeedModifier) {
         // فراخوانی دقیق سازنده ۱۲ پارامتری کلاس MobilityZombie شما
-        super(health, speed, attackPower, row, startX, initialArmor, delta, x, y, xSpeed, ySpeed, underwaterSpeedModifier);
+        super(health, speed, attackPower, row, startX, initialArmor, delta, x, y, xSpeed, ySpeed, underwaterSpeedModifier, ZombieType.PROSPECTOR_ZOMBIE);
 
         this.dynamiteActive = true;
         this.dynamiteTimer = 0.0;
@@ -67,13 +69,16 @@ public class ProspectorZombie extends MobilityZombie {
      * اورراید کردن حرکت برای پیاده‌سازی جابه‌جایی معکوس (از چپ به راست) پس از انفجار
      */
     @Override
-    public void move() {
+    public void move(int ticks) {
+        float dt = ticks * Constants.Game.TIME_COEFFICIENT;
+        setXSpeed(this.currentSpeed);
+
         if (this.isReversedDirection) {
             // داک: خلاف جهت باقی زامبی‌ها حرکت می‌کند (پیشروی به سمت راست با سرعت فعلی currentSpeed)
-            setX(getX() + this.currentSpeed);
+            setX(getX() + getXSpeed() * dt);
         } else {
             // حرکت عادی تمام زامبی‌ها به سمت چپ زمین قبل از انفجار دینامیت
-            setX(getX() - this.currentSpeed);
+            setX(getX() - getXSpeed() * dt);
         }
     }
 

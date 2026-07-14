@@ -1,10 +1,12 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.standard;
 
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
+
 public class NewspaperZombie extends StandardZombie {
     private boolean isEnraged;
 
-    public NewspaperZombie(int health, double speed, int attackPower, int row, double startX, int initialArmor, double x, double y, int xSpeed, int ySpeed) {
-        super(health, speed, attackPower, row, startX, initialArmor, x, y, xSpeed, ySpeed);
+    public NewspaperZombie(int health, double speed, int attackPower, int row, double startX, int initialArmor, double x, double y, double xSpeed, double ySpeed) {
+        super(health, speed, attackPower, row, startX, initialArmor, x, y, xSpeed, ySpeed, ZombieType.NEWSPAPER_ZOMBIE);
         this.isEnraged = false;
     }
 

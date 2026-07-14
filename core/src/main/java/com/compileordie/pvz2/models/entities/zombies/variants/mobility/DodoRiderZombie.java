@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.mobility;
 
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class DodoRiderZombie extends MobilityZombie {
     private boolean isFlyingState;
@@ -9,9 +10,9 @@ public class DodoRiderZombie extends MobilityZombie {
     private final double flyingSpeedModifier;
 
     public DodoRiderZombie(int health, double speed, int attackPower, int row, double startX,
-                           int initialArmor, double delta, double x, double y, int xSpeed, int ySpeed,
+                           int initialArmor, double delta, double x, double y, double xSpeed, double ySpeed,
                            double underwaterSpeedModifier, double maxFlightDuration, double flyingSpeedModifier) {
-        super(health, speed, attackPower, row, startX, initialArmor, delta, x, y, xSpeed, ySpeed, underwaterSpeedModifier);
+        super(health, speed, attackPower, row, startX, initialArmor, delta, x, y, xSpeed, ySpeed, underwaterSpeedModifier, ZombieType.DODO_RIDER);
         this.isFlyingState = false;
         this.flightTimer = 0.0;
         this.maxFlightDuration = maxFlightDuration;

@@ -1,13 +1,14 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.standard;
 
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class ImpDragon extends StandardZombie {
 
     public ImpDragon(int health, double speed, int attackPower, int row, double startX,
-                     double x, double y, int xSpeed, int ySpeed) {
+                     double x, double y, double xSpeed, double ySpeed) {
         // پاس دادن پارامترها به StandardZombie (امپ دراگون هم زره اولیه ندارد پس 0 می‌گذاریم)
-        super(health, speed, attackPower, row, startX, 0, x, y, xSpeed, ySpeed);
+        super(health, speed, attackPower, row, startX, 0, x, y, xSpeed, ySpeed, ZombieType.IMP_DRAGON);
     }
 
     // متد move حذف شد تا جابجایی بر بر عهده لایه والد و متدهای سیستمی GameEntity باشد.

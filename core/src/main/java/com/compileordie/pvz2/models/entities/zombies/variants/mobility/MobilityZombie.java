@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.mobility;
 
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
 public abstract class MobilityZombie extends Zombie {
@@ -8,9 +9,9 @@ public abstract class MobilityZombie extends Zombie {
     protected final double underwaterSpeedModifier;
 
     public MobilityZombie(int health, double speed, int attackPower, int row, double startX,
-                          int initialArmor, double delta, double x, double y, int xSpeed, int ySpeed,
-                          double underwaterSpeedModifier) {
-        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed);
+                          int initialArmor, double delta, double x, double y, double xSpeed, double ySpeed,
+                          double underwaterSpeedModifier, ZombieType type) {
+        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, type);
         this.underwaterSpeedModifier = underwaterSpeedModifier;
         this.movementState = MovementState.WALKING;
         this.delta = delta;

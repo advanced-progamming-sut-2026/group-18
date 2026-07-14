@@ -2,6 +2,7 @@ package com.compileordie.pvz2.models.entities.zombies.variants.capable;
 
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 /**
  * [زامبی مشعل‌دار - ExplorerZombie]
@@ -14,9 +15,9 @@ public class ExplorerZombie extends CapableZombie {
     private final int baseAttackPower;
 
     public ExplorerZombie(int health, double speed, int attackPower, int row, double startX,
-                          double abilityCooldown, int abilityRange, double delta, double x, double y, int xSpeed, int ySpeed) {
+                          double abilityCooldown, int abilityRange, double delta, double x, double y, double xSpeed, double ySpeed) {
         // فراخوانی دقیق سازنده ۱۲ پارامتری CapableZombie موجود در فایل شما
-        super(health, speed, attackPower, row, startX, abilityCooldown, abilityRange, delta, x, y, xSpeed, ySpeed);
+        super(health, speed, attackPower, row, startX, abilityCooldown, abilityRange, delta, x, y, xSpeed, ySpeed, ZombieType.EXPLORER_ZOMBIE);
         this.baseAttackPower = attackPower;
         this.torchLit = true;
         this.attackPower = 999999; // داک: سوزاندن درجا گیاهان در صورت روشن بودن مشعل

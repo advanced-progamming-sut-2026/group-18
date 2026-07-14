@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.capable;
 
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class TurquoiseZombie extends CapableZombie {
     private boolean isStealing;
@@ -10,8 +11,8 @@ public class TurquoiseZombie extends CapableZombie {
 
     public TurquoiseZombie(int health, double speed, int attackPower, int row, double startX,
                            double abilityCooldown, int abilityRange, double delta, double x, double y,
-                           int xSpeed, int ySpeed) {
-        super(health, speed, attackPower, row, startX, abilityCooldown, abilityRange, delta, x, y, xSpeed, ySpeed);
+                           double xSpeed, double ySpeed) {
+        super(health, speed, attackPower, row, startX, abilityCooldown, abilityRange, delta, x, y, xSpeed, ySpeed, ZombieType.TURQUOISE_ZOMBIE);
         this.isStealing = false;
         this.stealTimer = 0;
         this.perSecondTimer = 0;

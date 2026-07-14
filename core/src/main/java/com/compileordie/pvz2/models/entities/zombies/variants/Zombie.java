@@ -5,6 +5,8 @@ import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -19,8 +21,9 @@ public abstract class Zombie extends GameEntity {
     protected List<StatusEffect> activeEffects;
     protected boolean skipThisTick;
     protected boolean isEating;
+    protected ZombieType type;
 
-    public Zombie(int health, double speed, int base_damage, int row, double startX, double x, double y, int xSpeed, int ySpeed) {
+    public Zombie(int health, double speed, int base_damage, int row, double startX, double x, double y, double xSpeed, double ySpeed, ZombieType type) {
         // فیکس دوگانگی: مقدار startX مستقیماً به عنوان موقعیت X اولیه به لایه GameEntity فرستاده می‌شود
         super(startX, y, xSpeed, ySpeed);
         this.maxHealth = health;
@@ -32,6 +35,7 @@ public abstract class Zombie extends GameEntity {
         this.activeEffects = new ArrayList<>();
         this.skipThisTick = false;
         this.isEating = false;
+        this.type = type;
     }
 
     public void tick() {
@@ -59,15 +63,17 @@ public abstract class Zombie extends GameEntity {
         // نکته ساختاری: اگر MovementService جابجایی را مدیریت می‌کند،
         // این شرط حرکت می‌تواند از tick حذف شده و هندلینگ آن به سرویس منتقل شود.
         if (canMove()) {
-            move();
+            move(1);
         }
     }
 
     public void handleDeath() {}
 
-    public void move() {
-        // اصلاح فیکس مختصات: استفاده از متدهای کلاس پدر GameEntity
-        setX(getX() - currentSpeed);
+    @Override
+    public void move(int ticks) {
+        float dt = ticks * Constants.Game.TIME_COEFFICIENT;
+        setXSpeed(this.currentSpeed);
+        setX(getX() - getXSpeed() * dt);
     }
 
     public void startEating() { this.isEating = true; }

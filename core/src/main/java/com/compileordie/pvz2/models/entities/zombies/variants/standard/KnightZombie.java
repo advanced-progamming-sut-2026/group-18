@@ -1,13 +1,14 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.standard;
 
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class KnightZombie extends StandardZombie {
     private int helmetArmorHealth;
     private int shoulderArmorHealth;
 
-    public KnightZombie(int health, double speed, int attackPower, int row, double startX, int helmet, int shoulder, double x, double y, int xSpeed, int ySpeed) {
-        super(health, speed, attackPower, row, startX, helmet + shoulder, x, y, xSpeed, ySpeed);
+    public KnightZombie(int health, double speed, int attackPower, int row, double startX, int helmet, int shoulder, double x, double y, double xSpeed, double ySpeed) {
+        super(health, speed, attackPower, row, startX, helmet + shoulder, x, y, xSpeed, ySpeed, ZombieType.KNIGHT);
         this.helmetArmorHealth = helmet;
         this.shoulderArmorHealth = shoulder;
     }

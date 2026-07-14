@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.summoner;
 
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.StandardZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.KnightZombie;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
@@ -10,14 +11,14 @@ public class KingZombie extends SummonerZombie {
 
     public KingZombie(int health, int row, double startX, double x, double y,
                       int knightingAreaX, int knightingAreaY, double delayBetweenKnightings) {
-        super(health, 0.0, 0, row, startX, x, y, 0, 0, delayBetweenKnightings);
+        super(health, 0.0, 0, row, startX, x, y, 0, 0, delayBetweenKnightings, ZombieType.KING_ZOMBIE);
         this.knightingAreaX = knightingAreaX;
         this.knightingAreaY = knightingAreaY;
     }
 
     @Override
-    public void move() {
-        // پادشاه ثابت است و حرکتی ندارد
+    public void move(int ticks) {
+        return;
     }
 
     @Override

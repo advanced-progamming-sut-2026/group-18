@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.capable;
 
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
 public abstract class CapableZombie extends Zombie {
@@ -10,8 +11,8 @@ public abstract class CapableZombie extends Zombie {
     protected double delta;
 
     public CapableZombie(int health, double speed, int base_damage, int row, double startX,
-                         double abilityCooldown, int abilityRange, double delta, double x, double y, int xSpeed, int ySpeed) {
-        super(health, speed, base_damage, row, startX, x, y, xSpeed, ySpeed);
+                         double abilityCooldown, int abilityRange, double delta, double x, double y, double xSpeed, double ySpeed, ZombieType type) {
+        super(health, speed, base_damage, row, startX, x, y, xSpeed, ySpeed, type);
         this.abilityCooldown = abilityCooldown;
         this.currentCooldownTimer = 0;
         this.abilityRange = abilityRange;
