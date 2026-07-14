@@ -27,9 +27,10 @@ public final class Constants {
     }
 
     public static final class Game {
-        public static final int boardRows = 5;
-        public static final int boardCols = 9;
-        public static final int tileSize = 1;
+        public static final int BOARD_ROWS = 5;
+        public static final int BOARD_COLS = 9;
+        public static final float TILE_SIZE = 1f;
+        public static final float GRAVITY_COEFFICIENT = 1f;
         public static final float TIME_COEFFICIENT = 0.1f;
     }
 }

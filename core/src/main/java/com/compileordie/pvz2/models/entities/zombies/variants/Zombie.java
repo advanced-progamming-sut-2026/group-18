@@ -137,7 +137,11 @@ public abstract class Zombie extends GameEntity {
 
     public abstract void takeDamage(int amount, DamageType damageType);
 
-    public int[] getCurrentTileCoordinates() {
-        return new int[]{(int) (this.getX() / Constants.Game.tileSize), (int) (this.getY() / Constants.Game.tileSize)};
+    public ZombieType getType() {
+        return type;
+    }
+
+    public void setType(ZombieType type) {
+        this.type = type;
     }
 }

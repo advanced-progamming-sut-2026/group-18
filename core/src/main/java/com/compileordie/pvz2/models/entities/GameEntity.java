@@ -7,14 +7,15 @@ abstract public class GameEntity {
     private double y;
     private double xSpeed;
     private double ySpeed;
+    private boolean isAlive;
 
     public GameEntity(double x, double y, double xSpeed, double ySpeed) {
         this.x = x;
         this.y = y;
         this.xSpeed = xSpeed;
         this.ySpeed = ySpeed;
+        this.isAlive = false;
     }
-
 
     public double getX() {
         return x;
@@ -52,5 +53,21 @@ abstract public class GameEntity {
         float dt = ticks * Constants.Game.TIME_COEFFICIENT;
         this.x = x + xSpeed * dt;
         this.y = y + ySpeed * dt;
+    }
+
+    public boolean isAlive() {
+        return isAlive;
+    }
+
+    public void die() {
+        this.isAlive = false;
+    }
+
+    public int getTileRow() {
+        return (int) Math.floor(this.getX() / Constants.Game.TILE_SIZE);
+    }
+
+    public int getTileColumn() {
+        return (int) Math.floor(this.getY() / Constants.Game.TILE_SIZE);
     }
 }
