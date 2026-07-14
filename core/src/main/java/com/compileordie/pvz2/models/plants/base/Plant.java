@@ -1,6 +1,8 @@
 package com.compileordie.pvz2.models.plants.base;
 
 
+import com.compileordie.pvz2.models.game.board.GameBoard;
+import com.compileordie.pvz2.models.plants.enums.PlantCategory;
 import com.compileordie.pvz2.models.plants.enums.PlantTag;
 import com.compileordie.pvz2.models.plants.strategies.attack.AttackStrategy;
 import com.compileordie.pvz2.models.plants.strategies.food.PlantFoodEffectStrategy;
@@ -51,5 +53,50 @@ public abstract class Plant {
         this.attackStrategy = attackStrategy;
         this.plantFoodEffect = plantFoodEffect;
     }
+
+    // Abstract methods to be implemented by specific plant families
+    public abstract void tickCore(GameBoard board, int tickDelta);
+    public abstract void applyLevelUpgrade(int newLevel);
+    public abstract String getAbilityDescription();
+    public abstract PlantCategory getCategory();
+
+    // --- CONCRETE LIFECYCLE METHODS ---
+
+    public void tick(GameBoard board, int tickDelta) {
+        // 1. Advance the card cooldown (recharge)
+        if (cooldownTicksPassed < rechargeInterval * 10) {
+            cooldownTicksPassed += tickDelta;
+        }
+
+        // 2. Advance the action timer (e.g., shooting rate or sun production rate)
+        actionTicksAccumulator += tickDelta;
+
+        // 3. Check if the plant is ready to act
+        if (actionTicksAccumulator >= actionInterval * 10) {
+            if (attackStrategy != null) {
+                attackStrategy.attack(this, board, tickDelta);
+            }
+            actionTicksAccumulator = 0; // Reset timer after acting
+        }
+
+        // 4. Delegate to specific child classes for any unique behavior
+        tickCore(board, tickDelta);
+    }
+
+    public void takeDamage(int damage) {
+        this.baseHp -= damage;
+        if (this.baseHp < 0) {
+            this.baseHp = 0;
+        }
+    }
+
+    public boolean isDead() {
+        return this.baseHp <= 0;
+    }
+
+    // --- GETTERS REQUIRED FOR STRATEGIES ---
+    public int getPositionX() { return positionX; }
+    public int getPositionY() { return positionY; }
+    public int getBaseDamage() { return baseDamage; }
 }
 
