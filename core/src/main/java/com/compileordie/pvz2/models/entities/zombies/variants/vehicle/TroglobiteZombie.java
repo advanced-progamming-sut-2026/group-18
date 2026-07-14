@@ -1,50 +1,49 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.vehicle;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class TroglobiteZombie extends VehicleZombie {
 
     public TroglobiteZombie(int health, double speed, int attackPower, int row, double startX,
-                            double x, double y, int xSpeed, int ySpeed, double delta, int iceBlockHealth) {
-        // ساخت بلوک یخ و پاس دادن به کلاس پدر
-        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, delta, new IceBlock(iceBlockHealth, row, x));
+                            double x, double y, double xSpeed, double ySpeed, double delta, int iceBlockHealth) {
+        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, delta, new IceBlock(iceBlockHealth, row, x), ZombieType.TROGLOBITE);
     }
 
-    public void pushIceBlock() {
-        super.pushVehicle(); // جابجایی غارنشین
+    public void pushIceBlock(int ticks) {
+        super.pushVehicle(ticks);
 
-        // آپدیت همزمان مختصات یخ‌ها روی زمین
+        // اصلاح باگ مختصات: آپدیت همزمان یخ با getX() فیزیک سراسری
         if (this.vehicle instanceof IceBlock) {
-            ((IceBlock) this.vehicle).updatePosition(this.positionX);
+            ((IceBlock) this.vehicle).updatePosition(this.getX());
         }
     }
 
     @Override
-    public void move() {
+    public void move(int ticks) {
         if (!isVehicleDestroyed) {
-            pushIceBlock();
+            pushIceBlock(ticks);
         } else {
-            this.positionX -= this.currentSpeed; // اگر یخ‌ها بشکنند، غارنشین عادی راه می‌رود
+            float dt = ticks * Constants.Game.TIME_COEFFICIENT;
+            setXSpeed(this.currentSpeed);
+            setX(getX() - getXSpeed() * dt);
         }
     }
 
     /**
-     * داک: در صورت برخورد یخ ها با گیاهان یا زامبی های هیپنوتیزم شده، درجا از بین می روند.
-     * @return true به معنی دستور نابودی فوری (Instant Kill) برای سرویس بازی است.
+     * سیگنال‌دهی به بخش مدیریت برخوردها در سرویس‌ها
      */
-    public boolean onCollisionDetected() {
-        if (!this.isVehicleDestroyed) {
-            // یخ سالم است: هدف باید درجا نابود شود و زامبی توقف نمی‌کند
-            return true;
-        } else {
-            // یخ شکسته است: غارنشین مثل زامبی عادی ترمز می‌کند تا هدف را بجود
-            startEating();
+    public boolean handlePlantCollision(Object plant) {
+        if (isVehicleDestroyed) {
+            startEating(); // اگر یخ شکسته، مثل زامبی عادی ترمز کرده و می‌جود
             return false;
         }
+        return true; // اگر یخ سالم است، سیگنال برخورد و نابودی فوری گیاه را ارسال می‌کند
     }
 
     /**
-     * مدیریت کامل سناریوهای آسیب (دقیقاً مشابه دبه‌ای)
+     * مدیریت سناریوهای آسیب سپر و تیرهای قوسی
      */
     @Override
     public void takeDamage(int amount, DamageType damageType) {
@@ -55,7 +54,7 @@ public class TroglobiteZombie extends VehicleZombie {
             if (damageType == DamageType.LOBBER) {
                 this.health -= amount;
             }
-            // سناریو ۲: آسیب‌های دیگر به یخ‌ها می‌خورند
+            // سناریو ۲: آسیب‌های دیگر ابتدا جذب بلوک یخ می‌شوند
             else if (!this.vehicle.isDestroyed()) {
                 if (this.vehicle instanceof IceBlock) {
                     IceBlock ice = (IceBlock) this.vehicle;
@@ -67,7 +66,7 @@ public class TroglobiteZombie extends VehicleZombie {
                 }
             }
         } else {
-            // سناریو ۳: یخ‌ها قبلاً از بین رفته‌اند، آسیب مستقیم به زامبی وارد می‌شود
+            // سناریو ۳: یخ‌ها قبلاً از بین رفته‌اند، آسیب مستقیم به خود زامبی می‌رسد
             this.health -= amount;
         }
 
@@ -75,8 +74,7 @@ public class TroglobiteZombie extends VehicleZombie {
     }
 
     /**
-     * سناریوی جا ماندن یخ‌ها در صورت مرگ زامبی با تیر قوسی.
-     * سرویس بازی هنگام مرگ این زامبی، این متد را صدا زده و یخ را روی زمین مپ باقی می‌گذارد.
+     * سناریوی جا ماندن یخ‌ها در صورت مرگ زامبی با تیر قوسی
      */
     public IceBlock detachIceBlockOnDeath() {
         if (!this.isVehicleDestroyed && this.vehicle instanceof IceBlock) {

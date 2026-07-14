@@ -3,9 +3,15 @@ package com.compileordie.pvz2.controllers.menus.auth;
 import com.compileordie.pvz2.config.PreferencesManager;
 import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.models.repositories.databases.AuthDatabase;
+import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.models.user.Player;
+import com.compileordie.pvz2.models.user.UserValidator;
 import com.compileordie.pvz2.models.user.authentication.AuthManager;
+import com.compileordie.pvz2.models.user.authentication.UserRegistry;
 import com.compileordie.pvz2.views.helpers.Menu;
+
+import java.util.ArrayList;
 
 public class LoginMenuController {
     private static PendingChange pendingChange = null;
@@ -41,7 +47,7 @@ public class LoginMenuController {
         if (menu != Menu.MAIN) {
             return "[ERROR] You can only enter Main Menu from here.";
         }
-        if (!AppModel.hasPlayer()) {
+        if (AppModel.isLoggedOut()) {
             return "[ERROR] You need to login first.";
         }
 
@@ -53,22 +59,19 @@ public class LoginMenuController {
     }
 
     public static String forgetPassword(String username, String email) {
-        if (!AppModel.hasPlayer()) {
-            return "[ERROR] You need to login first.";
-        }
         Player user = AuthManager.getUserByUsername(username);
-        if (!user.getUsername().equals(username)) {
+        if (user == null) {
             return "[ERROR] User not found, try another username.";
         }
-        if (!user.getEmail().equals(email)) {
+        if (!user.email.equals(email)) {
             return "[ERROR] Email does not match.";
         }
 
         pendingChange = new PendingChange(user, false);
-        AppModel.addBeforePrompt(AppModel.getPlayer().getSecurityQuestion());
-        AppModel.addBeforePrompt("Use the command bellow: (answer is case-insensitive)");
-        AppModel.addBeforePrompt("answer -a <answer>");
-        return "Now answer the following security.";
+        AppModel.addAfterPrompt(user.securityQuestion);
+        AppModel.addAfterPrompt("Use the command bellow: (answer is case-insensitive)");
+        AppModel.addAfterPrompt("answer -a <answer>");
+        return "Now answer the following security question:";
     }
 
     public static String answerQuestionUser(String answer) {
@@ -78,11 +81,11 @@ public class LoginMenuController {
         if (pendingChange.answered()) {
             return "[ERROR] You have already answered the security question! Type in your new password:";
         }
-        if (!pendingChange.user.isSecurityAnswerCorrect(answer)) {
+        if (!pendingChange.user().isSecurityAnswerCorrect(answer)) {
             return "[ERROR] Answer is wrong, please try again.";
         }
 
-        pendingChange = new PendingChange(pendingChange.user, true);
+        pendingChange = new PendingChange(pendingChange.user(), true);
         return "Answer was correct. Now enter your new password:";
     }
 
@@ -91,11 +94,34 @@ public class LoginMenuController {
     }
 
     public static String setNewPassword(String newPassword) {
-        String username = pendingChange.user.getUsername();
-        AuthManager.setNewPassword(username, newPassword.toCharArray());
-        return "Password successfully changed for user  '" + username + "'!";
-    }
+        String passwordStrength = UserValidator.isPasswordStrong(newPassword);
+        if (passwordStrength != null) {
+            return passwordStrength;
+        }
 
+        String username = pendingChange.user().username;
+        String newHash = AuthManager.hashPassword(newPassword.toCharArray());
+
+        AuthDatabase authDb = new AuthDatabase();
+        ArrayList<UserRegistry> registries = authDb.load();
+        for (UserRegistry userRegistry : registries) {
+            if (userRegistry.getUsername().equals(username)) {
+                userRegistry.setPasswordHash(newHash);
+                break;
+            }
+        }
+        authDb.save(registries);
+
+        UserDatabase userDb = new UserDatabase(username);
+        Player user = userDb.load();
+        user.passwordHash = newHash;
+        userDb.save(user);
+
+        // Clear the state so the user isn't stuck in the password reset loop
+        pendingChange = null;
+
+        return "Password successfully changed for user '" + username + "'!";
+    }
     private record PendingChange(
         Player user,
         boolean answered

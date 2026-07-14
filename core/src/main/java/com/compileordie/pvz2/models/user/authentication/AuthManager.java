@@ -2,8 +2,8 @@ package com.compileordie.pvz2.models.user.authentication;
 
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
-import com.compileordie.pvz2.models.databases.AuthDatabase;
-import com.compileordie.pvz2.models.databases.UserDatabase;
+import com.compileordie.pvz2.models.repositories.databases.AuthDatabase;
+import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.models.user.Gender;
 import com.compileordie.pvz2.models.user.Player;
 import de.mkammerer.argon2.Argon2;
@@ -30,6 +30,16 @@ public class AuthManager {
         }
     }
 
+    public static String getUsernameByField(String field) {
+        ArrayList<UserRegistry> userRegistries = new AuthDatabase().load();
+        for (UserRegistry userRegistry : userRegistries) {
+            if (userRegistry.getSaveField().equals(field)) {
+                return userRegistry.getUsername();
+            }
+        }
+        return null;
+    }
+
     public static String getUserFieldByUsername(String username) {
         ArrayList<UserRegistry> userRegistries = new AuthDatabase().load();
         for (UserRegistry userRegistry : userRegistries) {
@@ -43,7 +53,7 @@ public class AuthManager {
     public static String getUserPathByUsername(String username) {
         String userField = getUserFieldByUsername(username);
         if (userField != null) {
-            return Constants.Paths.USERS + userField + ".json";
+            return Constants.Paths.Saves.USERS + userField + ".json";
         } else {
             return null;
         }
@@ -58,7 +68,7 @@ public class AuthManager {
                                String nickname,
                                String email,
                                Gender gender,
-                               int securityQuestion,
+                               String securityQuestion,
                                String securityAnswer) {
         Player player = new Player(username, passwordHash, nickname, email, gender, securityQuestion, securityAnswer);
         new UserDatabase(username).save(player);
@@ -74,7 +84,7 @@ public class AuthManager {
                                     String nickname,
                                     String email,
                                     Gender gender,
-                                    int securityQuestion,
+                                    String securityQuestion,
                                     String securityAnswer) {
         String hashedPassword = hashPassword(plainTextPassword);
         addRegistry(username, hashedPassword);
@@ -100,13 +110,13 @@ public class AuthManager {
     }
 
     public static void loginPlayer(String username) {
-        AppModel.setPlayer(new UserDatabase(getUserPathByUsername(username)).load());
+        AppModel.player = new UserDatabase(username).load();
     }
 
     public static void setNewPassword(String username, char[] newPassword) {
         UserDatabase database = new UserDatabase(username);
         Player user = database.load();
-        user.setPasswordHash(hashPassword(newPassword));
+        user.passwordHash = hashPassword(newPassword);
         database.save(user);
     }
 }

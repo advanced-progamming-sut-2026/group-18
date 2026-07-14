@@ -1,56 +1,50 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.mobility;
 
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
 public abstract class MobilityZombie extends Zombie {
     protected double delta;
-
-    // طبق نمودار UML: فیلد وضعیت حرکتی
     protected MovementState movementState;
-
-    // پارامتر انعطاف‌پذیر برای تغییر سرعت در وضعیت‌های خاص (مثلاً کند شدن زیر آب)
     protected final double underwaterSpeedModifier;
 
     public MobilityZombie(int health, double speed, int attackPower, int row, double startX,
-                          int initialArmor, double delta, double x, double y, int xSpeed, int ySpeed,
-                          double underwaterSpeedModifier) {
-        // فرستادن پارامترها به کلاس والد اصلی زامبی‌ها بدون هیچ عدد فرضی
-        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed);
-
+                          int initialArmor, double delta, double x, double y, double xSpeed, double ySpeed,
+                          double underwaterSpeedModifier, ZombieType type) {
+        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, type);
         this.underwaterSpeedModifier = underwaterSpeedModifier;
-        // وضعیت اولیه همه زامبی‌های حرکتی در بدو ورود
         this.movementState = MovementState.WALKING;
         this.delta = delta;
     }
 
-    /**
-     * طبق نمودار UML: تغییر وضعیت حرکتی زامبی به یک وضعیت جدید
-     */
     public void changeMovementState(MovementState newState) {
-        if (newState != null) {
+        if (newState != null && this.movementState != newState) {
             this.movementState = newState;
             updateMovementState();
         }
     }
 
     /**
-     * طبق نمودار UML: به‌روزرسانی پارامترهای داخلی زامبی بر اساس وضعیت فعلی
+     * فیکس حیاتی: محاسبه سرعت بر اساس متد recalculateSpeed کلاس مادر انجام می‌شود
+     * تا افکت‌های کندکننده (CHILLED) یا یخ‌زدگی (FREEZE) توسط وضعیت حرکتی ریست نشوند.
      */
     public void updateMovementState() {
+        // ابتدا محاسبه سرعت پایه با لحاظ کردن افکت‌ها
+        recalculateSpeed();
+
         switch (this.movementState) {
             case WALKING:
-                this.currentSpeed = this.movementSpeed;
+            case CHARGING:
+                // سرعت همان سرعت محاسبه‌شده با افکت‌هاست
                 break;
             case EATING:
-                // زامبی برای جویدن کاملاً متوقف می‌شود (سرعت صفر واقعی فیزیکی)
                 this.currentSpeed = 0.0;
                 break;
             case FLYING:
-                // منطق سرعت پرواز در کلاس فرزند (Dodo) به صورت پارامتریک مدیریت می‌شود
+                // در حالت پرواز، سرعت توسط فرزند مربوطه (دودو) ضریب می‌خورد
                 break;
             case UNDERWATER:
-                // اعمال ضریب جابه‌جایی زیر آب به صورت کاملاً پارامتریک
-                this.currentSpeed = this.movementSpeed * this.underwaterSpeedModifier;
+                this.currentSpeed *= this.underwaterSpeedModifier;
                 break;
             default:
                 break;
@@ -62,16 +56,10 @@ public abstract class MobilityZombie extends Zombie {
         super.tick();
         if (isDead()) return;
 
-        // همگام‌سازی مداوم وضعیت حرکتی با تیک‌های بازی
+        // آپدیت مستمر سرعت با حفظ افکت‌های سرویس‌ها
         updateMovementState();
     }
 
-    public MovementState getMovementState() {
-        return this.movementState;
-    }
-
-    public void setDelta(double delta){
-        this.delta = delta;
-    }
-
+    public MovementState getMovementState() { return this.movementState; }
+    public void setDelta(double delta){ this.delta = delta; }
 }

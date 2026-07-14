@@ -14,15 +14,24 @@ public class UserValidator {
         return nickname.length() >= 3 && nickname.length() <= 30;
     }
 
-    public static boolean isPasswordStrong(String password) {
-        if (password == null || password.length() < 8) return false;
+    public static String isPasswordStrong(String password) {
+        if (password == null || password.length() < 8) {
+            return "[ERROR] Password is too short. Must be at least 8 characters long.";
+        }
+        if (!password.matches(".*[a-z].*")) {
+            return "[ERROR] Password must contain at least one lowercase letter.";
+        }
+        if (!password.matches(".*[A-Z].*")) {
+            return "[ERROR] Password must contain at least one uppercase letter.";
+        }
+        if (!password.matches(".*[0-9].*")) {
+            return "[ERROR] Password must contain at least one digit.";
+        }
+        if (!password.matches(".*[!#$%^&*()=+}{\\[\\]|/\\\\:;'\",><?].*")) {
+            return "[ERROR] Password must contain at least one special character.";
+        }
 
-        boolean hasLower = password.matches(".*[a-z].*");
-        boolean hasUpper = password.matches(".*[A-Z].*");
-        boolean hasNumber = password.matches(".*[0-9].*");
-        boolean hasSpecial = password.matches(".*[\\]\\[}{+=)(*&^%$#!?><].*");
-
-        return hasLower && hasUpper && hasNumber && hasSpecial;
+        return null;
     }
 
     public static boolean isEmailValid(String email) {

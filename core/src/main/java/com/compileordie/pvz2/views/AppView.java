@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.views;
 
+import com.badlogic.gdx.Gdx;
 import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.models.AppModel;
 
@@ -25,8 +26,10 @@ public class AppView {
 
             printIfPresent(AppController.getBeforePrompt());
             String prompt = scanner.nextLine().trim();
-            System.out.println(AppModel.getMenu().handleCommand(prompt));
+            System.out.println(AppModel.menu.handleCommand(prompt));
             printIfPresent(AppController.getAfterPrompt());
-        } while (AppModel.isRunning());
+        } while (AppModel.isRunning);
+
+        Gdx.app.exit();
     }
 }

@@ -18,9 +18,7 @@ public class IceBlock extends MovableObject {
         this.positionX = newX;
     }
 
-    /**
-     * دریافت آسیب مستقیم (چه همراه زامبی باشد چه مستقل روی زمین)
-     */
+    @Override
     public void takeDamage(int amount) {
         if (this.isDestroyed) return;
 
@@ -38,6 +36,11 @@ public class IceBlock extends MovableObject {
         return true;
     }
 
-    public int getRow() { return row; }
-    public double getPositionX() { return positionX; }
+    public int getRow() {
+        return row;
+    }
+
+    public double getPositionX() {
+        return positionX;
+    }
 }

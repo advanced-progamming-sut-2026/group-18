@@ -1,9 +1,12 @@
 package com.compileordie.pvz2.config;
 
-public final class Preferences {
+public final class GamePreferences {
     public String defaultUserField;
 
-    public Preferences(String defaultUserField) {
+    public GamePreferences() {
+    }
+
+    public GamePreferences(String defaultUserField) {
         this.defaultUserField = defaultUserField;
     }
 }
