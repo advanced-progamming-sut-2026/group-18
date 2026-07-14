@@ -5,6 +5,8 @@ import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 
+import static com.compileordie.pvz2.models.AppModel.addAfterPrompt;
+
 public class Sun extends GameEntity {
     public SunType type;
     public boolean isNatual;
@@ -30,6 +32,8 @@ public class Sun extends GameEntity {
             die();
         }
 
+        boolean wasInAir = getY() > GROUND_LEVEL;
+
         float dt = ticks * Constants.Game.TIME_COEFFICIENT;
         if (getY() > GROUND_LEVEL) {
             setYSpeed(getYSpeed() - dt * Constants.Game.GRAVITY_COEFFICIENT);
@@ -37,6 +41,13 @@ public class Sun extends GameEntity {
             setYSpeed(0);
         }
         super.move(ticks);
+
+        if (wasInAir && getY() <= GROUND_LEVEL) {
+            addAfterPrompt("Sun reached the ground at position (" + (int) getX() + ", " + (int) GROUND_LEVEL + ")");
+            if (this.type == SunType.RADIOACTIVE) {
+                this.type = SunType.NORMAL;
+            }
+        }
 
         type.tick(ticks, this, gameBoard);
 

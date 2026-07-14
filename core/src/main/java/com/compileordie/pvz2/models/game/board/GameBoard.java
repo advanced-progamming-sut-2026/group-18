@@ -39,7 +39,7 @@ public class GameBoard {
             projectile.tick(ticks, this);
         }
 
-        economyManager.tick(ticks, this);
+        economyManager.tick(ticks);
     }
 
     public Tile getTile(int row, int column) {

@@ -6,7 +6,7 @@ import com.compileordie.pvz2.models.projectiles.Projectile;
 import com.compileordie.pvz2.models.map.GameMap;
 import com.compileordie.pvz2.models.economy.Sun; // خورشیدهای رها شده روی زمین
 import com.compileordie.pvz2.models.economy.Coin; // سکه‌های رها شده روی زمین
-import com.compileordie.pvz2.models.defense.LawnMower; // ماشین‌های چمن‌زنی
+import com.compileordie.pvz2.models.entities.LawnMower; // ماشین‌های چمن‌زنی
 
 import java.util.List;
 import java.util.Queue;
