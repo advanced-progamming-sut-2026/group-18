@@ -1,5 +1,7 @@
 package com.compileordie.pvz2.models.entities.zombies.types;
 
+import com.compileordie.pvz2.utils.Toolbox;
+
 public enum ZombieType {
     // === مشترک بین همه مپ‌ها ===
     STANDARD,          // زامبی معمولی
@@ -37,5 +39,19 @@ public enum ZombieType {
     JESTER_ZOMBIE,     // ژانگولر / جستر
     WIZARD_ZOMBIE,     // جادوگر
     KING_ZOMBIE,       // پادشاه
-    IMP_DRAGON         // ایمپ اژدها
+    IMP_DRAGON;        // ایمپ اژدها
+
+    public static ZombieType getByName(String name) {
+        for (ZombieType zombieType : ZombieType.values()) {
+            if (zombieType.toString().equalsIgnoreCase(name)) {
+                return zombieType;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        return Toolbox.enumToString(this, true);
+    }
 }

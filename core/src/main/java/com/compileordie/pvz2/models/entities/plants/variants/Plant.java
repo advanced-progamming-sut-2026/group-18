@@ -11,5 +11,6 @@ abstract public class Plant extends GameEntity {
     }
 
     abstract public void tick(int ticks, GameBoard gameBoard);
+
     abstract public void takeDamage(int amount);
 }

@@ -1,0 +1,21 @@
+Quest Name,Category,Objective,Reward Type,Priority,Variable
+Daily Sun Catcher,Daily,Collect sun_amount sun units in a single day,sun_amount / 100 Coins,Medium,3000-4000-5000
+Chapter Hunter,Main,"Defeat 50 zombies from the ""chapter"" world",10 Seed Packets,High,Any of the game worlds
+Pro Plant Player,Daily,Kill 10 zombies using only "plant",Random new plant,High,Any plant with attacking/killing capability
+Only Cactus,Daily,Kill 10 zombies using only Cactus,20 Gems,High,
+Thrifty Herbivore,Main,Win a level without losing more than n plants,20 - n Seed Packets,High,0-1-2-3-4-5
+Defense Master,Epic Quest,Complete a level with exactly zero sun,200 Gems,Critical,
+Quick Action,Main,Kill 10 zombies in less than 30 seconds from the start of the first wave,500 Coins,Medium,
+Master Demolisher,Daily,Use 3 explosive plants in a single level,100 Coins,Low,
+Symmetry,Daily,The lawn must end up symmetrical,500 Coins,High,
+Family Slayer,Daily,Use only family_type plants to kill zombies,1000 Coins,Medium,Plant Family
+Flourishing in Limits,Daily,Do not use any plants from the family_type family to win the level,100 Gems,High,Plant Family
+Night or Morning,Epic Quest,Complete a daytime level using night plants (mushrooms),20 Gems,High,
+Win After Win,Daily,Win 5 levels in a row on the highest difficulty,5000 Coins,Medium,
+Almost Victorious,Daily,Kill 10 zombies in the first column of a row that has no lawn mower,300 Coins,Medium,
+What OCD?,Daily,Win a level such that there is no symmetry on the lawn (except for the middle row),800 Coins,Medium,
+Cloudy Day,Daily,Complete a level using only 3 sun-producing plants,10 Gems,High,
+One Less Column,Daily,Win a level without planting any plants in the n-th column,10 Gems,High,Number of columns
+Defenseless Row,Daily,Win a level without planting any plants in the n-th row,20 Gems,High,Number of rows
+Defenseless Cross,Daily,Win a level where the n-th column and row are both empty,25 Gems,High,Minimum row/column count
+Mowing Time,Epic Quest,Kill at least n zombies with lawn mowers,n Gems,Medium,10-20-30-40-50

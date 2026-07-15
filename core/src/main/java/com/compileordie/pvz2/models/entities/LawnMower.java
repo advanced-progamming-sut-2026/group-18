@@ -1,19 +1,18 @@
 package com.compileordie.pvz2.models.entities;
 
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.boss.GargantuarZombie;
-import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Lane;
-import com.compileordie.pvz2.models.AppModel;
 
 import java.util.ArrayList;
 
 public class LawnMower extends GameEntity {
+    private static final double MOWER_SPEED = 1f;
     public Lane lane;
     public boolean isTriggered;
-    private static final double MOWER_SPEED = 1f;
 
     public LawnMower(Lane lane) {
         // Correctly sets up position with respect to the continuous tracking system

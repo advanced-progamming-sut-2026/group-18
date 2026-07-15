@@ -7,11 +7,11 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class AppModel {
+    public static final Queue<String> beforePrompts = new LinkedList<>();
+    public static final Queue<String> afterPrompts = new LinkedList<>();
     public static boolean isRunning = true;
     public static Menu menu = Menu.SIGNUP;
     public static Player player = null;
-    public static final Queue<String> beforePrompts = new LinkedList<>();
-    public static final Queue<String> afterPrompts = new LinkedList<>();
 
     private AppModel() {
     }

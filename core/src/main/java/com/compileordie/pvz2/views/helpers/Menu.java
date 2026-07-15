@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.views.helpers;
 
+import com.compileordie.pvz2.utils.Toolbox;
 import com.compileordie.pvz2.views.menus.auth.LoginMenuView;
 import com.compileordie.pvz2.views.menus.auth.ProfileMenuView;
 import com.compileordie.pvz2.views.menus.auth.SignupMenuView;
@@ -39,13 +40,9 @@ public enum Menu {
         this.menu = menu;
     }
 
-    public String getName() {
-        return this.name().replace("_", " ").toLowerCase();
-    }
-
     public static Menu getByName(String name) {
-        for (Menu menu: Menu.values()) {
-            if (menu.getName().equalsIgnoreCase(name)) {
+        for (Menu menu : Menu.values()) {
+            if (menu.toString().equalsIgnoreCase(name)) {
                 return menu;
             }
         }
@@ -54,5 +51,10 @@ public enum Menu {
 
     public String handleCommand(String command) {
         return this.menu.handleCommand(command);
+    }
+
+    @Override
+    public String toString() {
+        return Toolbox.enumToString(this, true);
     }
 }
