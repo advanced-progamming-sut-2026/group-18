@@ -1,4 +1,4 @@
-package com.compileordie.pvz2.models.plants.base;
+package com.compileordie.pvz2.models.plants.variants;
 
 import com.compileordie.pvz2.models.plants.enums.AttackStrategyType;
 import com.compileordie.pvz2.models.plants.enums.PlantCategory;

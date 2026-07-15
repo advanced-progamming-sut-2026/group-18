@@ -1,4 +1,4 @@
-package com.compileordie.pvz2.models.plants.base;
+package com.compileordie.pvz2.models.plants.variants;
 
 
 import com.compileordie.pvz2.models.game.board.GameBoard;
