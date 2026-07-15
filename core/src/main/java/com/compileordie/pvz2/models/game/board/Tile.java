@@ -20,7 +20,7 @@ public class Tile {
 
     public void tick(int ticks, GameBoard gameBoard) {
         type.tick(ticks, this, gameBoard);
-        if (plant != null) plant.tick(ticks, gameBoard);
+        if (plant != null) plant.tick(gameBoard, ticks);
         if (obstacle != null) obstacle.tick(ticks, gameBoard);
     }
 
