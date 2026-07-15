@@ -29,7 +29,7 @@ public class ZombieManager {
      * تنها نقطه اتصال کنترلر اصلی بازی با سیستم زامبی‌ها
      * این متد در هر فریم تمام رفتارهای زامبی‌ها را ارکستر می‌کند.
      */
-    public void tick(com.compileordie.pvz2.managers.ZombieTickContext context) {
+    public void tick(com.compileordie.pvz2.models.entities.zombies.services.manager.ZombieTickContext context) {
 
         // ۱. تزریق مینیون‌های صف معلق (مثل جوجه‌ها یا ایمپ‌ها) به لیست اصلی در ابتدای فریم
         spawnLootService.flushSpawnQueue(context);
@@ -47,6 +47,7 @@ public class ZombieManager {
 
         // ۵. مکانیک ژانگولر: بررسی و معکوس کردن مسیر تیرها قبل از محاسبات برخورد تیر به زامبی
         for (Zombie zombie : context.getActiveZombies()) {
+            // فراخوانی متد بازتاب با امضای (zombie, context)
             combatService.reflectProjectiles(zombie, context);
         }
 
