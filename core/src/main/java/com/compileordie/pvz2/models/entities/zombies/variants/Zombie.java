@@ -62,9 +62,10 @@ public abstract class Zombie extends GameEntity {
 
         // نکته ساختاری: اگر MovementService جابجایی را مدیریت می‌کند،
         // این شرط حرکت می‌تواند از tick حذف شده و هندلینگ آن به سرویس منتقل شود.
-        if (canMove()) {
-            move(1);
-        }
+//        if (canMove()) {
+//            move(1);
+//        }
+
     }
 
     public void handleDeath() {}

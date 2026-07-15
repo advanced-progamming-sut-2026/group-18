@@ -33,4 +33,25 @@ public final class Constants {
         public static final float GRAVITY_COEFFICIENT = 1f;
         public static final float TIME_COEFFICIENT = 0.1f;
     }
+
+    // ==========================================
+    // تنظیمات پارامتریک زامبی ایمپ (Imp Zombie Constants)
+    // ==========================================
+    public static final class Imp {
+        // شتاب جاذبه زمین اختصاصی برای پرتاب ایمپ (پیکسل بر مجذور ثانیه)
+        // این مقدار در شتاب جاذبه عمومی بازی ضرب می‌شود تا کنترل فیزیک پرواز دست خودمان باشد
+        public static final double LAUNCH_GRAVITY = 9.81 * 80.0 * Game.GRAVITY_COEFFICIENT;
+
+        // سرعت اولیه پرتاب افقی (حرکت به سمت چپ در صفحه نمایش)
+        public static final double DEFAULT_LAUNCH_SPEED_X = 150.0;
+
+        // سرعت اولیه پرتاب عمودی (پرتاب به سمت بالا - جهت مثبت Y)
+        public static final double DEFAULT_LAUNCH_SPEED_Y = 300.0;
+
+        // تلرانس فرود ایمپ روی چمن (فاصله مجاز تا سطح زمین برای ثبت فرود موفق)
+        public static final double LANDING_TOLERANCE = 2.0;
+
+        // حداکثر زمان مجاز پرواز در فضا (یک مکانیزم پیشگیرانه برای جلوگیری از باگ پرواز بی‌نهایت)
+        public static final double MAX_FLIGHT_DURATION_SECONDS = 5.0;
+    }
 }
