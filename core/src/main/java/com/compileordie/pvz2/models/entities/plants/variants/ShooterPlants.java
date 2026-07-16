@@ -10,8 +10,8 @@ public class ShooterPlants extends Plant {
     private String persianAbilityDescription;
 
     public ShooterPlants(PlantTemplate plantTemplate,
-                         int x,
-                         int y,
+                         double x,
+                         double y,
                          AttackStrategy attackStrategy,
                          PlantFoodEffectStrategy plantFoodEffect) {
         super(plantTemplate, x, y, attackStrategy, plantFoodEffect);
