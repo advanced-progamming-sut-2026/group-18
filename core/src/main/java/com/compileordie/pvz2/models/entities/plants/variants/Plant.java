@@ -1,6 +1,6 @@
 package com.compileordie.pvz2.models.entities.plants.variants;
 
-
+import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.entities.plants.enums.PlantCategory;
 import com.compileordie.pvz2.models.entities.plants.enums.PlantTag;
@@ -10,7 +10,7 @@ import com.compileordie.pvz2.models.entities.plants.strategies.food.PlantFoodEff
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class Plant {
+public abstract class Plant extends GameEntity {
     private String name;
     private List<PlantTag> tags = new ArrayList<>();
     private int solarCost;
@@ -23,18 +23,19 @@ public abstract class Plant {
     private int seedPackets;
     private int cooldownTicksPassed; // if it reaches rechargeInterval * 10 => the card is available again
     private int actionTicksAccumulator; // if it reaches actionInterval * 10 => the plant takes action again
-    private int positionX;
-    private int positionY;
     private boolean boosted;
     private AttackStrategy attackStrategy;
     private PlantFoodEffectStrategy plantFoodEffect;
 
     protected Plant(PlantTemplate plantTemplate,
-                      int x,
-                      int y,
-                      AttackStrategy attackStrategy,
-                      PlantFoodEffectStrategy plantFoodEffect
+                    double x,
+                    double y,
+                    AttackStrategy attackStrategy,
+                    PlantFoodEffectStrategy plantFoodEffect
     ) {
+        // Wire up the coordinates to the team's GameEntity engine (Speed is 0 for rooted plants)
+        super(x, y, 0, 0);
+
         this.name = plantTemplate.getName();
         this.tags = plantTemplate.getTags();
         this.solarCost = plantTemplate.getSolarCost();
@@ -47,8 +48,6 @@ public abstract class Plant {
         this.seedPackets = 0;
         this.cooldownTicksPassed = 0;
         this.actionTicksAccumulator = 0;
-        this.positionX = x;
-        this.positionY = y;
         this.boosted = false;
         this.attackStrategy = attackStrategy;
         this.plantFoodEffect = plantFoodEffect;
@@ -85,18 +84,25 @@ public abstract class Plant {
 
     public void takeDamage(int damage) {
         this.baseHp -= damage;
-        if (this.baseHp < 0) {
+        if (this.baseHp <= 0) {
             this.baseHp = 0;
+            this.die(); // Sync with GameEntity lifecycle
         }
     }
 
     public boolean isDead() {
-        return this.baseHp <= 0;
+        return this.baseHp <= 0 || !this.isAlive();
     }
 
-    // --- GETTERS REQUIRED FOR STRATEGIES ---
-    public int getPositionX() { return positionX; }
-    public int getPositionY() { return positionY; }
+    // --- GETTERS & SETTERS ---
     public int getBaseDamage() { return baseDamage; }
-}
+    public void setBaseDamage(int baseDamage) { this.baseDamage = baseDamage; }
 
+    public int getBaseHp() { return baseHp; }
+    public void setBaseHp(int baseHp) { this.baseHp = baseHp; }
+
+    public int getMaxHp() { return maxHp; }
+    public void setMaxHp(int maxHp) { this.maxHp = maxHp; }
+
+    public String getName() { return name; }
+}
