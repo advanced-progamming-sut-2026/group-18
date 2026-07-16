@@ -117,19 +117,35 @@ public class ProfileMenuController {
 
     public static String showPlayerInfo() {
         Player player = AppModel.player;
+
+        // Null-safety checks for arrays/lists
         int levelsPassed = (player.unlockedLevels != null) ? player.unlockedLevels.size() : 0;
+        int plantsUnlocked = (player.unlockedPlants != null) ? player.unlockedPlants.size() : 0;
+        int zombiesDiscovered = (player.unlockedZombies != null) ? player.unlockedZombies.size() : 0;
+        int chaptersUnlocked = (player.unlockedChapters != null) ? player.unlockedChapters.size() : 0;
+        int potsUnlocked = (player.greenhousePots != null) ? player.greenhousePots.size() : 0;
 
-        // Note: Replace coin/gem variables with actual economy variables if stored elsewhere
-        // (e.g., if Player.java is updated with `coins` and `gems` fields in the future).
-        int coinsEarned = 0;
-        int gemsEarned = 0;
-
-        return "Username: " + player.username + System.lineSeparator() +
+        return "=== PLAYER PROFILE ===" + System.lineSeparator() +
+            "Username: " + player.username + System.lineSeparator() +
             "Nickname: " + player.nickname + System.lineSeparator() +
-            "Games Played: " + player.completedMiniGames + System.lineSeparator() +
-            "Coins Earned: " + coinsEarned + System.lineSeparator() +
-            "Gems Earned: " + gemsEarned + System.lineSeparator() +
+            "Email: " + player.email + System.lineSeparator() +
+            "Difficulty Level: " + player.difficultyLevel + System.lineSeparator() +
+            System.lineSeparator() +
+            "=== WALLET ===" + System.lineSeparator() +
+            "Coins: " + player.coins + System.lineSeparator() +
+            "Diamonds: " + player.diamonds + System.lineSeparator() +
+            System.lineSeparator() +
+            "=== PROGRESSION ===" + System.lineSeparator() +
             "Levels Passed: " + levelsPassed + System.lineSeparator() +
+            "Chapters Unlocked: " + chaptersUnlocked + System.lineSeparator() +
+            "Plants Unlocked: " + plantsUnlocked + System.lineSeparator() +
+            "Zombies Discovered: " + zombiesDiscovered + System.lineSeparator() +
+            "Greenhouse Pots: " + potsUnlocked + "/20" + System.lineSeparator() +
+            System.lineSeparator() +
+            "=== STATISTICS ===" + System.lineSeparator() +
+            "Minigames Completed: " + player.completedMiniGames + System.lineSeparator() +
+            "Daily Quests Completed: " + player.completedTotalDailyQuests + System.lineSeparator() +
+            "Epic/Critical Quests Completed: " + player.completedTotalNonDailyQuests + System.lineSeparator() +
             "Highest Score (Meow Point): " + player.bestScore;
     }
 }
