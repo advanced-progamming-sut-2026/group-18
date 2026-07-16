@@ -27,5 +27,9 @@
   "shopExchangeCoin": 500,
   "shopExchangeCap": -1,
   "dailyOfferSeedPrice": 1600,
-  "dailyOfferSeedCount": 10
+  "dailyOfferSeedCount": 10,
+  "greenhouseMarigoldTime": 2,
+  "greenhousePlantTime": 8,
+  "greenhouseMarigoldCoins": 500,
+  "questFallbackReward": 5000
 }

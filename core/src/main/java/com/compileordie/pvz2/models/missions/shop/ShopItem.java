@@ -1,4 +1,4 @@
-package com.compileordie.pvz2.models.shop;
+package com.compileordie.pvz2.models.missions.shop;
 
 public class ShopItem {
     public String itemId;

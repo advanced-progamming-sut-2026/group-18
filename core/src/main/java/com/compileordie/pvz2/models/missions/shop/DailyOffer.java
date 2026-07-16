@@ -1,4 +1,4 @@
-package com.compileordie.pvz2.models.shop;
+package com.compileordie.pvz2.models.missions.shop;
 
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;

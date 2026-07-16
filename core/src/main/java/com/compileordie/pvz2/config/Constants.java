@@ -18,6 +18,13 @@ public final class Constants {
             public static final String ECONOMY = ROOT + "economy.json";
             public static final String SECURITY_QUESTIONS = ROOT + "security_questions.json";
         }
+
+        public static final class Assets {
+            public static final class Quests {
+                public static final String ROOT = "quests/";
+                public static final String DATABASE = ROOT + "quests.json";
+            }
+        }
     }
 
     public static final class ArgonHashing {
@@ -32,6 +39,28 @@ public final class Constants {
         public static final float TILE_SIZE = 1f;
         public static final float GRAVITY_COEFFICIENT = 1f;
         public static final float TIME_COEFFICIENT = 0.1f;
+    }
+
+    public static final class QuestCallbacks {
+        // Booleans (Append ":TRUE" or ":FALSE")
+        public static final String SYMMETRIC = "SYMMETRIC";
+        public static final String ANTI_SYMMETRIC = "ANTI_SYMMETRIC";
+        public static final String DAY_WITH_NIGHT = "DAY_WITH_NIGHT";
+
+        // Numerical Limits (Append ":<amount>")
+        public static final String REMAINING_SUN = "REMAINING_SUN";
+        public static final String PLANTS_LOST = "PLANTS_LOST";
+        public static final String SUN_PLANTS_USED = "SUN_PLANTS_USED";
+        public static final String DIFFICULTY = "DIFFICULTY";
+
+        // Grid Positions (Append ":<number>")
+        public static final String EMPTY_COL = "EMPTY_COL";
+        public static final String EMPTY_ROW = "EMPTY_ROW";
+        public static final String EMPTY_CROSS = "EMPTY_CROSS"; // Append ":<col>,<row>"
+
+        // Plant Families (Append ":<FamilyName>")
+        public static final String ONLY_FAMILY = "ONLY_FAMILY";
+        public static final String NO_FAMILY = "NO_FAMILY";
     }
 
     // ==========================================

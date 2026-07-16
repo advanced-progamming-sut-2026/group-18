@@ -3,11 +3,11 @@ package com.compileordie.pvz2.controllers.menus.progression;
 import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
-import com.compileordie.pvz2.models.greenhouse.Pot;
+import com.compileordie.pvz2.models.missions.Pot;
 import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
-import com.compileordie.pvz2.models.shop.CurrencyType;
-import com.compileordie.pvz2.models.shop.Shop;
-import com.compileordie.pvz2.models.shop.ShopItem;
+import com.compileordie.pvz2.models.missions.shop.CurrencyType;
+import com.compileordie.pvz2.models.missions.shop.Shop;
+import com.compileordie.pvz2.models.missions.shop.ShopItem;
 import com.compileordie.pvz2.models.user.Player;
 import com.compileordie.pvz2.views.helpers.Menu;
 

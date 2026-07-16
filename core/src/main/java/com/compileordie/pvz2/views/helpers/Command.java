@@ -54,6 +54,7 @@ public enum Command {
     GREENHOUSE_ENTER_SHOP("enter\\s+shop"),
     // Travel Log Menu
     TRAVEL_LOG_PAGE("travel\\s+log\\s+page\\s+(?<name>\\S+)"),
+    TRAVEL_LOG_CLAIM("travel\\s+log\\s+claim\\s+(?<id>\\S+)"),
     // Leaderboard Menu
     SHOW_LEADERBOARD("show\\s+leaderboard"),
     LEADERBOARD_SORT("sort\\s+by\\s+(?<parameter>\\S+)"),

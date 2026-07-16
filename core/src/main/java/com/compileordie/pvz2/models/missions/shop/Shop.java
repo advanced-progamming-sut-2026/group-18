@@ -1,4 +1,4 @@
-package com.compileordie.pvz2.models.shop;
+package com.compileordie.pvz2.models.missions.shop;
 
 import com.badlogic.gdx.utils.TimeUtils;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;

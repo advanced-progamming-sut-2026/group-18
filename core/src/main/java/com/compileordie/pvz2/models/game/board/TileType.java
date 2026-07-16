@@ -91,7 +91,7 @@ public enum TileType {
             Zombie zombie = lane.zombies.get(i);
 
             // Convert zombie decimal X position to grid coordinates (assuming columns are width 1.0)
-            int currentTileX = zombie.getTileRow();
+            int currentTileX = zombie.getTileColumn();
 
             // If the zombie walks onto THIS specific tile instance's column
             if (self.column == currentTileX) {
@@ -134,7 +134,7 @@ public enum TileType {
 
         // 2. Manage Snorkel Zombie submersion states on THIS tile
         for (Zombie zombie : lane.zombies) {
-            int currentTileX = zombie.getTileRow();
+            int currentTileX = zombie.getTileColumn();
             if (self.column == currentTileX) {
                 if (zombie instanceof SnorkelZombie snorkel) {
                     if (snorkel.isEating()) {

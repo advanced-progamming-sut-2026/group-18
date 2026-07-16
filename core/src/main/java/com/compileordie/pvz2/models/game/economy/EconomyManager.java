@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.game.economy;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.variants.Plant;
@@ -9,8 +10,6 @@ import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 
 import java.util.ArrayList;
-
-import static com.badlogic.gdx.math.MathUtils.random;
 
 public class EconomyManager {
     public GameBoard gameBoard;
@@ -56,12 +55,12 @@ public class EconomyManager {
 
     public void spawnNaturalSun() {
         // Choose a completely randomized horizontal grid column location
-        float x = random.nextFloat(Constants.Game.BOARD_COLS / 3f, Constants.Game.BOARD_COLS);
-        float y = random.nextFloat(Constants.Game.BOARD_ROWS, Constants.Game.BOARD_ROWS + 1);
-        float ground = random.nextFloat(Constants.Game.BOARD_ROWS / 4f);
+        float x = MathUtils.random(Constants.Game.BOARD_COLS / 3f, Constants.Game.BOARD_COLS);
+        float y = MathUtils.random(Constants.Game.BOARD_ROWS, Constants.Game.BOARD_ROWS + 1);
+        float ground = MathUtils.random(Constants.Game.BOARD_ROWS / 4f);
 
         // Generate probability parameters
-        int rollout = random.nextInt(100);
+        int rollout = MathUtils.random(100);
         SunType selectedType;
 
         if (rollout < 80) {

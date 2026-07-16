@@ -1,4 +1,4 @@
-package com.compileordie.pvz2.models.user;
+package com.compileordie.pvz2.models.missions;
 
 import com.badlogic.gdx.utils.TimeUtils;
 

@@ -30,4 +30,8 @@ public class EconomyConfig {
     public int shopExchangeCap;
     public int dailyOfferSeedPrice;
     public int dailyOfferSeedCount;
+    public int greenhouseMarigoldTime;
+    public int greenhousePlantTime;
+    public int greenhouseMarigoldCoins;
+    public int questFallbackReward;
 }
