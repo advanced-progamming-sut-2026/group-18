@@ -14,6 +14,10 @@ public class TravelLogMenuView implements MenuView {
             String name = Command.TRAVEL_LOG_PAGE.getGroup(command, "name");
             return TravelLogMenuController.showPage(name);
         }
+        if (Command.TRAVEL_LOG_CLAIM.matches(command)) {
+            String id = Command.TRAVEL_LOG_CLAIM.getGroup(command, "id");
+            return TravelLogMenuController.claimReward(id);
+        }
         return null;
     }
 }

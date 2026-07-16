@@ -1,19 +1,17 @@
 package com.compileordie.pvz2.models.entities;
 
 import com.compileordie.pvz2.config.Constants;
-import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
+import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.boss.GargantuarZombie;
-import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Lane;
-import com.compileordie.pvz2.models.AppModel;
 
 import java.util.ArrayList;
 
 public class LawnMower extends GameEntity {
+    private static final double MOWER_SPEED = 1f;
     public Lane lane;
     public boolean isTriggered;
-    private static final double MOWER_SPEED = 1f;
 
     public LawnMower(Lane lane) {
         // Correctly sets up position with respect to the continuous tracking system
@@ -41,7 +39,7 @@ public class LawnMower extends GameEntity {
                 StringBuilder sb = new StringBuilder();
                 sb.append("The lawn mower in the row ").append(lane.row).append(" is triggered and killed these zombies: ");
                 for (int i = 0; i < casualties.size(); i++) {
-                    sb.append(casualties.get(i).getType() == ZombieType.GARGANTUAR);
+                    sb.append(casualties.get(i).getType().toString());
                     if (i < casualties.size() - 1) sb.append(", ");
                 }
                 AppModel.addAfterPrompt(sb.toString());

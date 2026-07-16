@@ -8,10 +8,10 @@ import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 import static com.compileordie.pvz2.models.AppModel.addAfterPrompt;
 
 public class Sun extends GameEntity {
-    public SunType type;
-    public boolean isNatual;
     public final float GROUND_LEVEL;
     public final float LIFESPAN;
+    public SunType type;
+    public boolean isNatual;
     public float tickCounter;
 
     public Sun(double x, double y, SunType type, boolean isNatual, float groundLevel) {

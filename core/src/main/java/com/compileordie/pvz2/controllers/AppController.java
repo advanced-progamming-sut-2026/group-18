@@ -30,7 +30,7 @@ public class AppController {
     }
 
     public static String showCurrentMenu() {
-        return "You're in the " + AppModel.menu.getName() + " menu now.";
+        return "You're in the " + AppModel.menu + " menu now.";
     }
 
     public static String changeMenu(Menu menu) {

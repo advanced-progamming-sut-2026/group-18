@@ -23,7 +23,7 @@ public class MainMenuController {
         return AppController.changeMenu(menu);
     }
 
-    public static String exitMenu(){
+    public static String exitMenu() {
         return "[ERROR] Use the 'menu logout' command instead.";
     }
 

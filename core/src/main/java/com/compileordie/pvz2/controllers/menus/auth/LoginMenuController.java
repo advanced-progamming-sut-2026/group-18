@@ -122,6 +122,7 @@ public class LoginMenuController {
 
         return "Password successfully changed for user '" + username + "'!";
     }
+
     private record PendingChange(
         Player user,
         boolean answered
