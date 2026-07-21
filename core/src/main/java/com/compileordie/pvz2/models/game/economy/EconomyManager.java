@@ -35,6 +35,7 @@ public class EconomyManager {
     }
 
     public void tick(int ticks) {
+        // Handled polymorphically by EconomyType enum (STANDARD handles sky suns)
         type.tick(ticks, this, gameBoard);
 
         // Safely process active entity updates moving backwards
@@ -57,7 +58,15 @@ public class EconomyManager {
 
     public int calculateNextSpawnIntervalTicks() {
         float time = this.tickCounter * Constants.Game.TIME_COEFFICIENT;
-        float secondsInterval = Math.max(6 + 0.05f * time, 12f);
+
+        // Interval scales from 6s up to 12s cap over time
+        float secondsInterval = Math.min(6 + 0.05f * time, 12f);
+
+        // Apply player Difficulty Level modifier (higher DL -> longer interval)
+        if (gameBoard != null && AppModel.player != null) {
+            secondsInterval *= AppModel.player.getDLIncrease();
+        }
+
         return (int) Math.floor(secondsInterval / Constants.Game.TIME_COEFFICIENT);
     }
 
@@ -147,6 +156,60 @@ public class EconomyManager {
 
         return false;
     }
+
+    /*public void plant(PlantType type, float x, float y) {
+        for (PlantCard plantCard : plantCards) {
+            if (plantCard.isReady() && plantCard.plantType == type) {
+                // Conveyor mode bypasses sun cost check
+                if (this.type != EconomyType.CONVEYOR_BELT && sunAmount < type.cost) {
+                    AppModel.addAfterPrompt("Not enough sun to plant " + type);
+                    return;
+                }
+
+                Tile tile = gameBoard.getTile(x, y);
+                if (tile == null || tile.plant != null) {
+                    AppModel.addAfterPrompt(String.format("Cannot plant at (%.2f, %.2f)!", x, y));
+                    return;
+                }
+
+                // Deduct sun cost
+                if (this.type != EconomyType.CONVEYOR_BELT) {
+                    sunAmount -= type.cost;
+                }
+
+                // Instantiate and place plant entity
+                Plant plant = type.createPlant(x, y);
+                tile.plant = plant;
+                gameBoard.addPlant(plant);
+
+                // Start cooldown timer on card
+                plantCard.use();
+
+                AppModel.addAfterPrompt(type + " planted at (" + (int) x + ", " + (int) y + ")");
+                break;
+            }
+        }
+    }
+
+    public void pluck(float x, float y) {
+        Tile tile = gameBoard.getTile(x, y);
+        if (tile == null) {
+            AppModel.addAfterPrompt(String.format("Tile at (%.2f, %.2f) not found!", x, y));
+            return;
+        }
+
+        Plant plant = tile.plant;
+        if (plant == null) {
+            AppModel.addAfterPrompt(String.format("Plant at (%.2f, %.2f) not found!", x, y));
+            return;
+        }
+
+        PlantType plantType = plant.type;
+        tile.plant = null;
+        gameBoard.removePlant(plant);
+
+        AppModel.addAfterPrompt(String.format("%s at (%.2f, %.2f) plucked!", plantType, x, y));
+    }*/
 
     public void plant(PlantType type, float x, float y) {
         Plant plant = null;
