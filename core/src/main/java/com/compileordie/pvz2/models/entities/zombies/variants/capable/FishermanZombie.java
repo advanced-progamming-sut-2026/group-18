@@ -1,49 +1,54 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.capable;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class FishermanZombie extends CapableZombie {
+    public static final int waveCost = 600;
+    public static final float abilityCooldown = 5.0f;
 
-    public FishermanZombie(int health, double speed, int attackPower, int row, double startX,
-                           double abilityCooldown, int abilityRange, double delta, double x, double y,
+    private boolean shouldHook = false;
+    private double timer = 0;
+
+    public FishermanZombie(double health, double speed, int attackPower, int row, double startX,
+                           double x, double y,
                            double xSpeed, double ySpeed) {
-        super(health, speed, attackPower, row, startX, abilityCooldown, abilityRange, delta, x, y, xSpeed, ySpeed, ZombieType.FISHERMAN_ZOMBIE);
+        super(health, 0, attackPower, row, startX, x, y, 0, 0, ZombieType.FISHERMAN_ZOMBIE);
         setXSpeed(0);
         setYSpeed(0);
-        this.currentSpeed = 0;
     }
 
     @Override
-    public void useAbility() {
-        Object targetPlant = findTargetPlantInRow();
+    public boolean canMove() {
+        return false;
+    }
 
-        // فیکس حیاتی: کول‌داون تنها زمانی ریست می‌شود که واقعاً گیاهی برای قلاب کردن وجود داشته باشد!
-        if (targetPlant != null) {
-            if (isPlantDirectlyNextToMe(targetPlant)) {
-                throwAndDestroyPlant(targetPlant);
-            } else if (isGridToTheRightEmpty(targetPlant)) {
-                pullPlantOneGridForward(targetPlant);
-            }
-            resetCooldown();
+    @Override
+    public void tick() {
+        super.tick();
+        if (isDead()) return;
+
+        float dt = 1 * Constants.Game.TIME_COEFFICIENT;
+        timer += dt;
+
+        if (timer >= abilityCooldown) {
+            shouldHook = true;
+            timer = 0;
         }
     }
 
-
     @Override
-    public boolean canMove() { return false; }
-
-    // متدهای تعامل با سرویس نقشه و کامبت
-    private Object findTargetPlantInRow() { return null; }
-    private boolean isPlantDirectlyNextToMe(Object plant) { return false; }
-    private boolean isGridToTheRightEmpty(Object plant) { return false; }
-    private void pullPlantOneGridForward(Object plant) {}
-    private void throwAndDestroyPlant(Object plant) {}
-
-    @Override
-    public void takeDamage(int amount, DamageType damageType) {
+    public void takeDamage(double amount, DamageType damageType) {
         if (isDead()) return;
         this.health -= amount;
-        if (this.health < 0) this.health = 0;
+        if (this.health <= 0) {
+            this.health = 0;
+            handleDeath();
+        }
     }
+
+    public boolean shouldWeHook() { return shouldHook; }
+    public void stopHook() { this.shouldHook = false; }
+    public void setShouldHook(boolean shouldHook) { this.shouldHook = shouldHook; }
 }

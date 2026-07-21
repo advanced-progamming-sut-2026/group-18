@@ -1,17 +1,22 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.vehicle;
 
-public abstract class MovableObject {
-    protected int health;
-    protected int maxHealth;
+import com.compileordie.pvz2.models.entities.GameEntity;
+import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
+import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
+
+public abstract class MovableObject extends Obstacle {
+    protected double health;
+    protected double maxHealth;
     protected boolean isDestroyed;
 
-    public MovableObject(int health) {
+    public MovableObject(double health, double x, double y, ObstacleType type) {
+        super(x, y, type);
         this.maxHealth = health;
         this.health = health;
         this.isDestroyed = false;
     }
 
-    public void takeDamage(int amount) {
+    public void takeDamage(double amount) {
         if (isDestroyed) return;
         this.health -= amount;
         if (this.health <= 0) {
@@ -23,12 +28,10 @@ public abstract class MovableObject {
     public boolean isDestroyed() {
         return this.isDestroyed;
     }
-
-    public int getHealth() {
+    public double getHealth() {
         return health;
     }
-
-    public int getMaxHealth() {
+    public double getMaxHealth() {
         return maxHealth;
     }
 }

@@ -1,24 +1,49 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.summoner;
 
-public class Tomb {
-    private int health;
-    private final int row;
-    private final double positionX;
-    private boolean isDestroyed;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
+import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
+import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
+import com.compileordie.pvz2.models.entities.projectiles.Projectile;
+import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import java.util.EnumSet;
+import static com.compileordie.pvz2.models.entities.plants.enums.ProjectileType.*;
 
-    public Tomb(int health, int row, double positionX) {
+public class Tomb extends Obstacle {
+    private double health;
+    private final int row;
+    private final int col;
+    private final double positionX;
+    private final double positionY;
+    private boolean isDestroyed;
+    private static final EnumSet<ProjectileType> BLOCKED_BY_GRAVESTONE = EnumSet.of(
+        NORMAL,
+        FIRE,
+        ICE,
+        POISON,
+        BLUE_FIRE,
+        PLASMA,
+        SPORE,
+        SPIKE,
+        STAR,
+        BULB_CYAN,
+        BULB_BLUE,
+        BULB_ORANGE
+    );
+
+    public Tomb(double health, int row, int col, double positionX, double positiony) {
+        super(positionX, positiony, ObstacleType.TOMB);
         this.health = health;
         this.row = row;
+        this.col = col;
         this.positionX = positionX;
+        this.positionY = positiony;
         this.isDestroyed = false;
     }
 
-    /**
-     * اعمال آسیب به قبر توسط تیرهای مستقیم گیاهان
-     */
-    public void takeDamage(int amount) {
+    public void takeDamage(double amount, ProjectileType type) {
         if (isDestroyed) return;
-
+        if (!BLOCKED_BY_GRAVESTONE.contains(type)) return;
         this.health -= amount;
         if (this.health <= 0) {
             this.health = 0;

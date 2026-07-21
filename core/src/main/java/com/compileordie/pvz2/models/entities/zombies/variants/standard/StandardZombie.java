@@ -5,18 +5,18 @@ import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
 public abstract class StandardZombie extends Zombie {
-    protected int armorHealth;
+    protected double armorHealth;
 
-    public StandardZombie(int health, double speed, int attackPower, int row, double startX, int initialArmor, double x, double y, double xSpeed, double ySpeed, ZombieType type) {
+    public StandardZombie(double health, double speed, int attackPower, int row, double startX, double initialArmor, double x, double y, double xSpeed, double ySpeed, ZombieType type) {
         super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, type);
         this.armorHealth = initialArmor;
     }
 
-    public int takeArmorDamage(int amount) {
+    public double takeArmorDamage(double amount) {
         if (hasArmor()) {
             this.armorHealth -= amount;
             if (this.armorHealth <= 0) {
-                int overflow = -this.armorHealth;
+                double overflow = -this.armorHealth;
                 removeArmor();
                 return overflow;
             }
@@ -28,11 +28,13 @@ public abstract class StandardZombie extends Zombie {
     public boolean hasArmor() { return this.armorHealth > 0; }
     public void removeArmor() { this.armorHealth = 0; }
     public void enterEnrageMode(){}
+    public double getArmorHealth() { return armorHealth; }
+    public void setArmorHealth(double a) { this.armorHealth = a; }
 
     @Override
-    public void takeDamage(int amount, DamageType damageType) {
+    public void takeDamage(double amount, DamageType damageType) {
         if (isDead()) return;
-        int newAmount = amount;
+        double newAmount = amount;
 
         // فیکس: آسیب‌های نادیده‌گیرنده زره مستقیماً به گوشت زامبی می‌خورند
         if (damageType != DamageType.BYPASS_ARMOR && hasArmor()) {
