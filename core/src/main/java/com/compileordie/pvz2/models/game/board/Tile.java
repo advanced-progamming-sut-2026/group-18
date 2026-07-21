@@ -9,6 +9,7 @@ public class Tile {
     public TileType type;
     public Plant plant;
     public Obstacle obstacle;
+    public boolean hasLilyPad;
 
     public Tile(int row, int column, TileType type, Plant plant, Obstacle obstacle) {
         this.row = row;
@@ -16,6 +17,7 @@ public class Tile {
         this.type = type;
         this.plant = plant;
         this.obstacle = obstacle;
+        this.hasLilyPad = false;
     }
 
     public void tick(int ticks, GameBoard gameBoard) {
@@ -26,5 +28,6 @@ public class Tile {
 
     public boolean isPlantable() {
         return type.isPlantable && plant == null && obstacle == null;
+        // TODO: Check for lily pad mechanism here.
     }
 }

@@ -1,6 +1,8 @@
 package com.compileordie.pvz2.utils;
 
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
+import com.compileordie.pvz2.models.game.levels.ChapterType;
+import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.models.missions.Pot;
 import com.compileordie.pvz2.models.user.Player;
 
@@ -18,9 +20,7 @@ public class SaveMigrationHelper {
         // Initialize any missing ArrayLists
         if (player.unlockedPlants == null) player.unlockedPlants = new ArrayList<>();
         if (player.unlockedZombies == null) player.unlockedZombies = new ArrayList<>();
-        if (player.unlockedChapters == null) player.unlockedChapters = new ArrayList<>();
-        if (player.unlockedLevels == null) player.unlockedLevels = new ArrayList<>();
-        if (player.unlockedMiniGames == null) player.unlockedMiniGames = new ArrayList<>();
+        if (player.unlockedLevelIDs == null) player.unlockedLevelIDs = new ArrayList<>();
         if (player.greenhousePots == null) player.greenhousePots = new ArrayList<>();
         if (player.news == null) player.news = new ArrayList<>();
 
@@ -40,6 +40,13 @@ public class SaveMigrationHelper {
         if (player.claimedQuests == null) {
             player.claimedQuests = new HashSet<>();
         }
+
+        for (LevelID levelID : LevelID.values()) {
+            if (levelID.chapterType == ChapterType.MINIGAME) {
+                player.unlockedLevelIDs.add(levelID);
+            }
+        }
+        player.unlockedLevelIDs.add(LevelID.values()[0]);
 
         // Ensure the Maps have default values for all existing PlantTypes
         for (PlantType plantType : PlantType.values()) {

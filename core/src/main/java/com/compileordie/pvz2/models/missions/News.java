@@ -7,7 +7,7 @@ import java.util.Date;
 
 public class News {
     private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-    public String tile;
+    public String title;
     public String details;
     public long datetime;
     public boolean isRead;
@@ -15,15 +15,15 @@ public class News {
     public News() {
     }
 
-    public News(String tile, String details, long datetime) {
-        this.tile = tile;
+    public News(String title, String details, long datetime) {
+        this.title = title;
         this.details = details;
         this.datetime = datetime;
         this.isRead = false;
     }
 
-    public News(String tile, String details) {
-        this(tile, details, TimeUtils.millis());
+    public News(String title, String details) {
+        this(title, details, TimeUtils.millis());
     }
 
     public News(String details) {
@@ -36,8 +36,8 @@ public class News {
 
     @Override
     public String toString() {
-        if (tile != null) {
-            return tile + System.lineSeparator() + details + System.lineSeparator() + datetimeToString();
+        if (title != null) {
+            return title + System.lineSeparator() + details + System.lineSeparator() + datetimeToString();
         } else {
             return details + System.lineSeparator() + datetimeToString();
         }

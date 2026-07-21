@@ -1,6 +1,8 @@
 package com.compileordie.pvz2.models.repositories.configs;
 
 public class EconomyConfig {
+    public int pwygStartingSuns;
+    public float sunStealVelocity;
     public int normalSunValue;
     public int specialSunValue;
     public int radioactiveSunValue;
@@ -35,4 +37,5 @@ public class EconomyConfig {
     public int greenhousePlantTime;
     public int greenhouseMarigoldCoins;
     public int questFallbackReward;
+    public float conveyorBeltPlantTimer;
 }

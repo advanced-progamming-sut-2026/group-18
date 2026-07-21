@@ -32,7 +32,7 @@ public class Lane {
         lawnMower.tick(ticks);
     }
 
-    public ArrayList<Plant> geAllPlants() {
+    public ArrayList<Plant> getAllPlants() {
         return tiles.stream()
             .map(tile -> tile.plant)
             .collect(Collectors.toCollection(ArrayList::new));

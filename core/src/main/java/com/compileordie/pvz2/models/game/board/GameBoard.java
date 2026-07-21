@@ -1,39 +1,52 @@
 package com.compileordie.pvz2.models.game.board;
 
-import com.compileordie.pvz2.config.Constants; // Added to support your teammate's Math.floor calculation
+import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
+import com.compileordie.pvz2.models.entities.plants.variants.Plant;
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.economy.EconomyManager;
+import com.compileordie.pvz2.models.game.economy.EconomyType;
+import com.compileordie.pvz2.models.game.waves.WaveManager;
+import com.compileordie.pvz2.models.game.waves.WaveType;
+import com.compileordie.pvz2.models.user.Player;
+
 import com.compileordie.pvz2.models.user.Player; // Arsam
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 public class GameBoard {
-    // Arsam : need Player for food effect
-    private Player player;
     public int totalRows;
     public int totalCols;
     public ArrayList<Lane> lanes;
     // TODO: Add a reference to zombie manager.
     public ArrayList<Projectile> projectiles;
     public EconomyManager economyManager;
+    public WaveManager waveManager;
 
-    public GameBoard(int totalRows, int totalCols, Player player) {
-        this.player = player; // Arsam
+    public GameBoard(int totalRows,
+                     int totalCols,
+                     EconomyType economyType,
+                     WaveType waveType,
+                     ArrayList<PlantType> selectionDeck,
+                     int waveNumber) {
         this.totalRows = totalRows;
         this.totalCols = totalCols;
         this.lanes = new ArrayList<>();
         for (int i = 0; i < totalRows; i++) {
             lanes.add(new Lane(i, totalCols));
         }
-        // BUG FIXED: The list is now safely initialized in memory!
         this.projectiles = new ArrayList<>();
+        this.economyManager = new EconomyManager(this, economyType, selectionDeck);
+        this.waveManager = new WaveManager(this, waveType, waveNumber);
     }
 
     // Arsam
     public Player getPlayer() {
-        return player;
+        return AppModel.player;
     }
 
     public Lane getLane(int index) {
@@ -56,6 +69,7 @@ public class GameBoard {
         }
 
         economyManager.tick(ticks);
+        waveManager.tick(ticks);
     }
 
     public Tile getTile(int row, int column) {
@@ -63,7 +77,7 @@ public class GameBoard {
     }
 
     public Tile getTile(float x, float y) {
-        return getTile((int) Math.floor(x), (int) Math.floor(y));
+        return getTile((int) (x / Constants.Game.TILE_SIZE), (int) (y / Constants.Game.TILE_SIZE));
     }
 
     public ArrayList<Zombie> getAllZombies() {
@@ -74,7 +88,7 @@ public class GameBoard {
 
     public ArrayList<Plant> getAllPlants() {
         return lanes.stream()
-            .flatMap(lane -> lane.geAllPlants().stream())
+            .flatMap(lane -> lane.getAllPlants().stream())
             .collect(Collectors.toCollection(ArrayList::new));
     }
 

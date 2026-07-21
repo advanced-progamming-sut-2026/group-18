@@ -3,36 +3,39 @@ package com.compileordie.pvz2.models.game.economy;
 import com.badlogic.gdx.math.MathUtils;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
+import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 
 import java.util.ArrayList;
 
 public class EconomyManager {
     public GameBoard gameBoard;
+    public EconomyType type;
     public ArrayList<Sun> suns;
+    public ArrayList<PlantType> selectionDeck;
+    public ArrayList<PlantCard> plantCards;
     public int sunAmount;
-    private int tickCounter;
-    private int ticksUntilNextNaturalSun;
+    public int ticksUntilNextNaturalSun;
+    public int tickCounter;
 
-    public EconomyManager(GameBoard gameBoard) {
+    public EconomyManager(GameBoard gameBoard, EconomyType economyType, ArrayList<PlantType> selectionDeck) {
         this.gameBoard = gameBoard;
+        this.type = economyType;
         this.suns = new ArrayList<>();
+        this.selectionDeck = selectionDeck;
+        this.plantCards = new ArrayList<>();
         this.sunAmount = 0;
         this.tickCounter = 0;
         this.ticksUntilNextNaturalSun = calculateNextSpawnIntervalTicks();
     }
 
     public void tick(int ticks) {
-        // Handle structural drop counter countdowns
-        ticksUntilNextNaturalSun -= ticks;
-        if (ticksUntilNextNaturalSun <= 0) {
-            spawnNaturalSun();
-            ticksUntilNextNaturalSun = calculateNextSpawnIntervalTicks();
-        }
+        type.tick(ticks, this, gameBoard);
 
         // Safely process active entity updates moving backwards
         for (int i = suns.size() - 1; i >= 0; i--) {
@@ -44,10 +47,15 @@ public class EconomyManager {
             }
         }
 
+        for (int t = plantCards.size() - 1; t >= 0; t--) {
+            PlantCard plantCard = plantCards.get(t);
+            plantCard.tick(ticks);
+        }
+
         tickCounter += ticks;
     }
 
-    private int calculateNextSpawnIntervalTicks() {
+    public int calculateNextSpawnIntervalTicks() {
         float time = this.tickCounter * Constants.Game.TIME_COEFFICIENT;
         float secondsInterval = Math.max(6 + 0.05f * time, 12f);
         return (int) Math.floor(secondsInterval / Constants.Game.TIME_COEFFICIENT);
@@ -85,7 +93,6 @@ public class EconomyManager {
         int row = sun.getTileRow();
         int column = sun.getTileColumn();
 
-        // TODO: Might as well use zombie manager here.
         ArrayList<Zombie> zombies = gameBoard.getAllZombies();
         int radioactiveSunZombieDamageAmount = ConfigManager.economy().radioactiveSunZombieDamageAmount;
         int zombieDamageRadius = ConfigManager.economy().radioactiveSunZombieDamageArea / 2;
@@ -133,10 +140,37 @@ public class EconomyManager {
                 }
 
                 suns.remove(i);
+                AppModel.addAfterPrompt("Sun collected at (" + (int) sun.getX() + ", " + (int) sun.getY() + ")");
                 return true;
             }
         }
 
         return false;
+    }
+
+    public void plant(PlantType type, float x, float y) {
+        Plant plant = null;
+        for (PlantCard plantCard : plantCards) {
+            if (plantCard.isReady() && plantCard.plantType == type) {
+                // TODO: Check if we have enough suns for that plant (if it's not conveyor belt).
+                // Make the actual plant here, check if it's boosted, add it to gameboard, remove the card, break out of the loop.
+            }
+        }
+    }
+
+    public void pluck(float x, float y) {
+        Tile tile = gameBoard.getTile(x, y);
+        if (tile == null) {
+            AppModel.addAfterPrompt(String.format("Tile at (%.2f, %.2f) not found!", x, y));
+            return;
+        }
+        Plant plant = tile.plant;
+        if (plant == null) {
+            AppModel.addAfterPrompt(String.format("Plant at (%.2f, %.2f) not found!", x, y));
+            return;
+        }
+        tile.plant = null;
+        // TODO: Add the plant type field and print the result:
+        // AppModel.addAfterPrompt(String.format("%s at (%.2f, %.2f) plucked!", plant.type, x, y));
     }
 }
