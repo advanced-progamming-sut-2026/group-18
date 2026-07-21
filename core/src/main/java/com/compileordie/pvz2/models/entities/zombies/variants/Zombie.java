@@ -1,11 +1,13 @@
 package com.compileordie.pvz2.models.entities.zombies.variants;
 
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
+import com.compileordie.pvz2.models.user.Player;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -23,10 +25,11 @@ public abstract class Zombie extends GameEntity {
     protected boolean stopZombieNow = false;
     protected boolean isHypnotized = false;
     protected ZombieType type;
+    public boolean showDie = true;
 
     public Zombie(double health, double speed, int base_damage, int row, double startX, double x, double y, double xSpeed, double ySpeed, ZombieType type) {
         super(startX, y, xSpeed, ySpeed);
-        this.health = health;
+        this.health = health * (double) (AppModel.player.getDLIncrease());
         this.stableSpeed = getXSpeed();
         this.attackPower = base_damage;
         this.currentRow = row;

@@ -86,6 +86,10 @@ public class ZombieManager {
         for (Zombie z:myZombies){
             z.move(1);
             z.tick();
+            if (z.getHealth() <= 0 && z.showDie){
+                z.showDie = false;
+                System.out.println("Zombie " + z.getType() + "Died at X:" + z.getX() + ", Y:"+z.getY());
+            }
         }
 
     }
