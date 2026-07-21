@@ -20,17 +20,10 @@ public class StatusEffect {
         return elapsedTicks >= durationTicks;
     }
 
-    // اعمال شدن اولیه رو زامبی و ایجاد تغییرات
-    public void applyToZombie(Zombie zombie) {
-        this.isApplied = true;
-
-        // TODO :
-        // باید با توجه به نوع افکت، اثر آن از روی زامبی اعمال شود
-        // طبیعتا با استفاده از خود سرویس ها انجام می شود
-    }
 
     public void removeFromZombie(Zombie zombie) {
         this.isApplied = false;
+        elapsedTicks = 0;
 
         // TODO :
         // باید با توجه به نوع افکت، اثر آن از روی زامبی برداشته شود
@@ -41,8 +34,8 @@ public class StatusEffect {
     // پیش بردن تیک افکت + اعمال تغییراتی که احیانا حین افکت اعمال می شود
     public void updateZombieTick(Zombie zombie) {
         if (!isApplied) return;
-
         elapsedTicks++;
+        // الان از 1 شروع میشه
 
         // TODO :
         // باید با توجه به نوع افکت، اثر آن از روی زامبی اعمال شود

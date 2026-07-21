@@ -27,6 +27,16 @@ public abstract class Plant extends GameEntity {
     private AttackStrategy attackStrategy;
     private PlantFoodEffectStrategy plantFoodEffect;
 
+
+    //=======================
+    // new!
+    private int isFreezedByHunter = 0;
+    private boolean isFreezedByZombieHunter = false;
+    private boolean isFreezedByOcto = false;
+    // new!
+    //=======================
+
+
     protected Plant(PlantTemplate plantTemplate,
                     double x,
                     double y,
@@ -105,4 +115,31 @@ public abstract class Plant extends GameEntity {
     public void setMaxHp(int maxHp) { this.maxHp = maxHp; }
 
     public String getName() { return name; }
+
+
+
+
+
+    //=======================
+    // new!
+    public int getFreezedByHunter() { return  isFreezedByHunter; }
+    public void increaseFreezedByHunter() { isFreezedByHunter += 1;}
+    public boolean shouldBeFreezedByHunter() {
+        if (isFreezedByHunter == 3){
+            isFreezedByHunter = 0;
+            isFreezedByZombieHunter = true;
+            return true;
+        }
+        return false;
+    }
+    public void setIsFreezedByHunterCounter(int a) { isFreezedByHunter = a; }
+    public boolean isFreezedByHunter() { return isFreezedByZombieHunter; }
+    public boolean isFreezedByOcto() { return isFreezedByOcto; }
+    public void setIsFreezedByHunter(boolean s) { isFreezedByZombieHunter = s; }
+    public void setFreezedByOcto(boolean f) { isFreezedByOcto = f; }
+    public boolean shouldBeFreezedByOcto() { return isFreezedByOcto; }
+    // new!
+    //=======================
+
+
 }
