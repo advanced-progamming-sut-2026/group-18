@@ -18,5 +18,4 @@ public interface ZombieTickContext {
     List<Zombie> getActiveZombies();
     List<Plant> getActivePlants();
     List<Sun> getSunsOnGround();
-    void triggerGameOver();
 }
