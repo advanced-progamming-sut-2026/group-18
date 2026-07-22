@@ -9,10 +9,10 @@ public class AllStarZombie extends StandardZombie {
     public static final int waveCost = 1000;
 
     public AllStarZombie(double health, double speed, int attackPower, int row, double startX
-                         , double chargeSpeedScale, double x, double y,
+                         , double x, double y,
                          double xSpeed, double ySpeed) {
         super(health, speed, attackPower, row, startX,0 , x, y, xSpeed, ySpeed, ZombieType.ALL_STAR);
-        this.chargeSpeedScale = chargeSpeedScale;
+        this.chargeSpeedScale = 2.5;
         startCharge();
     }
 

@@ -12,9 +12,8 @@ public class ExplorerZombie extends CapableZombie {
     // TODO : در فاز گرافیک باید اصلاح دقیق بشود
     public static double enoghDistance = Constants.Game.TILE_WIDTH * 1.5;
 
-    public ExplorerZombie(int health, double speed, int attackPower, int row, double startX,
+    public ExplorerZombie(double health, double speed, int attackPower, int row, double startX,
                           double x, double y, double xSpeed, double ySpeed) {
-        // فراخوانی دقیق سازنده ۱۲ پارامتری CapableZombie موجود در فایل شما
         super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, ZombieType.EXPLORER_ZOMBIE);
         this.isTorchOn = true;
     }

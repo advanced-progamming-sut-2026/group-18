@@ -33,7 +33,7 @@ public class DodoRiderZombie extends Zombie {
         PlantType.EXPLODE_O_NUT
     );
 
-    public DodoRiderZombie(int health, double speed, int attackPower, int row, double startX,
+    public DodoRiderZombie(double health, double speed, int attackPower, int row, double startX,
                            double x, double y, double xSpeed, double ySpeed) {
         super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, ZombieType.DODO_RIDER);
         this.state = MovementState.WALKING;

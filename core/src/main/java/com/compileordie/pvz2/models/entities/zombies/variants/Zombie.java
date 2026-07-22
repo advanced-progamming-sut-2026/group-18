@@ -31,7 +31,7 @@ public abstract class Zombie extends GameEntity {
         super(startX, y, xSpeed, ySpeed);
         this.health = health * (double) (AppModel.player.getDLIncrease());
         this.stableSpeed = getXSpeed();
-        this.attackPower = base_damage;
+        this.attackPower = (int)(base_damage * (double) (AppModel.player.getDLIncrease()));
         this.currentRow = row;
         this.activeEffects = new ArrayList<>();
         this.skipThisTick = false;
