@@ -1,0 +1,202 @@
+{
+  "zombies": {
+    "STANDARD": {
+      "hitpoints": 190.0,
+      "speed": 0.185,
+      "eatDps": 100,
+      "waveCost": 100,
+      "armorHp": 0.0
+    },
+    "CONEHEAD": {
+      "hitpoints": 190.0,
+      "speed": 0.185,
+      "eatDps": 100,
+      "waveCost": 200,
+      "armorHp": 370.0
+    },
+    "BUCKETHEAD": {
+      "hitpoints": 190.0,
+      "speed": 0.185,
+      "eatDps": 100,
+      "waveCost": 400,
+      "armorHp": 1100.0
+    },
+    "BLOCKHEAD": {
+      "hitpoints": 190.0,
+      "speed": 0.185,
+      "eatDps": 100,
+      "waveCost": 700,
+      "armorHp": 2200.0
+    },
+    "KNIGHT": {
+      "hitpoints": 190.0,
+      "speed": 0.185,
+      "eatDps": 100,
+      "waveCost": 550,
+      "armorHp": 1600.0
+    },
+    "GARGANTUAR": {
+      "hitpoints": 3600.0,
+      "speed": 0.24,
+      "eatDps": 1500,
+      "waveCost": 1500,
+      "armorHp": 0.0
+    },
+    "IMP": {
+      "hitpoints": 190.0,
+      "speed": 0.22,
+      "eatDps": 100,
+      "waveCost": 100,
+      "armorHp": 0.0
+    },
+    "RA_ZOMBIE": {
+      "hitpoints": 190.0,
+      "speed": 0.2,
+      "eatDps": 100,
+      "waveCost": 100,
+      "armorHp": 0.0
+    },
+    "EXPLORER_ZOMBIE": {
+      "hitpoints": 250.0,
+      "speed": 0.25,
+      "eatDps": 100,
+      "waveCost": 250,
+      "armorHp": 0.0
+    },
+    "TOMBRAISER": {
+      "hitpoints": 380.0,
+      "speed": 0.185,
+      "eatDps": 100,
+      "waveCost": 300,
+      "armorHp": 0.0
+    },
+    "DODO_RIDER": {
+      "hitpoints": 490.0,
+      "speed": 0.3,
+      "eatDps": 100,
+      "waveCost": 600,
+      "armorHp": 0.0
+    },
+    "HUNTER_ZOMBIE": {
+      "hitpoints": 700.0,
+      "speed": 0.12,
+      "eatDps": 100,
+      "waveCost": 500,
+      "armorHp": 0.0
+    },
+    "TROGLOBITE": {
+      "hitpoints": 470.0,
+      "speed": 0.185,
+      "eatDps": 100,
+      "waveCost": 600,
+      "armorHp": 0.0
+    },
+    "FISHERMAN_ZOMBIE": {
+      "hitpoints": 1000.0,
+      "speed": 0.185,
+      "eatDps": 100,
+      "waveCost": 700,
+      "armorHp": 0.0
+    },
+    "OCTOPUS_ZOMBIE": {
+      "hitpoints": 910.0,
+      "speed": 0.12,
+      "eatDps": 100,
+      "waveCost": 900,
+      "armorHp": 0.0
+    },
+    "SNORKEL_ZOMBIE": {
+      "hitpoints": 350.0,
+      "speed": 0.185,
+      "eatDps": 100,
+      "waveCost": 200,
+      "armorHp": 0.0
+    },
+    "JESTER_ZOMBIE": {
+      "hitpoints": 420.0,
+      "speed": 0.2,
+      "eatDps": 100,
+      "waveCost": 450,
+      "armorHp": 0.0
+    },
+    "WIZARD_ZOMBIE": {
+      "hitpoints": 490.0,
+      "speed": 0.12,
+      "eatDps": 100,
+      "waveCost": 800,
+      "armorHp": 0.0
+    },
+    "KING_ZOMBIE": {
+      "hitpoints": 1000.0,
+      "speed": 0.0,
+      "eatDps": 100,
+      "waveCost": 750,
+      "armorHp": 0.0
+    },
+    "IMP_DRAGON": {
+      "hitpoints": 190.0,
+      "speed": 0.185,
+      "eatDps": 100,
+      "waveCost": 150,
+      "armorHp": 0.0
+    },
+    "ALL_STAR": {
+      "hitpoints": 1100.0,
+      "speed": 0.16,
+      "eatDps": 100,
+      "waveCost": 1000,
+      "armorHp": 0.0
+    },
+    "ARCADE_ZOMBIE": {
+      "hitpoints": 490.0,
+      "speed": 0.19,
+      "eatDps": 100,
+      "waveCost": 600,
+      "armorHp": 1100.0
+    },
+    "PARASOL_ZOMBIE": {
+      "hitpoints": 350.0,
+      "speed": 0.25,
+      "eatDps": 100,
+      "waveCost": 200,
+      "armorHp": 0.0
+    },
+    "TURQUOISE_ZOMBIE": {
+      "hitpoints": 250.0,
+      "speed": 0.185,
+      "eatDps": 100,
+      "waveCost": 500,
+      "armorHp": 0.0
+    },
+    "PROSPECTOR_ZOMBIE": {
+      "hitpoints": 190.0,
+      "speed": 0.16,
+      "eatDps": 100,
+      "waveCost": 200,
+      "armorHp": 0.0
+    },
+    "PIANIST_ZOMBIE": {
+      "hitpoints": 840.0,
+      "speed": 0.12,
+      "eatDps": 4000,
+      "waveCost": 450,
+      "armorHp": 0.0
+    },
+    "NEWSPAPER_ZOMBIE": {
+      "hitpoints": 460.0,
+      "chargeSpeed": 0.22,
+      "chargeAttack": 200,
+      "waveCost": 700,
+      "armorHp": 800.0,
+      "speed":  0.15,
+      "eatDps": 80
+    },
+    "BARREL_ROLLER": {
+      "hitpoints": 190.0,
+      "speed": 0.15,
+      "eatDps": 100,
+      "waveCost": 300,
+      "armorHp": 800.0
+    }
+  }
+}

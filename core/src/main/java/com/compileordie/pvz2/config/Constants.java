@@ -16,6 +16,7 @@ public final class Constants {
             public static final String ROOT = "configs/";
             public static final String GAMEPLAY = ROOT + "gameplay.json";
             public static final String ECONOMY = ROOT + "economy.json";
+            public static final String ZOMBIES = ROOT + "zombie.json";
             public static final String SECURITY_QUESTIONS = ROOT + "security_questions.json";
         }
 
