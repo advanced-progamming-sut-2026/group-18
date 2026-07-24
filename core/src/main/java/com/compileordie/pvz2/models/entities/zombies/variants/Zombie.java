@@ -56,7 +56,7 @@ public abstract class Zombie extends GameEntity {
             }
         }
 
-        this.setXSpeed(isHypnotized ? this.getXSpeed()*(-1) : this.getXSpeed());
+        this.setXSpeed(isHypnotized ? -Math.abs(this.getXSpeed()) : Math.abs(this.getXSpeed()));
 
         // برای جابجایی - اعمال دمیح - اعمال توانایی سرویس ها هستند که پیش می برند
 

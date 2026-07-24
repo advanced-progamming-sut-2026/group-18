@@ -9,25 +9,29 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 public class Lane {
+    public GameBoard gameBoard;
     public int row;
     public int tileCount;
     public ArrayList<Zombie> zombies;
     public ArrayList<Tile> tiles;
     public LawnMower lawnMower;
+    public boolean isLost;
 
-    public Lane(int row, int tileCount) {
+    public Lane(GameBoard gameBoard, int row, int tileCount) {
+        this.gameBoard = gameBoard;
         this.row = row;
         this.zombies = new ArrayList<>();
         this.tiles = new ArrayList<>();
         this.tileCount = tileCount;
         for (int i = 0; i < tileCount; i++) {
-            tiles.add(new Tile(row, i, TileType.UNINITIALIZED, null, null));
+            tiles.add(new Tile(gameBoard, row, i, TileType.UNINITIALIZED, null, null));
         }
+        this.isLost = false;
     }
 
-    public void tick(int ticks, GameBoard gameBoard) {
+    public void tick(int ticks) {
         for (Tile tile : tiles) {
-            tile.tick(ticks, gameBoard);
+            tile.tick(ticks);
         }
         lawnMower.tick(ticks);
     }

@@ -5,7 +5,9 @@ import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
 import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
 import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
+import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 
@@ -34,13 +36,13 @@ public class Tomb extends Obstacle {
         BULB_ORANGE
     );
 
-    public Tomb(double health, int row, int col, double positionX, double positiony) {
-        super(positionX, positiony, ObstacleType.TOMB);
+    public Tomb(double health, int row, int col, double positionX, double positionY) {
+        super(positionX, positionY, ObstacleType.TOMB);
         this.health = health;
         this.row = row;
         this.col = col;
         this.positionX = positionX;
-        this.positionY = positiony;
+        this.positionY = positionY;
         this.isDestroyed = false;
     }
 
@@ -59,9 +61,8 @@ public class Tomb extends Obstacle {
     public double getPositionX() { return positionX; }
     public boolean isDestroyed() { return isDestroyed; }
 
-    public void spawnZombie(GameBoard gameBoard, Zombie zombie) {
-        zombie.setX(getX());
-        zombie.setY(getY());
-        gameBoard.getLane((float) getY()).zombies.add(zombie);
+    public void spawnZombie(GameBoard gameBoard, ZombieType zombieType) {
+        Zombie zombie = ZombieBuilder.create(zombieType, getX(), getY(), getRow());
+        gameBoard.getLane(getRow()).zombies.add(zombie);
     }
 }

@@ -1,0 +1,56 @@
+package com.compileordie.pvz2.models.game.minigames.vasebreaker;
+
+import com.badlogic.gdx.math.MathUtils;
+import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.entities.GameEntity;
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
+import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
+import com.compileordie.pvz2.models.game.board.GameBoard;
+
+public class Vase extends GameEntity {
+    public GameBoard gameBoard;
+    public VaseType type;
+    public ZombieType zombieType;
+    public SeedPacket seedPacket;
+    public boolean isBroken;
+
+    public Vase(GameBoard gameBoard, int row, int column, ZombieType zombieType) {
+        super((column + 0.5f) * Constants.Game.TILE_WIDTH, (row + 0.5f) * Constants.Game.TILE_HEIGHT, 0, 0);
+        this.gameBoard = gameBoard;
+        this.type = VaseType.NORMAL;
+        this.zombieType = zombieType;
+        this.seedPacket = null;
+        this.isBroken = false;
+    }
+
+    public Vase(GameBoard gameBoard, int row, int column, PlantType plantType) {
+        super((column + 0.5f) * Constants.Game.TILE_WIDTH, (row + 0.5f) * Constants.Game.TILE_HEIGHT, 0, 0);
+        this.gameBoard = gameBoard;
+        this.type = MathUtils.randomBoolean() ? VaseType.PLANT : VaseType.NORMAL;
+        this.zombieType = null;
+        this.seedPacket = new SeedPacket(plantType,
+            getX() + MathUtils.random(Constants.Game.TILE_WIDTH),
+            getY() + MathUtils.random(Constants.Game.TILE_HEIGHT));
+    }
+
+    public Vase(GameBoard gameBoard, int row, int column) {
+        super((column + 0.5f) * Constants.Game.TILE_WIDTH, (row + 0.5f) * Constants.Game.TILE_HEIGHT, 0, 0);
+        this.gameBoard = gameBoard;
+        this.type = VaseType.GARGANTUAR;
+        this.zombieType = ZombieType.GARGANTUAR;
+        this.seedPacket = null;
+    }
+
+    public void breakVase() {
+        if (zombieType != null) {
+            gameBoard.getLane((float) getY()).zombies.add(ZombieBuilder.create(zombieType,
+                getX(),
+                getY(),
+                getTileRow()));
+        } else if (seedPacket != null) {
+            gameBoard.seedPackets.add(seedPacket);
+        }
+        isBroken = true;
+    }
+}

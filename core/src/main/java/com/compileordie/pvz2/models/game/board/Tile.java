@@ -1,33 +1,47 @@
 package com.compileordie.pvz2.models.game.board;
 
 import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
+import com.compileordie.pvz2.models.entities.plants.variants.Plant;
+import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 
 public class Tile {
+    public GameBoard gameBoard;
     public int row;
     public int column;
     public TileType type;
     public Plant plant;
     public Obstacle obstacle;
+    public Tomb tomb;
     public boolean hasLilyPad;
 
-    public Tile(int row, int column, TileType type, Plant plant, Obstacle obstacle) {
+    public Tile(GameBoard gameBoard, int row, int column, TileType type, Plant plant, Obstacle obstacle) {
+        this.gameBoard = gameBoard;
         this.row = row;
         this.column = column;
         this.type = type;
         this.plant = plant;
         this.obstacle = obstacle;
+        this.tomb = null;
         this.hasLilyPad = false;
     }
 
-    public void tick(int ticks, GameBoard gameBoard) {
+    public void tick(int ticks) {
         type.tick(ticks, this, gameBoard);
         if (plant != null) plant.tick(gameBoard, ticks);
         if (obstacle != null) obstacle.tick(ticks, gameBoard);
     }
 
+    public boolean isEmpty() {
+        return plant == null && !hasLilyPad && obstacle == null && tomb == null;
+    }
+
     public boolean isPlantable() {
-        return type.isPlantable && plant == null && obstacle == null;
-        // TODO: Check for lily pad mechanism here.
+        return type.isPlantable && plant == null && obstacle == null
+            && (!isUnderWater() || (isUnderWater() && hasLilyPad));
+    }
+
+    public boolean isUnderWater() {
+        return gameBoard.totalCols - gameBoard.tideLevel <= this.column;
     }
 }

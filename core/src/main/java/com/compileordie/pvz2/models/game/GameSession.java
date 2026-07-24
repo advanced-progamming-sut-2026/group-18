@@ -26,7 +26,8 @@ public class GameSession {
                        WaveType waveType,
                        WinCondition winCondition,
                        LossCondition lossCondition,
-                       ArrayList<PlantType> selectionDeck) {
+                       ArrayList<PlantType> selectionDeck,
+                       int maxTideLevel) {
         this.levelID = levelID;
         this.player = AppModel.player;
         this.gameBoard = new GameBoard(Constants.Game.BOARD_ROWS,
@@ -34,7 +35,8 @@ public class GameSession {
             economyType,
             waveType,
             selectionDeck,
-            levelID.waveNumber);
+            levelID.waveNumber,
+            maxTideLevel);
         this.gameJudge = new GameJudge(gameBoard, winCondition, lossCondition);
     }
 

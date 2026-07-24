@@ -1,3 +1,9 @@
 {
-  "basicWaveBudget": 1200
+  "basicWaveBudget": 1200,
+  "timedWarSunTarget": 2000,
+  "deadlineShift": 3,
+  "timedWarMax": 300,
+  "loveYourPlantsMaxLost": 5,
+  "maxTideLevel": 4,
+  "seedPacketDespawn": 60
 }

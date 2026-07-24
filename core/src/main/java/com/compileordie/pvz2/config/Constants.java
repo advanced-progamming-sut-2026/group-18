@@ -40,10 +40,8 @@ public final class Constants {
         public static final float TILE_SIZE = 1f;
         public static final float GRAVITY_COEFFICIENT = 1f;
         public static final float TIME_COEFFICIENT = 0.1f;
-
-        // TODO : complete these
-        public static final float TILE_WIDTH = 0.0f;
-        public static final float TILE_HEIGHT = 0.0f;
+        public static final float TILE_WIDTH = 1f;
+        public static final float TILE_HEIGHT = 1f;
     }
 
     public static final class QuestCallbacks {

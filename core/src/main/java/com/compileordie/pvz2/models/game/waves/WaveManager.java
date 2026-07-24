@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.models.game.waves;
 
 import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.game.board.GameBoard;
@@ -54,7 +55,7 @@ public class WaveManager {
         if (type == WaveType.NO_WAVES) return;
 
         // 1. Calculate Multipliers Before Purchasing
-        if (currentWave == waveNumber) {
+        if (isLatWave()) {
             AppModel.addAfterPrompt("The final wave has come.");
             waveBudget *= 2; // Final wave is 2x previous wave difficulty
         } else if (currentWave > 1) {
@@ -67,7 +68,7 @@ public class WaveManager {
         previousWaveTotalMaxHealth = 0;
 
         // 2. Generate Zombies for the calculated budget
-        List<Zombie> pendingZombies = generateZombiesForBudget();
+        List<ZombieType> pendingZombies = generateZombiesForBudget();
 
         // 3. Delegate placement to the WaveType
         type.spawnWave(this, gameBoard, pendingZombies);
@@ -75,26 +76,23 @@ public class WaveManager {
         currentWave++;
     }
 
-    private List<Zombie> generateZombiesForBudget() {
-        List<Zombie> zombiesForWave = new ArrayList<>();
+    private List<ZombieType> generateZombiesForBudget() {
+        List<ZombieType> zombiesForWave = new ArrayList<>();
         double spent = 0;
 
         int consecutiveFails = 0;
 
         // Buy zombies until budget is filled (limit consecutive fails to prevent infinite loops)
-        while (spent < waveBudget && consecutiveFails < 15) {
+        while (spent < waveBudget && consecutiveFails < 64) {
             // Get a random zombie that is valid for the current map
             ZombieType zombieType = getRandomZombieType();
 
             int cost = zombieType.waveCost;
 
             if (spent + cost <= waveBudget) {
-                // TODO: Use actual zombie factory here:
-                Zombie zombie = ZombieFactory.create(zombieType);
-
-                zombiesForWave.add(zombie);
+                zombiesForWave.add(zombieType);
                 spent += cost;
-                previousWaveTotalMaxHealth += zombie.getHealth();
+                previousWaveTotalMaxHealth += ZombieBuilder.create(zombieType, 0, 0, 0).getHealth();
                 consecutiveFails = 0; // Reset fails on successful purchase
             } else {
                 consecutiveFails++;
@@ -133,5 +131,9 @@ public class WaveManager {
 
         Random random = new Random();
         return validTypes.get(random.nextInt(validTypes.size()));
+    }
+
+    public boolean isLatWave() {
+        return currentWave == waveNumber;
     }
 }

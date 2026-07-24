@@ -20,6 +20,7 @@ public class EconomyManager {
     public ArrayList<PlantType> selectionDeck;
     public ArrayList<PlantCard> plantCards;
     public int sunAmount;
+    public int totalSunsGenerated;
     public int ticksUntilNextNaturalSun;
     public int tickCounter;
 
@@ -30,6 +31,7 @@ public class EconomyManager {
         this.selectionDeck = selectionDeck;
         this.plantCards = new ArrayList<>();
         this.sunAmount = 0;
+        this.totalSunsGenerated = 0;
         this.tickCounter = 0;
         this.ticksUntilNextNaturalSun = calculateNextSpawnIntervalTicks();
     }
@@ -143,6 +145,7 @@ public class EconomyManager {
 
             if (isInRangeX && isInRangeY) {
                 sunAmount += sun.type.value;
+                totalSunsGenerated += sun.type.value;
 
                 if (sun.type == SunType.RADIOACTIVE && sun.getY() > sun.GROUND_LEVEL) {
                     explode(sun);
