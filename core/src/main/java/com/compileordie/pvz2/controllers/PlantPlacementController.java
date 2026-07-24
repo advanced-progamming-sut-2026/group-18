@@ -3,6 +3,7 @@ package com.compileordie.pvz2.controllers;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.PlantTemplate;
 import com.compileordie.pvz2.models.entities.plants.factory.PlantFactory;
+import com.compileordie.pvz2.models.entities.plants.strategies.attack.MintActivateStrategy;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.economy.SeedPacket;
@@ -48,7 +49,7 @@ public class PlantPlacementController {
         targetTile.setPlant(newPlant); // If your tiles track what is on them
 
         // 7. Trigger specific immediate effects (Like Mints!)
-        if (newPlant.getAttackStrategy() instanceof com.compileordie.pvz2.models.entities.plants.strategies.attack.MintActivateStrategy) {
+        if (newPlant.getAttackStrategy() instanceof MintActivateStrategy) {
             // Force the mint to execute its buff immediately upon placement
             newPlant.getAttackStrategy().attack(newPlant, board, 0);
         }
@@ -86,7 +87,8 @@ public class PlantPlacementController {
         }
 
         // Add water tile checks here if you have a pool level
-        // if (tile.isWater() && !template.getName().equals("Lily Pad") && !template.getName().equals("Tangle Kelp")) return false;
+        // if (tile.isWater() && !template.getName().equals("Lily Pad") &&
+        // !template.getName().equals("Tangle Kelp")) return false;
 
         return true;
     }

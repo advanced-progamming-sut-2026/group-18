@@ -3,10 +3,19 @@ package com.compileordie.pvz2.models.entities.zombies.variants.standard;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class NewspaperZombie extends StandardZombie {
-    public static final int waveCost = 700;
+    public static final int WAVE_COST = 700;
     private boolean isEnraged;
 
-    public NewspaperZombie(double health, double speed, int attackPower, int row, double startX, double initialArmor, double x, double y, double xSpeed, double ySpeed) {
+    public NewspaperZombie(double health,
+                           double speed,
+                           int attackPower,
+                           int row,
+                           double startX,
+                           double initialArmor,
+                           double x,
+                           double y,
+                           double xSpeed,
+                           double ySpeed) {
         super(health, speed, attackPower, row, startX, initialArmor, x, y, xSpeed, ySpeed, ZombieType.NEWSPAPER_ZOMBIE);
         this.isEnraged = false;
     }

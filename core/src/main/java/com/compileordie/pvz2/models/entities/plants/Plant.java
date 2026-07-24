@@ -34,7 +34,7 @@ public class Plant extends GameEntity {
     private boolean targetsHighestHp = false;
 
     private AttackStrategy attackStrategy;
-    private PlantFoodEffectStrategy foodStrategy;
+//    private PlantFoodEffectStrategy foodStrategy;
     private Map<Integer, UpgradeLevel> upgradeMap; // Holds Lvl 2, 3, 4 rules
 
     public Plant(String name, PlantCategory category, List<PlantTag> tags,

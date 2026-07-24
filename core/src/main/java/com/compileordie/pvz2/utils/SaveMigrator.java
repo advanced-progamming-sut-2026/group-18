@@ -60,7 +60,8 @@ public class SaveMigrator {
                     }
                 }
 
-                System.out.println("=== Migration Complete: Successfully patched " + successCount + "/" + userFiles.length + " file(s) ===");
+                System.out.println("=== Migration Complete: Successfully patched " + successCount + "/"
+                    + userFiles.length + " file(s) ===");
                 Gdx.app.exit();
             }
         }, config);

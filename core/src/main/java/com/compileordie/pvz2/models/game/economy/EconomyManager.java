@@ -147,7 +147,7 @@ public class EconomyManager {
                 sunAmount += sun.type.value;
                 totalSunsGenerated += sun.type.value;
 
-                if (sun.type == SunType.RADIOACTIVE && sun.getY() > sun.GROUND_LEVEL) {
+                if (sun.type == SunType.RADIOACTIVE && sun.getY() > sun.groundLevel) {
                     explode(sun);
                 }
 
@@ -219,7 +219,8 @@ public class EconomyManager {
         for (PlantCard plantCard : plantCards) {
             if (plantCard.isReady() && plantCard.plantType == type) {
                 // TODO: Check if we have enough suns for that plant (if it's not conveyor belt).
-                // Make the actual plant here, check if it's boosted, add it to gameboard, remove the card, break out of the loop.
+                // Make the actual plant here, check if it's boosted, add it to gameboard, remove the card,
+                // break out of the loop.
             }
         }
     }

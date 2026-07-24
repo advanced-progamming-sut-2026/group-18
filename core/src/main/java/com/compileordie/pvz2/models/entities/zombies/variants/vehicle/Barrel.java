@@ -9,7 +9,7 @@ import java.util.List;
 public class Barrel extends MovableObject {
     private final int row;
     private final double positionY;
-    private final List<ImpZombie> spawnedImps = new ArrayList<>();
+//    private final List<ImpZombie> spawnedImps = new ArrayList<>();
     private boolean spawnImp = false;
     private double positionX;
 

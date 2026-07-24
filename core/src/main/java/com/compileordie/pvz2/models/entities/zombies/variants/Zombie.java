@@ -24,7 +24,16 @@ public abstract class Zombie extends GameEntity {
     protected boolean isHypnotized = false;
     protected ZombieType type;
 
-    public Zombie(double health, double speed, int base_damage, int row, double startX, double x, double y, double xSpeed, double ySpeed, ZombieType type) {
+    public Zombie(double health,
+                  double speed,
+                  int base_damage,
+                  int row,
+                  double startX,
+                  double x,
+                  double y,
+                  double xSpeed,
+                  double ySpeed,
+                  ZombieType type) {
         super(startX, y, xSpeed, ySpeed);
         this.health = health;
         this.stableSpeed = getXSpeed();

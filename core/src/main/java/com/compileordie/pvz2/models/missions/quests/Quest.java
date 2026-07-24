@@ -14,7 +14,13 @@ public abstract class Quest {
     public Quest() {
     }
 
-    protected Quest(String id, String title, String description, QuestCategory category, int targetAmount, String rewardType, int rewardAmount) {
+    protected Quest(String id,
+                    String title,
+                    String description,
+                    QuestCategory category,
+                    int targetAmount,
+                    String rewardType,
+                    int rewardAmount) {
         this.id = id;
         this.title = title;
         this.description = description;

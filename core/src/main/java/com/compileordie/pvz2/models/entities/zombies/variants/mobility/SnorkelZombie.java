@@ -7,7 +7,7 @@ import com.compileordie.pvz2.models.game.board.TileType;
 
 public class SnorkelZombie extends Zombie {
 
-    public static final int waveCost = 200;
+    public static final int WAVE_COST = 200;
     private MovementState state;
 
     public SnorkelZombie(double health, double speed, int attackPower, int row, double startX,
@@ -22,9 +22,9 @@ public class SnorkelZombie extends Zombie {
     }
 
 
-    // ===================================================================================================================================
-    // ============= از این سه گانه برای هندل کردن استیت غواص در هررر تیک باید استفاده بشه + موقعی که میرسه به گیاه برای خوردن ===========
-    // ===================================================================================================================================
+    // =================================================================================================================
+    // از این سه‌گانه برای هندل کردن استیت غواص در هررر تیک باید استفاده بشه + موقعی که میرسه به گیاه برای خوردن
+    // =================================================================================================================
     public void underwater() {
         this.state = MovementState.UNDERWATER_NOT_SURFACED;
     }
@@ -36,7 +36,7 @@ public class SnorkelZombie extends Zombie {
     public void walk() {
         this.state = MovementState.WALKING;
     }
-    // ===================================================================================================================================
+    // =================================================================================================================
 
 
     @Override
@@ -49,7 +49,8 @@ public class SnorkelZombie extends Zombie {
     @Override
     public void takeDamage(double amount, DamageType damageType) {
         if (isDead()) return;
-        if (state == MovementState.UNDERWATER_NOT_SURFACED && !(damageType == DamageType.LOBBER || damageType == DamageType.EXPLOSIVE))
+        if (state == MovementState.UNDERWATER_NOT_SURFACED
+            && !(damageType == DamageType.LOBBER || damageType == DamageType.EXPLOSIVE))
             return;
         this.health -= amount;
         if (this.health < 0) this.health = 0;

@@ -3,7 +3,7 @@ package com.compileordie.pvz2.models.entities.zombies.variants.standard;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class AllStarZombie extends StandardZombie {
-    public static final int waveCost = 1000;
+    public static final int WAVE_COST = 1000;
     private final double chargeSpeedScale;
     private boolean isCharging;
 

@@ -28,7 +28,8 @@ public class PlantConfigRepository {
                     continue; // Skip the header row
                 }
 
-                String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)"); // Regex to handle commas inside quotes
+                // Regex to handle commas inside quotes
+                String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
                 if (parts.length < 16) continue;
 
                 try {
@@ -36,7 +37,10 @@ public class PlantConfigRepository {
 
                     // 1. Core Strings & Enums
                     template.setName(parts[1].trim());
-                    template.setCategory(PlantCategory.valueOf(parts[2].trim().toUpperCase().replace(" ", "_").replace("-", "_")));
+                    template.setCategory(PlantCategory.valueOf(parts[2].trim()
+                        .toUpperCase()
+                        .replace(" ", "_")
+                        .replace("-", "_")));
 
                     // 2. Tags parsing
                     List<PlantTag> tags = new ArrayList<>();
@@ -55,7 +59,8 @@ public class PlantConfigRepository {
                     template.setCost(Integer.parseInt(parts[4].trim()));
                     template.setBaseHp(Integer.parseInt(parts[5].trim()));
                     template.setBaseDamage(Integer.parseInt(parts[6].trim()));
-                    template.setActionIntervalTicks(Double.parseDouble(parts[12].trim()) * 60.0); // Convert seconds to ticks (assuming 60 TPS)
+                    // Convert seconds to ticks (assuming 60 TPS)
+                    template.setActionIntervalTicks(Double.parseDouble(parts[12].trim()) * 60.0);
 
                     // 4. Upgrade Parsing (Basic parser for Lvl 2, Lvl 3, Lvl 4 strings)
                     Map<Integer, UpgradeLevel> upgradeMap = new HashMap<>();

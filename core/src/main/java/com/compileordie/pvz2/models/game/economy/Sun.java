@@ -9,8 +9,8 @@ import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 import static com.compileordie.pvz2.models.AppModel.addAfterPrompt;
 
 public class Sun extends GameEntity {
-    public final float GROUND_LEVEL;
-    public final float LIFESPAN;
+    public final float groundLevel;
+    public final float lifespan;
     public SunType type;
     public boolean isNatual;
     public float tickCounter;
@@ -20,14 +20,14 @@ public class Sun extends GameEntity {
         super(x, y, 0, 0);
         this.type = type;
         this.isNatual = isNatual;
-        this.GROUND_LEVEL = groundLevel;
-        this.LIFESPAN = isNatual ? ConfigManager.economy().natualSunLifespan : ConfigManager.economy().plantSunLifespan;
+        this.groundLevel = groundLevel;
+        this.lifespan = isNatual ? ConfigManager.economy().natualSunLifespan : ConfigManager.economy().plantSunLifespan;
         this.tickCounter = 0f;
         this.target = null;
     }
 
     public float getRemainingTime() {
-        return LIFESPAN - tickCounter;
+        return lifespan - tickCounter;
     }
 
     public void tick(int ticks, GameBoard gameBoard) {
@@ -36,19 +36,19 @@ public class Sun extends GameEntity {
         }
 
         if (target == null) {
-            boolean wasInAir = getY() > GROUND_LEVEL;
+            boolean wasInAir = getY() > groundLevel;
 
             float dt = ticks * Constants.Game.TIME_COEFFICIENT;
-            if (getY() > GROUND_LEVEL) {
+            if (getY() > groundLevel) {
                 setYSpeed(getYSpeed() - dt * Constants.Game.GRAVITY_COEFFICIENT);
             } else {
                 setYSpeed(0);
             }
             super.move(ticks);
 
-            if (wasInAir && getY() <= GROUND_LEVEL) {
-                setX(GROUND_LEVEL);
-                addAfterPrompt("Sun reached the ground at position (" + (int) getX() + ", " + (int) GROUND_LEVEL + ")");
+            if (wasInAir && getY() <= groundLevel) {
+                setX(groundLevel);
+                addAfterPrompt("Sun reached the ground at position (" + (int) getX() + ", " + (int) groundLevel + ")");
             }
         } else {
             double deltaX = (target.getX() - this.getX()) * ConfigManager.economy().sunStealVelocity;

@@ -6,7 +6,7 @@ import com.compileordie.pvz2.models.entities.zombies.variants.standard.KnightZom
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.StandardZombie;
 
 public class KingZombie extends SummonerZombie {
-    public static final int waveCost = 750;
+    public static final int WAVE_COST = 750;
     private final int knightingAreaX;
     private final int knightingAreaY;
     private boolean readyToKnight;

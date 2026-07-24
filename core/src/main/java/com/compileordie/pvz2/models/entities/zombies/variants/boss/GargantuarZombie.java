@@ -6,7 +6,7 @@ import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
 
 public class GargantuarZombie extends Zombie {
-    public static final int waveCost = 1500;
+    public static final int WAVE_COST = 1500;
     private final int impTargetColumn;
     private boolean spawnImp = false;
     private double healthThresholdToThrowImp;

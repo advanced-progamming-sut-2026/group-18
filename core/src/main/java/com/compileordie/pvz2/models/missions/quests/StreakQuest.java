@@ -9,7 +9,14 @@ public class StreakQuest extends Quest {
         super();
     }
 
-    public StreakQuest(String id, String title, String description, QuestCategory category, int targetAmount, String rewardType, int rewardAmount, String requiredContext) {
+    public StreakQuest(String id,
+                       String title,
+                       String description,
+                       QuestCategory category,
+                       int targetAmount,
+                       String rewardType,
+                       int rewardAmount,
+                       String requiredContext) {
         super(id, title, description, category, targetAmount, rewardType, rewardAmount);
         this.requiredContext = requiredContext;
     }

@@ -4,9 +4,17 @@ import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class ParasolZombie extends StandardZombie {
-    public static final int waveCost = 200;
+    public static final int WAVE_COST = 200;
 
-    public ParasolZombie(double health, double speed, int attackPower, int row, double startX, double x, double y, double xSpeed, double ySpeed) {
+    public ParasolZombie(double health,
+                         double speed,
+                         int attackPower,
+                         int row,
+                         double startX,
+                         double x,
+                         double y,
+                         double xSpeed,
+                         double ySpeed) {
         super(health, speed, attackPower, row, startX, 0, x, y, xSpeed, ySpeed, ZombieType.PARASOL_ZOMBIE);
     }
 

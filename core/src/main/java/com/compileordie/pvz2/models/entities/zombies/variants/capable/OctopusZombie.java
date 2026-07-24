@@ -5,8 +5,8 @@ import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class OctopusZombie extends CapableZombie {
-    public static final int waveCost = 900;
-    public static final double abilityRange = Constants.Game.TILE_WIDTH * 2.2;
+    public static final int WAVE_COST = 900;
+    public static final double ABILITY_RANGE = Constants.Game.TILE_WIDTH * 2.2;
 
     public OctopusZombie(double health, double speed, int attackPower, int row, double startX,
                          double x, double y,

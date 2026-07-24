@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WizardZombie extends CapableZombie {
-    public static final int waveCost = 650;
-    public static final float abilityCooldown = 7.0f;
+    public static final int WAVE_COST = 650;
+    public static final float ABILITY_COOLDOWN = 7.0f;
     private final List<Object> hexedPlants;
     private boolean shouldHex = false;
     private boolean shouldReleaseHex = false;
@@ -30,7 +30,7 @@ public class WizardZombie extends CapableZombie {
         float dt = 1 * Constants.Game.TIME_COEFFICIENT;
         timer += dt;
 
-        if (timer >= abilityCooldown) {
+        if (timer >= ABILITY_COOLDOWN) {
             shouldHex = true;
             timer = 0;
         }

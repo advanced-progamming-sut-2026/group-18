@@ -19,7 +19,6 @@ public class ModifierPassiveStrategy implements AttackStrategy {
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
         List<Zombie> zombies = board.getAllZombies();
-
         switch (modifierType) {
             case ATTRACT_LANE:
                 // Sweet Potato: Constantly pull zombies from adjacent lanes into this lane

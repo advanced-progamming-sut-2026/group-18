@@ -14,19 +14,19 @@ import java.util.ArrayList;
 import static com.compileordie.pvz2.config.Constants.ArgonHashing;
 
 public class AuthManager {
-    private static final Argon2 argon2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2id);
+    private static final Argon2 ARGON_2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2id);
 
     private AuthManager() {
     }
 
     public static String hashPassword(char[] plainTextPassword) {
         try {
-            return argon2.hash(ArgonHashing.ITERATIONS,
+            return ARGON_2.hash(ArgonHashing.ITERATIONS,
                 ArgonHashing.MEMORY,
                 ArgonHashing.PARALLELISM,
                 plainTextPassword);
         } finally {
-            argon2.wipeArray(plainTextPassword);
+            ARGON_2.wipeArray(plainTextPassword);
         }
     }
 
@@ -98,14 +98,14 @@ public class AuthManager {
         }
 
         try {
-            boolean matches = argon2.verify(user.getPasswordHash(), plainTextPassword);
+            boolean matches = ARGON_2.verify(user.getPasswordHash(), plainTextPassword);
             if (matches) {
                 return AuthStatus.SUCCESS;
             } else {
                 return AuthStatus.WRONG_PASSWORD;
             }
         } finally {
-            argon2.wipeArray(plainTextPassword);
+            ARGON_2.wipeArray(plainTextPassword);
         }
     }
 

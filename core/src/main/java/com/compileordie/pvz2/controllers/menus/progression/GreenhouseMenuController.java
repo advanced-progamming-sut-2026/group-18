@@ -13,7 +13,7 @@ import java.util.Random;
 
 public class GreenhouseMenuController {
     private static final long HOUR_IN_MILLIS = 60L * 60L * 1000L;
-    private static final Random random = new Random();
+    private static final Random RANDOM = new Random();
 
     private GreenhouseMenuController() {
     }
@@ -61,7 +61,13 @@ public class GreenhouseMenuController {
                         long diff = pot.readyTimeMillis - now;
                         long hours = diff / HOUR_IN_MILLIS;
                         long minutes = (diff % HOUR_IN_MILLIS) / (60 * 1000);
-                        sb.append("[GROWING: ").append(name).append(" - ").append(hours).append("h ").append(minutes).append("m]");
+                        sb.append("[GROWING: ")
+                            .append(name)
+                            .append(" - ")
+                            .append(hours)
+                            .append("h ")
+                            .append(minutes)
+                            .append("m]");
                     }
                 }
                 if (x < 5) sb.append(" | ");
@@ -91,7 +97,7 @@ public class GreenhouseMenuController {
         long now = TimeUtils.millis();
 
         // 50% chance for Marigold, 50% chance for an unlocked plant
-        if (random.nextBoolean() || player.unlockedPlants == null || player.unlockedPlants.isEmpty()) {
+        if (RANDOM.nextBoolean() || player.unlockedPlants == null || player.unlockedPlants.isEmpty()) {
             pot.isEmpty = false;
             pot.isMarigold = true;
             pot.targetPlant = null;
@@ -103,7 +109,7 @@ public class GreenhouseMenuController {
             pot.isEmpty = false;
             pot.isMarigold = false;
             // Pick a random plant from the user's unlocked list
-            pot.targetPlant = player.unlockedPlants.get(random.nextInt(player.unlockedPlants.size()));
+            pot.targetPlant = player.unlockedPlants.get(RANDOM.nextInt(player.unlockedPlants.size()));
             pot.readyTimeMillis = now + (ConfigManager.economy().greenhousePlantTime * HOUR_IN_MILLIS);
             new UserDatabase(player.username).save(player);
             return "Planted a " + pot.targetPlant.toString() + "! It will be ready in "
@@ -178,7 +184,8 @@ public class GreenhouseMenuController {
         pot.readyTimeMillis = now; // Instantly ready
 
         new UserDatabase(player.username).save(player);
-        return "You accelerated the growth for " + costInDiamonds + " diamonds! The plant is now ready to be collected.";
+        return "You accelerated the growth for " + costInDiamonds
+            + " diamonds! The plant is now ready to be collected.";
     }
 
     public static String enterShop() {
