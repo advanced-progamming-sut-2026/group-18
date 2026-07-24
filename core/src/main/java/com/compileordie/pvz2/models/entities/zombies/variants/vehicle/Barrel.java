@@ -1,7 +1,6 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.vehicle;
 
 import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
-import com.compileordie.pvz2.models.entities.zombies.services.spawn.ZombieSpawnLootService;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.ImpZombie;
 import java.util.ArrayList;
 import java.util.List;

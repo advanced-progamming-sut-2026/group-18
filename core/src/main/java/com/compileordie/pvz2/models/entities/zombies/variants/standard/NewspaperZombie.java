@@ -5,14 +5,10 @@ import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 public class NewspaperZombie extends StandardZombie {
     private boolean isEnraged;
     public static final int waveCost = 700;
-    private double chargeSpeed;
-    private int chargeAttack;
 
-    public NewspaperZombie(double health, double speed, int attackPower, int row, double startX, double initialArmor, double x, double y, double xSpeed, double ySpeed, double chargeSpeed, int chargeAttack) {
+    public NewspaperZombie(double health, double speed, int attackPower, int row, double startX, double initialArmor, double x, double y, double xSpeed, double ySpeed) {
         super(health, speed, attackPower, row, startX, initialArmor, x, y, xSpeed, ySpeed, ZombieType.NEWSPAPER_ZOMBIE);
         this.isEnraged = false;
-        this.chargeSpeed = chargeSpeed;
-        this.chargeAttack = chargeAttack;
     }
 
     @Override
@@ -35,8 +31,8 @@ public class NewspaperZombie extends StandardZombie {
     @Override
     public void enterEnrageMode() {
         this.isEnraged = true;
-        setXSpeed(chargeSpeed);
-        setAttackPower(chargeAttack);
+        setXSpeed(0.22);
+        setAttackPower(200);
     }
 
     public boolean isEnraged() { return isEnraged; }

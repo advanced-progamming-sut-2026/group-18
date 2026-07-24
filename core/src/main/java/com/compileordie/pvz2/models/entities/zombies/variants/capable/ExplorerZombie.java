@@ -1,84 +1,41 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.capable;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
-import com.compileordie.pvz2.models.entities.zombies.types.StatusEffectType;
+import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
-/**
- * [زامبی مشعل‌دار - ExplorerZombie]
- * خوشه: CapableZombie (زامبی دارای توانمندی فعال)
- * وضعیت سینتکس: کاملاً اصلاح‌شده؛ متد useAbility پیاده‌سازی شد تا از ارور کامپایل جلوگیری شود.
- * * توضیحات داک: با مشعل روشن گیاهان جلو را درجا می‌سوزاند. تیر یخی مشعل را خاموش و تیر آتشین آن را مجدد روشن می‌کند.
- */
 public class ExplorerZombie extends CapableZombie {
-    private boolean torchLit;
-    private final int baseAttackPower;
+    public static final int waveCost = 250;
+    private boolean isTorchOn;
+
+    // TODO : در فاز گرافیک باید اصلاح دقیق بشود
+    public static double enoghDistance = Constants.Game.TILE_WIDTH * 1.5;
 
     public ExplorerZombie(int health, double speed, int attackPower, int row, double startX,
-                          double abilityCooldown, int abilityRange, double delta, double x, double y, double xSpeed, double ySpeed) {
+                          double x, double y, double xSpeed, double ySpeed) {
         // فراخوانی دقیق سازنده ۱۲ پارامتری CapableZombie موجود در فایل شما
-        super(health, speed, attackPower, row, startX, abilityCooldown, abilityRange, delta, x, y, xSpeed, ySpeed, ZombieType.EXPLORER_ZOMBIE);
-        this.baseAttackPower = attackPower;
-        this.torchLit = true;
-        this.attackPower = 999999; // داک: سوزاندن درجا گیاهان در صورت روشن بودن مشعل
+        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, ZombieType.EXPLORER_ZOMBIE);
+        this.isTorchOn = true;
     }
 
-    /**
-     * پیاده‌سازی متد انتزاعی اجباری خوشه CapableZombie
-     * این متد توسط ZombieAbilityService در زمان تیک‌های کوول‌داون صدا زده می‌شود.
-     */
-    @Override
-    public void useAbility() {
-        if (this.torchLit) {
-            // در صورتی که مشعل روشن باشد، قدرت تخریب بالا نگه داشته می‌شود
-            this.attackPower = 999999;
-        }
-        // ریست کردن تایمر کوول‌داون بر اساس متد موجود در کلاس پایه شما
-        resetCooldown();
-    }
 
     @Override
-    public void tick() {
-        super.tick();
-        if (isDead()) return;
-
-        // داک: افکت‌های سرمایی محیطی مشعل را خاموش می‌کنند
-        if (hasEffect(StatusEffectType.CHILLED) || hasEffect(StatusEffectType.FROZEN)) {
-            extinguishTorch();
-        }
-    }
-
-    public void extinguishTorch() {
-        if (this.torchLit) {
-            this.torchLit = false;
-            this.attackPower = this.baseAttackPower; // بازگشت به قدرت تخریب عادی زامبی برای جویدن
-        }
-    }
-
-    public void igniteTorch() {
-        if (!this.torchLit) {
-            removeStatusEffect(StatusEffectType.CHILLED);
-            removeStatusEffect(StatusEffectType.FROZEN);
-            this.torchLit = true;
-            this.attackPower = 999999;
-        }
-    }
-
-    @Override
-    public void takeDamage(int amount, DamageType damageType) {
+    public void takeDamage(double amount, DamageType damageType) {
         if (isDead()) return;
 
         if (damageType == DamageType.ICE) {
-            extinguishTorch();
+            isTorchOn = false;
         } else if (damageType == DamageType.FIRE) {
-            igniteTorch();
+            isTorchOn = true;
         }
-
         this.health -= amount;
         if (this.health < 0) this.health = 0;
     }
 
-    public boolean isTorchLit() {
-        return this.torchLit;
+    public boolean isTorchOn() {
+        return this.isTorchOn;
     }
+    public void offTorch() { isTorchOn = false; }
+    private void onTorch() { isTorchOn = true; }
 }
