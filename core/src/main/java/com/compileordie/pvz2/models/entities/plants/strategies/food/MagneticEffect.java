@@ -8,14 +8,11 @@ import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 public class MagneticEffect implements PlantFoodEffectStrategy {
     @Override
     public void applyEffect(Plant plant, GameBoard board, Player player) {
-        int metalStolen = 0;
         for (Zombie zombie : board.getAllZombies()) {
             if (zombie.isDead()) continue;
 
-            if (zombie.hasMetalArmor()) {
-                zombie.removeMetalArmor();
-                metalStolen++;
-            }
+            // Just call the teammate's method directly!
+            zombie.mushroomAbsorption();
         }
     }
 }

@@ -8,6 +8,6 @@ public enum DamageType {
     EXPLOSIVE,    // افنجاری
     BYPASS_ARMOR, // بدون در نظر گرفتن آرمور
     LOBBER, // تیر قوسی
-    PIERCE,
-    STUN
+    PIERCING,
+    ELECTRIC
 }

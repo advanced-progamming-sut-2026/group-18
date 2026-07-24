@@ -11,6 +11,14 @@ import java.util.List;
 import java.util.Map;
 
 public class Plant extends GameEntity {
+    //=======================
+    // new!
+    private int isFreezedByHunter = 0;
+    private boolean isFreezedByZombieHunter = false;
+    private boolean isFreezedByOcto = false;
+    // new!
+    //=======================
+    private boolean isSpecial;
     private String name;
     private PlantCategory category;
     private List<PlantTag> tags;
@@ -76,8 +84,37 @@ public class Plant extends GameEntity {
         }
     }
 
+    //=======================
+    // new!
+    public int getFreezedByHunter() { return  isFreezedByHunter; }
+    public void increaseFreezedByHunter() { isFreezedByHunter += 1;}
+    public boolean shouldBeFreezedByHunter() {
+        if (isFreezedByHunter == 3){
+            isFreezedByHunter = 0;
+            isFreezedByZombieHunter = true;
+            return true;
+        }
+        return false;
+    }
+    public void setIsFreezedByHunterCounter(int a) { isFreezedByHunter = a; }
+    public boolean isFreezedByHunter() { return isFreezedByZombieHunter; }
+    public boolean isFreezedByOcto() { return isFreezedByOcto; }
+    public void setIsFreezedByHunter(boolean s) { isFreezedByZombieHunter = s; }
+    public void setFreezedByOcto(boolean f) { isFreezedByOcto = f; }
+    public boolean shouldBeFreezedByOcto() { return isFreezedByOcto; }
+    // new!
+    //=======================
+
     public void die() {
         // Handled by your GameBoard/Tile cleanup when HP hits 0
+    }
+
+    public boolean isSpecial() {
+        return isSpecial;
+    }
+
+    public void setSpecial() {
+        isSpecial = true;
     }
 
     // --- Getters and Setters ---
