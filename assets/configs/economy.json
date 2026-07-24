@@ -5,7 +5,6 @@
   "specialSunValue": 100,
   "radioactiveSunValue": 100,
   "natualSunLifespan": 10,
-  "sunStealVelocity": 1,
   "plantSunLifespan": 8,
   "radioactiveSunZombieDamageAmount": 150,
   "radioactiveSunZombieDamageArea": 5,

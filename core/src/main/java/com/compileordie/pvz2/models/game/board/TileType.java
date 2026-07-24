@@ -3,7 +3,6 @@ package com.compileordie.pvz2.models.game.board;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.mobility.DodoRiderZombie;
-import com.compileordie.pvz2.models.entities.zombies.variants.mobility.SnorkelZombie;
 
 public enum TileType {
     UNINITIALIZED(false) {

@@ -1,9 +1,9 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.summoner;
 
-import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
-import com.compileordie.pvz2.models.entities.zombies.variants.standard.StandardZombie;
-import com.compileordie.pvz2.models.entities.zombies.variants.standard.KnightZombie;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
+import com.compileordie.pvz2.models.entities.zombies.variants.standard.KnightZombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.standard.StandardZombie;
 
 public class KingZombie extends SummonerZombie {
     public static final int waveCost = 750;
@@ -61,6 +61,11 @@ public class KingZombie extends SummonerZombie {
         );
     }
 
-    public int getKnightingAreaX() { return knightingAreaX; }
-    public int getKnightingAreaY() { return knightingAreaY; }
+    public int getKnightingAreaX() {
+        return knightingAreaX;
+    }
+
+    public int getKnightingAreaY() {
+        return knightingAreaY;
+    }
 }

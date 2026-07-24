@@ -1,9 +1,9 @@
 package com.compileordie.pvz2.models.entities.plants.strategies.food;
 
 import com.compileordie.pvz2.models.entities.plants.Plant;
+import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.user.Player;
-import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
 public class HealAndRedirectEffect implements PlantFoodEffectStrategy {
     private final boolean pullsInward;

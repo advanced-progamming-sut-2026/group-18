@@ -4,8 +4,8 @@ import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 
 public class PlantCard {
-    public PlantType plantType;
     public final float COOLDOWN_TIME;
+    public PlantType plantType;
     public float timer;
     public boolean isBoosted;
 

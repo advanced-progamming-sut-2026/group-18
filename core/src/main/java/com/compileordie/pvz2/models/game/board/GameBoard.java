@@ -1,11 +1,9 @@
 package com.compileordie.pvz2.models.game.board;
 
 import com.compileordie.pvz2.config.Constants;
-import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
 import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
-import com.compileordie.pvz2.models.entities.plants.variants.Plant;
-import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.entities.zombies.services.manager.ZombieManager;
@@ -18,9 +16,8 @@ import com.compileordie.pvz2.models.game.minigames.vasebreaker.SeedPacket;
 import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
 import com.compileordie.pvz2.models.game.waves.WaveManager;
 import com.compileordie.pvz2.models.game.waves.WaveType;
-import com.compileordie.pvz2.models.user.Player;
-
 import com.compileordie.pvz2.models.user.Player; // Arsam
+
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 

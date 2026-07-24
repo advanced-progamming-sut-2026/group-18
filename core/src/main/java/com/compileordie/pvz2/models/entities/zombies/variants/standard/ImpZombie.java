@@ -1,6 +1,5 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.standard;
 
-import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class ImpZombie extends StandardZombie {
@@ -16,6 +15,7 @@ public class ImpZombie extends StandardZombie {
     public double getOriginalGroundY() {
         return originalGroundY;
     }
+
     public void setOriginalGroundY(double originalGroundY) {
         this.originalGroundY = originalGroundY;
     }

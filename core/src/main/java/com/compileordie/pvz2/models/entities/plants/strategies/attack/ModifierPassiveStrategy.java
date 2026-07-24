@@ -1,20 +1,16 @@
 package com.compileordie.pvz2.models.entities.plants.strategies.attack;
 
 import com.compileordie.pvz2.models.entities.plants.Plant;
-import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
-import com.compileordie.pvz2.models.entities.zombies.types.ZombieType; // Assuming this exists
+import com.compileordie.pvz2.models.game.board.GameBoard;
 
 import java.util.List;
 
 public class ModifierPassiveStrategy implements AttackStrategy {
 
-    public enum ModifierType { REDIRECT_ON_EAT, ATTRACT_LANE, STEAL_METAL }
-
     private final ModifierType modifierType;
     private final double rangeTiles;
     private double cooldownTimer = 0;
-
     public ModifierPassiveStrategy(ModifierType modifierType, double rangeTiles) {
         this.modifierType = modifierType;
         this.rangeTiles = rangeTiles;
@@ -72,4 +68,6 @@ public class ModifierPassiveStrategy implements AttackStrategy {
                 break;
         }
     }
+
+    public enum ModifierType {REDIRECT_ON_EAT, ATTRACT_LANE, STEAL_METAL}
 }

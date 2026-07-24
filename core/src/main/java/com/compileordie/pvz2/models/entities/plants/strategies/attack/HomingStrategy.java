@@ -1,9 +1,9 @@
 package com.compileordie.pvz2.models.entities.plants.strategies.attack;
 
 import com.compileordie.pvz2.models.entities.plants.Plant;
-import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
+import com.compileordie.pvz2.models.game.board.GameBoard;
 
 import java.util.Comparator;
 import java.util.List;
@@ -12,12 +12,9 @@ import java.util.stream.Collectors;
 
 public class HomingStrategy implements AttackStrategy {
 
-    public enum TargetingMode { CLOSEST, RANDOM, HIGHEST_HP }
-
     private final Class<? extends Projectile> projectileType;
     private final TargetingMode baseTargetingMode;
     private final Random random = new Random();
-
     public HomingStrategy(Class<? extends Projectile> projectileType, TargetingMode baseTargetingMode) {
         this.projectileType = projectileType;
         this.baseTargetingMode = baseTargetingMode;
@@ -64,4 +61,6 @@ public class HomingStrategy implements AttackStrategy {
             }
         }
     }
+
+    public enum TargetingMode {CLOSEST, RANDOM, HIGHEST_HP}
 }

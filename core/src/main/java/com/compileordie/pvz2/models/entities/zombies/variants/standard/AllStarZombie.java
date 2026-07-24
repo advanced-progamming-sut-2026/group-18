@@ -1,17 +1,16 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.standard;
 
-import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class AllStarZombie extends StandardZombie {
-    private boolean isCharging;
-    private final double chargeSpeedScale;
     public static final int waveCost = 1000;
+    private final double chargeSpeedScale;
+    private boolean isCharging;
 
     public AllStarZombie(double health, double speed, int attackPower, int row, double startX
-                         , double chargeSpeedScale, double x, double y,
+        , double chargeSpeedScale, double x, double y,
                          double xSpeed, double ySpeed) {
-        super(health, speed, attackPower, row, startX,0 , x, y, xSpeed, ySpeed, ZombieType.ALL_STAR);
+        super(health, speed, attackPower, row, startX, 0, x, y, xSpeed, ySpeed, ZombieType.ALL_STAR);
         this.chargeSpeedScale = chargeSpeedScale;
         startCharge();
     }
@@ -37,7 +36,7 @@ public class AllStarZombie extends StandardZombie {
 
     // در آینده موقع بر خورد آل استار موقع محاسبه دمیج کافیست نوشته شود : damage + onPlantCollision()
     public double onZombieCollision() {
-        if (isCharging){
+        if (isCharging) {
             return 99999.0;
         }
         return 0;
@@ -46,11 +45,12 @@ public class AllStarZombie extends StandardZombie {
     public void recalculateSpeed() {
         if (isCharging) {
             setXSpeed(getXSpeed() * chargeSpeedScale);
-        }
-        else {
+        } else {
             setXSpeed(getStableSpeed());
         }
     }
 
-    public boolean isCharging() { return this.isCharging; }
+    public boolean isCharging() {
+        return this.isCharging;
+    }
 }

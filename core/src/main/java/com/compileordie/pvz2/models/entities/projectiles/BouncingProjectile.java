@@ -1,4 +1,5 @@
 package com.compileordie.pvz2.models.entities.projectiles;
+
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 

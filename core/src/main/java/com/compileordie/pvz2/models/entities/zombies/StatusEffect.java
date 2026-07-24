@@ -1,4 +1,5 @@
 package com.compileordie.pvz2.models.entities.zombies;
+
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
@@ -41,14 +42,25 @@ public class StatusEffect {
         // باید با توجه به نوع افکت، اثر آن از روی زامبی اعمال شود
         // طبیعتا با استفاده از خود سرویس ها انجام می شود
 
-        if (isExpired()){
+        if (isExpired()) {
             removeFromZombie(zombie);
         }
     }
 
     // Getters
-    public EffectType getEffectType() { return effectType; }
-    public int getDurationTicks() { return durationTicks; }
-    public int getElapsedTicks() { return elapsedTicks; }
-    public boolean isApplied() { return isApplied; }
+    public EffectType getEffectType() {
+        return effectType;
+    }
+
+    public int getDurationTicks() {
+        return durationTicks;
+    }
+
+    public int getElapsedTicks() {
+        return elapsedTicks;
+    }
+
+    public boolean isApplied() {
+        return isApplied;
+    }
 }

@@ -7,7 +7,6 @@ public class EconomyConfig {
     public int specialSunValue;
     public int radioactiveSunValue;
     public float natualSunLifespan;
-    public float sunStealVelocity;
     public float plantSunLifespan;
     public int radioactiveSunZombieDamageAmount;
     public int radioactiveSunZombieDamageArea;

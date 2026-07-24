@@ -5,8 +5,8 @@ import com.compileordie.pvz2.models.entities.plants.PlantTemplate;
 import com.compileordie.pvz2.models.entities.plants.factory.PlantFactory;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Tile;
-import com.compileordie.pvz2.models.user.Player;
 import com.compileordie.pvz2.models.game.economy.SeedPacket;
+import com.compileordie.pvz2.models.user.Player;
 
 public class PlantPlacementController {
 

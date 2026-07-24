@@ -11,13 +11,13 @@ public class AttackStrategyFactory {
     /**
      * Builds the exact attack strategy needed without knowing what the plant is.
      *
-     * @param type The enum type of the strategy (from your CSV)
+     * @param type            The enum type of the strategy (from your CSV)
      * @param projectileClass The class of the projectile to spawn (e.g., PoisonProjectile.class)
-     * @param laneOffsets List of lanes to shoot in (0 = current, 1 = up, -1 = down). Solves Threepeater/Starfruit.
+     * @param laneOffsets     List of lanes to shoot in (0 = current, 1 = up, -1 = down). Solves Threepeater/Starfruit.
      * @param projectileCount How many projectiles to spawn per attack (Solves Pea Pod).
-     * @param rangeTiles The range for Melee, Lobber splash, or Mine explosions.
-     * @param isAoE Boolean flag for Melee strategies (Bonk Choy vs Phat Beet).
-     * @param isInstaKill Boolean flag for Chomper.
+     * @param rangeTiles      The range for Melee, Lobber splash, or Mine explosions.
+     * @param isAoE           Boolean flag for Melee strategies (Bonk Choy vs Phat Beet).
+     * @param isInstaKill     Boolean flag for Chomper.
      * @return The fully configured AttackStrategy
      */
     public static AttackStrategy createStrategy(

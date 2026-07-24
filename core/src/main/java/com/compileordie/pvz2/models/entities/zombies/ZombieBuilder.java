@@ -4,10 +4,13 @@ import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.boss.GargantuarZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.capable.*;
-import com.compileordie.pvz2.models.entities.zombies.variants.mobility.*;
+import com.compileordie.pvz2.models.entities.zombies.variants.mobility.DodoRiderZombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.mobility.ProspectorZombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.mobility.SnorkelZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.*;
-import com.compileordie.pvz2.models.entities.zombies.variants.summoner.*;
-import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.*;
+import com.compileordie.pvz2.models.entities.zombies.variants.summoner.KingZombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.summoner.TombraiserZombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.BarrelRollerZombie;
 
 public class ZombieBuilder {
     private ZombieType type;

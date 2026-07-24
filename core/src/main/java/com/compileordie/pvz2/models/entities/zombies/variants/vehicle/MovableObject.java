@@ -1,6 +1,5 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.vehicle;
 
-import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
 import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
 
@@ -28,9 +27,11 @@ public abstract class MovableObject extends Obstacle {
     public boolean isDestroyed() {
         return this.isDestroyed;
     }
+
     public double getHealth() {
         return health;
     }
+
     public double getMaxHealth() {
         return maxHealth;
     }

@@ -8,6 +8,7 @@ public abstract class VehicleZombie extends Zombie {
 
     // شیء وسیله که زامبی هل می‌دهد
     protected MovableObject vehicle;
+
     public VehicleZombie(double health, double speed, int attackPower, int row, double startX,
                          double x, double y, double xSpeed, double ySpeed, MovableObject vehicle, ZombieType type) {
         super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, type);
@@ -25,10 +26,10 @@ public abstract class VehicleZombie extends Zombie {
     }
 
 
-
     public MovableObject getVehicle() {
         return vehicle;
     }
+
     public boolean isVehicleDestroyed() {
         return (vehicle.getHealth() <= 0);
     }

@@ -1,9 +1,8 @@
 package com.compileordie.pvz2.models.game.board;
 
 import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
-import com.compileordie.pvz2.models.entities.plants.variants.Plant;
-import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.entities.plants.Plant;
+import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 
 public class Tile {
     public GameBoard gameBoard;

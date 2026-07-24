@@ -25,11 +25,24 @@ public abstract class StandardZombie extends Zombie {
         return amount;
     }
 
-    public boolean hasArmor() { return this.armorHealth > 0; }
-    public void removeArmor() { this.armorHealth = 0; }
-    public void enterEnrageMode(){}
-    public double getArmorHealth() { return armorHealth; }
-    public void setArmorHealth(double a) { this.armorHealth = a; }
+    public boolean hasArmor() {
+        return this.armorHealth > 0;
+    }
+
+    public void removeArmor() {
+        this.armorHealth = 0;
+    }
+
+    public void enterEnrageMode() {
+    }
+
+    public double getArmorHealth() {
+        return armorHealth;
+    }
+
+    public void setArmorHealth(double a) {
+        this.armorHealth = a;
+    }
 
     @Override
     public void takeDamage(double amount, DamageType damageType) {

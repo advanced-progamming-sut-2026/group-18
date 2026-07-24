@@ -2,17 +2,17 @@ package com.compileordie.pvz2.models.entities.plants.strategies.attack;
 
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.Plant;
-import com.compileordie.pvz2.models.game.board.GameBoard;
-import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
+import com.compileordie.pvz2.models.game.board.GameBoard;
 
 import java.util.List;
 
 public class MineStrategy implements AttackStrategy {
 
     private final double explosionRadiusTiles;
-    private double armingTimer = 0;
     private final double armingTimeRequired = 15.0; // 15 seconds to arm (adjust to ticks as needed)
+    private double armingTimer = 0;
     private boolean isArmed = false;
 
     public MineStrategy(double explosionRadiusTiles) {

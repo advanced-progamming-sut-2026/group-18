@@ -37,21 +37,46 @@ public abstract class Projectile {
     }
 
     // --- Hooks for ZombieCombatServiceImpl ---
-    public double getX() { return x; }
-    public double getY() { return y; }
+    public double getX() {
+        return x;
+    }
+
+    public double getY() {
+        return y;
+    }
 
     // Calculates the current row based on Y coordinate for the collision loop
-    public int getRow() { return (int) (y / Constants.Game.TILE_SIZE); }
+    public int getRow() {
+        return (int) (y / Constants.Game.TILE_SIZE);
+    }
 
-    public double getXSpeed() { return xSpeed; }
-    public void setXSpeed(double xSpeed) { this.xSpeed = xSpeed; }
+    public double getXSpeed() {
+        return xSpeed;
+    }
 
-    public int getDamage() { return damage; }
-    public DamageType getType() { return type; }
+    public void setXSpeed(double xSpeed) {
+        this.xSpeed = xSpeed;
+    }
 
-    public boolean isDead() { return isDead; }
-    public boolean isReversed() { return isReversed; }
-    public void setReversed(boolean reversed) { this.isReversed = reversed; }
+    public int getDamage() {
+        return damage;
+    }
+
+    public DamageType getType() {
+        return type;
+    }
+
+    public boolean isDead() {
+        return isDead;
+    }
+
+    public boolean isReversed() {
+        return isReversed;
+    }
+
+    public void setReversed(boolean reversed) {
+        this.isReversed = reversed;
+    }
 
     /**
      * Called by the combat service upon collision.

@@ -45,7 +45,8 @@ public class PlantConfigRepository {
                         for (String t : rawTags.split(",")) {
                             try {
                                 tags.add(PlantTag.valueOf(t.trim().toUpperCase().replace(" ", "_")));
-                            } catch (IllegalArgumentException ignored) {}
+                            } catch (IllegalArgumentException ignored) {
+                            }
                         }
                     }
                     template.setTags(tags);

@@ -6,6 +6,7 @@ import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class TurquoiseZombie extends CapableZombie {
     public static final int waveCost = 500;
+    public int totalStolenSuns;
     private boolean shouldSteal = false;
     private boolean shouldLaser = false;
     private boolean shouldShut = false;
@@ -15,7 +16,6 @@ public class TurquoiseZombie extends CapableZombie {
     private double stealTime;
     private double laserTimer;
     private double lasetTime;
-    public int totalStolenSuns;
 
     public TurquoiseZombie(double health, double speed, int attackPower, int row, double startX,
                            double x, double y,
@@ -30,7 +30,7 @@ public class TurquoiseZombie extends CapableZombie {
     }
 
     @Override
-    public void move(int ticks){
+    public void move(int ticks) {
         if (this.isStealing) return;
         super.move(ticks);
     }
@@ -42,7 +42,8 @@ public class TurquoiseZombie extends CapableZombie {
         if (this.health <= 0) {
             this.health = 0;
             handleDeath();
-        };
+        }
+        ;
     }
 
     @Override
@@ -52,12 +53,12 @@ public class TurquoiseZombie extends CapableZombie {
         //---
         float dt = 1 * Constants.Game.TIME_COEFFICIENT;
         if (this.isStealing) {
-            if (stealTimer % 1 == 0 && stealTimer>0){
+            if (stealTimer % 1 == 0 && stealTimer > 0) {
                 shouldSteal = true;
             }
             stealTimer += dt;
             //---
-            if (stealTimer >= stealTime){
+            if (stealTimer >= stealTime) {
                 stealTimer = 0;
                 isStealing = false;
                 shouldSteal = false;
@@ -66,21 +67,51 @@ public class TurquoiseZombie extends CapableZombie {
         }
     }
 
-    private void stealSunFromPlayerBalance(int amount) {}
+    private void stealSunFromPlayerBalance(int amount) {
+    }
 
     @Override
     public void handleDeath() {
         shouldBackSun = true;
     }
 
-    public void addStolen(int amount) { totalStolenSuns += amount; }
-    public boolean shouldWeSteal() { return shouldSteal; }
-    public void stopSteal(){ this.shouldSteal = false; }
-    public boolean shouldWeLaser() { return shouldLaser; }
-    public void stopLaser(){ this.shouldLaser = false; }
-    public boolean shouldWeShut() { return shouldShut; }
-    public void stopShut(){ this.shouldShut = false; }
-    public boolean shouldWeBackSun() { return shouldBackSun; }
-    public void stopBackSun(){ this.shouldBackSun = false; }
-    public void startStealing() { this.isStealing = true; }
+    public void addStolen(int amount) {
+        totalStolenSuns += amount;
+    }
+
+    public boolean shouldWeSteal() {
+        return shouldSteal;
+    }
+
+    public void stopSteal() {
+        this.shouldSteal = false;
+    }
+
+    public boolean shouldWeLaser() {
+        return shouldLaser;
+    }
+
+    public void stopLaser() {
+        this.shouldLaser = false;
+    }
+
+    public boolean shouldWeShut() {
+        return shouldShut;
+    }
+
+    public void stopShut() {
+        this.shouldShut = false;
+    }
+
+    public boolean shouldWeBackSun() {
+        return shouldBackSun;
+    }
+
+    public void stopBackSun() {
+        this.shouldBackSun = false;
+    }
+
+    public void startStealing() {
+        this.isStealing = true;
+    }
 }
