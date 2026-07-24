@@ -17,7 +17,6 @@ import com.compileordie.pvz2.models.entities.zombies.variants.capable.TurquoiseZ
 import com.compileordie.pvz2.models.entities.zombies.variants.mobility.DodoRiderZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.mobility.MovementState;
 import com.compileordie.pvz2.models.entities.zombies.variants.mobility.SnorkelZombie;
-import com.compileordie.pvz2.models.entities.zombies.variants.standard.AllStarZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.ImpZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.TombraiserZombie;
@@ -48,7 +47,7 @@ public class ZombieManager {
 
     public ZombieManager(){}
 
-    public void tick(com.compileordie.pvz2.models.entities.zombies.services.manager.ZombieTickContext context) {
+    public void tick(ZombieTickContext context) {
         double delta = (context.getDelta()!=0 ? context.getDelta() : 1 * Constants.Game.TIME_COEFFICIENT);
         GameBoard myMap = context.getGameMap();
         List<Sun> mySuns = context.getSunsOnGround();
@@ -87,10 +86,6 @@ public class ZombieManager {
         for (Zombie z:myZombies){
             z.move(1);
             z.tick();
-            if (z.getHealth() <= 0 && z.showDie){
-                z.showDie = false;
-                System.out.println("Zombie " + z.getType() + "Died at X:" + z.getX() + ", Y:"+z.getY());
-            }
         }
 
     }
@@ -120,8 +115,6 @@ public class ZombieManager {
                     z1.isCombatingWithHypnotized = true;
                     z.takeDamage((z1.getType()==ZombieType.ALL_STAR ? smashDamage : z1.getAttackPower()*dt), DamageType.NORMAL);
                     z1.takeDamage((z.getType()==ZombieType.ALL_STAR ? smashDamage : z.getAttackPower()*dt), DamageType.NORMAL);
-                    if (z.isHypnotized()) ((AllStarZombie)z1).stopCharge();
-                    if (z1.isHypnotized()) ((AllStarZombie)z).stopCharge();
                 }
             }
         }
@@ -233,7 +226,6 @@ public class ZombieManager {
 
     public void combatTick(List<Zombie> myZombies, List<Plant> myPlants){
         for (Zombie z : myZombies){
-            boolean flagForEating = false;
             for (Plant p : myPlants){
                 // --- خوردن گیاه ---
                 if (Math.abs(z.getY() - p.getY()) <= tileHeight/6){
@@ -242,9 +234,7 @@ public class ZombieManager {
                             || !isEatable(p) || p.isFreezedByHunter() || p.isFreezedByOcto()) {}
                         else{  // عملیات خوردن گیاه
                             z.isEating = true;
-                            flagForEating = true;
-                            p.takeDamage((int) ((z.getType() == ZombieType.ALL_STAR ? smashDamage : z.getAttackPower() * dt)));
-                            if (z.getType()==ZombieType.ALL_STAR) ((AllStarZombie)z).stopCharge();}}}
+                            p.takeDamage((int) ((z.getType() == ZombieType.ALL_STAR ? smashDamage : z.getAttackPower() * dt))); }}}
                 // --- پرواز دودوسوار ---
                 if (z.getType()==ZombieType.DODO_RIDER && (Math.abs(z.getY()-p.getY())<=tileHeight/6 && Math.abs(z.getX()-p.getX())<=tileWidth/1.7) && isVisible(p) && !p.isFreezedByHunter() && !p.isFreezedByOcto()){
                     ((DodoRiderZombie)z).onPlantCollisionWithHalfOfTileWidth(PlantType.getByName(p.getName())); }
@@ -269,8 +259,6 @@ public class ZombieManager {
                 if (z.getType()==ZombieType.OCTOPUS_ZOMBIE && (Math.abs(z.getY()-p.getY())<=tileHeight/6 && Math.abs(z.getX()-p.getX())<=((HunterZombie)z).abilityRange) && isVisible(p) && !p.isFreezedByHunter() && !p.isFreezedByOcto()) {
                     p.setFreezedByOcto(true);
                 }
-            }
-            if (!flagForEating) z.isEating = false;
-        }
+            } }
     }
 }

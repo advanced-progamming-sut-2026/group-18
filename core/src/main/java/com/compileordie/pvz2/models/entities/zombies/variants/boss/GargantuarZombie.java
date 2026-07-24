@@ -3,7 +3,6 @@ package com.compileordie.pvz2.models.entities.zombies.variants.boss;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
-import com.compileordie.pvz2.models.entities.zombies.services.spawn.ZombieSpawnLootService;
 
 
 public class GargantuarZombie extends Zombie {

@@ -11,7 +11,7 @@ public class KingZombie extends SummonerZombie {
     private final int knightingAreaY;
     private boolean readyToKnight;
 
-    public KingZombie(double health, int row, double startX, double x, double y,
+    public KingZombie(int health, int row, double startX, double x, double y,
                       int knightingAreaX, int knightingAreaY, double delayBetweenKnightings) {
         super(health, 0.0, 0, row, startX, x, y, 0.0, 0.0, ZombieType.KING_ZOMBIE, delayBetweenKnightings);
         this.knightingAreaX = knightingAreaX;

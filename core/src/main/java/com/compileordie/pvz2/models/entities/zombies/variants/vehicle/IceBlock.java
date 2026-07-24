@@ -1,4 +1,4 @@
-//package com.compileordie.pvz2.models.entities.zombies.variants.vehicle;
+package com.compileordie.pvz2.models.entities.zombies.variants.vehicle;//package com.compileordie.pvz2.models.entities.zombies.variants.vehicle;
 //
 //public class IceBlock extends MovableObject {
 //
