@@ -2,7 +2,7 @@ package com.compileordie.pvz2.models.entities.zombies.services.effects;
 
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
-import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
+import com.compileordie.pvz2.models.entities.zombies.types.StatusEffectType;
 import com.compileordie.pvz2.models.entities.zombies.services.manager.ZombieTickContext;
 
 public interface ZombieStatusEffectService {
@@ -20,7 +20,7 @@ public interface ZombieStatusEffectService {
     /**
      * حذف اجباری یک افکت از روی زامبی (مثلاً خنثی شدن افکت یخ با افکت آتش تیرها)
      */
-    void forceRemoveEffect(Zombie zombie, EffectType effectType);
+    void forceRemoveEffect(Zombie zombie, StatusEffectType effectType);
 
     /**
      * مخصوص زامبی روزنامه‌به‌دست و فرعون؛ به محض نابود شدن روزنامه/تابوت،

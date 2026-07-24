@@ -1,7 +1,6 @@
 package com.compileordie.pvz2.models.entities.zombies.services.combat;
 
 import com.compileordie.pvz2.config.Constants;
-import com.compileordie.pvz2.models.entities.plants.variants.Plant;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.boss.GargantuarZombie;

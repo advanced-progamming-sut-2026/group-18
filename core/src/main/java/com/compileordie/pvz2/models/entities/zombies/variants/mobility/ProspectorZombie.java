@@ -2,7 +2,7 @@ package com.compileordie.pvz2.models.entities.zombies.variants.mobility;
 
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
-import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
+import com.compileordie.pvz2.models.entities.zombies.types.StatusEffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 /**
@@ -34,7 +34,7 @@ public class ProspectorZombie extends MobilityZombie {
     @Override
     public void tick() {
         // داک: در صورت برخورد تیر یخی یا وجود افکت سرمایی، دینامیت خاموش می‌شود
-        if (this.dynamiteActive && (hasEffect(EffectType.FREEZE) || hasEffect(EffectType.CHILLED))) {
+        if (this.dynamiteActive && (hasEffect(StatusEffectType.FROZEN) || hasEffect(StatusEffectType.CHILLED))) {
             this.dynamiteActive = false;
         }
 
@@ -43,7 +43,7 @@ public class ProspectorZombie extends MobilityZombie {
         if (isDead()) return;
 
         // منطق شمارش معکوس دینامیت با استفاده از فیلد delta کلاس MobilityZombie شما
-        if (this.dynamiteActive && !hasEffect(EffectType.FREEZE)) {
+        if (this.dynamiteActive && !hasEffect(StatusEffectType.FROZEN)) {
             this.dynamiteTimer += this.delta;
             if (this.dynamiteTimer >= this.timeToExplode) {
                 triggerExplosionAndFly();

@@ -1,7 +1,7 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.capable;
 
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
-import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
+import com.compileordie.pvz2.models.entities.zombies.types.StatusEffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 /**
@@ -43,7 +43,7 @@ public class ExplorerZombie extends CapableZombie {
         if (isDead()) return;
 
         // داک: افکت‌های سرمایی محیطی مشعل را خاموش می‌کنند
-        if (hasEffect(EffectType.CHILLED) || hasEffect(EffectType.FREEZE)) {
+        if (hasEffect(StatusEffectType.CHILLED) || hasEffect(StatusEffectType.FROZEN)) {
             extinguishTorch();
         }
     }
@@ -57,8 +57,8 @@ public class ExplorerZombie extends CapableZombie {
 
     public void igniteTorch() {
         if (!this.torchLit) {
-            removeStatusEffect(EffectType.CHILLED);
-            removeStatusEffect(EffectType.FREEZE);
+            removeStatusEffect(StatusEffectType.CHILLED);
+            removeStatusEffect(StatusEffectType.FROZEN);
             this.torchLit = true;
             this.attackPower = 999999;
         }

@@ -9,5 +9,6 @@ public enum PlantCategory {
     WALL_NUTS,
     MODIFIERS,
     STRIKE_THROUGH,
-    HOMING
+    HOMING,
+    MINTS
 }
