@@ -5,14 +5,22 @@ import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class RaZombie extends CapableZombie {
-    public static final int waveCost = 100;
+    public static final int WAVE_COST = 100;
     public int stolenSunCount;
     private double stealTime;
     private double stealTimer;
     private boolean shouldSteal = false;
     private boolean shouldBackSun = false;
 
-    public RaZombie(double health, double speed, int attackPower, int row, double startX, double x, double y, double xSpeed, double ySpeed) {
+    public RaZombie(double health,
+                    double speed,
+                    int attackPower,
+                    int row,
+                    double startX,
+                    double x,
+                    double y,
+                    double xSpeed,
+                    double ySpeed) {
         super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, ZombieType.RA_ZOMBIE);
         this.stealTime = 10.0;
         this.stealTimer = 0;

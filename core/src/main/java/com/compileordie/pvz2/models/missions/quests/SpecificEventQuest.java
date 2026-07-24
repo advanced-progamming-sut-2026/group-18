@@ -10,7 +10,15 @@ public class SpecificEventQuest extends Quest {
         super();
     }
 
-    public SpecificEventQuest(String id, String title, String description, QuestCategory category, int targetAmount, String rewardType, int rewardAmount, QuestEvent targetEvent, String targetContext) {
+    public SpecificEventQuest(String id,
+                              String title,
+                              String description,
+                              QuestCategory category,
+                              int targetAmount,
+                              String rewardType,
+                              int rewardAmount,
+                              QuestEvent targetEvent,
+                              String targetContext) {
         super(id, title, description, category, targetAmount, rewardType, rewardAmount);
         this.targetEvent = targetEvent;
         this.targetContext = targetContext.toUpperCase();

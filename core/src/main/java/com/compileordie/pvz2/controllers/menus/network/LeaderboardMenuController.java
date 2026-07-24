@@ -55,7 +55,11 @@ public class LeaderboardMenuController {
 
         for (Player p : players) {
             sb.append(String.format("%-15s | %-10d | %-12d | %-16d | %-15d%n",
-                p.username, p.bestScore, p.completedMiniGames, p.completedTotalDailyQuests, p.completedTotalNonDailyQuests));
+                p.username,
+                p.bestScore,
+                p.completedMiniGames,
+                p.completedTotalDailyQuests,
+                p.completedTotalNonDailyQuests));
         }
 
         return sb.toString().trim();
@@ -85,6 +89,7 @@ public class LeaderboardMenuController {
             isAscending = false; // Default to highest-first for new parameters
         }
 
-        return "Leaderboard sorted by '" + parameter + "' in " + (isAscending ? "ascending" : "descending") + " order.\n" + showLeaderboard();
+        return "Leaderboard sorted by '" + parameter + "' in " + (isAscending ? "ascending" : "descending")
+            + " order.\n" + showLeaderboard();
     }
 }

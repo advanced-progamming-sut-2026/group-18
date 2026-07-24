@@ -5,7 +5,14 @@ import com.compileordie.pvz2.models.user.Player;
 public class BasicEventQuest extends Quest {
     private final QuestEvent targetEvent;
 
-    public BasicEventQuest(String id, String title, String description, QuestCategory category, int targetAmount, String rewardType, int rewardAmount, QuestEvent targetEvent) {
+    public BasicEventQuest(String id,
+                           String title,
+                           String description,
+                           QuestCategory category,
+                           int targetAmount,
+                           String rewardType,
+                           int rewardAmount,
+                           QuestEvent targetEvent) {
         super(id, title, description, category, targetAmount, rewardType, rewardAmount);
         this.targetEvent = targetEvent;
     }

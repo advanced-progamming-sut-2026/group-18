@@ -6,7 +6,7 @@ import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
 public class ProspectorZombie extends Zombie {
-    public static final int waveCost = 200;
+    public static final int WAVE_COST = 200;
     private final double timeToExplode = 10.0;
     private boolean dynamiteActive;
     private double dynamiteTimer;

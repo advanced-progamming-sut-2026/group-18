@@ -9,7 +9,11 @@ public class UpgradeLevel {
     // Custom flags for specific upgrades (like Electric Blueberry's Lvl 3)
     public final boolean targetPriorityUp;
 
-    public UpgradeLevel(int hpBonus, int damageBonus, int costReduction, double cooldownReductionTicks, boolean targetPriorityUp) {
+    public UpgradeLevel(int hpBonus,
+                        int damageBonus,
+                        int costReduction,
+                        double cooldownReductionTicks,
+                        boolean targetPriorityUp) {
         this.hpBonus = hpBonus;
         this.damageBonus = damageBonus;
         this.costReduction = costReduction;

@@ -5,7 +5,7 @@ import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class ExplorerZombie extends CapableZombie {
-    public static final int waveCost = 250;
+    public static final int WAVE_COST = 250;
     // TODO : در فاز گرافیک باید اصلاح دقیق بشود
     public static double enoghDistance = Constants.Game.TILE_WIDTH * 1.5;
     private boolean isTorchOn;
@@ -39,7 +39,7 @@ public class ExplorerZombie extends CapableZombie {
         isTorchOn = false;
     }
 
-    private void onTorch() {
+    public void onTorch() {
         isTorchOn = true;
     }
 }

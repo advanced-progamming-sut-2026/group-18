@@ -55,65 +55,72 @@ public class ShopMenuController {
 
         try {
             count = Integer.parseInt(countStr);
-            if (count <= 0) {
-                return "[ERROR] Count must be positive.";
-            }
+            if (count <= 0) return "[ERROR] Count must be positive.";
         } catch (NumberFormatException e) {
             return "[ERROR] Count must be an integer.";
         }
 
-        // Handle Daily Offer Purchase
         if (id.equalsIgnoreCase("daily")) {
-            Shop.refreshDailyOfferIfNeeded(player);
-            if (player.dailyOffer.targetPlant == null) {
-                return "[ERROR] No daily offer available.";
-            }
-            if (player.dailyOffer.purchased) {
-                return "[ERROR] You have already purchased the daily offer today.";
-            }
-            if (count > 1) {
-                return "[ERROR] You can only buy 1 daily offer.";
-            }
-            if (player.coins < player.dailyOffer.price) {
-                return "[ERROR] Insufficient coins.";
-            }
-
-            player.coins -= player.dailyOffer.price;
-            player.seedPackets.put(player.dailyOffer.targetPlant,
-                player.seedPackets.getOrDefault(player.dailyOffer.targetPlant,
-                    0) + player.dailyOffer.quantity);
-            player.dailyOffer.purchased = true;
-
-            new UserDatabase(player.username).save(player);
-            return "Successfully purchased the daily offer for " + player.dailyOffer.targetPlant + "!";
+            return buyDailyOffer(player, count);
         }
 
-        // Handle Permanent Catalog Purchases
+        return buyCatalogItem(player, id, count, type);
+    }
+
+    private static String buyDailyOffer(Player player, int count) {
+        Shop.refreshDailyOfferIfNeeded(player);
+
+        if (player.dailyOffer.targetPlant == null) return "[ERROR] No daily offer available.";
+        if (player.dailyOffer.purchased) return "[ERROR] You have already purchased the daily offer today.";
+        if (count > 1) return "[ERROR] You can only buy 1 daily offer.";
+        if (player.coins < player.dailyOffer.price) return "[ERROR] Insufficient coins.";
+
+        player.coins -= player.dailyOffer.price;
+        player.seedPackets.put(player.dailyOffer.targetPlant,
+            player.seedPackets.getOrDefault(player.dailyOffer.targetPlant, 0) + player.dailyOffer.quantity);
+        player.dailyOffer.purchased = true;
+
+        new UserDatabase(player.username).save(player);
+        return "Successfully purchased the daily offer for " + player.dailyOffer.targetPlant + "!";
+    }
+
+    private static String buyCatalogItem(Player player, String id, int count, String type) {
         ShopItem item = Shop.getItemById(id);
-        if (item == null) {
-            return "[ERROR] Item ID not found.";
-        }
+        if (item == null) return "[ERROR] Item ID not found.";
 
         int totalCost = item.price * count;
+
+        String validationError = validatePurchase(player, item, count, totalCost);
+        if (validationError != null) return validationError;
+
+        // Attempt to execute the effect BEFORE deducting currency to prevent lost funds on error
+        String executionError = executeItemEffect(player, item, count, type);
+        if (executionError != null) return executionError;
+
+        if (item.currencyType == CurrencyType.COINS) player.coins -= totalCost;
+        if (item.currencyType == CurrencyType.DIAMONDS) player.diamonds -= totalCost;
+
+        new UserDatabase(player.username).save(player);
+        return "Successfully purchased " + count + "x " + item.displayName + ".";
+    }
+
+    private static String validatePurchase(Player player, ShopItem item, int count, int totalCost) {
         if (item.currencyType == CurrencyType.COINS && player.coins < totalCost) {
             return "[ERROR] Insufficient coins. You need " + totalCost + " coins.";
         }
         if (item.currencyType == CurrencyType.DIAMONDS && player.diamonds < totalCost) {
             return "[ERROR] Insufficient diamonds. You need " + totalCost + " diamonds.";
         }
-
-        // Max Capacity Checks
         if (item.itemId.equals("pot") && (player.greenhousePots.size() + count) > item.maxOwnable) {
             return "[ERROR] You cannot exceed the maximum limit of " + item.maxOwnable + " pots.";
         }
         if (item.itemId.equals("plant_food") && (player.plantFoodCount + count) > item.maxOwnable) {
             return "[ERROR] You cannot exceed the maximum limit of " + item.maxOwnable + " plant foods.";
         }
+        return null;
+    }
 
-        // Execution Routing
-        if (item.currencyType == CurrencyType.COINS) player.coins -= totalCost;
-        if (item.currencyType == CurrencyType.DIAMONDS) player.diamonds -= totalCost;
-
+    private static String executeItemEffect(Player player, ShopItem item, int count, String type) {
         switch (item.itemId) {
             case "pot":
                 for (int i = 0; i < count; i++) player.greenhousePots.add(new Pot());
@@ -129,9 +136,8 @@ public class ShopMenuController {
                     return "[ERROR] You must unlock plants before buying random seeds.";
                 }
                 for (int i = 0; i < count; i++) {
-                    PlantType randomPlant = player.unlockedPlants.get(
-                        new Random().nextInt(player.unlockedPlants.size())
-                    );
+                    PlantType randomPlant =
+                        player.unlockedPlants.get(new Random().nextInt(player.unlockedPlants.size()));
                     player.seedPackets.put(randomPlant,
                         player.seedPackets.getOrDefault(randomPlant, 0) + item.quantity);
                 }
@@ -148,8 +154,6 @@ public class ShopMenuController {
                     player.seedPackets.getOrDefault(targetPlant, 0) + (item.quantity * count));
                 break;
         }
-
-        new UserDatabase(player.username).save(player);
-        return "Successfully purchased " + count + "x " + item.displayName + ".";
+        return null;
     }
 }

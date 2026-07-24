@@ -7,7 +7,17 @@ import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 public abstract class StandardZombie extends Zombie {
     protected double armorHealth;
 
-    public StandardZombie(double health, double speed, int attackPower, int row, double startX, double initialArmor, double x, double y, double xSpeed, double ySpeed, ZombieType type) {
+    public StandardZombie(double health,
+                          double speed,
+                          int attackPower,
+                          int row,
+                          double startX,
+                          double initialArmor,
+                          double x,
+                          double y,
+                          double xSpeed,
+                          double ySpeed,
+                          ZombieType type) {
         super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, type);
         this.armorHealth = initialArmor;
     }

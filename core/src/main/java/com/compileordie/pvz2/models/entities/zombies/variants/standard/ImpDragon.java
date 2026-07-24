@@ -4,7 +4,7 @@ import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class ImpDragon extends StandardZombie {
-    public static final int waveCost = 150;
+    public static final int WAVE_COST = 150;
 
     public ImpDragon(double health, double speed, int attackPower, int row, double startX,
                      double x, double y, double xSpeed, double ySpeed) {

@@ -5,9 +5,9 @@ import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class HunterZombie extends CapableZombie {
-    public static final int waveCost = 500;
-    public static final float abilityCooldown = 0.7f;
-    public static final double abilityRange = Constants.Game.TILE_WIDTH * 1.5;
+    public static final int WAVE_COST = 500;
+    public static final float ABILITY_COOLDOWN = 0.7f;
+    public static final double ABILITY_RANGE = Constants.Game.TILE_WIDTH * 1.5;
     private boolean shouldAttack = false;
     private boolean shouldShut = false;
     private double timer = 0;
@@ -35,13 +35,13 @@ public class HunterZombie extends CapableZombie {
             timer += dt;
             //---
             if (shutCounter == 3) {
-                if (timer >= abilityCooldown) {
+                if (timer >= ABILITY_COOLDOWN) {
                     shutCounter = 0;
                     shouldAttack = false;
                     shouldShut = false;
                     timer = 0;
                 }
-            } else if (timer >= abilityCooldown) {
+            } else if (timer >= ABILITY_COOLDOWN) {
                 shouldShut = true;
                 shutCounter++;
                 timer = 0;

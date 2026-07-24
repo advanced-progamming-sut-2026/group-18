@@ -5,7 +5,7 @@
 //import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 //
 //public class ArcadeZombie extends VehicleZombie {
-//    public static final int waveCost = 600;
+//    public static final int WAVE_COST = 600;
 //    public ArcadeZombie(int health, double speed, int attackPower, int row, double startX,
 //                        double x, double y, double xSpeed, double ySpeed, double delta, int bucketHeadHealth) {
 //        // ابتدا فرستادن اطلاعات به کلاس والد همراه با ساخت آبجکت آرکید ماشین با مختصات زامبی

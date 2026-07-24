@@ -18,7 +18,7 @@ public enum SunType {
     RADIOACTIVE(ConfigManager.economy().radioactiveSunValue) {
         @Override
         public void tick(int ticks, Sun self, GameBoard gameBoard) {
-            if (self.getY() > self.GROUND_LEVEL || self.target != null) return;
+            if (self.getY() > self.groundLevel || self.target != null) return;
 
             self.type = SunType.NORMAL;
             AppModel.addAfterPrompt("RadioActive sun became a normal sun.");

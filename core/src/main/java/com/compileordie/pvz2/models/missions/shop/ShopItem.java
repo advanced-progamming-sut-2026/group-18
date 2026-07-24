@@ -8,7 +8,12 @@ public class ShopItem {
     public int quantity;
     public int maxOwnable;
 
-    public ShopItem(String itemId, String displayName, int price, CurrencyType currencyType, int quantity, int maxOwnable) {
+    public ShopItem(String itemId,
+                    String displayName,
+                    int price,
+                    CurrencyType currencyType,
+                    int quantity,
+                    int maxOwnable) {
         this.itemId = itemId;
         this.displayName = displayName;
         this.price = price;

@@ -5,10 +5,10 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Json;
 
 public final class ConfigLoader {
-    private static final Json json = new Json();
+    private static final Json JSON = new Json();
 
     static {
-        json.setIgnoreUnknownFields(true);
+        JSON.setIgnoreUnknownFields(true);
     }
 
     private ConfigLoader() {
@@ -20,6 +20,6 @@ public final class ConfigLoader {
             throw new RuntimeException("Missing config file: " + path);
         }
 
-        return json.fromJson(clazz, file);
+        return JSON.fromJson(clazz, file);
     }
 }

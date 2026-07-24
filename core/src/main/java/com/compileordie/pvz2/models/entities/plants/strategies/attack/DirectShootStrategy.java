@@ -13,7 +13,9 @@ public class DirectShootStrategy implements AttackStrategy {
     private final Class<? extends Projectile> projectileType;
     private final int projectileCount;
 
-    public DirectShootStrategy(List<Integer> laneOffsets, Class<? extends Projectile> projectileType, int projectileCount) {
+    public DirectShootStrategy(List<Integer> laneOffsets,
+                               Class<? extends Projectile> projectileType,
+                               int projectileCount) {
         this.laneOffsets = laneOffsets;
         this.projectileType = projectileType;
         this.projectileCount = projectileCount;

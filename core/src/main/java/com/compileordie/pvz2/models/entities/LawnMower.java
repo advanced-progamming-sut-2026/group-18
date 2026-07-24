@@ -36,7 +36,9 @@ public class LawnMower extends GameEntity {
 
             if (!casualties.isEmpty()) {
                 StringBuilder sb = new StringBuilder();
-                sb.append("The lawn mower in the row ").append(lane.row).append(" is triggered and killed these zombies: ");
+                sb.append("The lawn mower in the row ")
+                    .append(lane.row)
+                    .append(" is triggered and killed these zombies: ");
                 for (int i = 0; i < casualties.size(); i++) {
                     sb.append(casualties.get(i).getType().toString());
                     if (i < casualties.size() - 1) sb.append(", ");

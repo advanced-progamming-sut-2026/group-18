@@ -3,7 +3,7 @@ package com.compileordie.pvz2.models.entities.zombies.variants.standard;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class ImpZombie extends StandardZombie {
-    public static final int waveCost = 100;
+    public static final int WAVE_COST = 100;
     private double originalGroundY;       // مختصات Y سطح زمین (برای تشخیص فرود دقیق روی زمین)
 
     public ImpZombie(double health, double speed, int attackPower, int row, double startX,

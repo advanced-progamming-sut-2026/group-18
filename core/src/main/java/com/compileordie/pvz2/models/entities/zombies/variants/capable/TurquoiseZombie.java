@@ -5,7 +5,7 @@ import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class TurquoiseZombie extends CapableZombie {
-    public static final int waveCost = 500;
+    public static final int WAVE_COST = 500;
     public int totalStolenSuns;
     private boolean shouldSteal = false;
     private boolean shouldLaser = false;
@@ -14,8 +14,8 @@ public class TurquoiseZombie extends CapableZombie {
     private boolean isStealing;
     private double stealTimer;
     private double stealTime;
-    private double laserTimer;
-    private double lasetTime;
+//    private double laserTimer;
+//    private double lasetTime;
 
     public TurquoiseZombie(double health, double speed, int attackPower, int row, double startX,
                            double x, double y,
@@ -67,7 +67,7 @@ public class TurquoiseZombie extends CapableZombie {
         }
     }
 
-    private void stealSunFromPlayerBalance(int amount) {
+    public void stealSunFromPlayerBalance(int amount) {
     }
 
     @Override

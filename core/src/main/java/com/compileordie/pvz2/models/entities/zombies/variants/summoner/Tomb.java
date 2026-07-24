@@ -17,9 +17,9 @@ import static com.compileordie.pvz2.models.entities.plants.enums.ProjectileType.
 public class Tomb extends Obstacle {
     private double health;
     private final int row;
-    private final int col;
+//    private final int col;
     private final double positionX;
-    private final double positionY;
+//    private final double positionY;
     private boolean isDestroyed;
     private static final EnumSet<ProjectileType> BLOCKED_BY_GRAVESTONE = EnumSet.of(
         NORMAL,

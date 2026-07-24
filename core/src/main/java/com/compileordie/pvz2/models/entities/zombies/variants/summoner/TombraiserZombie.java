@@ -3,7 +3,7 @@ package com.compileordie.pvz2.models.entities.zombies.variants.summoner;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class TombraiserZombie extends SummonerZombie {
-    public static final int waveCost = 300;
+    public static final int WAVE_COST = 300;
     private boolean spawnTomb = false;
 
     public TombraiserZombie(double health, double speed, int attackPower, int row, double startX,

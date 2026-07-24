@@ -69,79 +69,89 @@ public class TravelLogMenuController {
     public static String claimReward(String questId) {
         Player player = AppModel.player;
         QuestManager.checkDailyReset(player);
+
         Quest quest = QuestManager.getQuestById(questId);
-        if (quest == null) {
-            return "[ERROR] Quest ID not found.";
-        }
+        if (quest == null) return "[ERROR] Quest ID not found.";
+
         if (player.claimedQuests.contains(quest.id)) {
             return "[ERROR] You have already claimed the reward for this quest.";
         }
+
         int current = player.questProgress.getOrDefault(quest.id, 0);
         if (current < quest.targetAmount) {
             return "[ERROR] Quest is not completed yet. Progress: " + current + "/" + quest.targetAmount;
         }
 
-        String rewardMessage = quest.rewardAmount + " " + quest.rewardType;
+        String rewardMessage = grantReward(player, quest);
+        if (rewardMessage.startsWith("[ERROR]")) return rewardMessage;
 
-        // Grant Reward
-        if (quest.rewardType.equalsIgnoreCase("COINS")) {
+        updateQuestStats(player, quest);
+        new UserDatabase(player.username).save(player);
+        return "Reward claimed successfully! You received " + rewardMessage + ".";
+    }
+
+    private static String grantReward(Player player, Quest quest) {
+        String type = quest.rewardType.toUpperCase();
+        if (type.equals("COINS")) {
             player.coins += quest.rewardAmount;
-        } else if (quest.rewardType.equalsIgnoreCase("DIAMONDS")) {
+            return quest.rewardAmount + " COINS";
+        } else if (type.equals("DIAMONDS")) {
             player.diamonds += quest.rewardAmount;
-        } else if (quest.rewardType.equalsIgnoreCase("RANDOM_SEED")) {
-            if (player.unlockedPlants != null && !player.unlockedPlants.isEmpty()) {
-                Random rand = new Random();
-                PlantType randomPlant = player.unlockedPlants.get(rand.nextInt(player.unlockedPlants.size()));
-                if (player.seedPackets == null) player.seedPackets = new HashMap<>();
-                player.seedPackets.put(randomPlant,
-                    player.seedPackets.getOrDefault(randomPlant, 0) + quest.rewardAmount);
+            return quest.rewardAmount + " DIAMONDS";
+        } else if (type.equals("RANDOM_SEED")) {
+            return grantRandomSeed(player, quest.rewardAmount);
+        } else if (type.equals("RANDOM_PLANT")) {
+            return grantRandomPlant(player);
+        }
+        return grantSpecificSeed(player, quest.rewardType, quest.rewardAmount);
+    }
 
-                rewardMessage = quest.rewardAmount + "x " + randomPlant.toString() + " Seed Packets";
-            } else {
-                return "[ERROR] You must unlock at least one plant to receive random seed packets.";
-            }
-        } else if (quest.rewardType.equalsIgnoreCase("RANDOM_PLANT")) {
-            List<PlantType> lockedPlants = Arrays.stream(PlantType.values())
-                .filter(p -> player.unlockedPlants == null || !player.unlockedPlants.contains(p))
-                .toList();
-
-            if (!lockedPlants.isEmpty()) {
-                Random rand = new Random();
-                PlantType newPlant = lockedPlants.get(rand.nextInt(lockedPlants.size()));
-                if (player.unlockedPlants == null) player.unlockedPlants = new ArrayList<>();
-                player.unlockedPlants.add(newPlant);
-
-                rewardMessage = "1x " + newPlant.toString() + " (New Plant!)";
-            } else {
-                // Fallback reward if they already own every plant in the game
-                player.coins += ConfigManager.economy().questFallbackReward;
-                rewardMessage = ConfigManager.economy().questFallbackReward + " COINS (All plants already unlocked!)";
-            }
-        } else {
-            // Assume it's a specific seed packet string, e.g., "PEASHOOTER"
-            PlantType targetPlant = PlantType.getByName(quest.rewardType);
-            if (targetPlant != null) {
-                // Ensure map exists (failsafe)
-                if (player.seedPackets == null) player.seedPackets = new HashMap<>();
-                player.seedPackets.put(targetPlant,
-                    player.seedPackets.getOrDefault(targetPlant, 0) + quest.rewardAmount);
-
-                rewardMessage = quest.rewardAmount + "x " + targetPlant + " Seed Packets";
-            } else {
-                return "[ERROR] Unknown reward type configuration: " + quest.rewardType;
-            }
+    private static String grantRandomSeed(Player player, int amount) {
+        if (player.unlockedPlants == null || player.unlockedPlants.isEmpty()) {
+            return "[ERROR] You must unlock at least one plant to receive random seed packets.";
         }
 
-        // Mark as claimed and update stats
-        player.claimedQuests.add(quest.id);
+        PlantType randomPlant = player.unlockedPlants.get(new Random().nextInt(player.unlockedPlants.size()));
+        if (player.seedPackets == null) player.seedPackets = new HashMap<>();
+        player.seedPackets.put(randomPlant, player.seedPackets.getOrDefault(randomPlant, 0) + amount);
 
+        return amount + "x " + randomPlant.toString() + " Seed Packets";
+    }
+
+    private static String grantRandomPlant(Player player) {
+        List<PlantType> lockedPlants = Arrays.stream(PlantType.values())
+            .filter(p -> player.unlockedPlants == null || !player.unlockedPlants.contains(p))
+            .toList();
+
+        if (lockedPlants.isEmpty()) {
+            int fallback = ConfigManager.economy().questFallbackReward;
+            player.coins += fallback;
+            return fallback + " COINS (All plants already unlocked!)";
+        }
+
+        PlantType newPlant = lockedPlants.get(new Random().nextInt(lockedPlants.size()));
+        if (player.unlockedPlants == null) player.unlockedPlants = new ArrayList<>();
+        player.unlockedPlants.add(newPlant);
+
+        return "1x " + newPlant.toString() + " (New Plant!)";
+    }
+
+    private static String grantSpecificSeed(Player player, String plantName, int amount) {
+        PlantType targetPlant = PlantType.getByName(plantName);
+        if (targetPlant == null) return "[ERROR] Unknown reward type configuration: " + plantName;
+
+        if (player.seedPackets == null) player.seedPackets = new HashMap<>();
+        player.seedPackets.put(targetPlant, player.seedPackets.getOrDefault(targetPlant, 0) + amount);
+
+        return amount + "x " + targetPlant + " Seed Packets";
+    }
+
+    private static void updateQuestStats(Player player, Quest quest) {
+        player.claimedQuests.add(quest.id);
         if (quest.category == QuestCategory.DAILY) {
             player.completedTotalDailyQuests++;
         } else {
             player.completedTotalNonDailyQuests++;
         }
-
-        new UserDatabase(player.username).save(player);
-        return "Reward claimed successfully! You received " + rewardMessage + ".";
     }
 }

@@ -9,7 +9,13 @@ public class LevelConditionQuest extends Quest {
         super();
     }
 
-    public LevelConditionQuest(String id, String title, String description, QuestCategory category, String rewardType, int rewardAmount, String requiredContext) {
+    public LevelConditionQuest(String id,
+                               String title,
+                               String description,
+                               QuestCategory category,
+                               String rewardType,
+                               int rewardAmount,
+                               String requiredContext) {
         super(id, title, description, category, 1, rewardType, rewardAmount); // Target is always 1 for a level clear
         this.requiredContext = requiredContext;
     }

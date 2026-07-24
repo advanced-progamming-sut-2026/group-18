@@ -5,10 +5,20 @@ package com.compileordie.pvz2.models.entities.zombies.variants.vehicle;//package
 //import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 //
 //public class TroglobiteZombie extends VehicleZombie {
-//    public static final int waveCost = 600;
+//    public static final int WAVE_COST = 600;
 //    public TroglobiteZombie(int health, double speed, int attackPower, int row, double startX,
 //                            double x, double y, double xSpeed, double ySpeed, double delta, int iceBlockHealth) {
-//        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, delta, new IceBlock(iceBlockHealth, row, x), ZombieType.TROGLOBITE);
+//        super(health,
+//            speed,
+//            attackPower,
+//            row,
+//            startX,
+//            x,
+//            y,
+//            xSpeed,
+//            ySpeed,
+//            delta,
+//            new IceBlock(iceBlockHealth, row, x), ZombieType.TROGLOBITE);
 //    }
 //
 //    public void pushIceBlock(int ticks) {

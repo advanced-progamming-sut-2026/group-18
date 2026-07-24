@@ -8,19 +8,19 @@ import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 
 public class SeedPacket extends GameEntity {
     public PlantType plantType;
-    public final int DESPAWN_TICKS;
+    public final int despawnTicks;
     public int tickTimer;
 
     public SeedPacket(PlantType plantType, double x, double y) {
         super(x, y, 0, 0);
         this.plantType = plantType;
-        this.DESPAWN_TICKS =
+        this.despawnTicks =
             (int) Math.floor(ConfigManager.gameplay().seedPacketDespawn / Constants.Game.TIME_COEFFICIENT);
         this.tickTimer = 0;
     }
 
     public void tick(int ticks, GameBoard gameBoard) {
-        if (tickTimer >= DESPAWN_TICKS) {
+        if (tickTimer >= despawnTicks) {
             gameBoard.seedPackets.remove(this);
         }
 

@@ -5,8 +5,8 @@ import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class FishermanZombie extends CapableZombie {
-    public static final int waveCost = 600;
-    public static final float abilityCooldown = 5.0f;
+    public static final int WAVE_COST = 600;
+    public static final float ABILITY_COOLDOWN = 5.0f;
 
     private boolean shouldHook = false;
     private double timer = 0;
@@ -32,7 +32,7 @@ public class FishermanZombie extends CapableZombie {
         float dt = 1 * Constants.Game.TIME_COEFFICIENT;
         timer += dt;
 
-        if (timer >= abilityCooldown) {
+        if (timer >= ABILITY_COOLDOWN) {
             shouldHook = true;
             timer = 0;
         }
