@@ -3,6 +3,7 @@ package com.compileordie.pvz2.models.game.economy;
 import com.badlogic.gdx.math.MathUtils;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;

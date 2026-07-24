@@ -81,8 +81,8 @@ public class ZombieBuilder {
             case ALL_STAR:
                 return new AllStarZombie(1100, 0.16, 150, row, startX, 2.5, x, y, 0.16, 0);
 
-            case ARCADE_ZOMBIE:
-                return new ArcadeZombie(490, 0.19, 100, row, startX, x, y, 0.19, 0, 0.05, 1100);
+            /*case ARCADE_ZOMBIE:
+                return new ArcadeZombie(490, 0.19, 100, row, startX, x, y, 0.19, 0, 0.05, 1100);*/
 
             case PARASOL_ZOMBIE:
                 return new ParasolZombie(350, 0.25, 100, row, startX, x, y, 0.25, 0);

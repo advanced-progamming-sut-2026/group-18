@@ -1,7 +1,7 @@
 package com.compileordie.pvz2.models.entities.zombies.services.manager;
 
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
-import com.compileordie.pvz2.models.entities.plants.variants.Plant;
+import com.compileordie.pvz2.models.entities.plants.Plant;
 
 import java.util.EnumSet;
 import java.util.Set;

@@ -2,7 +2,7 @@ package com.compileordie.pvz2.models.entities.zombies.services.manager;
 
 import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
-import com.compileordie.pvz2.models.entities.plants.variants.Plant;
+import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.game.board.GameBoard;
