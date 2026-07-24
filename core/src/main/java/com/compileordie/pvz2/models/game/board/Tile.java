@@ -1,7 +1,6 @@
 package com.compileordie.pvz2.models.game.board;
 
 import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
-import com.compileordie.pvz2.models.entities.plants.variants.Plant;
 
 public class Tile {
     public int row;

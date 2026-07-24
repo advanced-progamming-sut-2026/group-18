@@ -2,7 +2,6 @@ package com.compileordie.pvz2.models.game.board;
 
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.LawnMower;
-import com.compileordie.pvz2.models.entities.plants.variants.Plant;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
 import java.util.ArrayList;

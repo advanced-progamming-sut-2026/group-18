@@ -1,54 +1,69 @@
 package com.compileordie.pvz2.models.entities.zombies;
-import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
+
+import com.compileordie.pvz2.models.entities.zombies.types.StatusEffectType;
+import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
 public class StatusEffect {
-    private final EffectType effectType;
+    private final StatusEffectType effectType;
     private final int durationTicks;
+    private final int magnitude; // NEW: Needed for how much damage Poison does
     private int elapsedTicks;
     private boolean isApplied;
 
-    public StatusEffect(EffectType effectType, int durationTicks) {
+    // Updated constructor to accept magnitude
+    public StatusEffect(StatusEffectType effectType, int durationTicks, int magnitude) {
         this.effectType = effectType;
         this.durationTicks = durationTicks;
+        this.magnitude = magnitude;
         this.elapsedTicks = 0;
         this.isApplied = false;
     }
 
-    // بررسی منقضی شدگی افکت
     public boolean isExpired() {
         return elapsedTicks >= durationTicks;
     }
 
+    public void applyToZombie(Zombie zombie) {
+        this.isApplied = true;
+
+        // Immediate stat changes upon applying
+        if (effectType == StatusEffectType.HYPNOTIZED) {
+            zombie.setHypnotized(true);
+            zombie.setCurrentSpeed(-Math.abs(zombie.getCurrentSpeed())); // Walk backward
+        }
+    }
 
     public void removeFromZombie(Zombie zombie) {
         this.isApplied = false;
-        elapsedTicks = 0;
 
-        // TODO :
-        // باید با توجه به نوع افکت، اثر آن از روی زامبی برداشته شود
-        // طبیعتا بخشی از آن با استفاده از خود سرویس ها انجام می شود
-        // بخشی از آن نیز با استفاده از اتمام تیک یا یک تغییری ستینگ در زامبی انجام می شود
+        // Revert stat changes when effect ends
+        if (effectType == StatusEffectType.HYPNOTIZED) {
+            zombie.setHypnotized(false);
+            zombie.recalculateSpeed(); // Fix direction
+        } else if (effectType == StatusEffectType.CHILLED) {
+            zombie.recalculateSpeed(); // Fix speed
+        }
     }
 
-    // پیش بردن تیک افکت + اعمال تغییراتی که احیانا حین افکت اعمال می شود
     public void updateZombieTick(Zombie zombie) {
         if (!isApplied) return;
         elapsedTicks++;
-        // الان از 1 شروع میشه
 
-        // TODO :
-        // باید با توجه به نوع افکت، اثر آن از روی زامبی اعمال شود
-        // طبیعتا با استفاده از خود سرویس ها انجام می شود
+        // Apply continuous Poison damage every 60 ticks (1 second)
+        if (effectType == StatusEffectType.POISONED && elapsedTicks % 60 == 0) {
+            zombie.takeDamage(magnitude, DamageType.POISON);
+        }
 
-        if (isExpired()){
+        if (isExpired()) {
             removeFromZombie(zombie);
         }
     }
 
     // Getters
-    public EffectType getEffectType() { return effectType; }
+    public StatusEffectType getEffectType() { return effectType; }
     public int getDurationTicks() { return durationTicks; }
     public int getElapsedTicks() { return elapsedTicks; }
+    public int getMagnitude() { return magnitude; }
     public boolean isApplied() { return isApplied; }
 }
