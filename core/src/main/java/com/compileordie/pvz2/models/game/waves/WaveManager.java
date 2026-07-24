@@ -1,13 +1,15 @@
 package com.compileordie.pvz2.models.game.waves;
 
 import com.compileordie.pvz2.models.AppModel;
-import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.game.board.GameBoard;
+import com.compileordie.pvz2.models.game.levels.ChapterType;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class WaveManager {
     public GameBoard gameBoard;
@@ -53,13 +55,13 @@ public class WaveManager {
 
         // 1. Calculate Multipliers Before Purchasing
         if (currentWave == waveNumber) {
-            System.out.println("The final wave has come.");
+            AppModel.addAfterPrompt("The final wave has come.");
             waveBudget *= 2; // Final wave is 2x previous wave difficulty
         } else if (currentWave > 1) {
-            System.out.println("Wave " + currentWave + " started.");
+            AppModel.addAfterPrompt("Wave " + currentWave + " started.");
             waveBudget = (int) Math.floor(waveBudget * 1.25f); // Standard waves scale by 25%
         } else {
-            System.out.println("Wave 1 started.");
+            AppModel.addAfterPrompt("Wave 1 started.");
         }
 
         previousWaveTotalMaxHealth = 0;
@@ -67,7 +69,7 @@ public class WaveManager {
         // 2. Generate Zombies for the calculated budget
         List<Zombie> pendingZombies = generateZombiesForBudget();
 
-        // 3. Delegate placement and environmental triggers to the WaveType
+        // 3. Delegate placement to the WaveType
         type.spawnWave(this, gameBoard, pendingZombies);
 
         currentWave++;
@@ -81,11 +83,13 @@ public class WaveManager {
 
         // Buy zombies until budget is filled (limit consecutive fails to prevent infinite loops)
         while (spent < waveBudget && consecutiveFails < 15) {
-            // Assume you have a ZombieType enum and Factory
-            ZombieType zombieType = ZombieType.getRandomType();
+            // Get a random zombie that is valid for the current map
+            ZombieType zombieType = getRandomZombieType();
+
             int cost = zombieType.waveCost;
 
             if (spent + cost <= waveBudget) {
+                // TODO: Use actual zombie factory here:
                 Zombie zombie = ZombieFactory.create(zombieType);
 
                 zombiesForWave.add(zombie);
@@ -98,5 +102,36 @@ public class WaveManager {
         }
 
         return zombiesForWave;
+    }
+
+    /**
+     * Filters the ZombieType enum to return a valid random zombie
+     * based on the current level's chapter.
+     */
+    private ZombieType getRandomZombieType() {
+        List<ZombieType> validTypes = new ArrayList<>();
+
+        for (ZombieType zombieType : ZombieType.values()) {
+            // Generic zombies are always added
+            if (zombieType.chapter == null) {
+                validTypes.add(zombieType);
+            }
+            // Chapter specific zombies are added only if they match the current WaveType
+            else if (this.type == WaveType.ANCIENT_EGYPT && zombieType.chapter == ChapterType.ANCIENT_EGYPT) {
+                validTypes.add(zombieType);
+            }
+            else if (this.type == WaveType.DARK_AGES && zombieType.chapter == ChapterType.DARK_AGES) {
+                validTypes.add(zombieType);
+            }
+            else if (this.type == WaveType.BIG_WAVE_BEACH && zombieType.chapter == ChapterType.BIG_WAVE_BEACH) {
+                validTypes.add(zombieType);
+            }
+            else if (this.type == WaveType.FROSTBITE_CAVE && zombieType.chapter == ChapterType.FROSTBITE_CAVES) {
+                validTypes.add(zombieType);
+            }
+        }
+
+        Random random = new Random();
+        return validTypes.get(random.nextInt(validTypes.size()));
     }
 }

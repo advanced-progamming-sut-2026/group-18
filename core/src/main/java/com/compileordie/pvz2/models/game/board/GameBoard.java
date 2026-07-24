@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.models.game.board;
 
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.plants.variants.Plant;
@@ -8,6 +9,7 @@ import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.game.economy.EconomyManager;
 import com.compileordie.pvz2.models.game.economy.EconomyType;
 import com.compileordie.pvz2.models.game.waves.WaveManager;
@@ -53,7 +55,6 @@ public class GameBoard {
         return lanes.get(index);
     }
 
-    // NEW OVERLOADED METHOD FROM TEAMMATE
     public Lane getLane(float y) {
         return getLane((int) Math.floor(y / Constants.Game.TILE_SIZE));
     }
@@ -80,6 +81,12 @@ public class GameBoard {
         return getTile((int) (x / Constants.Game.TILE_SIZE), (int) (y / Constants.Game.TILE_SIZE));
     }
 
+    public ArrayList<Tile> getAllTiles() {
+        return lanes.stream()
+            .flatMap(lane -> lane.tiles.stream())
+            .collect(Collectors.toCollection(ArrayList::new));
+    }
+
     public ArrayList<Zombie> getAllZombies() {
         return lanes.stream()
             .flatMap(lane -> lane.zombies.stream())
@@ -92,7 +99,13 @@ public class GameBoard {
             .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    // ADDED: The missing getter so our strategies can spawn bullets perfectly
+    public ArrayList<Tomb> getAllTombs() {
+        return getAllTiles().stream()
+            .filter(tile -> tile.obstacle != null && tile.obstacle.type == ObstacleType.TOMB)
+            .map(tile -> (Tomb) tile.obstacle)
+            .collect(Collectors.toCollection(ArrayList::new));
+    }
+
     public ArrayList<Projectile> getActiveProjectiles() {
         return projectiles;
     }

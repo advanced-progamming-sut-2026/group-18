@@ -6,6 +6,9 @@ import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
 import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
+import com.compileordie.pvz2.models.game.board.GameBoard;
+
 import java.util.EnumSet;
 import static com.compileordie.pvz2.models.entities.plants.enums.ProjectileType.*;
 
@@ -55,4 +58,10 @@ public class Tomb extends Obstacle {
     public int getRow() { return row; }
     public double getPositionX() { return positionX; }
     public boolean isDestroyed() { return isDestroyed; }
+
+    public void spawnZombie(GameBoard gameBoard, Zombie zombie) {
+        zombie.setX(getX());
+        zombie.setY(getY());
+        gameBoard.getLane((float) getY()).zombies.add(zombie);
+    }
 }
