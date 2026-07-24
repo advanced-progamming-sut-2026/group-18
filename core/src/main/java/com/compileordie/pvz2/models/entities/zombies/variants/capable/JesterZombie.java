@@ -1,76 +1,68 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.capable;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
-/**
- * [زامبی ژانگولر - JesterZombie]
- * خوشه: CapableZombie (زامبی دارای توانمندی فعال)
- * وضعیت سینتکس: کاملاً اصلاح‌شده؛ متد useAbility اضافه شد تا ساختار اورراید کلاس مادر رعایت شود.
- * * توضیحات داک: با آمدن پرتابه شروع به چرخیدن می‌کند، سریع‌تر راه می‌رود و تمام تیرهای مستقیم را به سمت گیاهان برمی‌گرداند.
- */
 public class JesterZombie extends CapableZombie {
-    private boolean isSpinning;
-    private final double spinningSpeedMultiplier = 1.6; // داک: حین چرخیدن، سریع‌تر به جلو حرکت می‌کند
+    public static final int waveCost = 450;
+    private final double spinningSpeedMultiplier = 1.6;
+    private boolean isSpinning = false;
+    private double spinTimer = 0;
+    private static final double SPIN_DURATION = 3.0;
 
-    public JesterZombie(int health, double speed, int attackPower, int row, double startX,
-                        double abilityCooldown, int abilityRange, double delta, double x, double y, double xSpeed, double ySpeed) {
-        super(health, speed, attackPower, row, startX, abilityCooldown, abilityRange, delta, x, y, xSpeed, ySpeed, ZombieType.JESTER_ZOMBIE);
-        this.isSpinning = false;
-    }
-
-    /**
-     * پیاده‌سازی متد انتزاعی اجباری خوشه CapableZombie
-     * از آنجا که توانایی چرخیدن ژانگولر به صورت واکنش‌پذیر (Reactive) به تیرهاست،
-     * این متد می‌تواند به عنوان فعال‌ساز وضعیت یا بررسی دوره‌ای کوول‌داون توسط سیستم توانایی‌ها استفاده شود.
-     */
-    @Override
-    public void useAbility() {
-        // در صورت نیاز به استفاده ترکیبی با سرویس توانایی‌ها
-        resetCooldown();
+    public JesterZombie(double health, double speed, int attackPower, int row, double startX,
+                        double x, double y,
+                        double xSpeed, double ySpeed) {
+        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, ZombieType.JESTER_ZOMBIE);
     }
 
     @Override
-    public void recalculateSpeed() {
-        super.recalculateSpeed(); // اعمال افکت‌های کاهنده پایه از کلاس ریشه
+    public void tick() {
+        super.tick();
+        if (isDead()) return;
 
-        // داک: در صورت چرخیدن، سرعت حرکت افزایش پیدا می‌کند
-        if (this.isSpinning) {
-            this.currentSpeed = this.currentSpeed * this.spinningSpeedMultiplier;
+        float dt = 1 * Constants.Game.TIME_COEFFICIENT;
+        if (isSpinning) {
+            spinTimer += dt;
+            if (spinTimer >= SPIN_DURATION) {
+                stopSpinning();
+            }
         }
     }
 
     public void startSpinning() {
         this.isSpinning = true;
-        recalculateSpeed();
+        this.spinTimer = 0;
     }
 
     public void stopSpinning() {
         this.isSpinning = false;
-        recalculateSpeed();
-    }
-
-    @Override
-    public void takeDamage(int amount, DamageType damageType) {
-        if (isDead()) return;
-
-        // داک: حین چرخیدن تمام تیرهای مستقیم (NORMAL یا ICE) را برمی‌گرداند و دمیج نمی‌خورد
-        if (this.isSpinning && (damageType == DamageType.NORMAL || damageType == DamageType.ICE)) {
-            return; // دفع کامل آسیب؛ منطق بازگرداندن پرتابه توسط ZombieCombatService فیلتر می‌شود
-        }
-
-        this.health -= amount;
-        if (this.health < 0) this.health = 0;
-    }
-
-    /**
-     * متد سیگنال‌دهی به ZombieCombatService برای بررسی امکان انعکاس پرتابه
-     */
-    public boolean reflectProjectileFlag(DamageType type) {
-        return this.isSpinning && (type == DamageType.NORMAL || type == DamageType.ICE);
+        this.spinTimer = 0;
     }
 
     public boolean isSpinning() {
-        return this.isSpinning;
+        return isSpinning;
+    }
+
+    public boolean reflectProjectileFlag(DamageType type) {
+        return isSpinning && (type == DamageType.NORMAL || type == DamageType.ICE);
+    }
+
+
+    @Override
+    public void takeDamage(double amount, DamageType damageType) {
+        if (isDead()) return;
+
+        // عدم دریافت آسیب تیرهای مستقیم حین چرخش
+        if (isSpinning && (damageType == DamageType.NORMAL || damageType == DamageType.ICE)) {
+            return;
+        }
+
+        this.health -= amount;
+        if (this.health <= 0) {
+            this.health = 0;
+            handleDeath();
+        }
     }
 }

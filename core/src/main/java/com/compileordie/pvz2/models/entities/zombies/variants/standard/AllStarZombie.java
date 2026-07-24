@@ -6,12 +6,13 @@ import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 public class AllStarZombie extends StandardZombie {
     private boolean isCharging;
     private final double chargeSpeedScale;
+    public static final int waveCost = 1000;
 
-    public AllStarZombie(int health, double speed, int attackPower, int row, double startX,
-                         int initialArmor, double chargeSpeedScale, double x, double y,
+    public AllStarZombie(double health, double speed, int attackPower, int row, double startX
+                         , double x, double y,
                          double xSpeed, double ySpeed) {
-        super(health, speed, attackPower, row, startX, initialArmor, x, y, xSpeed, ySpeed, ZombieType.ALL_STAR);
-        this.chargeSpeedScale = chargeSpeedScale;
+        super(health, speed, attackPower, row, startX,0 , x, y, xSpeed, ySpeed, ZombieType.ALL_STAR);
+        this.chargeSpeedScale = 2.5;
         startCharge();
     }
 
@@ -25,37 +26,29 @@ public class AllStarZombie extends StandardZombie {
         recalculateSpeed();
     }
 
-    /**
-     * متد برخورد طبق ساختار سرویس‌محور بازنویسی شد.
-     * این متد صرفاً وضعیت خود زامبی را مدیریت می‌کند.
-     * سرویس بازی (CombatService) به صورت بیرونی متوجه شارژ زامبی شده و گیاه را نابود می‌کند.
-     */
-    public void onPlantCollision() {
+    // در آینده موقع بر خورد آل استار موقع محاسبه دمیج کافیست نوشته شود : damage + onPlantCollision()
+    public double onPlantCollision() {
         if (isCharging) {
             stopCharge(); // تکل تمام می‌شود
-        } else {
-            startEating(); // متوقف شدن برای جویدن عادی
+            return 99999.0; // در واقع میزان دمیج برای اولین برخورد با گیاه
         }
+        return 0;
     }
 
-    @Override
+    // در آینده موقع بر خورد آل استار موقع محاسبه دمیج کافیست نوشته شود : damage + onPlantCollision()
+    public double onZombieCollision() {
+        if (isCharging){
+            return 99999.0;
+        }
+        return 0;
+    }
+
     public void recalculateSpeed() {
-        super.recalculateSpeed();
         if (isCharging) {
-            this.currentSpeed *= this.chargeSpeedScale;
+            setXSpeed(getXSpeed() * chargeSpeedScale);
         }
-    }
-
-    @Override
-    public void takeDamage(int amount, DamageType damageType) {
-        if (isDead()) return;
-        int oldArmor = this.armorHealth;
-
-        super.takeDamage(amount, damageType);
-
-        // داک بازی: اگر کلاه ورزشی فوتبالیست حین دویدن بشکند، دویدنش متوقف می‌شود
-        if (oldArmor > 0 && !hasArmor()) {
-            stopCharge();
+        else {
+            setXSpeed(getStableSpeed());
         }
     }
 

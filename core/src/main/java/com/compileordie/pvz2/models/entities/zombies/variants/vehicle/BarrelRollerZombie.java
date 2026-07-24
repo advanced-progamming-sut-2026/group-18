@@ -9,17 +9,13 @@ import java.util.List;
 
 public class BarrelRollerZombie extends VehicleZombie {
 
-    private final int impHealth;
-    private final double impSpeed;
-    private final int impAttackPower;
+    public static final int waveCost = 500;
+//    protected boolean isVehicleDestroyed = false;
 
-    public BarrelRollerZombie(int health, double speed, int attackPower, int row, double startX,
-                              double x, double y, double xSpeed, double ySpeed, double delta,
-                              int barrelHealth, int impHealth, double impSpeed, int impAttackPower) {
-        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, delta, new Barrel(barrelHealth, row, x, y), ZombieType.BARREL_ROLLER);
-        this.impHealth = impHealth;
-        this.impSpeed = impSpeed;
-        this.impAttackPower = impAttackPower;
+    public BarrelRollerZombie(double health, double speed, int attackPower, int row, double startX,
+                              double x, double y, double xSpeed, double ySpeed,
+                              double barrelHealth) {
+        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, new Barrel(barrelHealth, row, x, y), ZombieType.BARREL_ROLLER);
     }
 
     public void pushBarrel(int ticks) {
@@ -32,33 +28,31 @@ public class BarrelRollerZombie extends VehicleZombie {
 
     @Override
     public void move(int ticks) {
-        if (!isVehicleDestroyed) {
+
+        if (!isVehicleDestroyed()) {
             pushBarrel(ticks);
         } else {
+            ((Barrel) this.vehicle).updatePosition(this.getX());
             float dt = ticks * Constants.Game.TIME_COEFFICIENT;
-            setXSpeed(this.currentSpeed);
             setX(getX() - getXSpeed() * dt);
         }
     }
 
     @Override
-    public void takeDamage(int amount, DamageType damageType) {
+    public void takeDamage(double amount, DamageType damageType) {
         if (isDead()) return;
 
-        if (!this.isVehicleDestroyed) {
-            // سناریو ۱: تیر قوسی دبه را نادیده می‌گیرد و به گوشت زامبی می‌خورد
+        if (!this.isVehicleDestroyed()) {
             if (damageType == DamageType.LOBBER) {
                 this.health -= amount;
+                if (this.health <= 0){
+
+                }
             }
-            // سناریو ۲: دمیج‌های عادی به بدنه دبه می‌خورند
             else if (!this.vehicle.isDestroyed()) {
                 if (this.vehicle instanceof Barrel) {
                     Barrel barrel = (Barrel) this.vehicle;
-                    barrel.takeDamage(amount, this.impHealth, this.impSpeed, this.impAttackPower);
-
-                    if (barrel.isDestroyed()) {
-                        onVehicleDestroyed();
-                    }
+                    barrel.takeDamage(amount);
                 }
             }
         } else {
@@ -66,22 +60,5 @@ public class BarrelRollerZombie extends VehicleZombie {
         }
 
         if (this.health < 0) this.health = 0;
-    }
-
-    public List<ImpZombie> getSpawnedImpsFromVehicle() {
-        if (this.vehicle instanceof Barrel) {
-            return ((Barrel) this.vehicle).pollSpawnedImps();
-        }
-        return new ArrayList<>();
-    }
-
-    /**
-     * داک: اگر زامبی پیش از بشکه بمیرد، بشکه به عنوان مانع ثابت روی زمین مپ جا می‌ماند
-     */
-    public Barrel detachBarrelOnDeath() {
-        if (!this.isVehicleDestroyed && this.vehicle instanceof Barrel) {
-            return (Barrel) this.vehicle;
-        }
-        return null;
     }
 }

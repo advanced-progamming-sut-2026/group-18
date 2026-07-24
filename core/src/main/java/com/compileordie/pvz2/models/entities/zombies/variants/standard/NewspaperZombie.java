@@ -4,18 +4,23 @@ import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class NewspaperZombie extends StandardZombie {
     private boolean isEnraged;
+    public static final int waveCost = 700;
+    private double chargeSpeed;
+    private int chargeAttack;
 
-    public NewspaperZombie(int health, double speed, int attackPower, int row, double startX, int initialArmor, double x, double y, double xSpeed, double ySpeed) {
+    public NewspaperZombie(double health, double speed, int attackPower, int row, double startX, double initialArmor, double x, double y, double xSpeed, double ySpeed, double chargeSpeed, int chargeAttack) {
         super(health, speed, attackPower, row, startX, initialArmor, x, y, xSpeed, ySpeed, ZombieType.NEWSPAPER_ZOMBIE);
         this.isEnraged = false;
+        this.chargeSpeed = chargeSpeed;
+        this.chargeAttack = chargeAttack;
     }
 
     @Override
-    public int takeArmorDamage(int amount) {
+    public double takeArmorDamage(double amount) {
         if (hasArmor()) {
             this.armorHealth -= amount;
             if (this.armorHealth <= 0) {
-                int overflow = -this.armorHealth;
+                double overflow = -this.armorHealth;
                 removeArmor();
                 if (!isEnraged) {
                     enterEnrageMode();
@@ -30,15 +35,9 @@ public class NewspaperZombie extends StandardZombie {
     @Override
     public void enterEnrageMode() {
         this.isEnraged = true;
-        recalculateSpeed(); // اعمال آنی سرعت خشم
+        setXSpeed(chargeSpeed);
+        setAttackPower(chargeAttack);
     }
 
-    // فیکس حیاتی: بازنویسی متد بازخوانی سرعت برای جلوگیری از ریست شدن مالتیپلیر سرعت در هر تیک
-    @Override
-    public void recalculateSpeed() {
-        super.recalculateSpeed();
-        if (isEnraged) {
-            this.currentSpeed *= 2.5;
-        }
-    }
+    public boolean isEnraged() { return isEnraged; }
 }

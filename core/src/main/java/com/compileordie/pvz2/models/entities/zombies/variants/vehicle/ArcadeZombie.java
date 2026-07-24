@@ -5,33 +5,33 @@ import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class ArcadeZombie extends VehicleZombie {
-
-    public ArcadeZombie(int health, double speed, int attackPower, int row, double startX,
-                        double x, double y, double xSpeed, double ySpeed, double delta, int bucketHeadHealth) {
-        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, delta, new ArcadeMachine(bucketHeadHealth), ZombieType.ARCADE_ZOMBIE);
+    public static final int waveCost = 600;
+    public ArcadeZombie(double health, double speed, int attackPower, int row, double startX,
+                        double x, double y, double xSpeed, double ySpeed, double delta, double bucketHeadHealth) {
+        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed,
+            new ArcadeMachine(bucketHeadHealth, x, y), ZombieType.ARCADE_ZOMBIE);
     }
 
     public void pushMachine(int ticks) {
         super.pushVehicle(ticks);
+        if (this.vehicle instanceof ArcadeMachine) {
+            ((ArcadeMachine) this.vehicle).updatePosition(this.getX(), this.getY());
+        }
     }
 
     @Override
     public void move(int ticks) {
-        if (!isVehicleDestroyed) {
+        if (!isVehicleDestroyed()) {
             pushMachine(ticks);
         } else {
             float dt = ticks * Constants.Game.TIME_COEFFICIENT;
-            setXSpeed(this.currentSpeed);
             setX(getX() - getXSpeed() * dt);
         }
     }
 
-    /**
-     * مدیریت رویداد برخورد فیزیکی با موانع (گیاهان یا زامبی‌های هیپنوتیزم شده)
-     * @return boolean اگر true باشد یعنی دستگاه سالم است و گیاه باید درجا له (حذف) شود
-     */
+
     public boolean onCollisionDetected() {
-        if (!this.isVehicleDestroyed) {
+        if (!isVehicleDestroyed()) {
             pushMachine(1);
             return true; // سیگنال لایه سرویس برای نابودی آنی گیاه برخورد کرده
         } else {
@@ -40,23 +40,18 @@ public class ArcadeZombie extends VehicleZombie {
         }
     }
 
-    public void onCabinetBreak(int damageAmount) {
-        if (this.vehicle instanceof ArcadeMachine) {
-            ArcadeMachine machine = (ArcadeMachine) this.vehicle;
-            machine.takeDamage(damageAmount);
-
-            if (machine.isDestroyed()) {
-                onVehicleDestroyed();
-            }
+    public void onCabinetBreak(double damageAmount) {
+        if (this.vehicle != null) {
+            this.vehicle.takeDamage(damageAmount);
         }
     }
 
     @Override
-    public void takeDamage(int amount, DamageType damageType) {
+    public void takeDamage(double amount, DamageType damageType) {
         if (isDead()) return;
 
         // تا زمان سلامت دستگاه، کل دمیج‌ها به عنوان سپر جذب کابین آرکید می‌شوند
-        if (!this.isVehicleDestroyed) {
+        if (!isVehicleDestroyed()) {
             onCabinetBreak(amount);
         } else {
             this.health -= amount;

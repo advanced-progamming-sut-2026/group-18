@@ -16,6 +16,7 @@ public final class Constants {
             public static final String ROOT = "configs/";
             public static final String GAMEPLAY = ROOT + "gameplay.json";
             public static final String ECONOMY = ROOT + "economy.json";
+            public static final String ZOMBIES = ROOT + "zombie.json";
             public static final String SECURITY_QUESTIONS = ROOT + "security_questions.json";
         }
 
@@ -39,6 +40,10 @@ public final class Constants {
         public static final float TILE_SIZE = 1f;
         public static final float GRAVITY_COEFFICIENT = 1f;
         public static final float TIME_COEFFICIENT = 0.1f;
+
+        // TODO : complete these
+        public static final float TILE_WIDTH = 0.0f;
+        public static final float TILE_HEIGHT = 0.0f;
     }
 
     public static final class QuestCallbacks {

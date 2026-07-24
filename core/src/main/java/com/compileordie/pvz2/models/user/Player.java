@@ -98,4 +98,12 @@ public class Player {
     public boolean isSecurityAnswerCorrect(String answer) {
         return securityAnswer.equalsIgnoreCase(answer);
     }
+
+    public float getDLIncrease() {
+        return difficultyLevel / 3f;
+    }
+
+    public float getDLDecrease() {
+        return 3f / difficultyLevel;
+    }
 }

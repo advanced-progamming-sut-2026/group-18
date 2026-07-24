@@ -4,36 +4,20 @@ import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class TombraiserZombie extends SummonerZombie {
-    private final int numberOfTombsToSpawn;
+    public static final int waveCost = 300;
+    private boolean spawnTomb = false;
 
-    public TombraiserZombie(int health, double speed, int attackPower, int row, double startX,
-                            double x, double y, double xSpeed, double ySpeed,
-                            int numberOfTombsToSpawn, double timeBetweenRaisings) {
-        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, timeBetweenRaisings, ZombieType.TOMBRAISER);
-        this.numberOfTombsToSpawn = numberOfTombsToSpawn;
+    public TombraiserZombie(double health, double speed, int attackPower, int row, double startX,
+                            double x, double y, double xSpeed, double ySpeed) {
+        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, ZombieType.TOMBRAISER, 10.0);
     }
 
 
     @Override
     public void summon() {
-        resetSummonCooldown();
+        spawnTomb = true;
     }
 
-    /**
-     * توسط ZombieAbilityService صدا زده می‌شود تا تعداد قبرهای مورد نیاز تولید شود.
-     */
-    public int launchBone() {
-        if (!canSummon()) return 0;
-        this.summon();
-        return this.numberOfTombsToSpawn;
-    }
-
-    public int getNumberOfTombsToSpawn() { return this.numberOfTombsToSpawn; }
-
-    @Override
-    public void takeDamage(int amount, DamageType damageType) {
-        if (isDead()) return;
-        this.health -= amount;
-        if (this.health < 0) this.health = 0;
-    }
+    public boolean shouldWeSpawnTomb() { return spawnTomb; }
+    public void stopSpawnTomb() { this.spawnTomb = false; }
 }
