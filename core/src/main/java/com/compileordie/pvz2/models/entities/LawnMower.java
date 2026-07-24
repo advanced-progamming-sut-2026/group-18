@@ -27,7 +27,6 @@ public class LawnMower extends GameEntity {
                 Zombie zombie = lane.zombies.get(i);
                 if (zombie.getX() <= this.getX()) {
                     if (!(zombie instanceof GargantuarZombie) && zombie.isAlive()) {
-                        // NOTE: Might as well use zombie manager here.
                         casualties.add(zombie);
                         zombie.die();
                         lane.zombies.remove(i);

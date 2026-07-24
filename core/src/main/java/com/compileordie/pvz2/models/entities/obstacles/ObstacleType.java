@@ -6,10 +6,8 @@ public enum ObstacleType {
     BARREL,
     ICE_BLOCK,
     TOMB,
-    ARCADE_MACHINE,
-    ;
+    ARCADE_MACHINE;
 
     public void tick(int ticks, Obstacle self, GameBoard gameBoard) {
-        // TODO: To be implemented.
     }
 }

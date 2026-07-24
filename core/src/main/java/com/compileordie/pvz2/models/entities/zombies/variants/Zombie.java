@@ -12,14 +12,14 @@ import java.util.Iterator;
 import java.util.List;
 
 public abstract class Zombie extends GameEntity {
+    public boolean isEating;
+    public boolean isCombatingWithHypnotized;
     protected double health;
     protected double stableSpeed;
     protected int attackPower;
     protected int currentRow;
     protected List<StatusEffect> activeEffects;
     protected boolean skipThisTick;
-    public boolean isEating;
-    public boolean isCombatingWithHypnotized;
     protected boolean stopZombieNow = false;
     protected boolean isHypnotized = false;
     protected ZombieType type;
@@ -56,13 +56,14 @@ public abstract class Zombie extends GameEntity {
             }
         }
 
-        this.setXSpeed(isHypnotized ? this.getXSpeed()*(-1) : this.getXSpeed());
+        this.setXSpeed(isHypnotized ? -Math.abs(this.getXSpeed()) : Math.abs(this.getXSpeed()));
 
         // برای جابجایی - اعمال دمیح - اعمال توانایی سرویس ها هستند که پیش می برند
 
     }
 
-    public void handleDeath() {}
+    public void handleDeath() {
+    }
 
     @Override
     public void move(int ticks) {
@@ -74,9 +75,17 @@ public abstract class Zombie extends GameEntity {
         // در واقع ما سرعت زامبی رو مثبت می گیریم ولی ضریب منفی رو دستی بهش می دیم
     }
 
-    public void startEating() { this.isEating = true; }
-    public void stopEating() { this.isEating = false; }
-    public boolean isEating() { return this.isEating; }
+    public void startEating() {
+        this.isEating = true;
+    }
+
+    public void stopEating() {
+        this.isEating = false;
+    }
+
+    public boolean isEating() {
+        return this.isEating;
+    }
 
     public void addEffect(StatusEffect effect) {
         activeEffects.add(effect);
@@ -98,7 +107,9 @@ public abstract class Zombie extends GameEntity {
     }
 
 
-    public boolean isDead() { return this.health <= 0; }
+    public boolean isDead() {
+        return this.health <= 0;
+    }
 
     public boolean hasEffect(EffectType type) {
         if (activeEffects == null || activeEffects.isEmpty()) return false;
@@ -108,26 +119,73 @@ public abstract class Zombie extends GameEntity {
         return false;
     }
 
-    public void setSkip(boolean s) { this.skipThisTick = s; }
-    public void setStopZombieNow(boolean s) { stopZombieNow = s; }
-    public boolean getStopZombieNow() { return stopZombieNow; }
-    public void setHealth(double hp) { this.health = hp; }
-    public double getHealth() { return health; }
-    public List<StatusEffect> getActiveEffects() { return activeEffects; }
-    public int getAttackPower() { return attackPower; }
-    public void setAttackPower(int a) { this.attackPower = a; }
-    public double getStableSpeed() { return stableSpeed; }
-    public int getCurrentRow() { return currentRow; }
-    public void setCurrentRow(int currentRow) { this.currentRow = currentRow; }
+    public void setSkip(boolean s) {
+        this.skipThisTick = s;
+    }
+
+    public boolean getStopZombieNow() {
+        return stopZombieNow;
+    }
+
+    public void setStopZombieNow(boolean s) {
+        stopZombieNow = s;
+    }
+
+    public double getHealth() {
+        return health;
+    }
+
+    public void setHealth(double hp) {
+        this.health = hp;
+    }
+
+    public List<StatusEffect> getActiveEffects() {
+        return activeEffects;
+    }
+
+    public int getAttackPower() {
+        return attackPower;
+    }
+
+    public void setAttackPower(int a) {
+        this.attackPower = a;
+    }
+
+    public double getStableSpeed() {
+        return stableSpeed;
+    }
+
+    public int getCurrentRow() {
+        return currentRow;
+    }
+
+    public void setCurrentRow(int currentRow) {
+        this.currentRow = currentRow;
+    }
+
     public abstract void takeDamage(double amount, DamageType damageType);
+
     public ZombieType getType() {
         return type;
     }
+
     public void setType(ZombieType type) {
         this.type = type;
     }
-    public boolean isHypnotized() { return isHypnotized; }
-    public boolean isCombatingWithHypnotized() { return isCombatingWithHypnotized; }
-    public void setHypnotized(boolean h) {this.isHypnotized = h;}
-    public void setCombatingWithHypnotized(boolean c) { this.isCombatingWithHypnotized = c; }
+
+    public boolean isHypnotized() {
+        return isHypnotized;
+    }
+
+    public void setHypnotized(boolean h) {
+        this.isHypnotized = h;
+    }
+
+    public boolean isCombatingWithHypnotized() {
+        return isCombatingWithHypnotized;
+    }
+
+    public void setCombatingWithHypnotized(boolean c) {
+        this.isCombatingWithHypnotized = c;
+    }
 }

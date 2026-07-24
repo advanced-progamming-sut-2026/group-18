@@ -3,9 +3,6 @@ package com.compileordie.pvz2.models.entities.zombies.variants.vehicle;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
-import com.compileordie.pvz2.models.entities.zombies.variants.standard.ImpZombie;
-import java.util.ArrayList;
-import java.util.List;
 
 public class BarrelRollerZombie extends VehicleZombie {
 
@@ -45,11 +42,10 @@ public class BarrelRollerZombie extends VehicleZombie {
         if (!this.isVehicleDestroyed()) {
             if (damageType == DamageType.LOBBER) {
                 this.health -= amount;
-                if (this.health <= 0){
+                if (this.health <= 0) {
 
                 }
-            }
-            else if (!this.vehicle.isDestroyed()) {
+            } else if (!this.vehicle.isDestroyed()) {
                 if (this.vehicle instanceof Barrel) {
                     Barrel barrel = (Barrel) this.vehicle;
                     barrel.takeDamage(amount);

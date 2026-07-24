@@ -1,9 +1,10 @@
 {
+  "pwygStartingSuns": 800,
+  "sunStealVelocity": 0.5,
   "normalSunValue": 25,
   "specialSunValue": 100,
   "radioactiveSunValue": 100,
   "natualSunLifespan": 10,
-  "sunStealVelocity": 1,
   "plantSunLifespan": 8,
   "radioactiveSunZombieDamageAmount": 150,
   "radioactiveSunZombieDamageArea": 5,
@@ -32,5 +33,6 @@
   "greenhouseMarigoldTime": 2,
   "greenhousePlantTime": 8,
   "greenhouseMarigoldCoins": 500,
-  "questFallbackReward": 5000
+  "questFallbackReward": 5000,
+  "conveyorBeltPlantTimer": 12
 }

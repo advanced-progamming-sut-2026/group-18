@@ -10,11 +10,10 @@ import java.util.List;
 public class WizardZombie extends CapableZombie {
     public static final int waveCost = 650;
     public static final float abilityCooldown = 7.0f;
-
+    private final List<Object> hexedPlants;
     private boolean shouldHex = false;
     private boolean shouldReleaseHex = false;
     private double timer = 0;
-    private final List<Object> hexedPlants;
 
     public WizardZombie(double health, double speed, int attackPower, int row, double startX,
                         double x, double y,
@@ -63,8 +62,19 @@ public class WizardZombie extends CapableZombie {
         return hexedPlants;
     }
 
-    public boolean shouldWeHex() { return shouldHex; }
-    public void stopHex() { this.shouldHex = false; }
-    public boolean shouldWeReleaseHex() { return shouldReleaseHex; }
-    public void stopReleaseHex() { this.shouldReleaseHex = false; }
+    public boolean shouldWeHex() {
+        return shouldHex;
+    }
+
+    public void stopHex() {
+        this.shouldHex = false;
+    }
+
+    public boolean shouldWeReleaseHex() {
+        return shouldReleaseHex;
+    }
+
+    public void stopReleaseHex() {
+        this.shouldReleaseHex = false;
+    }
 }

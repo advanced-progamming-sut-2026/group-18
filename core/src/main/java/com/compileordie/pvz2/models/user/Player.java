@@ -2,9 +2,8 @@ package com.compileordie.pvz2.models.user;
 
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
-import com.compileordie.pvz2.models.levels.types.ChapterType;
-import com.compileordie.pvz2.models.levels.types.LevelId;
-import com.compileordie.pvz2.models.minigames.MiniGameType;
+import com.compileordie.pvz2.models.game.levels.ChapterType;
+import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.models.missions.News;
 import com.compileordie.pvz2.models.missions.Pot;
 import com.compileordie.pvz2.models.missions.shop.DailyOffer;
@@ -13,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Player {
     public String username;
@@ -24,9 +24,7 @@ public class Player {
     public String securityAnswer;
     public ArrayList<PlantType> unlockedPlants;
     public ArrayList<ZombieType> unlockedZombies;
-    public ArrayList<ChapterType> unlockedChapters;
-    public ArrayList<LevelId> unlockedLevels;
-    public ArrayList<MiniGameType> unlockedMiniGames;
+    public ArrayList<LevelID> unlockedLevelIDs;
     public ArrayList<Pot> greenhousePots;
     public ArrayList<News> news;
     public Map<PlantType, Integer> seedPackets;
@@ -43,6 +41,7 @@ public class Player {
     public int plantFoodCount;
     public int coins;
     public int diamonds;
+    public float playtime;
 
     public Player() {
     }
@@ -64,11 +63,14 @@ public class Player {
         this.securityAnswer = securityAnswer;
         this.unlockedPlants = new ArrayList<>();
         this.unlockedZombies = new ArrayList<>();
-        this.unlockedChapters = new ArrayList<>();
-        this.unlockedLevels = new ArrayList<>();
-        this.unlockedMiniGames = new ArrayList<>();
+        this.unlockedLevelIDs = new ArrayList<>();
         this.greenhousePots = new ArrayList<>();
         this.news = new ArrayList<>();
+        this.seedPackets = new HashMap<>();
+        this.plantLevels = new HashMap<>();
+        this.plantBoosts = new HashMap<>();
+        this.questProgress = new HashMap<>();
+        this.claimedQuests = new HashSet<>();
         this.dailyOffer = null;
         this.completedMiniGames = 0;
         this.completedTotalDailyQuests = 0;
@@ -78,16 +80,20 @@ public class Player {
         this.plantFoodCount = 0;
         this.coins = 0;
         this.diamonds = 0;
-        this.seedPackets = new HashMap<>();
-        this.plantLevels = new HashMap<>();
-        this.plantBoosts = new HashMap<>();
+        this.playtime = 0f;
+
         for (PlantType plantType : PlantType.values()) {
             seedPackets.put(plantType, 0);
             plantLevels.put(plantType, 1);
             plantBoosts.put(plantType, false);
         }
-        this.questProgress = new HashMap<>();
-        this.claimedQuests = new HashSet<>();
+
+        for (LevelID levelID : LevelID.values()) {
+            if (levelID.chapterType == ChapterType.MINIGAME) {
+                unlockedLevelIDs.add(levelID);
+            }
+        }
+        unlockedLevelIDs.add(LevelID.values()[0]);
 
         // Initialize Row 1 (first 5 pots) as unlocked per the design requirements
         for (int i = 0; i < 5; i++) {
@@ -97,6 +103,20 @@ public class Player {
 
     public boolean isSecurityAnswerCorrect(String answer) {
         return securityAnswer.equalsIgnoreCase(answer);
+    }
+
+    public ArrayList<LevelID> getUnlockedLevels() {
+        return unlockedLevelIDs
+            .stream()
+            .filter(levelID -> levelID.chapterType != ChapterType.MINIGAME)
+            .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    public ArrayList<ChapterType> getUnlockedChapters() {
+        return getUnlockedLevels()
+            .stream()
+            .map(levelID -> levelID.chapterType)
+            .collect(Collectors.toCollection(ArrayList::new));
     }
 
     public float getDLIncrease() {

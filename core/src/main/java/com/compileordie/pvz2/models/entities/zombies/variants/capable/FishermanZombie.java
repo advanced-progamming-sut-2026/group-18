@@ -48,7 +48,15 @@ public class FishermanZombie extends CapableZombie {
         }
     }
 
-    public boolean shouldWeHook() { return shouldHook; }
-    public void stopHook() { this.shouldHook = false; }
-    public void setShouldHook(boolean shouldHook) { this.shouldHook = shouldHook; }
+    public boolean shouldWeHook() {
+        return shouldHook;
+    }
+
+    public void stopHook() {
+        this.shouldHook = false;
+    }
+
+    public void setShouldHook(boolean shouldHook) {
+        this.shouldHook = shouldHook;
+    }
 }

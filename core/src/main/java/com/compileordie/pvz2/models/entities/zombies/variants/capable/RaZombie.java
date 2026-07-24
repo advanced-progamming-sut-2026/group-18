@@ -26,7 +26,8 @@ public class RaZombie extends CapableZombie {
         if (this.health <= 0) {
             this.health = 0;
             handleDeath();
-        };
+        }
+        ;
     }
 
     @Override
@@ -42,7 +43,7 @@ public class RaZombie extends CapableZombie {
         //---
         float dt = 1 * Constants.Game.TIME_COEFFICIENT;
         if (!shouldSteal) stealTimer += dt;
-        if (stealTimer >= stealTime){
+        if (stealTimer >= stealTime) {
             stealTimer = 0;
             shouldSteal = true;
         }
@@ -54,10 +55,22 @@ public class RaZombie extends CapableZombie {
         shouldBackSun = true;
     }
 
-    public boolean shouldWeSteal() { return shouldSteal; }
-    public void stopStealing() { shouldSteal = false; }
-    public boolean shouldWeBackSun() { return shouldBackSun; }
-    public void stopBackSun() { shouldBackSun = false; }
+    public boolean shouldWeSteal() {
+        return shouldSteal;
+    }
+
+    public void stopStealing() {
+        shouldSteal = false;
+    }
+
+    public boolean shouldWeBackSun() {
+        return shouldBackSun;
+    }
+
+    public void stopBackSun() {
+        shouldBackSun = false;
+    }
+
     public void addStolen(int amount) {
         this.stolenSunCount += amount;
     }

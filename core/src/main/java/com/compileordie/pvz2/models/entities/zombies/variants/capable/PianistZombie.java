@@ -36,6 +36,11 @@ public class PianistZombie extends CapableZombie {
         if (this.health < 0) this.health = 0;
     }
 
-    public boolean isPlaying() { return isPlaying; }
-    public void stopPlaying() { isPlaying = false; }
+    public boolean isPlaying() {
+        return isPlaying;
+    }
+
+    public void stopPlaying() {
+        isPlaying = false;
+    }
 }

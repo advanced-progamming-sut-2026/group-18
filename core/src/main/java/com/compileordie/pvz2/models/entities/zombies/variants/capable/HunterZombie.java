@@ -20,7 +20,7 @@ public class HunterZombie extends CapableZombie {
     }
 
     @Override
-    public void move(int ticks){
+    public void move(int ticks) {
         if (shouldAttack) return;
         super.move(ticks);
     }
@@ -34,17 +34,16 @@ public class HunterZombie extends CapableZombie {
         if (shouldAttack) {
             timer += dt;
             //---
-            if (shutCounter == 3){
+            if (shutCounter == 3) {
                 if (timer >= abilityCooldown) {
                     shutCounter = 0;
                     shouldAttack = false;
                     shouldShut = false;
                     timer = 0;
                 }
-            }
-            else if (timer >= abilityCooldown){
+            } else if (timer >= abilityCooldown) {
                 shouldShut = true;
-                shutCounter ++;
+                shutCounter++;
                 timer = 0;
             }
         }
@@ -57,8 +56,20 @@ public class HunterZombie extends CapableZombie {
         this.health -= amount;
         if (this.health < 0) this.health = 0;
     }
-    public void setShouldAttack(boolean a) { shouldAttack = a; }
-    public boolean getShouldAttack() { return shouldAttack; }
-    public void setShouldShut(boolean a) { shouldShut = a; }
-    public boolean getShouldShut() { return shouldShut; }
+
+    public boolean getShouldAttack() {
+        return shouldAttack;
+    }
+
+    public void setShouldAttack(boolean a) {
+        shouldAttack = a;
+    }
+
+    public boolean getShouldShut() {
+        return shouldShut;
+    }
+
+    public void setShouldShut(boolean a) {
+        shouldShut = a;
+    }
 }

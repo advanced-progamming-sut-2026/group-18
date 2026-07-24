@@ -2,15 +2,16 @@ package com.compileordie.pvz2.models.entities.zombies.variants.vehicle;
 
 import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.ImpZombie;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Barrel extends MovableObject {
-    private boolean spawnImp = false;
     private final int row;
-    private double positionX;
     private final double positionY;
     private final List<ImpZombie> spawnedImps = new ArrayList<>();
+    private boolean spawnImp = false;
+    private double positionX;
 
     public Barrel(double barrelHealth, int row, double positionX, double positionY) {
         super(barrelHealth, positionX, positionY, ObstacleType.BARREL);
@@ -36,17 +37,27 @@ public class Barrel extends MovableObject {
     }
 
 
-
     public int getRow() {
         return row;
     }
-    public boolean shouldWeSpawnImp() { return spawnImp; }
-    public void stopSpawnImp() { this.spawnImp = false; }
+
+    public boolean shouldWeSpawnImp() {
+        return spawnImp;
+    }
+
+    public void stopSpawnImp() {
+        this.spawnImp = false;
+    }
+
     public double getPositionX() {
         return positionX;
     }
+
     public double getPositionY() {
         return positionY;
     }
-    public boolean isImpassable() { return true; }
+
+    public boolean isImpassable() {
+        return true;
+    }
 }

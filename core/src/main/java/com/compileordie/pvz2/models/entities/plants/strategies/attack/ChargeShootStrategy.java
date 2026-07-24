@@ -1,9 +1,9 @@
 package com.compileordie.pvz2.models.entities.plants.strategies.attack;
 
 import com.compileordie.pvz2.models.entities.plants.Plant;
-import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
+import com.compileordie.pvz2.models.game.board.GameBoard;
 
 import java.util.List;
 

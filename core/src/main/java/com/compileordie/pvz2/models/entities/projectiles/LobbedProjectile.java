@@ -1,4 +1,5 @@
 package com.compileordie.pvz2.models.entities.projectiles;
+
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 
 public class LobbedProjectile extends Projectile {
@@ -9,5 +10,7 @@ public class LobbedProjectile extends Projectile {
         this.splashRadius = splashRadius;
     }
 
-    public double getSplashRadius() { return splashRadius; }
+    public double getSplashRadius() {
+        return splashRadius;
+    }
 }

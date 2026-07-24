@@ -1,6 +1,5 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.summoner;
 
-import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class TombraiserZombie extends SummonerZombie {
@@ -18,6 +17,11 @@ public class TombraiserZombie extends SummonerZombie {
         spawnTomb = true;
     }
 
-    public boolean shouldWeSpawnTomb() { return spawnTomb; }
-    public void stopSpawnTomb() { this.spawnTomb = false; }
+    public boolean shouldWeSpawnTomb() {
+        return spawnTomb;
+    }
+
+    public void stopSpawnTomb() {
+        this.spawnTomb = false;
+    }
 }

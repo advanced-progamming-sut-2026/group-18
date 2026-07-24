@@ -4,9 +4,9 @@ import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class KnightZombie extends StandardZombie {
+    public static final int waveCost = 550;
     private double helmetArmorHealth;
     private double shoulderArmorHealth;
-    public static final int waveCost = 550;
 
     public KnightZombie(double health, double speed, int attackPower, int row, double startX, double helmet, double shoulder, double x, double y, double xSpeed, double ySpeed) {
         super(health, speed, attackPower, row, startX, helmet + shoulder, x, y, xSpeed, ySpeed, ZombieType.KNIGHT);
@@ -49,8 +49,13 @@ public class KnightZombie extends StandardZombie {
         return remainingDamage;
     }
 
-    public boolean isHelmetBroken() { return this.helmetArmorHealth <= 0; }
-    public boolean isShoulderArmorBroken() { return this.shoulderArmorHealth <= 0; }
+    public boolean isHelmetBroken() {
+        return this.helmetArmorHealth <= 0;
+    }
+
+    public boolean isShoulderArmorBroken() {
+        return this.shoulderArmorHealth <= 0;
+    }
 
     public void mushroomAbsorption() {
         this.helmetArmorHealth = 0;

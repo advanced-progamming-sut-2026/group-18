@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.models.repositories.configs;
 
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
+
 import java.util.HashMap;
 import java.util.Map;
 

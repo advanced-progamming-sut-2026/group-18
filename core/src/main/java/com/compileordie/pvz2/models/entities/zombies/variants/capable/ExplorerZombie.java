@@ -2,15 +2,13 @@ package com.compileordie.pvz2.models.entities.zombies.variants.capable;
 
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
-import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class ExplorerZombie extends CapableZombie {
     public static final int waveCost = 250;
-    private boolean isTorchOn;
-
     // TODO : در فاز گرافیک باید اصلاح دقیق بشود
     public static double enoghDistance = Constants.Game.TILE_WIDTH * 1.5;
+    private boolean isTorchOn;
 
     public ExplorerZombie(int health, double speed, int attackPower, int row, double startX,
                           double x, double y, double xSpeed, double ySpeed) {
@@ -36,6 +34,12 @@ public class ExplorerZombie extends CapableZombie {
     public boolean isTorchOn() {
         return this.isTorchOn;
     }
-    public void offTorch() { isTorchOn = false; }
-    private void onTorch() { isTorchOn = true; }
+
+    public void offTorch() {
+        isTorchOn = false;
+    }
+
+    private void onTorch() {
+        isTorchOn = true;
+    }
 }

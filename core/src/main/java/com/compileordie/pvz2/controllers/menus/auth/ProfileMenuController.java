@@ -119,10 +119,8 @@ public class ProfileMenuController {
         Player player = AppModel.player;
 
         // Null-safety checks for arrays/lists
-        int levelsPassed = (player.unlockedLevels != null) ? player.unlockedLevels.size() : 0;
         int plantsUnlocked = (player.unlockedPlants != null) ? player.unlockedPlants.size() : 0;
         int zombiesDiscovered = (player.unlockedZombies != null) ? player.unlockedZombies.size() : 0;
-        int chaptersUnlocked = (player.unlockedChapters != null) ? player.unlockedChapters.size() : 0;
         int potsUnlocked = (player.greenhousePots != null) ? player.greenhousePots.size() : 0;
 
         return "=== PLAYER PROFILE ===" + System.lineSeparator() +
@@ -136,8 +134,8 @@ public class ProfileMenuController {
             "Diamonds: " + player.diamonds + System.lineSeparator() +
             System.lineSeparator() +
             "=== PROGRESSION ===" + System.lineSeparator() +
-            "Levels Passed: " + levelsPassed + System.lineSeparator() +
-            "Chapters Unlocked: " + chaptersUnlocked + System.lineSeparator() +
+            "Levels Unlocked: " + player.getUnlockedLevels().size() + System.lineSeparator() +
+            "Chapters Unlocked: " + player.getUnlockedChapters().size() + System.lineSeparator() +
             "Plants Unlocked: " + plantsUnlocked + System.lineSeparator() +
             "Zombies Discovered: " + zombiesDiscovered + System.lineSeparator() +
             "Greenhouse Pots: " + potsUnlocked + "/20" + System.lineSeparator() +

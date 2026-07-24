@@ -86,22 +86,46 @@ public class Plant extends GameEntity {
 
     //=======================
     // new!
-    public int getFreezedByHunter() { return  isFreezedByHunter; }
-    public void increaseFreezedByHunter() { isFreezedByHunter += 1;}
+    public int getFreezedByHunter() {
+        return isFreezedByHunter;
+    }
+
+    public void increaseFreezedByHunter() {
+        isFreezedByHunter += 1;
+    }
+
     public boolean shouldBeFreezedByHunter() {
-        if (isFreezedByHunter == 3){
+        if (isFreezedByHunter == 3) {
             isFreezedByHunter = 0;
             isFreezedByZombieHunter = true;
             return true;
         }
         return false;
     }
-    public void setIsFreezedByHunterCounter(int a) { isFreezedByHunter = a; }
-    public boolean isFreezedByHunter() { return isFreezedByZombieHunter; }
-    public boolean isFreezedByOcto() { return isFreezedByOcto; }
-    public void setIsFreezedByHunter(boolean s) { isFreezedByZombieHunter = s; }
-    public void setFreezedByOcto(boolean f) { isFreezedByOcto = f; }
-    public boolean shouldBeFreezedByOcto() { return isFreezedByOcto; }
+
+    public void setIsFreezedByHunterCounter(int a) {
+        isFreezedByHunter = a;
+    }
+
+    public boolean isFreezedByHunter() {
+        return isFreezedByZombieHunter;
+    }
+
+    public boolean isFreezedByOcto() {
+        return isFreezedByOcto;
+    }
+
+    public void setFreezedByOcto(boolean f) {
+        isFreezedByOcto = f;
+    }
+
+    public void setIsFreezedByHunter(boolean s) {
+        isFreezedByZombieHunter = s;
+    }
+
+    public boolean shouldBeFreezedByOcto() {
+        return isFreezedByOcto;
+    }
     // new!
     //=======================
 
@@ -125,22 +149,60 @@ public class Plant extends GameEntity {
     public void setBaseHp(int baseHp) {
         this.baseHp = baseHp;
     }
+
     public void setActionIntervalTicks(double actionIntervalTicks) {
         this.actionIntervalTicks = actionIntervalTicks;
     }
-    public String getName() { return name; }
-    public PlantCategory getCategory() { return category; }
-    public List<PlantTag> getTags() { return tags; }
-    public boolean hasTag(PlantTag tag) { return tags != null && tags.contains(tag); }
 
-    public int getBaseDamage() { return baseDamage; }
-    public void setBaseDamage(int baseDamage) { this.baseDamage = baseDamage; }
-    public int getCurrentHp() { return currentHp; }
-    public void setCurrentHp(int hp) { this.currentHp = hp; }
-    public void takeDamage(int amount) { this.currentHp -= amount; }
-    public boolean isDead() { return this.currentHp <= 0; }
+    public String getName() {
+        return name;
+    }
 
-    public boolean targetsHighestHp() { return targetsHighestHp; }
-    public int getCost() { return cost; }
-    public int getLevel() { return level; }
+    public PlantCategory getCategory() {
+        return category;
+    }
+
+    public List<PlantTag> getTags() {
+        return tags;
+    }
+
+    public boolean hasTag(PlantTag tag) {
+        return tags != null && tags.contains(tag);
+    }
+
+    public int getBaseDamage() {
+        return baseDamage;
+    }
+
+    public void setBaseDamage(int baseDamage) {
+        this.baseDamage = baseDamage;
+    }
+
+    public int getCurrentHp() {
+        return currentHp;
+    }
+
+    public void setCurrentHp(int hp) {
+        this.currentHp = hp;
+    }
+
+    public void takeDamage(int amount) {
+        this.currentHp -= amount;
+    }
+
+    public boolean isDead() {
+        return this.currentHp <= 0;
+    }
+
+    public boolean targetsHighestHp() {
+        return targetsHighestHp;
+    }
+
+    public int getCost() {
+        return cost;
+    }
+
+    public int getLevel() {
+        return level;
+    }
 }

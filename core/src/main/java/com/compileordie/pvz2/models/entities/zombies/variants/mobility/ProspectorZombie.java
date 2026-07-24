@@ -2,22 +2,21 @@ package com.compileordie.pvz2.models.entities.zombies.variants.mobility;
 
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
-import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
 public class ProspectorZombie extends Zombie {
     public static final int waveCost = 200;
+    private final double timeToExplode = 10.0;
     private boolean dynamiteActive;
     private double dynamiteTimer;
-    private final double timeToExplode = 10.0;
     private boolean isReversedDirection;
     private double homeColumnX;
 
     public ProspectorZombie(double health, double speed, int attackPower, int row, double startX,
                             double x, double y, double xSpeed, double ySpeed) {
         // فراخوانی دقیق سازنده ۱۲ پارامتری کلاس MobilityZombie شما
-        super(health, speed, attackPower, row, startX,x, y, xSpeed, ySpeed, ZombieType.PROSPECTOR_ZOMBIE);
+        super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, ZombieType.PROSPECTOR_ZOMBIE);
 
         this.homeColumnX = Constants.Game.TILE_WIDTH / 1.7;
         this.dynamiteActive = true;
@@ -26,12 +25,12 @@ public class ProspectorZombie extends Zombie {
     }
 
     @Override
-    public void tick(){
+    public void tick() {
         super.tick();
-        if (dynamiteActive){
+        if (dynamiteActive) {
             float dt = 1 * Constants.Game.TIME_COEFFICIENT;
             dynamiteTimer += dt;
-            if (dynamiteTimer >= timeToExplode){
+            if (dynamiteTimer >= timeToExplode) {
                 dynamiteActive = false;
                 isReversedDirection = true;
                 setX(homeColumnX);
@@ -54,7 +53,7 @@ public class ProspectorZombie extends Zombie {
     public void takeDamage(double amount, DamageType damageType) {
         if (isDead()) return;
         this.health -= amount;
-        if (damageType == DamageType.ICE){
+        if (damageType == DamageType.ICE) {
             dynamiteActive = false;
             isReversedDirection = false;
         }

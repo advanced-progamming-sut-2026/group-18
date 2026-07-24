@@ -6,10 +6,10 @@ import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class JesterZombie extends CapableZombie {
     public static final int waveCost = 450;
+    private static final double SPIN_DURATION = 3.0;
     private final double spinningSpeedMultiplier = 1.6;
     private boolean isSpinning = false;
     private double spinTimer = 0;
-    private static final double SPIN_DURATION = 3.0;
 
     public JesterZombie(double health, double speed, int attackPower, int row, double startX,
                         double x, double y,

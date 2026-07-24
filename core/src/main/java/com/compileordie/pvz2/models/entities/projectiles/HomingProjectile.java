@@ -1,7 +1,8 @@
 package com.compileordie.pvz2.models.entities.projectiles;
+
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
-import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
+import com.compileordie.pvz2.models.game.board.GameBoard;
 
 public class HomingProjectile extends Projectile {
     private final Zombie target;

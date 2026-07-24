@@ -3,7 +3,6 @@ package com.compileordie.pvz2.models.game.board;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.mobility.DodoRiderZombie;
-import com.compileordie.pvz2.models.entities.zombies.variants.mobility.SnorkelZombie;
 
 public enum TileType {
     UNINITIALIZED(false) {
@@ -48,8 +47,7 @@ public enum TileType {
         @Override
         public void tick(int ticks, Tile self, GameBoard gameBoard) {
             // Shallow beaches behave like regular water when flooded
-            handleOceanTileLogic(self, gameBoard);
-            // NOTE: Zombie spawning pools check this type at the start of a wave
+            if (self.isUnderWater()) handleOceanTileLogic(self, gameBoard);
         }
     },
     DARK_AGES(true) {
@@ -103,7 +101,6 @@ public enum TileType {
 
                 int targetRow = r + rowOffset;
                 if (targetRow >= 0 && targetRow < gameBoard.totalRows) {
-                    // NOTE: Might as well use zombie manager here.
                     lane.zombies.remove(i);
                     zombie.setCurrentRow(targetRow);
                     gameBoard.getLane(targetRow).zombies.add(zombie);
