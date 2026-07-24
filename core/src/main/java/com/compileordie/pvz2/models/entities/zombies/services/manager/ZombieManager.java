@@ -4,7 +4,7 @@ import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
 import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
-import com.compileordie.pvz2.models.entities.plants.variants.Plant;
+import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;

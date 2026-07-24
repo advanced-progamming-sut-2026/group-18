@@ -134,6 +134,7 @@ public class Plant extends GameEntity {
     public boolean hasTag(PlantTag tag) { return tags != null && tags.contains(tag); }
 
     public int getBaseDamage() { return baseDamage; }
+    public void setBaseDamage(int baseDamage) { this.baseDamage = baseDamage; }
     public int getCurrentHp() { return currentHp; }
     public void setCurrentHp(int hp) { this.currentHp = hp; }
     public void takeDamage(int amount) { this.currentHp -= amount; }

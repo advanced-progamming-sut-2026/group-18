@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.game.board;
 
+import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.mobility.DodoRiderZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.mobility.SnorkelZombie;
@@ -129,20 +130,6 @@ public enum TileType {
                 AppModel.addAfterPrompt("Plant at (" + self.column + ", " + self.row + ") drowned in the ocean water.");
             }*/
             // TODO: Concrete implementation of the drowning logic here.
-        }
-
-        // 2. Manage Snorkel Zombie submersion states on THIS tile
-        for (Zombie zombie : lane.zombies) {
-            int currentTileX = zombie.getTileColumn();
-            if (self.column == currentTileX) {
-                if (zombie instanceof SnorkelZombie snorkel) {
-                    if (snorkel.isEating()) {
-                        snorkel.surface(); // Forces it up so regular shooters can hit it
-                    } else {
-                        snorkel.dive(); // Submerges it back underwater, gaining shooter immunity
-                    }
-                }
-            }
         }
     }
 }

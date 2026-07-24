@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.models.game.board;
 
 import com.compileordie.pvz2.config.Constants; // Added to support your teammate's Math.floor calculation
+import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.economy.EconomyManager;
@@ -51,7 +52,7 @@ public class GameBoard {
         // TODO: Tick zombie manager here.
         for (int i = projectiles.size() - 1; i >= 0; i--) {
             Projectile projectile = projectiles.get(i);
-            projectile.tick(ticks, this);
+            projectile.tick(this, ticks);
         }
 
         economyManager.tick(ticks);
