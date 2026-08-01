@@ -14,8 +14,8 @@ public class TurquoiseZombie extends CapableZombie {
     private boolean isStealing;
     private double stealTimer;
     private double stealTime;
-//    private double laserTimer;
-//    private double lasetTime;
+    private double laserTimer;
+    private double lasetTime;
 
     public TurquoiseZombie(double health, double speed, int attackPower, int row, double startX,
                            double x, double y,
@@ -113,5 +113,13 @@ public class TurquoiseZombie extends CapableZombie {
 
     public void startStealing() {
         this.isStealing = true;
+    }
+
+    public double getLaserTimer() {
+        return laserTimer;
+    }
+
+    public double getLasetTime() {
+        return lasetTime;
     }
 }

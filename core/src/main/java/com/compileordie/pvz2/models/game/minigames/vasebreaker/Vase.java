@@ -7,6 +7,8 @@ import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.game.board.GameBoard;
+import com.compileordie.pvz2.models.game.economy.Sun;
+import com.compileordie.pvz2.models.game.economy.SunType;
 
 public class Vase extends GameEntity {
     public GameBoard gameBoard;
@@ -50,6 +52,9 @@ public class Vase extends GameEntity {
                 getTileRow()));
         } else if (seedPacket != null) {
             gameBoard.seedPackets.add(seedPacket);
+        }
+        if (type == VaseType.NORMAL) {
+            gameBoard.economyManager.suns.add(new Sun(getX(), getY(), SunType.NORMAL, false, 0));
         }
         isBroken = true;
     }

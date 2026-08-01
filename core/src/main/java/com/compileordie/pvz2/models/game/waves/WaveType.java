@@ -69,6 +69,13 @@ public enum WaveType {
             placeZombiesRandomly(gameBoard, zombies.subList(tombSpawnCount, zombies.size()), 0);
         }
     },
+    ZOMBOTANY {
+        @Override
+        public void spawnWave(WaveManager self, GameBoard gameBoard, List<ZombieType> zombies) {
+            // TODO: Must include special zombies
+            NORMAL.spawnWave(self, gameBoard, zombies);
+        }
+    },
     NO_WAVES {
         @Override
         public void spawnWave(WaveManager self, GameBoard gameBoard, List<ZombieType> zombies) {
@@ -167,7 +174,7 @@ public enum WaveType {
         int tombsToSpawn = Math.min(emptyTiles.size(), random.nextInt(3) + 1);
         for (int i = 0; i < tombsToSpawn; i++) {
             Tile targetTile = emptyTiles.remove(random.nextInt(emptyTiles.size()));
-            targetTile.tomb = new Tomb(700,
+            targetTile.obstacle = new Tomb(700,
                 targetTile.row,
                 targetTile.column,
                 (targetTile.row + 0.5f) * Constants.Game.TILE_SIZE,

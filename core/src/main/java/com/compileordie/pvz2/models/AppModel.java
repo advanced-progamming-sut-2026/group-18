@@ -1,10 +1,17 @@
 package com.compileordie.pvz2.models;
 
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
+import com.compileordie.pvz2.models.game.GameSession;
+import com.compileordie.pvz2.models.game.levels.ChapterType;
+import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.models.user.Player;
 import com.compileordie.pvz2.views.helpers.Menu;
 
+import java.util.EnumMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
+
 
 public class AppModel {
     public static Queue<String> beforePrompts = new LinkedList<>();
@@ -12,6 +19,10 @@ public class AppModel {
     public static boolean isRunning = true;
     public static Menu menu = Menu.SIGNUP;
     public static Player player = null;
+    public static ChapterType currentChapter = null;
+    public static LevelID currentLevel = null;
+    public static GameSession gameSession = null;
+    public static Map<PlantType, Boolean> selectionDeck = new EnumMap<>(PlantType.class);
 
     private AppModel() {
     }
@@ -50,5 +61,12 @@ public class AppModel {
 
     public static void addAfterPrompt(String prompt) {
         afterPrompts.add(prompt);
+    }
+
+    public static void clearGameInitiation() {
+        currentChapter = null;
+        currentLevel = null;
+        gameSession = null;
+        selectionDeck = new EnumMap<>(PlantType.class);
     }
 }

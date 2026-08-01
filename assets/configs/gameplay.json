@@ -5,5 +5,6 @@
   "timedWarMax": 300,
   "loveYourPlantsMaxLost": 5,
   "maxTideLevel": 4,
-  "seedPacketDespawn": 60
+  "seedPacketDespawn": 60,
+  "beghouledScore": 5
 }

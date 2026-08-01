@@ -14,7 +14,6 @@ public enum LossCondition {
     SAVE_OUR_SEEDS {
         @Override
         public boolean evaluate(GameBoard gameBoard) {
-            // TODO: Add isSpecial to Plant.java and set gameBoard specialIsLost in die()
             return gameBoard.specialIsLost;
         }
     },
@@ -40,7 +39,6 @@ public enum LossCondition {
         @Override
         public boolean evaluate(GameBoard gameBoard) {
             return gameBoard.getAllZombies().isEmpty() && gameBoard.economyManager.sunAmount < 150;
-            // NOTE: Might need to change 150.
         }
     };
 

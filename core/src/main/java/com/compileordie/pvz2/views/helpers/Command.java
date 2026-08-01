@@ -20,6 +20,7 @@ public enum Command {
     LOGOUT("menu\\s+logout"),
     // Game Menu
     ENTER_CHAPTER("menu\\s+enter\\s+chapter\\s+-c\\s+(?<name>\\S+)"),
+    ENTER_LEVEL("menu\\s+enter\\s+level\\s+-c\\s+(?<name>\\S+)"),
     MENU_GREENHOUSE("menu\\s+greenhouse"),
     MENU_TRAVEL_LOG("menu\\s+travel-log"),
     MENU_LEADERBOARD("menu\\s+leaderboard"),

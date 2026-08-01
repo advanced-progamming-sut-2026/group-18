@@ -7,7 +7,7 @@ public enum WinCondition {
     STANDARD {
         @Override
         public boolean evaluate(GameBoard gameBoard) {
-            return gameBoard.waveManager.isLatWave() && gameBoard.getAllZombies().isEmpty();
+            return gameBoard.waveManager.isLastWave() && gameBoard.getAllZombies().isEmpty();
         }
     },
     TIMED_WAR {
@@ -26,6 +26,12 @@ public enum WinCondition {
         @Override
         public boolean evaluate(GameBoard gameBoard) {
             return gameBoard.lanes.stream().map(lane -> lane.isLost).reduce(true, Boolean::logicalAnd);
+        }
+    },
+    BEGHOULED {
+        @Override
+        public boolean evaluate(GameBoard gameBoard) {
+            return gameBoard.registeredShapes >= ConfigManager.gameplay().beghouledScore;
         }
     };
 

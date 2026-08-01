@@ -81,7 +81,7 @@ public class SignupMenuController {
             default -> null;
         };
         if (genderType == null) {
-            return "[ERROR] (Call be transphobic but) Invalid gender type.";
+            return "[ERROR] Invalid gender type.";
         }
         if (!password.equals(passwordConfirm)) {
             return "[ERROR] Passwords do not match.";

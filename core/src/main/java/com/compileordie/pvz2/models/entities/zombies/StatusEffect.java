@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.entities.zombies;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
@@ -77,6 +78,10 @@ public class StatusEffect {
         if (isExpired()) {
             removeFromZombie(zombie);
         }
+    }
+
+    public float getRemainingTime() {
+        return (durationTicks - elapsedTicks) * Constants.Game.TIME_COEFFICIENT;
     }
 
     // Getters

@@ -2,7 +2,11 @@ package com.compileordie.pvz2.models.game.board;
 
 import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
 import com.compileordie.pvz2.models.entities.plants.Plant;
+import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Tile {
     public GameBoard gameBoard;
@@ -11,7 +15,7 @@ public class Tile {
     public TileType type;
     public Plant plant;
     public Obstacle obstacle;
-    public Tomb tomb;
+    public Tomb tomb; // Redundant
     public boolean hasLilyPad;
 
     public Tile(GameBoard gameBoard, int row, int column, TileType type, Plant plant, Obstacle obstacle) {
@@ -42,5 +46,13 @@ public class Tile {
 
     public boolean isUnderWater() {
         return gameBoard.totalCols - gameBoard.tideLevel <= this.column;
+    }
+
+    public List<Zombie> getZombies() {
+        List<Zombie> zombies = new ArrayList<>();
+        for (Zombie zombie : gameBoard.getAllZombies()) {
+            if (gameBoard.getTile((float) zombie.getX(), (float) zombie.getY()) == this) zombies.add(zombie);
+        }
+        return zombies;
     }
 }

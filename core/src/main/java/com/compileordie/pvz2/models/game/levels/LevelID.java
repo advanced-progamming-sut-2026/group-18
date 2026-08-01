@@ -2,6 +2,8 @@ package com.compileordie.pvz2.models.game.levels;
 
 import com.compileordie.pvz2.utils.Toolbox;
 
+import java.util.Set;
+
 public enum LevelID {
     STANDARD_ANCIENT_EGYPT(ChapterType.ANCIENT_EGYPT, LevelType.STANDARD, 3),
     CONVEYOR_BELT(ChapterType.ANCIENT_EGYPT, LevelType.SPECIAL, 4),
@@ -39,6 +41,10 @@ public enum LevelID {
         this.chapterType = ChapterType.MINIGAME;
         this.levelType = LevelType.MINIGAME;
         this.waveNumber = waveNumber;
+    }
+
+    public boolean needsPlantSelection() {
+        return !Set.of(CONVEYOR_BELT, VASE_BREAKER, I_ZOMBIE, BEGHOULED).contains(this);
     }
 
     public static LevelID getByName(String name) {

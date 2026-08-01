@@ -34,6 +34,10 @@ public class Lane {
             tile.tick(ticks);
         }
         lawnMower.tick(ticks);
+
+        for (int i = zombies.size() - 1; i >= 0; i--) {
+            if (!zombies.get(i).isAlive()) zombies.remove(i);
+        }
     }
 
     public ArrayList<Plant> getAllPlants() {

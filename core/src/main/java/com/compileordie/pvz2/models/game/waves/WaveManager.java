@@ -2,8 +2,8 @@ package com.compileordie.pvz2.models.game.waves;
 
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
-import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
+import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.levels.ChapterType;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
@@ -20,8 +20,9 @@ public class WaveManager {
     public int waveBudget;
     public double previousWaveTotalMaxHealth;
     public int tickCounter;
+    public boolean shouldStartWaves;
 
-    public WaveManager(GameBoard gameBoard, WaveType type, int waveNumber) {
+    public WaveManager(GameBoard gameBoard, WaveType type, int waveNumber, boolean shouldStartWaves) {
         this.gameBoard = gameBoard;
         this.type = type;
         this.waveNumber = waveNumber;
@@ -29,6 +30,7 @@ public class WaveManager {
         this.waveBudget = (int) Math.floor(ConfigManager.gameplay().basicWaveBudget * AppModel.player.getDLIncrease());
         this.previousWaveTotalMaxHealth = 0;
         this.tickCounter = 0;
+        this.shouldStartWaves = shouldStartWaves;
     }
 
     public void tick(int ticks) {
@@ -44,7 +46,7 @@ public class WaveManager {
             .sum();
 
         // Trigger wave 1 instantly, or next wave when 75% of previous health is depleted
-        if (currentWave == 1 || currentHealthSum <= (previousWaveTotalMaxHealth * 0.25)) {
+        if ((shouldStartWaves && currentWave == 1) || currentHealthSum <= (previousWaveTotalMaxHealth * 0.25)) {
             spawnWave();
         }
 
@@ -55,7 +57,7 @@ public class WaveManager {
         if (type == WaveType.NO_WAVES) return;
 
         // 1. Calculate Multipliers Before Purchasing
-        if (isLatWave()) {
+        if (isLastWave()) {
             AppModel.addAfterPrompt("The final wave has come.");
             waveBudget *= 2; // Final wave is 2x previous wave difficulty
         } else if (currentWave > 1) {
@@ -133,7 +135,7 @@ public class WaveManager {
         return validTypes.get(random.nextInt(validTypes.size()));
     }
 
-    public boolean isLatWave() {
+    public boolean isLastWave() {
         return currentWave == waveNumber;
     }
 }

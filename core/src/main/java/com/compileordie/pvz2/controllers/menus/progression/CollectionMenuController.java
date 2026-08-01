@@ -67,7 +67,6 @@ public class CollectionMenuController {
 
         Player player = AppModel.player;
         boolean isUnlocked = player.unlockedPlants != null && player.unlockedPlants.contains(plantType);
-        // TODO: Expand this later when Plant Config/Stats models are fully implemented.
         return "--- " + plantType + " ---" + System.lineSeparator() +
             "Status: " + (isUnlocked ? "Unlocked" : "Locked");
     }
@@ -80,7 +79,6 @@ public class CollectionMenuController {
 
         Player player = AppModel.player;
         boolean isUnlocked = player.unlockedZombies != null && player.unlockedZombies.contains(zombieType);
-        // TODO: Expand this later when Zombie Config/Stats models are fully implemented.
         return "--- " + zombieType + " ---" + System.lineSeparator() +
             "Status: " + (isUnlocked ? "Unlocked" : "Locked");
     }

@@ -18,6 +18,10 @@ public class GameMenuView implements MenuView {
             String name = Command.ENTER_CHAPTER.getGroup(command, "name");
             return GameMenuController.enterChapter(name);
         }
+        if (Command.ENTER_LEVEL.matches(command)) {
+            String name = Command.ENTER_LEVEL.getGroup(command, "name");
+            return GameMenuController.enterLevel(name);
+        }
         if (Command.MENU_GREENHOUSE.matches(command)) {
             return GameMenuController.enterGreenhouse();
         }

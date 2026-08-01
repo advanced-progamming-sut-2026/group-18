@@ -29,6 +29,14 @@ public class PlantCard {
         if (timer < 0) timer = 0;
     }
 
+    public void setTimer() {
+        timer = cooldownTime;
+    }
+
+    public void resetTimer() {
+        timer = 0;
+    }
+
     public boolean isReady() {
         return timer == 0;
     }

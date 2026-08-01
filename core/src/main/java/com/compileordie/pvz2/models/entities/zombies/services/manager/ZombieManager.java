@@ -256,7 +256,7 @@ public class ZombieManager {
             if (((TurquoiseZombie) z).shouldWeBackSun()) {
                 for (int i = 0; i <= ((TurquoiseZombie) z).totalStolenSuns / 50; i++) {
                     myMap.economyManager.suns.add(
-                        new Sun(z.getX(), z.getY(), SunType.NORMAL, true, (float) z.getY()));
+                        new Sun(z.getX(), z.getY(), SunType.NORMAL, false, (float) z.getY()));
                 }
                 ((TurquoiseZombie) z).stopBackSun();
             }
@@ -266,7 +266,7 @@ public class ZombieManager {
             if (((RaZombie) z).shouldWeBackSun()) {
                 for (int i = 0; i < ((RaZombie) z).stolenSunCount / 25; i++) {
                     myMap.economyManager.suns.add(
-                        new Sun(z.getX(), z.getY(), SunType.NORMAL, true, (float) z.getY()));
+                        new Sun(z.getX(), z.getY(), SunType.NORMAL, false, (float) z.getY()));
                 }
                 ((RaZombie) z).stopBackSun();
             }

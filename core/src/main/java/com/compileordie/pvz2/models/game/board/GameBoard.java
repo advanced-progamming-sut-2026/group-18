@@ -3,8 +3,8 @@ package com.compileordie.pvz2.models.game.board;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
-import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.plants.Plant;
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.entities.zombies.services.manager.ZombieManager;
 import com.compileordie.pvz2.models.entities.zombies.services.manager.ZombieTickContext;
@@ -12,16 +12,20 @@ import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.game.economy.EconomyManager;
 import com.compileordie.pvz2.models.game.economy.EconomyType;
+import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.models.game.minigames.vasebreaker.SeedPacket;
 import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
 import com.compileordie.pvz2.models.game.waves.WaveManager;
 import com.compileordie.pvz2.models.game.waves.WaveType;
+import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 import com.compileordie.pvz2.models.user.Player; // Arsam
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class GameBoard {
+    public LevelID levelID;
     public int totalRows;
     public int totalCols;
     public ArrayList<Lane> lanes;
@@ -36,14 +40,17 @@ public class GameBoard {
     public boolean specialIsLost;
     public int lostPlants;
     public int tickCounter;
+    public int registeredShapes;
 
-    public GameBoard(int totalRows,
+    public GameBoard(LevelID levelID,
+                     int totalRows,
                      int totalCols,
                      EconomyType economyType,
                      WaveType waveType,
-                     ArrayList<PlantType> selectionDeck,
+                     Map<PlantType, Boolean> selectionDeck,
                      int waveNumber,
-                     int maxTideLevel) {
+                     boolean shouldStartWaves) {
+        this.levelID = levelID;
         this.totalRows = totalRows;
         this.totalCols = totalCols;
         this.lanes = new ArrayList<>();
@@ -55,12 +62,13 @@ public class GameBoard {
         this.economyManager = new EconomyManager(this, economyType, selectionDeck);
         this.vases = new ArrayList<>();
         this.seedPackets = new ArrayList<>();
-        this.waveManager = new WaveManager(this, waveType, waveNumber);
+        this.waveManager = new WaveManager(this, waveType, waveNumber, shouldStartWaves);
         this.tideLevel = 0;
-        this.maxTideLevel = maxTideLevel;
+        this.maxTideLevel = ConfigManager.gameplay().maxTideLevel;
         this.specialIsLost = false;
         this.lostPlants = 0;
         this.tickCounter = 0;
+        this.registeredShapes = 0;
     }
 
     // Arsam
@@ -80,7 +88,7 @@ public class GameBoard {
         for (Lane lane : lanes) {
             lane.tick(ticks);
         }
-        // TODO: Tick zombie manager here.
+        zombieManager.tick(new ZombieTickContext(ticks, this));
         for (int i = projectiles.size() - 1; i >= 0; i--) {
             Projectile projectile = projectiles.get(i);
             projectile.tick(this, ticks);
@@ -93,7 +101,11 @@ public class GameBoard {
     }
 
     public Tile getTile(int row, int column) {
-        return lanes.get(row).tiles.get(column);
+        try {
+            return lanes.get(row).tiles.get(column);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public Tile getTile(float x, float y) {

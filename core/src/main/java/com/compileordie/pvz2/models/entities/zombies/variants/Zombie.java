@@ -1,15 +1,18 @@
 package com.compileordie.pvz2.models.entities.zombies.variants;
 
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
+import com.compileordie.pvz2.models.user.Player;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 public abstract class Zombie extends GameEntity {
     public boolean isEating;
@@ -24,6 +27,7 @@ public abstract class Zombie extends GameEntity {
     protected boolean isHypnotized = false;
     protected ZombieType type;
     protected boolean hasMetalArmor = false; // Tracks if armor was removed by Magnet-shroom
+    protected boolean isGlowing;
 
     public Zombie(double health,
                   double speed,
@@ -52,6 +56,19 @@ public abstract class Zombie extends GameEntity {
             if (name.contains("BUCKET") || name.contains("FOOTBALL") || name.contains("KNIGHT") || name.contains("MACHINERY")) {
                 this.hasMetalArmor = true;
             }
+        }
+        this.isGlowing = new Random().nextInt(100) < 5;
+    }
+
+    @Override
+    public void die() {
+        super.die();
+        if (isGlowing) {
+            Player player = AppModel.player;
+            player.plantFoodCount++;
+            if (player.plantFoodCount > 3) player.plantFoodCount = 3;
+            AppModel.addAfterPrompt("The glowing zombie dropped a plant food; you have "
+                + player.plantFoodCount + " plant foods now.");
         }
     }
 
