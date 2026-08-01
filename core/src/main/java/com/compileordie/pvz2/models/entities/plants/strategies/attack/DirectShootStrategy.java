@@ -10,13 +10,17 @@ import java.util.List;
 public class DirectShootStrategy implements AttackStrategy {
 
     private final List<Integer> laneOffsets;
+    private final List<int[]> shootVectors; // NEW: [X, Y] direction arrays
     private final Class<? extends Projectile> projectileType;
     private final int projectileCount;
 
     public DirectShootStrategy(List<Integer> laneOffsets,
+                               List<int[]> shootVectors,
                                Class<? extends Projectile> projectileType,
                                int projectileCount) {
         this.laneOffsets = laneOffsets;
+        // Default to forward [1, 0] if no special vectors are provided
+        this.shootVectors = (shootVectors != null && !shootVectors.isEmpty()) ? shootVectors : List.of(new int[]{1, 0});
         this.projectileType = projectileType;
         this.projectileCount = projectileCount;
     }
@@ -33,22 +37,26 @@ public class DirectShootStrategy implements AttackStrategy {
         for (int offset : laneOffsets) {
             double spawnY = y + (offset * tileSize);
 
-            // Boundary check to prevent spawning projectiles out of bounds
             if (spawnY >= 0 && spawnY < maxY) {
-
-                // Fire multiple times if projectileCount > 1 (e.g., Repeater)
                 for (int i = 0; i < projectileCount; i++) {
-                    try {
-                        // Offset the X coordinate slightly for multi-shots so they don't overlap perfectly
-                        double spawnX = x + (i * 0.2 * tileSize);
 
-                        Projectile proj = projectileType
-                            .getDeclaredConstructor(double.class, double.class, double.class, int.class)
-                            .newInstance(spawnX, spawnY, speed, damage);
+                    // NEW: Loop through all assigned shooting vectors
+                    for (int[] vector : shootVectors) {
+                        try {
+                            double spawnX = x + (i * 0.2 * tileSize);
 
-                        board.getActiveProjectiles().add(proj);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                            Projectile proj = projectileType
+                                .getDeclaredConstructor(double.class, double.class, double.class, int.class)
+                                .newInstance(spawnX, spawnY, speed, damage);
+
+                            // NEW: Multiply base speed by vector direction
+                            proj.setXSpeed(speed * vector[0]);
+                            proj.setYSpeed(speed * vector[1]);
+
+                            board.getActiveProjectiles().add(proj);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }

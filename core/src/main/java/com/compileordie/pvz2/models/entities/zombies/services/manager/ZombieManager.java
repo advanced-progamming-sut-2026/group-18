@@ -5,6 +5,7 @@ import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
 import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
+import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
@@ -80,7 +81,10 @@ public class ZombieManager {
         //=========== 2.خوردن گیاهان توسط زامبی ها ==========
         combatTick(myZombies, myPlants);
 
-        //=========== 3.مبارزه دو زامبی ==========
+        //===========  3.برخورد تیرها با زامبی ها ==========New
+        projectileCollisionTick(myMap);
+
+        //=========== 4.مبارزه دو زامبی ==========
         combatingTwoZombie(myZombies);
 
         //=========== 4.اسپاون کردن ایمپ ==========
@@ -280,6 +284,47 @@ public class ZombieManager {
             }
         }
     }
+
+    public void projectileCollisionTick(GameBoard myMap) {
+        List<Projectile> projectiles = myMap.getActiveProjectiles();
+        List<Zombie> zombies = myMap.getAllZombies();
+
+        // Iterate backwards safely in case projectiles are removed
+        for (int p = projectiles.size() - 1; p >= 0; p--) {
+            Projectile proj = projectiles.get(p);
+
+            if (proj.isDead()) continue;
+
+            for (Zombie zombie : zombies) {
+                // Ignore dead zombies or zombies that aren't on the board fully
+                if (zombie.isDead()) continue;
+
+                // 1. Spatial Check: Are they in the same row and overlapping?
+                if (proj.getRow() == zombie.getCurrentRow()) {
+                    double distance = Math.abs(proj.getX() - zombie.getX());
+
+                    // Collision threshold (adjust based on your visual hitboxes, usually half a tile)
+                    if (distance <= tileWidth / 2.0) {
+
+                        // 2. SUBJECT/OBJECT DELEGATION
+                        // Projectile passes damage and type. Zombie handles armor, immunities, etc.
+                        zombie.takeDamage(proj.getDamage(), proj.getType());
+
+                        // 3. PROJECTILE CLEANUP
+                        // Normal projectiles set isDead = true.
+                        // Piercing/Bouncing override this and stay alive!
+                        proj.destroy();
+
+                        // If the projectile was consumed, stop checking it against other zombies
+                        if (proj.isDead()) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 
     private void processPlantEating(Zombie z, Plant p) {
         // --- خوردن گیاه ---

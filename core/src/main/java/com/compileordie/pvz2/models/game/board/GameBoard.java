@@ -97,7 +97,7 @@ public class GameBoard {
     }
 
     public Tile getTile(float x, float y) {
-        return getTile((int) (x / Constants.Game.TILE_SIZE), (int) (y / Constants.Game.TILE_SIZE));
+        return getTile((int) (y / Constants.Game.TILE_SIZE), (int) (x / Constants.Game.TILE_SIZE));
     }
 
     public ArrayList<Tile> getAllTiles() {
@@ -105,6 +105,22 @@ public class GameBoard {
             .flatMap(lane -> lane.tiles.stream())
             .collect(Collectors.toCollection(ArrayList::new));
     }
+
+    // Returns a list of all tiles that currently have no plant, obstacle, or tomb
+    public ArrayList<Tile> getEmptyTiles() {
+        return getAllTiles().stream()
+            .filter(Tile::isEmpty)
+            .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    // Safely places a new plant onto the board based on its X and Y coordinates
+    public void addPlant(Plant plant) {
+        Tile tile = getTile((float) plant.getX(), (float) plant.getY());
+        if (tile != null) {
+            tile.plant = plant;
+        }
+    }
+
 
     public ArrayList<Zombie> getAllZombies() {
         return lanes.stream()

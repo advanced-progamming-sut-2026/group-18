@@ -3,6 +3,7 @@ package com.compileordie.pvz2.models.game.waves;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.Plant;
+import com.compileordie.pvz2.models.entities.plants.enums.PlantTag;
 import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
@@ -128,13 +129,15 @@ public enum WaveType {
             Lane lane = lanes.get(random.nextInt(lanes.size()));
             for (Tile tile : lane.tiles) {
                 Plant plant = tile.plant;
-                // TODO: Activate mechanism:
-                /*if (plant != null && !plant.hasFireTag()) {
-                    plant.freezeLevel = Math.min(3, plant.freezeLevel + 1);
-                }*/
+
+                if (plant != null && !plant.hasTag(PlantTag.FIRE)) {
+                    plant.increaseFreezedByHunter();
+                    plant.shouldBeFreezedByHunter();
+                }
             }
         }
     }
+
 
     protected void changeTide(GameBoard gameBoard) {
         Random random = new Random();

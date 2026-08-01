@@ -2,6 +2,8 @@ package com.compileordie.pvz2.models.entities.plants.strategies.food;
 
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.standard.BucketHeadZombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.standard.KnightZombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.user.Player;
 
@@ -11,8 +13,12 @@ public class MagneticEffect implements PlantFoodEffectStrategy {
         for (Zombie zombie : board.getAllZombies()) {
             if (zombie.isDead()) continue;
 
-            // Just call the teammate's method directly!
-            zombie.mushroomAbsorption();
+            if (zombie instanceof KnightZombie) {
+                ((KnightZombie) zombie).mushroomAbsorption();
+            } else if (zombie instanceof BucketHeadZombie) {
+                ((BucketHeadZombie) zombie).mushroomAbsorption();
+            }
         }
     }
+
 }

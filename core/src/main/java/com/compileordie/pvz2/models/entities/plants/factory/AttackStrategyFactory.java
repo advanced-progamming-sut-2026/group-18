@@ -8,18 +8,6 @@ import java.util.List;
 
 public class AttackStrategyFactory {
 
-    /**
-     * Builds the exact attack strategy needed without knowing what the plant is.
-     *
-     * @param type            The enum type of the strategy (from your CSV)
-     * @param projectileClass The class of the projectile to spawn (e.g., PoisonProjectile.class)
-     * @param laneOffsets     List of lanes to shoot in (0 = current, 1 = up, -1 = down). Solves Threepeater/Starfruit.
-     * @param projectileCount How many projectiles to spawn per attack (Solves Pea Pod).
-     * @param rangeTiles      The range for Melee, Lobber splash, or Mine explosions.
-     * @param isAoE           Boolean flag for Melee strategies (Bonk Choy vs Phat Beet).
-     * @param isInstaKill     Boolean flag for Chomper.
-     * @return The fully configured AttackStrategy
-     */
     public static AttackStrategy createStrategy(
         AttackStrategyType type,
         Class<? extends Projectile> projectileClass,
@@ -31,11 +19,32 @@ public class AttackStrategyFactory {
 
         switch (type) {
             case DIRECT_SHOOT:
-                // Completely replaces MultiShoot, Diagonal, and Star strategies
-                return new DirectShootStrategy(laneOffsets, projectileClass, projectileCount);
+            case MULTI_SHOOT:
+                // Peashooter, Repeater, Threepeater
+                return new DirectShootStrategy(laneOffsets, null, projectileClass, projectileCount);
+
+            case DIAGONAL:
+                // Rotobaga: 4 vectors mapping to your bottom-left coordinate system
+                List<int[]> diagonalVectors = List.of(
+                    new int[]{-1, 1},  // Backward-Up
+                    new int[]{-1, -1}, // Backward-Down
+                    new int[]{1, 1},   // Forward-Up
+                    new int[]{1, -1}   // Forward-Down
+                );
+                return new DirectShootStrategy(List.of(0), diagonalVectors, projectileClass, projectileCount);
+
+            case STAR:
+                // Starfruit: 5 vectors
+                List<int[]> starVectors = List.of(
+                    new int[]{-1, 0},  // Backward
+                    new int[]{0, 1},   // Up
+                    new int[]{0, -1},  // Down
+                    new int[]{1, 1},   // Forward-Up
+                    new int[]{1, -1}   // Forward-Down
+                );
+                return new DirectShootStrategy(List.of(0), starVectors, projectileClass, projectileCount);
 
             case HOMING:
-                // Defaults to RANDOM. Upgrades can change this dynamically inside HomingStrategy.
                 return new HomingStrategy(projectileClass, HomingStrategy.TargetingMode.RANDOM);
 
             case MELEE:
@@ -51,7 +60,6 @@ public class AttackStrategyFactory {
                 return new SunProduceStrategy();
 
             default:
-                // For Wall-nuts or passive plants that don't attack
                 return null;
         }
     }

@@ -7,18 +7,66 @@ import com.compileordie.pvz2.models.game.economy.SunType;
 
 public class SunProduceStrategy implements AttackStrategy {
 
+    // Tracks how many times this specific plant has produced sun
+    private int productionCycles = 0;
+
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
-        // The baseDamage field of a Sun Producer safely holds how much sun it drops
-        int sunValue = plant.getBaseDamage();
+        String name = plant.getName();
+        productionCycles++; // Increment age stage
 
-        // Spawn the sun slightly offset from the plant's exact center
         double spawnX = plant.getX() + 0.5;
         double spawnY = plant.getY();
+        float ground = (float) plant.getY();
 
-        Sun droppedSun = new Sun(spawnX, spawnY, sunValue, SunType.NORMAL);
+        try {
+            // 1. Twin Sunflower (100 Suns)
+            if (name.equals("Twin Sunflower")) {
+                board.economyManager.suns.add(new Sun(spawnX, spawnY, SunType.SPECIAL, false, ground));
+                return;
+            }
 
-        // Push the sun into the economy manager or board state
-        board.getEconomyManager().addSun(droppedSun);
+            // 2. Primal Sunflower (75 Suns)
+            if (name.equals("Primal Sunflower")) {
+                board.economyManager.suns.add(new Sun(spawnX, spawnY, SunType.LARGE, false, ground));
+                return;
+            }
+
+            // 3. Sun-shroom (Dynamic Growth)
+            if (name.equals("Sun-shroom")) {
+                SunType shroomType;
+                if (productionCycles <= 1) {
+                    shroomType = SunType.NORMAL; // Stage 1 (25 suns)
+                } else if (productionCycles <= 4) {
+                    shroomType = SunType.MEDIUM; // Stage 2 (50 suns)
+                } else {
+                    shroomType = SunType.LARGE;  // Stage 3 (75 suns)
+                }
+                board.economyManager.suns.add(new Sun(spawnX, spawnY, shroomType, false, ground));
+                return;
+            }
+
+            // 4. Gold Bloom (Instant 375, then dies)
+            if (name.equals("Gold Bloom")) {
+                // 3x SPECIAL (300) + 1x LARGE (75) = 375 Suns
+                board.economyManager.suns.add(new Sun(spawnX - 0.3, spawnY, SunType.SPECIAL, false, ground));
+                board.economyManager.suns.add(new Sun(spawnX, spawnY, SunType.SPECIAL, false, ground));
+                board.economyManager.suns.add(new Sun(spawnX + 0.3, spawnY, SunType.SPECIAL, false, ground));
+                board.economyManager.suns.add(new Sun(spawnX, spawnY + 0.3, SunType.LARGE, false, ground));
+                plant.die();
+                return;
+            }
+
+            // 5. Default / Standard Sunflower (50 Suns)
+            board.economyManager.suns.add(new Sun(spawnX, spawnY, SunType.MEDIUM, false, ground));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Called by the Plant Food Strategy to instantly max out the Sun-shroom!
+    public void forceMaxStage() {
+        this.productionCycles = 5;
     }
 }

@@ -16,31 +16,63 @@ public class StatusEffect {
         this.isApplied = false;
     }
 
-    // بررسی منقضی شدگی افکت
     public boolean isExpired() {
         return elapsedTicks >= durationTicks;
     }
 
+    // NEW: Trigger the physical changes on the zombie
+    public void applyToZombie(Zombie zombie) {
+        this.isApplied = true;
+
+        switch (effectType) {
+            case FROZEN:
+                zombie.setStopZombieNow(true); // Completely stops movement
+                break;
+            case CHILLED:
+                // Cuts speed in half
+                zombie.setXSpeed(zombie.getStableSpeed() * 0.5);
+                break;
+            case HYPNOTIZED:
+                zombie.setHypnotized(true);
+                break;
+            case CATIFIED:
+                zombie.setAttackPower(0); // Cannot eat while a cat
+                break;
+        }
+    }
 
     public void removeFromZombie(Zombie zombie) {
         this.isApplied = false;
-        elapsedTicks = 0;
+        this.elapsedTicks = 0;
 
-        // TODO :
-        // باید با توجه به نوع افکت، اثر آن از روی زامبی برداشته شود
-        // طبیعتا بخشی از آن با استفاده از خود سرویس ها انجام می شود
-        // بخشی از آن نیز با استفاده از اتمام تیک یا یک تغییری ستینگ در زامبی انجام می شود
+        switch (effectType) {
+            case FROZEN:
+                // Only unfreeze if the zombie doesn't have ANOTHER frozen effect stacked
+                if (zombie.getActiveEffects().stream().noneMatch(e -> e != this && e.getEffectType() == EffectType.FROZEN)) {
+                    zombie.setStopZombieNow(false);
+                }
+                break;
+            case CHILLED:
+                if (zombie.getActiveEffects().stream().noneMatch(e -> e != this && e.getEffectType() == EffectType.CHILLED)) {
+                    zombie.setXSpeed(zombie.getStableSpeed());
+                }
+                break;
+            case HYPNOTIZED:
+                zombie.setHypnotized(false);
+                break;
+            case CATIFIED:
+                // Just let the natural attack power reset if handled elsewhere, or restore it here
+                break;
+        }
     }
 
-    // پیش بردن تیک افکت + اعمال تغییراتی که احیانا حین افکت اعمال می شود
     public void updateZombieTick(Zombie zombie) {
-        if (!isApplied) return;
-        elapsedTicks++;
-        // الان از 1 شروع میشه
+        // Apply the effect dynamically on its very first tick
+        if (!isApplied) {
+            applyToZombie(zombie);
+        }
 
-        // TODO :
-        // باید با توجه به نوع افکت، اثر آن از روی زامبی اعمال شود
-        // طبیعتا با استفاده از خود سرویس ها انجام می شود
+        elapsedTicks++;
 
         if (isExpired()) {
             removeFromZombie(zombie);
@@ -48,19 +80,8 @@ public class StatusEffect {
     }
 
     // Getters
-    public EffectType getEffectType() {
-        return effectType;
-    }
-
-    public int getDurationTicks() {
-        return durationTicks;
-    }
-
-    public int getElapsedTicks() {
-        return elapsedTicks;
-    }
-
-    public boolean isApplied() {
-        return isApplied;
-    }
+    public EffectType getEffectType() { return effectType; }
+    public int getDurationTicks() { return durationTicks; }
+    public int getElapsedTicks() { return elapsedTicks; }
+    public boolean isApplied() { return isApplied; }
 }
