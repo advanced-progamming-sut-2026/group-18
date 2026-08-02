@@ -49,12 +49,14 @@ public class StatusEffect {
         switch (effectType) {
             case FROZEN:
                 // Only unfreeze if the zombie doesn't have ANOTHER frozen effect stacked
-                if (zombie.getActiveEffects().stream().noneMatch(e -> e != this && e.getEffectType() == EffectType.FROZEN)) {
+                if (zombie.getActiveEffects().stream()
+                    .noneMatch(e -> e != this && e.getEffectType() == EffectType.FROZEN)) {
                     zombie.setStopZombieNow(false);
                 }
                 break;
             case CHILLED:
-                if (zombie.getActiveEffects().stream().noneMatch(e -> e != this && e.getEffectType() == EffectType.CHILLED)) {
+                if (zombie.getActiveEffects().stream()
+                    .noneMatch(e -> e != this && e.getEffectType() == EffectType.CHILLED)) {
                     zombie.setXSpeed(zombie.getStableSpeed());
                 }
                 break;

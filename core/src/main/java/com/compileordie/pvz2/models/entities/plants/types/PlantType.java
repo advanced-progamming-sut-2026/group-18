@@ -89,15 +89,15 @@ public enum PlantType {
 
     public static PlantType getByName(String name) {
         for (PlantType plantType : PlantType.values()) {
-            if (plantType.toString().equalsIgnoreCase(name)) { //[cite: 1]
+            if (plantType.toString().equalsIgnoreCase(name)) {
                 return plantType;
             }
         }
-        return null; //[cite: 1]
+        return null;
     }
 
     @Override
     public String toString() {
-        return Toolbox.enumToString(this, true); //[cite: 1]
+        return Toolbox.enumToString(this, true);
     }
 }

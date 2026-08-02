@@ -59,6 +59,7 @@ public class GameSession {
                 AppModel.addAfterPrompt("You lost!");
             }
         }
+        AppModel.clearSessionData();
         // TODO: Expand and add quest event callback here
     }
 }

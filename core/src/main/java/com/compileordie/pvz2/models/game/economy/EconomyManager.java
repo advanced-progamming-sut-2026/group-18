@@ -11,6 +11,8 @@ import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.levels.LevelID;
+import com.compileordie.pvz2.models.missions.quests.QuestEvent;
+import com.compileordie.pvz2.models.missions.quests.QuestManager;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 
 // Clean imports for the Quest System
@@ -153,6 +155,7 @@ public class EconomyManager {
             if (isInRangeX && isInRangeY) {
                 sunAmount += sun.type.value;
                 totalSunsGenerated += sun.type.value;
+                QuestManager.dispatch(QuestEvent.SUN_COLLECTED, sun.type.value, null);
 
                 if (sun.type == SunType.RADIOACTIVE && sun.getY() > sun.groundLevel) {
                     explode(sun);
@@ -213,6 +216,7 @@ public class EconomyManager {
                     continue;
                 }
                 tile.plant = plant;
+                QuestManager.dispatch(QuestEvent.PLANT_PLANTED, 1, AppModel.currentChapter.name());
                 AppModel.addAfterPrompt(String.format("Planted %s at (%.1f, %.1f).", plantType.toString(), x, y));
                 return;
             }

@@ -63,7 +63,7 @@ public class AppModel {
         afterPrompts.add(prompt);
     }
 
-    public static void clearGameInitiation() {
+    public static void clearSessionData() {
         currentChapter = null;
         currentLevel = null;
         gameSession = null;

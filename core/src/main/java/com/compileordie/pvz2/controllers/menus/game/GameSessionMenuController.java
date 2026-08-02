@@ -18,6 +18,7 @@ import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.economy.EconomyManager;
 import com.compileordie.pvz2.models.game.economy.EconomyType;
 import com.compileordie.pvz2.models.game.economy.PlantCard;
+import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
 import com.compileordie.pvz2.models.user.Player;
 import com.compileordie.pvz2.views.helpers.Menu;
 
@@ -308,7 +309,31 @@ public class GameSessionMenuController {
     }
 
     public static String quitGame() {
-        AppModel.clearGameInitiation();
+        AppModel.clearSessionData();
         return "Mission aborted!" + System.lineSeparator() + AppController.changeMenu(Menu.GAME);
+    }
+
+    public static String breakVase(String x, String y) {
+        float xPosition, yPosition;
+        try {
+            xPosition = Float.parseFloat(x);
+            yPosition = Float.parseFloat(y);
+        } catch (NumberFormatException e) {
+            return "[ERROR] You must enter valid numbers for x and y.";
+        }
+        Vase selectedVase = null;
+        for (Vase vase : AppModel.gameSession.gameBoard.vases) {
+            boolean isInRangeX = Math.abs(vase.getX() - xPosition) <= (Constants.Game.TILE_WIDTH / 2);
+            boolean isInRangeY = Math.abs(vase.getY() - yPosition) <= (Constants.Game.TILE_HEIGHT / 2);
+            if (isInRangeX && isInRangeY) {
+                selectedVase = vase;
+                break;
+            }
+        }
+        if (selectedVase == null) {
+            return "[ERROR] You must select a vase.";
+        }
+        selectedVase.breakVase();
+        return String.format("Tile at (%.1f, %.1f) not found!", yPosition, yPosition);
     }
 }

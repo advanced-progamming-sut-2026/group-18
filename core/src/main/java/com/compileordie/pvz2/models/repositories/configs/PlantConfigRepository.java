@@ -146,7 +146,8 @@ public class PlantConfigRepository {
             t.setProjectileType(FireProjectile.class);
         } else if (name.equals("Goo Peashooter")) {
             t.setProjectileType(PoisonProjectile.class);
-        } else if (name.equals("Cabbage-pult") || name.equals("Melon-pult") || name.equals("Winter Melon") || name.equals("Pepper-pult") || name.equals("Kernel-pult")) {
+        } else if (name.equals("Cabbage-pult") || name.equals("Melon-pult") || name.equals("Winter Melon") ||
+            name.equals("Pepper-pult") || name.equals("Kernel-pult")) {
             t.setProjectileType(name.equals("Kernel-pult") ? ButterProjectile.class : LobbedProjectile.class);
             t.setRangeTiles(name.equals("Melon-pult") || name.equals("Winter Melon") ? 1.5 : 0.0);
         } else if (name.equals("Cactus") || name.equals("Fume-shroom")) {
@@ -171,7 +172,8 @@ public class PlantConfigRepository {
         if (name.equals("Twin Sunflower")) t.setFoodEffectValue(100);
         if (name.equals("Gold Bloom")) t.setFoodEffectValue(375);
         if (name.equals("Iceberg Lettuce")) t.setFoodEffectValue(50);
-        if (name.equals("Wall-nut") || name.equals("Explode-o-nut") || name.equals("Pumpkin")) t.setFoodEffectValue(4000);
+        if (name.equals("Wall-nut") || name.equals("Explode-o-nut")
+            || name.equals("Pumpkin")) t.setFoodEffectValue(4000);
         if (name.equals("Endurian") || name.equals("Sweet Potato")) t.setFoodEffectValue(3000);
         if (name.equals("Tall-nut")) t.setFoodEffectValue(8000);
     }

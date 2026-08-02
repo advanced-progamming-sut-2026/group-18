@@ -380,7 +380,8 @@ public class ZombieManager {
         // --- پرتاب اختاپوس ---
         if (z.getType() == ZombieType.OCTOPUS_ZOMBIE
             && (Math.abs(z.getY() - p.getY()) <= tileHeight / 6
-            && Math.abs(z.getX() - p.getX()) <= OctopusZombie.ABILITY_RANGE) // FIXED BUG: Fatal ClassCastException prevented
+            // FIXED BUG: Fatal ClassCastException prevented
+            && Math.abs(z.getX() - p.getX()) <= OctopusZombie.ABILITY_RANGE)
             && isVisible(p) && !p.hasActiveCover()) {
             p.applyOctopus(400.0);
         }

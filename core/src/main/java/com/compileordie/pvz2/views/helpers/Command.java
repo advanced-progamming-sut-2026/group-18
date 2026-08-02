@@ -19,8 +19,8 @@ public enum Command {
     // Main Menu
     LOGOUT("menu\\s+logout"),
     // Game Menu
-    ENTER_CHAPTER("menu\\s+enter\\s+chapter\\s+-c\\s+(?<name>\\S+)"),
-    ENTER_LEVEL("menu\\s+enter\\s+level\\s+-c\\s+(?<name>\\S+)"),
+    ENTER_CHAPTER("menu\\s+enter\\s+chapter\\s+-c\\s+(?<name>.+)"),
+    ENTER_LEVEL("menu\\s+enter\\s+level\\s+-c\\s+(?<name>.+)"),
     MENU_GREENHOUSE("menu\\s+greenhouse"),
     MENU_TRAVEL_LOG("menu\\s+travel-log"),
     MENU_LEADERBOARD("menu\\s+leaderboard"),
@@ -43,10 +43,10 @@ public enum Command {
     COLLECTION_SHOW_ALL_PLANTS("menu\\s+collection\\s+show-all-plants"),
     COLLECTION_SHOW_ZOMBIES("menu\\s+collection\\s+show-zombies"),
     COLLECTION_SHOW_ALL_ZOMBIES("menu\\s+collection\\s+show-all-zombies"),
-    COLLECTION_SHOW_PLANT("menu\\s+collection\\s+show-plant\\s+-p\\s+(?<name>\\S+)"),
-    COLLECTION_SHOW_ZOMBIE("menu\\s+collection\\s+show-zombie\\s+-z\\s+(?<name>\\S+)"),
-    COLLECTION_UPGRADE_PLANT("menu\\s+collection\\s+upgrade-plant\\s+-p\\s+(?<name>\\S+)"),
-    COLLECTION_PURCHASE_PLANT("menu\\s+collection\\s+purchase-plant\\s+-p\\s+(?<name>\\S+)"),
+    COLLECTION_SHOW_PLANT("menu\\s+collection\\s+show-plant\\s+-p\\s+(?<name>.+)"),
+    COLLECTION_SHOW_ZOMBIE("menu\\s+collection\\s+show-zombie\\s+-z\\s+(?<name>.+)"),
+    COLLECTION_UPGRADE_PLANT("menu\\s+collection\\s+upgrade-plant\\s+-p\\s+(?<name>.+)"),
+    COLLECTION_PURCHASE_PLANT("menu\\s+collection\\s+purchase-plant\\s+-p\\s+(?<name>.+)"),
     // Greenhouse Menu
     SHOW_GREENHOUSE("show\\s+greenhouse"),
     GREENHOUSE_PLANT_POT("plant\\s+pot\\s+at\\s+((?<x>\\S+),\\s+(?<y>\\S+))"),
@@ -54,11 +54,11 @@ public enum Command {
     GREENHOUSE_GROW("grow\\s+((?<x>\\S+),\\s+(?<y>\\S+))"),
     GREENHOUSE_ENTER_SHOP("enter\\s+shop"),
     // Travel Log Menu
-    TRAVEL_LOG_PAGE("travel\\s+log\\s+page\\s+(?<name>\\S+)"),
-    TRAVEL_LOG_CLAIM("travel\\s+log\\s+claim\\s+(?<id>\\S+)"),
+    TRAVEL_LOG_PAGE("travel\\s+log\\s+page\\s+(?<name>.+)"),
+    TRAVEL_LOG_CLAIM("travel\\s+log\\s+claim\\s+(?<id>.+)"),
     // Leaderboard Menu
     SHOW_LEADERBOARD("show\\s+leaderboard"),
-    LEADERBOARD_SORT("sort\\s+by\\s+(?<parameter>\\S+)"),
+    LEADERBOARD_SORT("sort\\s+by\\s+(?<parameter>.+)"),
     // Shop Menu
     SHOP_LIST("shop\\s+list"),
     SHOP_DAILY("shop\\s+daily"),
@@ -66,9 +66,9 @@ public enum Command {
     // Plant Selection Menu
     SELECTION_SHOW_ALL_PLANTS("show\\s+all\\s+plants"),
     SELECTION_SHOW_AVAILABLE_PLANTS("show\\s+available\\s+plants"),
-    SELECTION_ADD_PLANT("add\\s+plant\\s+-t\\s+(?<type>\\S+)"),
-    SELECTION_REMOVE_PLANT("remove\\s+plant\\s+-t\\s+(?<type>\\S+)"),
-    SELECTION_BOOST_PLANT("boost\\s+plant\\s+-t\\s+(?<type>\\S+)"),
+    SELECTION_ADD_PLANT("add\\s+plant\\s+-t\\s+(?<type>.+)"),
+    SELECTION_REMOVE_PLANT("remove\\s+plant\\s+-t\\s+(?<type>.+)"),
+    SELECTION_BOOST_PLANT("boost\\s+plant\\s+-t\\s+(?<type>.+)"),
     SELECTION_START_GAME("start\\s+game"),
     SELECTION_CANCEL_GAME("cancel\\s+game"),
     // Game Session Menu

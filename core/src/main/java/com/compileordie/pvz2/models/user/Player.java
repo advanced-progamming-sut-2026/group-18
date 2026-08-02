@@ -80,21 +80,21 @@ public class Player {
         this.coins = 0;
         this.diamonds = 0;
         this.playtime = 0f;
-
+        unlockedPlants.add(PlantType.PEASHOOTER);
+        unlockedPlants.add(PlantType.SUNFLOWER);
+        unlockedPlants.add(PlantType.WALL_NUT);
+        unlockedPlants.add(PlantType.POTATO_MINE);
         for (PlantType plantType : PlantType.values()) {
             seedPackets.put(plantType, 0);
             plantLevels.put(plantType, 1);
             plantBoosts.put(plantType, false);
         }
-
         for (LevelID levelID : LevelID.values()) {
             if (levelID.chapterType == ChapterType.MINIGAME) {
                 unlockedLevelIDs.add(levelID);
             }
         }
         unlockedLevelIDs.add(LevelID.values()[0]);
-
-        // Initialize Row 1 (first 5 pots) as unlocked per the design requirements
         for (int i = 0; i < 5; i++) {
             this.greenhousePots.add(new Pot());
         }

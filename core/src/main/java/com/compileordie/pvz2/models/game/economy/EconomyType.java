@@ -12,6 +12,9 @@ public enum EconomyType {
     STANDARD {
         @Override
         public void tick(int ticks, EconomyManager self, GameBoard gameBoard) {
+            if (self.tickCounter == 0) {
+                loadSelectionDeckToPlantCards(self);
+            }
             self.ticksUntilNextNaturalSun -= ticks;
             if (self.ticksUntilNextNaturalSun <= 0) {
                 self.spawnNaturalSun();
@@ -37,6 +40,7 @@ public enum EconomyType {
         public void tick(int ticks, EconomyManager self, GameBoard gameBoard) {
             if (self.tickCounter == 0) {
                 self.sunAmount += ConfigManager.economy().pwygStartingSuns;
+                loadSelectionDeckToPlantCards(self);
             }
             for (PlantCard plantCard : self.plantCards) {
                 plantCard.resetTimer();
@@ -54,8 +58,18 @@ public enum EconomyType {
     NIGHT {
         @Override
         public void tick(int ticks, EconomyManager self, GameBoard gameBoard) {
+            if (self.tickCounter == 0) {
+                loadSelectionDeckToPlantCards(self);
+            }
         }
     };
 
     abstract public void tick(int ticks, EconomyManager self, GameBoard gameBoard);
+
+    private static void loadSelectionDeckToPlantCards(EconomyManager self) {
+        self.plantCards.clear();
+        for (PlantType plantType : self.selectionDeck.keySet()) {
+            self.plantCards.add(new PlantCard(plantType, 120, self.selectionDeck.get(plantType)));
+        }
+    }
 }

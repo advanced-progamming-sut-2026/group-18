@@ -28,7 +28,7 @@ public class QuestDatabaseSeeder {
         );
 
         // 2. Chapter Hunter (Variants: EGYPT, PIRATE, WEST)
-        Stream.of("EGYPT", "PIRATE", "WEST").forEach(chapter ->
+        Stream.of("ANCIENT_EGYPT", "DARK_AGES", "BIG_WAVE_BEACH", "FROSTBITE_CAVES", "MINIGAME").forEach(chapter ->
             quests.add(new SpecificEventQuest("main_chapter_" + chapter.toLowerCase(),
                 "Chapter Hunter",
                 "Defeat 50 zombies from the " + chapter + " world.",
@@ -220,10 +220,11 @@ public class QuestDatabaseSeeder {
     }
 
     public static void seed() {
-        FileHandle file = Gdx.files.local(Constants.Paths.Assets.Quests.DATABASE);
+        FileHandle file = Gdx.files.local("assets/" + Constants.Paths.Assets.Quests.DATABASE);
         file.writeString(new Json().prettyPrint(getQuests(), 0)
             .replace("\t", "  ")
             .replace("\n", "\n  ")
             .replace("\n  ]", "\n]"), false);
+        System.out.println("XXXXXXXXXXX");
     }
 }

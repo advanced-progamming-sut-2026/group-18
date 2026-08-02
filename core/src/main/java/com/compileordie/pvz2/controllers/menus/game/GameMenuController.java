@@ -60,10 +60,12 @@ public class GameMenuController {
 
         AppModel.currentLevel = level;
         if (level.needsPlantSelection()) {
-            return "Starting level!" + level + System.lineSeparator() + AppController.changeMenu(Menu.PLANT_SELECTION);
+            return "Starting level: "
+                + level + System.lineSeparator() + AppController.changeMenu(Menu.PLANT_SELECTION);
         } else {
             AppModel.gameSession = SessionBuilder.create(level);
-            return "Starting level!" + level + System.lineSeparator() + AppController.changeMenu(Menu.GAME);
+            return "Starting level: "
+                + level + System.lineSeparator() + AppController.changeMenu(Menu.GAME);
         }
     }
 

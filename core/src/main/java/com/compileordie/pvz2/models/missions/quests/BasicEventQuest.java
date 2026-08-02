@@ -3,7 +3,11 @@ package com.compileordie.pvz2.models.missions.quests;
 import com.compileordie.pvz2.models.user.Player;
 
 public class BasicEventQuest extends Quest {
-    private final QuestEvent targetEvent;
+    private QuestEvent targetEvent;
+
+    public  BasicEventQuest() {
+        super();
+    }
 
     public BasicEventQuest(String id,
                            String title,

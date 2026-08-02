@@ -7,7 +7,10 @@ import com.compileordie.pvz2.models.game.SessionBuilder;
 import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.views.helpers.Menu;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.Set;
+import java.util.StringJoiner;
 
 public class PlantSelectionMenuController {
     private PlantSelectionMenuController() {
@@ -29,7 +32,8 @@ public class PlantSelectionMenuController {
                     PlantType.PRIMAL_SUNFLOWER,
                     PlantType.GOLD_BLOOM,
                     PlantType.SUN_BEAN,
-                    PlantType.ENLIGHTEN_MINT).contains(plantType)) {
+                    PlantType.ENLIGHTEN_MINT).contains(plantType)
+                    && AppModel.player.unlockedPlants.contains(plantType)) {
                     plantTypes.add(plantType);
                 }
             }
@@ -37,7 +41,7 @@ public class PlantSelectionMenuController {
             // TODO: Add Bowling Wall-nut and Giant Wall-nut to the list
             plantTypes.addAll(Set.of(PlantType.EXPLODE_O_NUT));
         } else {
-            plantTypes.addAll(List.of(PlantType.values()));
+            plantTypes.addAll(AppModel.player.unlockedPlants);
         }
 
         return plantTypes;
@@ -55,7 +59,7 @@ public class PlantSelectionMenuController {
     public static String showAvailablePlants() {
         StringJoiner joiner = new StringJoiner(System.lineSeparator());
         joiner.add("Available plants:");
-        for (PlantType plantType : getAvailablePlants(LevelID.LOCKED_PLANTS)) {
+        for (PlantType plantType : getAvailablePlants(AppModel.currentLevel)) {
             joiner.add(plantType.toString());
         }
         return joiner.toString();
@@ -117,12 +121,16 @@ public class PlantSelectionMenuController {
     }
 
     public static String startGame() {
+        if (AppModel.selectionDeck.size() < 2) {
+            return "[ERROR] You must select at least 2 plants.";
+        }
         AppModel.gameSession = SessionBuilder.create(AppModel.currentLevel, AppModel.selectionDeck);
-        return "Starting level!" + AppModel.currentLevel + System.lineSeparator() + AppController.changeMenu(Menu.GAME);
+        return "Starting level: "
+            + AppModel.currentLevel + System.lineSeparator() + AppController.changeMenu(Menu.GAME);
     }
 
     public static String cancelGame() {
-        AppModel.clearGameInitiation();
+        AppModel.clearSessionData();
         return "Mission aborted!" + System.lineSeparator() + AppController.changeMenu(Menu.GAME);
     }
 }
