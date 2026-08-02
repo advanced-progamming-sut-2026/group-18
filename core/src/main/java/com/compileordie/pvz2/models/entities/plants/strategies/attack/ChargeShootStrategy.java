@@ -41,8 +41,10 @@ public class ChargeShootStrategy implements AttackStrategy {
                     .getDeclaredConstructor(double.class, double.class, double.class, int.class)
                     .newInstance(plant.getX(), plant.getY(), 5.0, plant.getBaseDamage());
 
-                // Tag the projectile for quests
-                proj.setSourcePlantName(plant.getName());
+// Converts "Cabbage-pult" -> "CABBAGE_PULT", "Peashooter" -> "PEASHOOTER"
+                String formattedName = plant.getName().toUpperCase().replace("-", "_").replace(" ", "_");
+                proj.setSourcePlantName(formattedName);
+
 
                 board.getActiveProjectiles().add(proj);
 

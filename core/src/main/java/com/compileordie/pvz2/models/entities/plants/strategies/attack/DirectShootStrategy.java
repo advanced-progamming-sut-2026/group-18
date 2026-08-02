@@ -49,8 +49,10 @@ public class DirectShootStrategy implements AttackStrategy {
                                 .getDeclaredConstructor(double.class, double.class, double.class, int.class)
                                 .newInstance(spawnX, spawnY, speed, damage);
 
-                            // Tag the projectile with the plant's name for quest tracking!
-                            proj.setSourcePlantName(plant.getName());
+// Converts "Cabbage-pult" -> "CABBAGE_PULT", "Peashooter" -> "PEASHOOTER"
+                            String formattedName = plant.getName().toUpperCase().replace("-", "_").replace(" ", "_");
+                            proj.setSourcePlantName(formattedName);
+
 
                             // NEW: Multiply base speed by vector direction
                             proj.setXSpeed(speed * vector[0]);

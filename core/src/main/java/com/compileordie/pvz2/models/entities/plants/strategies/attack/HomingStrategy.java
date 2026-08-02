@@ -55,8 +55,10 @@ public class HomingStrategy implements AttackStrategy {
                     .getDeclaredConstructor(double.class, double.class, double.class, int.class, Zombie.class)
                     .newInstance(plant.getX(), plant.getY(), 4.0, plant.getBaseDamage(), target);
 
-                // Tag the projectile for quests
-                proj.setSourcePlantName(plant.getName());
+// Converts "Cabbage-pult" -> "CABBAGE_PULT", "Peashooter" -> "PEASHOOTER"
+                String formattedName = plant.getName().toUpperCase().replace("-", "_").replace(" ", "_");
+                proj.setSourcePlantName(formattedName);
+
 
                 board.getActiveProjectiles().add(proj);
             } catch (Exception e) {
