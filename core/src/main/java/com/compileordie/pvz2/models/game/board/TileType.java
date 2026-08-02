@@ -1,6 +1,8 @@
 package com.compileordie.pvz2.models.game.board;
 
+import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.Plant;
+import com.compileordie.pvz2.models.entities.plants.enums.PlantTag;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.mobility.DodoRiderZombie;
 
@@ -113,20 +115,14 @@ public enum TileType {
      * Enforces active water rules for Big Wave Beach tiles.
      */
     protected void handleOceanTileLogic(Tile self, GameBoard gameBoard) {
-        Lane lane = gameBoard.getLane(self.row);
-
-        // 1. Enforce water-based plant drowning rules for THIS tile
         Plant plant = self.plant;
         if (plant != null) {
-            // Check if the plant requires a Lily Pad or isn't inherently aquatic
-            // (Assuming there's an isAquatic() or checking mechanism to Plant variants)
-            /*if (plant.type != PlantType.LILY_PAD && plant.type != PlantType.TANGLE_KELP) OR
-            if (!plant.isAquatic) {
-                plant.die();
+            if (!plant.hasTag(PlantTag.WATER) && !self.hasLilyPad) {
+                plant.takeDamage(99999);
                 self.plant = null;
-                AppModel.addAfterPrompt("Plant at (" + self.column + ", " + self.row + ") drowned in the ocean water.");
-            }*/
-            // TODO: Concrete implementation of the drowning logic here.
+                AppModel.addAfterPrompt("Plant " + plant.getName() + " drowned in the ocean water!");
+            }
         }
     }
+
 }

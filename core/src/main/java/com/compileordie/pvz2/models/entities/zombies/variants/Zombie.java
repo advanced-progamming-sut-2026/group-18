@@ -23,6 +23,7 @@ public abstract class Zombie extends GameEntity {
     protected boolean stopZombieNow = false;
     protected boolean isHypnotized = false;
     protected ZombieType type;
+    protected boolean hasMetalArmor = false; // Tracks if armor was removed by Magnet-shroom
 
     public Zombie(double health,
                   double speed,
@@ -44,6 +45,14 @@ public abstract class Zombie extends GameEntity {
         this.isEating = false;
         this.isCombatingWithHypnotized = false;
         this.type = type;
+
+        // Check if this zombie variant starts with metal armor
+        if (type != null) {
+            String name = type.name().toUpperCase();
+            if (name.contains("BUCKET") || name.contains("FOOTBALL") || name.contains("KNIGHT") || name.contains("MACHINERY")) {
+                this.hasMetalArmor = true;
+            }
+        }
     }
 
     // تیک ما در کلاس والد زامبی صرفا برای هندل کردن مرگ و افکت ها هست
@@ -196,5 +205,18 @@ public abstract class Zombie extends GameEntity {
 
     public void setCombatingWithHypnotized(boolean c) {
         this.isCombatingWithHypnotized = c;
+    }
+
+    // --- Magnet-shroom Mechanics ---
+    public boolean hasMetalArmor() {
+        return this.hasMetalArmor;
+    }
+
+    public void removeMetalArmor() {
+        if (this.hasMetalArmor) {
+            this.hasMetalArmor = false;
+            // Instantly strip armor HP bonus (e.g., reduce health to standard zombie baseline)
+            this.health = Math.min(this.health, 200.0);
+        }
     }
 }

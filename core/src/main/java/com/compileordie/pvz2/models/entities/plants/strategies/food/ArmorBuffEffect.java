@@ -14,5 +14,8 @@ public class ArmorBuffEffect implements PlantFoodEffectStrategy {
     @Override
     public void applyEffect(Plant plant, GameBoard board, Player player) {
         plant.setCurrentHp(plant.getBaseHp() + bonusArmorHp);
+
+        // Effect resolved! Reset the feed flag.
+        plant.resetFeed();
     }
 }

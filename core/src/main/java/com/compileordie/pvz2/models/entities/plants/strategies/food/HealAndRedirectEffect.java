@@ -35,5 +35,8 @@ public class HealAndRedirectEffect implements PlantFoodEffectStrategy {
                 }
             }
         }
+
+        // Effect resolved! Reset the feed flag.
+        plant.resetFeed();
     }
 }

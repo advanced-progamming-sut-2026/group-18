@@ -44,7 +44,7 @@ public class HomingStrategy implements AttackStrategy {
                 break;
             case HIGHEST_HP:
                 target = activeZombies.stream()
-                    .max(Comparator.comparingInt(Zombie::getHp)) // Assumes getHp() exists
+                    .max(Comparator.comparingDouble(Zombie::getHealth))
                     .orElse(null);
                 break;
         }

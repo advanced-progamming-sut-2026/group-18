@@ -20,7 +20,10 @@ public class HomingBurstEffect implements PlantFoodEffectStrategy {
     @Override
     public void applyEffect(Plant plant, GameBoard board, Player player) {
         List<Zombie> zombies = board.getAllZombies();
-        if (zombies.isEmpty()) return;
+        if (zombies.isEmpty()) {
+            plant.resetFeed(); // Reset even if it fails to find targets
+            return;
+        }
 
         for (int i = 0; i < projectileCount; i++) {
             try {
@@ -36,5 +39,8 @@ public class HomingBurstEffect implements PlantFoodEffectStrategy {
                 e.printStackTrace();
             }
         }
+
+        // Effect resolved! Reset the feed flag.
+        plant.resetFeed();
     }
 }

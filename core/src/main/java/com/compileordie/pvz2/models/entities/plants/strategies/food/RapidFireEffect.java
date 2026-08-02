@@ -27,5 +27,8 @@ public class RapidFireEffect implements PlantFoodEffectStrategy {
                 e.printStackTrace();
             }
         }
+
+        // Effect resolved! Reset the feed flag.
+        plant.resetFeed();
     }
 }

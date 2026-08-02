@@ -34,7 +34,8 @@ public class PlantFactory {
         PlantFoodEffectStrategy foodStrategy = FoodEffectFactory.createEffect(
             template.getFoodEffectType(),
             template.getProjectileType(),
-            template.getFoodEffectValue() // e.g., how many projectiles to burst, or AoE radius
+            template.getFoodEffectValue(), // e.g., how many projectiles to burst, or AoE radius
+            template
         );
 
         // 3. Assemble the final concrete Plant object! No specific classes required.
