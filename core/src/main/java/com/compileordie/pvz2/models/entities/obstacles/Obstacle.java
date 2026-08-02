@@ -4,6 +4,10 @@ import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 
 abstract public class Obstacle extends GameEntity {
+    public ObstacleType getType() {
+        return type;
+    }
+
     public ObstacleType type;
 
     public Obstacle(double x, double y, ObstacleType type) {

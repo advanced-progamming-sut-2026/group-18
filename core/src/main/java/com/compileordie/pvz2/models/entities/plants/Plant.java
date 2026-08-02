@@ -66,13 +66,19 @@ public class Plant extends GameEntity {
     }
 
     public void tick(GameBoard board, int tickDelta) {
+        // GUARANTEED DEATH CHECK 1: If it died via time/decay (like a Mint)
+        if (this.isDead() || this.currentHp <= 0) {
+            this.die();
+            return;
+        }
+
         // 1. If covered by Ice or Octopus, the plant is completely disabled
         if (coverState != PlantCoverState.NONE) {
             // Only Ice melts from nearby fire plants
             if (coverState == PlantCoverState.ICE) {
                 handleIceMelting(board, tickDelta);
             }
-            return;
+            return; // Skip attacking while covered!
         }
 
         currentActionTimer += tickDelta;
@@ -140,7 +146,7 @@ public class Plant extends GameEntity {
         if (hasAdjacentFire) {
             // Melts at 60 HP per second (6 HP per tick)
             double meltAmount = (60.0 / 10.0) * tickDelta;
-            takeDamage((int) meltAmount);
+            takeDamage((int) meltAmount); // Damage goes to the cover!
         }
     }
 
@@ -170,6 +176,8 @@ public class Plant extends GameEntity {
     }
 
     public void takeDamage(int amount) {
+        if (this.isDead()) return; // Prevent double-triggering death
+
         // If the plant has an Ice Block or Octopus, the cover takes the damage!
         if (coverState != PlantCoverState.NONE) {
             this.coverHp -= amount;
@@ -182,6 +190,12 @@ public class Plant extends GameEntity {
 
         // Otherwise, the plant takes damage normally
         this.currentHp -= amount;
+
+        // GUARANTEED DEATH CHECK 2: If it died via combat damage
+        if (this.currentHp <= 0) {
+            this.currentHp = 0;
+            this.die();
+        }
     }
 
     public void applyLevelUpgrade(int newLevel) {
@@ -202,9 +216,11 @@ public class Plant extends GameEntity {
     }
 
     public void die() {
+        // Explosive plants, Mints, and cleanup logic hook into this!
     }
 
     // --- Standard Getters & Setters ---
+    public PlantFoodEffectStrategy getFoodEffectStrategy() { return foodStrategy; }
     public AttackStrategy getAttackStrategy() { return attackStrategy; }
     public int getBaseHp() { return baseHp; }
     public void setBaseHp(int baseHp) { this.baseHp = baseHp; }

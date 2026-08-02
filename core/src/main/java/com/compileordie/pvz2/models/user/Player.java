@@ -126,4 +126,25 @@ public class Player {
     public float getDLDecrease() {
         return 3f / difficultyLevel;
     }
+
+    // --- Helper Methods for Economy and Boosts ---
+    public void spendDiamonds(int amount) {
+        this.diamonds = Math.max(0, this.diamonds - amount);
+    }
+
+    public void addDiamonds(int amount) {
+        this.diamonds += amount;
+    }
+
+    public void spendCoins(int amount) {
+        this.coins = Math.max(0, this.coins - amount);
+    }
+
+    public void addCoins(int amount) {
+        this.coins += amount;
+    }
+
+    public void consumePlantFood() {
+        this.plantFoodCount = Math.max(0, this.plantFoodCount - 1);
+    }
 }
