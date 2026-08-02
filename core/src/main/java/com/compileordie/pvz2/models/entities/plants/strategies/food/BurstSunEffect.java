@@ -56,5 +56,8 @@ public class BurstSunEffect implements PlantFoodEffectStrategy {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        // Effect resolved! Reset the feed flag.
+        plant.resetFeed();
     }
 }

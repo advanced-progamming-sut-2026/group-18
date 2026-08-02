@@ -130,13 +130,17 @@ public enum WaveType {
             for (Tile tile : lane.tiles) {
                 Plant plant = tile.plant;
 
+                // Document rule: "کلیه گیاهان (به جز گیاهانی که تگ آتشین دارند)..."
                 if (plant != null && !plant.hasTag(PlantTag.FIRE)) {
-                    plant.increaseFreezedByHunter();
-                    plant.shouldBeFreezedByHunter();
+
+                    // This single method now handles the 3 levels and the 600 HP ice block!
+                    plant.addChill();
+
                 }
             }
         }
     }
+
 
 
     protected void changeTide(GameBoard gameBoard) {

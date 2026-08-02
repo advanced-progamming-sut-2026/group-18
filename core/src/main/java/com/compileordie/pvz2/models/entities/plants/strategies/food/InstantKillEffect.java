@@ -28,5 +28,8 @@ public class InstantKillEffect implements PlantFoodEffectStrategy {
         for (Zombie zombie : closestZombies) {
             zombie.takeDamage(99999, DamageType.NORMAL);
         }
+
+        // Effect resolved! Reset the feed flag.
+        plant.resetFeed();
     }
 }

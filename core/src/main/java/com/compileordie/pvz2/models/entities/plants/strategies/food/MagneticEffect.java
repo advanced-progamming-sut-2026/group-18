@@ -19,6 +19,8 @@ public class MagneticEffect implements PlantFoodEffectStrategy {
                 ((BucketHeadZombie) zombie).mushroomAbsorption();
             }
         }
-    }
 
+        // Effect resolved! Reset the feed flag.
+        plant.resetFeed();
+    }
 }

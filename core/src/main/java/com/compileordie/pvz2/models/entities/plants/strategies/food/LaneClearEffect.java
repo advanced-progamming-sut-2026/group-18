@@ -16,5 +16,8 @@ public class LaneClearEffect implements PlantFoodEffectStrategy {
                 zombie.takeDamage(2000, DamageType.NORMAL);
             }
         }
+
+        // Effect resolved! Reset the feed flag.
+        plant.resetFeed();
     }
 }

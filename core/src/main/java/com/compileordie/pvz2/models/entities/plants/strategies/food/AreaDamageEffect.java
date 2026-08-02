@@ -26,5 +26,8 @@ public class AreaDamageEffect implements PlantFoodEffectStrategy {
                 zombie.takeDamage(damageAmount, DamageType.EXPLOSIVE);
             }
         }
+
+        // Effect resolved! Reset the feed flag.
+        plant.resetFeed();
     }
 }

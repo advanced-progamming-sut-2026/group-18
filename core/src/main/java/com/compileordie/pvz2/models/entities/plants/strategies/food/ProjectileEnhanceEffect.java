@@ -15,5 +15,8 @@ public class ProjectileEnhanceEffect implements PlantFoodEffectStrategy {
     public void applyEffect(Plant plant, GameBoard board, Player player) {
         plant.setBaseDamage(plant.getBaseDamage() * damageMultiplier);
         plant.setCurrentHp(plant.getBaseHp() * 2);
+
+        // Effect resolved! Reset the feed flag.
+        plant.resetFeed();
     }
 }

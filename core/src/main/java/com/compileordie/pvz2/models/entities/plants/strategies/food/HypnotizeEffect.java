@@ -28,6 +28,8 @@ public class HypnotizeEffect implements PlantFoodEffectStrategy {
             zombie.addEffect(new StatusEffect(EffectType.HYPNOTIZED, 99999));
             // Removed zombie.reverseDirection() because Zombie.tick() handles it!
         }
-    }
 
+        // Effect resolved! Reset the feed flag.
+        plant.resetFeed();
+    }
 }

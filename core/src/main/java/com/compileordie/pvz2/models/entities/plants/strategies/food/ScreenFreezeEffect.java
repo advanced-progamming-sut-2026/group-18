@@ -21,6 +21,9 @@ public class ScreenFreezeEffect implements PlantFoodEffectStrategy {
             // FIXED: Uses EffectType.FROZEN and addEffect()
             zombie.addEffect(new StatusEffect(EffectType.FROZEN, freezeDurationTicks));
         }
+
+        // Effect resolved! Reset the feed flag.
+        plant.resetFeed();
     }
 
 }

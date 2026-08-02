@@ -52,5 +52,8 @@ public class SpawnClonesEffect implements PlantFoodEffectStrategy {
 
             spawned++;
         }
+
+        // Effect resolved! Reset the feed flag.
+        plant.resetFeed();
     }
 }
