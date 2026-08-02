@@ -51,10 +51,13 @@ public class HomingStrategy implements AttackStrategy {
 
         if (target != null) {
             try {
-                // Spawns HomingProjectile, HypnoProjectile, or LightningProjectile dynamically
                 Projectile proj = projectileType
                     .getDeclaredConstructor(double.class, double.class, double.class, int.class, Zombie.class)
                     .newInstance(plant.getX(), plant.getY(), 4.0, plant.getBaseDamage(), target);
+
+                // Tag the projectile for quests
+                proj.setSourcePlantName(plant.getName());
+
                 board.getActiveProjectiles().add(proj);
             } catch (Exception e) {
                 e.printStackTrace();

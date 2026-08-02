@@ -12,6 +12,10 @@ import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.economy.SeedPacket;
 import com.compileordie.pvz2.models.user.Player;
 
+// Clean imports for the Quest System
+import com.compileordie.pvz2.models.missions.quests.QuestEvent;
+import com.compileordie.pvz2.models.missions.quests.QuestManager;
+
 public class PlantPlacementController {
 
     /**
@@ -70,6 +74,15 @@ public class PlantPlacementController {
 
         // 9. Put the packet on cooldown
         packet.startCooldown();
+
+        // --- QUEST INJECTION: PLANTING ---
+        QuestManager.dispatch(QuestEvent.PLANT_PLANTED, 1, template.getName());
+
+        // If it's an explosive (Cherry Bomb, Jalapeno, etc.), dispatch the explosive quest!
+        if (template.getTags() != null && template.getTags().contains(PlantTag.EXPLOSIVE)) {
+            QuestManager.dispatch(QuestEvent.EXPLOSIVE_PLANTED, 1, null);
+        }
+        // ---------------------------------
 
         System.out.println("Successfully planted " + template.getName() + "!");
         return true;

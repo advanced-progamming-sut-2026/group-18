@@ -12,6 +12,9 @@ public abstract class Projectile {
     protected int damage;
     protected DamageType type;
 
+    // --- NEW: Quest Memory ---
+    protected String sourcePlantName = "UNKNOWN";
+
     protected boolean isDead = false;
     protected boolean isReversed = false;
 
@@ -50,6 +53,10 @@ public abstract class Projectile {
 
     public boolean isReversed() { return isReversed; }
     public void setReversed(boolean reversed) { this.isReversed = reversed; }
+
+    // --- NEW GETTER/SETTER ---
+    public String getSourcePlantName() { return sourcePlantName; }
+    public void setSourcePlantName(String sourcePlantName) { this.sourcePlantName = sourcePlantName; }
 
     public void destroy() {
         this.isDead = true;
