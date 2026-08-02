@@ -11,6 +11,10 @@ import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 
+// Clean imports for the Quest System
+import com.compileordie.pvz2.models.missions.quests.QuestEvent;
+import com.compileordie.pvz2.models.missions.quests.QuestManager;
+
 import java.util.ArrayList;
 
 public class EconomyManager {
@@ -153,66 +157,17 @@ public class EconomyManager {
 
                 suns.remove(i);
                 AppModel.addAfterPrompt("Sun collected at (" + (int) sun.getX() + ", " + (int) sun.getY() + ")");
+
+                // --- QUEST INJECTION: SUN COLLECTED ---
+                QuestManager.dispatch(QuestEvent.SUN_COLLECTED, sun.type.value, null);
+                // --------------------------------------
+
                 return true;
             }
         }
 
         return false;
     }
-
-    /*public void plant(PlantType type, float x, float y) {
-        for (PlantCard plantCard : plantCards) {
-            if (plantCard.isReady() && plantCard.plantType == type) {
-                // Conveyor mode bypasses sun cost check
-                if (this.type != EconomyType.CONVEYOR_BELT && sunAmount < type.cost) {
-                    AppModel.addAfterPrompt("Not enough sun to plant " + type);
-                    return;
-                }
-
-                Tile tile = gameBoard.getTile(x, y);
-                if (tile == null || tile.plant != null) {
-                    AppModel.addAfterPrompt(String.format("Cannot plant at (%.2f, %.2f)!", x, y));
-                    return;
-                }
-
-                // Deduct sun cost
-                if (this.type != EconomyType.CONVEYOR_BELT) {
-                    sunAmount -= type.cost;
-                }
-
-                // Instantiate and place plant entity
-                Plant plant = type.createPlant(x, y);
-                tile.plant = plant;
-                gameBoard.addPlant(plant);
-
-                // Start cooldown timer on card
-                plantCard.use();
-
-                AppModel.addAfterPrompt(type + " planted at (" + (int) x + ", " + (int) y + ")");
-                break;
-            }
-        }
-    }
-
-    public void pluck(float x, float y) {
-        Tile tile = gameBoard.getTile(x, y);
-        if (tile == null) {
-            AppModel.addAfterPrompt(String.format("Tile at (%.2f, %.2f) not found!", x, y));
-            return;
-        }
-
-        Plant plant = tile.plant;
-        if (plant == null) {
-            AppModel.addAfterPrompt(String.format("Plant at (%.2f, %.2f) not found!", x, y));
-            return;
-        }
-
-        PlantType plantType = plant.type;
-        tile.plant = null;
-        gameBoard.removePlant(plant);
-
-        AppModel.addAfterPrompt(String.format("%s at (%.2f, %.2f) plucked!", plantType, x, y));
-    }*/
 
     public void plant(PlantType type, float x, float y) {
         Plant plant = null;

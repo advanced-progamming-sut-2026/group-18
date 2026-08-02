@@ -17,11 +17,12 @@ public class LobberStrategy implements AttackStrategy {
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
         try {
-            // Spawns a lobbed projectile (e.g., Cabbage, Melon, Butter)
-            // The projectile constructor takes splashRadiusTiles to handle AoE on impact
             Projectile proj = projectileType
                 .getDeclaredConstructor(double.class, double.class, double.class, int.class, double.class)
                 .newInstance(plant.getX(), plant.getY(), 3.5, plant.getBaseDamage(), splashRadiusTiles);
+
+            // Tag the projectile for quests
+            proj.setSourcePlantName(plant.getName());
 
             board.getActiveProjectiles().add(proj);
         } catch (Exception e) {

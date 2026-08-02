@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.entities.plants;
 
+import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.entities.plants.enums.PlantCategory;
 import com.compileordie.pvz2.models.entities.plants.enums.PlantTag;
@@ -217,7 +218,15 @@ public class Plant extends GameEntity {
 
     public void die() {
         // Explosive plants, Mints, and cleanup logic hook into this!
+
+        // Exact string format required by the project document
+        int xInt = (int) this.getX();
+        int yInt = (int) this.getY();
+
+        // Using teammate's custom message queue
+        AppModel.addAfterPrompt("Plant " + this.name + " at (" + xInt + ", " + yInt + ") is destroyed.");
     }
+
 
     // --- Standard Getters & Setters ---
     public PlantFoodEffectStrategy getFoodEffectStrategy() { return foodStrategy; }

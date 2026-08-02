@@ -41,6 +41,9 @@ public class ChargeShootStrategy implements AttackStrategy {
                     .getDeclaredConstructor(double.class, double.class, double.class, int.class)
                     .newInstance(plant.getX(), plant.getY(), 5.0, plant.getBaseDamage());
 
+                // Tag the projectile for quests
+                proj.setSourcePlantName(plant.getName());
+
                 board.getActiveProjectiles().add(proj);
 
                 // Reset charge after firing
