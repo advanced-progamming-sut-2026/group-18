@@ -1,9 +1,12 @@
 package com.compileordie.pvz2.controllers;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.PlantTemplate;
+import com.compileordie.pvz2.models.entities.plants.enums.PlantTag;
 import com.compileordie.pvz2.models.entities.plants.factory.PlantFactory;
 import com.compileordie.pvz2.models.entities.plants.strategies.attack.MintActivateStrategy;
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.economy.SeedPacket;
@@ -26,35 +29,46 @@ public class PlantPlacementController {
         PlantTemplate template = packet.getTemplate();
 
         // 2. Check if the player has enough sun
-        if (player.getSunCount() < template.getCost()) {
+        if (board.economyManager.sunAmount < template.getCost()) {
             System.out.println("Not enough sun! Requires: " + template.getCost());
             return false;
         }
 
         // 3. Check if the tile is valid for this plant
-        // (e.g., Water plants need water tiles, ground plants need ground or Lily Pads)
         if (!isTileValidForPlant(template, targetTile)) {
             System.out.println("Cannot plant here!");
             return false;
         }
 
         // 4. Deduct Sun
-        player.spendSun(template.getCost());
+        board.economyManager.sunAmount -= template.getCost();
 
-        // 5. Build the Plant using our masterpiece Factory
-        Plant newPlant = PlantFactory.createPlant(template, targetTile.getX(), targetTile.getY());
+        // 5. Convert grid row/col to exact world coordinates
+        double spawnX = targetTile.column * Constants.Game.TILE_WIDTH;
+        double spawnY = targetTile.row * Constants.Game.TILE_HEIGHT;
+
+        // Build the Plant using our masterpiece Factory
+        Plant newPlant = PlantFactory.createPlant(template, spawnX, spawnY);
 
         // 6. Register it on the board
         board.addPlant(newPlant);
-        targetTile.setPlant(newPlant); // If your tiles track what is on them
+        targetTile.plant = newPlant; // Direct assignment matching ZombieManager style
 
         // 7. Trigger specific immediate effects (Like Mints!)
         if (newPlant.getAttackStrategy() instanceof MintActivateStrategy) {
-            // Force the mint to execute its buff immediately upon placement
             newPlant.getAttackStrategy().attack(newPlant, board, 0);
         }
 
-        // 8. Put the packet on cooldown
+        // 8. Check if the player has boosted this plant (triggers plant food effect immediately)
+        PlantType pType = PlantType.getByName(template.getName());
+        if (pType != null && player.plantBoosts.getOrDefault(pType, false)) {
+            // Apply the food effect immediately
+            if (newPlant.getFoodEffectStrategy() != null) {
+                newPlant.getFoodEffectStrategy().applyEffect(newPlant, board, player);
+            }
+        }
+
+        // 9. Put the packet on cooldown
         packet.startCooldown();
 
         System.out.println("Successfully planted " + template.getName() + "!");
@@ -62,33 +76,51 @@ public class PlantPlacementController {
     }
 
     /**
-     * Helper to enforce placement rules (Lily Pads, Grave blocking, etc.)
+     * Helper to enforce placement rules (Lily Pads, Graves, Ice, Water, etc.)
      */
     private boolean isTileValidForPlant(PlantTemplate template, Tile tile) {
-        // If the tile has a grave, nothing can be planted except a Grave Buster
-        if (tile.hasGrave()) {
+        // 1. Frostbite Caves: Cannot plant on Slider or Frozen tiles
+        if (tile.type != null) {
+            String tileName = tile.type.name().toUpperCase();
+            if (tileName.contains("SLIDER") || tileName.contains("FROZEN") || tileName.contains("ICE")) {
+                return false;
+            }
+        }
+
+        // 2. Grave Blocking: Only Grave Buster can be planted on Graves
+        if (tile.obstacle != null && tile.obstacle.getType().name().contains("TOMB")) {
             return template.getName().equals("Grave Buster");
         }
 
-        // If the tile already has a plant
-        if (tile.hasPlant()) {
-            Plant existingPlant = tile.getPlant();
+        // 3. Big Wave Beach: Water tile rules
+        boolean isWaterTile = (tile.type != null && tile.type.name().contains("WATER"));
+        if (isWaterTile) {
+            boolean isWaterPlant = template.getTags() != null && template.getTags().contains(PlantTag.WATER);
+            boolean isLilyPadOrKelp = template.getName().equals("Lily Pad") || template.getName().equals("Tangle Kelp");
+
+            if (!isWaterPlant && !isLilyPadOrKelp) {
+                // Must have a Lily Pad already on this water tile to plant a normal plant
+                if (tile.plant == null || !tile.plant.getName().equals("Lily Pad")) {
+                    return false;
+                }
+            }
+        }
+
+        // 4. Existing Plant layering rules
+        if (tile.plant != null) {
+            Plant existingPlant = tile.plant;
 
             // Pumpkin can be planted OVER other plants
             if (template.getName().equals("Pumpkin")) {
                 return !existingPlant.getName().equals("Pumpkin");
             }
-            // Other plants can be planted ON TOP of Lily Pads
+            // Normal plants can be planted ON TOP of Lily Pads
             if (existingPlant.getName().equals("Lily Pad") && !template.getName().equals("Lily Pad")) {
                 return true;
             }
 
             return false; // Tile is occupied
         }
-
-        // Add water tile checks here if you have a pool level
-        // if (tile.isWater() && !template.getName().equals("Lily Pad") &&
-        // !template.getName().equals("Tangle Kelp")) return false;
 
         return true;
     }

@@ -41,14 +41,9 @@ public class PlantEatabilityChecker {
             return false;
         }
 
-        // ۲. بررسی افکت‌های زمان اجرا (Runtime Statuses طبق کلاس Plant شما):
-        // الف) اگر توسط زامبی شکارچی (Hunter Zombie) کاملاً یخ زده باشد
-        if (plant.isFreezedByHunter()) {
-            return false;
-        }
-
-        // ب) اگر توسط اختاپوس (Octopus Zombie) قفل شده باشد
-        if (plant.shouldBeFreezedByOcto()) {
+        // ۲. بررسی افکت‌های زمان اجرا با معماری جدید:
+        // اگر گیاه توسط یخ یا اختاپوس کاور شده باشد، قابل خوردن نیست (باید به کاور دمیج وارد شود)
+        if (plant.hasActiveCover()) {
             return false;
         }
 
