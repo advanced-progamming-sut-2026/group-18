@@ -12,6 +12,7 @@ import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.boss.GargantuarZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.capable.HunterZombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.capable.OctopusZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.capable.PianistZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.capable.RaZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.capable.TurquoiseZombie;
@@ -329,10 +330,11 @@ public class ZombieManager {
     private void processPlantEating(Zombie z, Plant p) {
         // --- خوردن گیاه ---
         if (Math.abs(z.getY() - p.getY()) <= tileHeight / 6) {
-            if (Math.abs(z.getX() - p.getY()) <= tileWidth / 6) {
+            // FIXED BUG: x was previously being compared to p.getY()
+            if (Math.abs(z.getX() - p.getX()) <= tileWidth / 6) {
                 if ((z.getType() == ZombieType.DODO_RIDER && ((DodoRiderZombie) z).getState() == MovementState.FLYING)
-                    || !isEatable(p) || p.isFreezedByHunter() || p.isFreezedByOcto()) {
-                } else {  // عملیات خوردن گیاه
+                    || !isEatable(p)) {
+                } else {  // عملیات خوردن گیاه (اگر گیاه فریز باشه دمیج به یخ وارد میشه)
                     z.isEating = true;
                     p.takeDamage((int) ((z.getType() == ZombieType.ALL_STAR ? smashDamage : z.getAttackPower() * dt)));
                 }
@@ -344,13 +346,13 @@ public class ZombieManager {
         // --- پرواز دودوسوار ---
         if (z.getType() == ZombieType.DODO_RIDER
             && (Math.abs(z.getY() - p.getY()) <= tileHeight / 6 && Math.abs(z.getX() - p.getX()) <= tileWidth / 1.7)
-            && isVisible(p) && !p.isFreezedByHunter() && !p.isFreezedByOcto()) {
+            && isVisible(p) && !p.hasActiveCover()) {
             ((DodoRiderZombie) z).onPlantCollisionWithHalfOfTileWidth(PlantType.getByName(p.getName()));
         }
         // --- دزدیدن و لیزر تورکوآیز ---
         if (z.getType() == ZombieType.TURQUOISE_ZOMBIE
             && (Math.abs(z.getY() - p.getY()) <= tileHeight / 6 && Math.abs(z.getX() - p.getX()) <= tileWidth * 3.7)
-            && isVisible(p) && !p.isFreezedByHunter() && !p.isFreezedByOcto()) {
+            && isVisible(p) && !p.hasActiveCover()) {
             ((TurquoiseZombie) z).startStealing();
             if (((TurquoiseZombie) z).shouldWeLaser()) {
                 p.takeDamage((int) smashDamage);
@@ -361,30 +363,26 @@ public class ZombieManager {
         if (z.getType() == ZombieType.EXPLORER_ZOMBIE
             && (Math.abs(z.getY() - p.getY()) <= tileHeight / 6 && Math.abs(z.getX() - p.getX()) <= tileWidth * 1)
             && isVisible(p)) {
-            if (p.isFreezedByHunter()) {
-                p.setIsFreezedByHunter(false);
-                p.setIsFreezedByHunterCounter(0);
-            } else {
-                p.takeDamage((int) smashDamage);
-            }
+            // New Architecture gracefully handles instant ice melting vs plant destruction
+            p.takeDamage((int) smashDamage);
         }
         // --- پرتاب یخ توسط هانتر ---
         if (z.getType() == ZombieType.HUNTER_ZOMBIE
             && (Math.abs(z.getY() - p.getY()) <= tileHeight / 6
-            && Math.abs(z.getX() - p.getX()) <= ((HunterZombie) z).ABILITY_RANGE)
-            && isVisible(p) && !p.isFreezedByHunter() && !p.isFreezedByOcto()) {
+            && Math.abs(z.getX() - p.getX()) <= HunterZombie.ABILITY_RANGE)
+            && isVisible(p) && !p.hasActiveCover()) {
             ((HunterZombie) z).setShouldAttack(true);
             if (((HunterZombie) z).getShouldShut()) {
-                p.increaseFreezedByHunter();
+                p.addChill();
                 ((HunterZombie) z).setShouldShut(false);
             }
         }
         // --- پرتاب اختاپوس ---
         if (z.getType() == ZombieType.OCTOPUS_ZOMBIE
             && (Math.abs(z.getY() - p.getY()) <= tileHeight / 6
-            && Math.abs(z.getX() - p.getX()) <= ((HunterZombie) z).ABILITY_RANGE)
-            && isVisible(p) && !p.isFreezedByHunter() && !p.isFreezedByOcto()) {
-            p.setFreezedByOcto(true);
+            && Math.abs(z.getX() - p.getX()) <= OctopusZombie.ABILITY_RANGE) // FIXED BUG: Fatal ClassCastException prevented
+            && isVisible(p) && !p.hasActiveCover()) {
+            p.applyOctopus(400.0);
         }
     }
 }
