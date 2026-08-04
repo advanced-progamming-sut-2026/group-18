@@ -15,10 +15,6 @@ import com.compileordie.pvz2.models.missions.quests.QuestEvent;
 import com.compileordie.pvz2.models.missions.quests.QuestManager;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 
-// Clean imports for the Quest System
-import com.compileordie.pvz2.models.missions.quests.QuestEvent;
-import com.compileordie.pvz2.models.missions.quests.QuestManager;
-
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -163,11 +159,6 @@ public class EconomyManager {
 
                 suns.remove(i);
                 AppModel.addAfterPrompt("Sun collected at (" + (int) sun.getX() + ", " + (int) sun.getY() + ")");
-
-                // --- QUEST INJECTION: SUN COLLECTED ---
-                QuestManager.dispatch(QuestEvent.SUN_COLLECTED, sun.type.value, null);
-                // --------------------------------------
-
                 return true;
             }
         }
@@ -217,7 +208,7 @@ public class EconomyManager {
                 }
                 tile.plant = plant;
                 QuestManager.dispatch(QuestEvent.PLANT_PLANTED, 1, AppModel.currentChapter.name());
-                AppModel.addAfterPrompt(String.format("Planted %s at (%.1f, %.1f).", plantType.toString(), x, y));
+                AppModel.addAfterPrompt(String.format("Planted %s at (%.1f, %.1f).", plantType, x, y));
                 return;
             }
         }

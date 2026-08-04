@@ -27,6 +27,7 @@ public class Lane {
             tiles.add(new Tile(gameBoard, row, i, TileType.UNINITIALIZED, null, null));
         }
         this.isLost = false;
+        this.lawnMower = new LawnMower(this);
     }
 
     public void tick(int ticks) {

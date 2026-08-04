@@ -49,9 +49,9 @@ public enum Command {
     COLLECTION_PURCHASE_PLANT("menu\\s+collection\\s+purchase-plant\\s+-p\\s+(?<name>.+)"),
     // Greenhouse Menu
     SHOW_GREENHOUSE("show\\s+greenhouse"),
-    GREENHOUSE_PLANT_POT("plant\\s+pot\\s+at\\s+((?<x>\\S+),\\s+(?<y>\\S+))"),
-    GREENHOUSE_COLLECT("collect\\s+((?<x>\\S+),\\s+(?<y>\\S+))"),
-    GREENHOUSE_GROW("grow\\s+((?<x>\\S+),\\s+(?<y>\\S+))"),
+    GREENHOUSE_PLANT_POT("plant\\s+pot\\s+at\\s+\\((?<x>\\S+),\\s+(?<y>\\S+)\\)"),
+    GREENHOUSE_COLLECT("collect\\s+\\((?<x>\\S+),\\s+(?<y>\\S+)\\)"),
+    GREENHOUSE_GROW("grow\\s+\\((?<x>\\S+),\\s+(?<y>\\S+)\\)"),
     GREENHOUSE_ENTER_SHOP("enter\\s+shop"),
     // Travel Log Menu
     TRAVEL_LOG_PAGE("travel\\s+log\\s+page\\s+(?<name>.+)"),
@@ -73,21 +73,22 @@ public enum Command {
     SELECTION_CANCEL_GAME("cancel\\s+game"),
     // Game Session Menu
     ADVANCE_TIME("advance time -t (?<count>\\S+) ticks"),
-    COLLECT_SUN("collect sun -l ((?<x>\\S+),\\s+(?<y>\\S+))"),
+    COLLECT_SUN("collect sun -l \\((?<x>\\S+),\\s+(?<y>\\S+)\\)"),
     SHOW_SUN_AMOUNT("show sun amount"),
     CHEAT_ADD_SUN("cheat add -n (?<count>\\S+) suns"),
     RELEASE_THE_NUKE("release the nuke"),
-    PLANT_PLANT("plant plant -t (?<type>\\S+) -l ((?<x>\\S+),\\s+(?<y>\\S+))"),
+    PLANT_PLANT("plant plant -t (?<type>.+) -l \\((?<x>\\S+),\\s+(?<y>\\S+)\\)"),
     CHEAT_REMOVE_COOLDOWN("cheat remove-cooldown"),
-    PLUCK_PLANT("pluck plant -l ((?<x>\\S+),\\s+(?<y>\\S+))"),
-    FEED_PLANT("feed plant -l ((?<x>\\S+),\\s+(?<y>\\S+))"),
+    PLUCK_PLANT("pluck plant -l \\((?<x>\\S+),\\s+(?<y>\\S+)\\)"),
+    FEED_PLANT("feed plant -l \\((?<x>\\S+),\\s+(?<y>\\S+)\\)"),
     CHEAT_ADD_PLANT_FOOD("cheat add-plant-food"),
     SHOW_MAP("show map"),
     SHOW_PLANTS_STATUS("show plants status"),
-    SHOW_TILES_STATUS("show tile status -l ((?<x>\\S+),\\s+(?<y>\\S+))"),
+    SHOW_TILES_STATUS("show tile status -l \\((?<x>\\S+),\\s+(?<y>\\S+)\\)"),
     START_ZOMBIE_WAVES("start zombie waves"),
     ZOMBIE_INFO("zombies info"),
-    SPAWN_ZOMBIE("cheat spawn-zombie -t (?<type>\\S+) -l ((?<x>\\S+),\\s+(?<y>\\S+))"),
+    SPAWN_ZOMBIE("cheat spawn-zombie -t (?<type>\\S+) -l \\((?<x>\\S+),\\s+(?<y>\\S+)\\)"),
+    BREAK_VASE("break vase -l \\((?<x>\\S+),\\s+(?<y>\\S+)\\)"),
     QUIT_GAME("quit\\s+game");
 
     private final String regex;

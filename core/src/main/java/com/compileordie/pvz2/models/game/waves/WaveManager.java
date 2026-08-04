@@ -47,6 +47,7 @@ public class WaveManager {
 
         // Trigger wave 1 instantly, or next wave when 75% of previous health is depleted
         if ((shouldStartWaves && currentWave == 1) || currentHealthSum <= (previousWaveTotalMaxHealth * 0.25)) {
+            System.out.println(tickCounter + ":" + (currentHealthSum <= (previousWaveTotalMaxHealth * 0.25)));
             spawnWave();
         }
 

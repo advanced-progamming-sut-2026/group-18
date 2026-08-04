@@ -65,7 +65,7 @@ public class GameMenuController {
         } else {
             AppModel.gameSession = SessionBuilder.create(level);
             return "Starting level: "
-                + level + System.lineSeparator() + AppController.changeMenu(Menu.GAME);
+                + level + System.lineSeparator() + AppController.changeMenu(Menu.GAME_SESSION);
         }
     }
 

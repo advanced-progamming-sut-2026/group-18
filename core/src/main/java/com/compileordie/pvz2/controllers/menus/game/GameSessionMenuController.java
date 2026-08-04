@@ -43,7 +43,7 @@ public class GameSessionMenuController {
         for (int i = 0; i < ticks; i++) {
             AppModel.gameSession.tick(1);
         }
-        return "Advanced game for " + ticks + "tick" + (ticks == 1 ? "." : "s.");
+        return "Advanced game for " + ticks + " tick" + (ticks == 1 ? "." : "s.");
     }
 
     public static String collectSun(String x, String y) {
@@ -194,6 +194,7 @@ public class GameSessionMenuController {
             } else {
                 result.add("Doesn't have obstacle");
             }
+            result.add("");
         }
         for (Lane lane : gameBoard.lanes) {
             if (lane.lawnMower.isTriggered) {
@@ -301,10 +302,11 @@ public class GameSessionMenuController {
             return String.format("[ERROR] Tile not found at (%.1f, %.1f).", xPosition, yPosition);
         }
 
-        ZombieBuilder.create(zombieType,
+        Zombie zombie = ZombieBuilder.create(zombieType,
             xPosition,
             yPosition,
             (int) Math.floor(yPosition / Constants.Game.TILE_HEIGHT));
+        AppModel.gameSession.gameBoard.lanes.get(zombie.getTileRow()).zombies.add(zombie);
         return String.format("Spawned %s at (%.1f, %.1f).", zombieType, xPosition, yPosition);
     }
 

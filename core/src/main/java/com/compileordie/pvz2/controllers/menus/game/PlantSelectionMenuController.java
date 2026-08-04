@@ -78,7 +78,7 @@ public class PlantSelectionMenuController {
         }
 
         AppModel.selectionDeck.put(plant, false);
-        return "Added plant " + plant + "to selection deck. (capacity " + AppModel.selectionDeck.size() + "/8)";
+        return "Added plant " + plant + " to selection deck. (capacity " + AppModel.selectionDeck.size() + "/8)";
     }
 
     public static String removePant(String type) {
@@ -126,7 +126,7 @@ public class PlantSelectionMenuController {
         }
         AppModel.gameSession = SessionBuilder.create(AppModel.currentLevel, AppModel.selectionDeck);
         return "Starting level: "
-            + AppModel.currentLevel + System.lineSeparator() + AppController.changeMenu(Menu.GAME);
+            + AppModel.currentLevel + System.lineSeparator() + AppController.changeMenu(Menu.GAME_SESSION);
     }
 
     public static String cancelGame() {

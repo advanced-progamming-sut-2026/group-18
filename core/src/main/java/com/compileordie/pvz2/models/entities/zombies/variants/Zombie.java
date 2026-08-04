@@ -75,7 +75,7 @@ public abstract class Zombie extends GameEntity {
             AppModel.addAfterPrompt("The glowing zombie dropped a plant food; you have "
                 + player.plantFoodCount + " plant foods now.");
         }
-        QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED, 1, AppModel.currentChapter);
+        QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED, 1, AppModel.currentChapter.toString());
         Lane lane = AppModel.gameSession.gameBoard.lanes.get((int) Math.floor(getY() / Constants.Game.TILE_HEIGHT));
         if (lane.lawnMower == null || lane.lawnMower.isTriggered) {
             QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_NO_MOWER_FIRST_COL, 1, null);
