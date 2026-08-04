@@ -71,6 +71,11 @@ public class GameSessionMenuView implements MenuView {
             String y = Command.SPAWN_ZOMBIE.getGroup(command, "y");
             return GameSessionMenuController.spawnZombie(type, x, y);
         }
+        if (Command.BREAK_VASE.matches(command)) {
+            String x = Command.BREAK_VASE.getGroup(command, "x");
+            String y = Command.BREAK_VASE.getGroup(command, "y");
+            return GameSessionMenuController.breakVase(x, y);
+        }
         if (Command.QUIT_GAME.matches(command)) {
             return GameSessionMenuController.quitGame();
         }

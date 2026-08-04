@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.entities.zombies;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
@@ -48,12 +49,14 @@ public class StatusEffect {
         switch (effectType) {
             case FROZEN:
                 // Only unfreeze if the zombie doesn't have ANOTHER frozen effect stacked
-                if (zombie.getActiveEffects().stream().noneMatch(e -> e != this && e.getEffectType() == EffectType.FROZEN)) {
+                if (zombie.getActiveEffects().stream()
+                    .noneMatch(e -> e != this && e.getEffectType() == EffectType.FROZEN)) {
                     zombie.setStopZombieNow(false);
                 }
                 break;
             case CHILLED:
-                if (zombie.getActiveEffects().stream().noneMatch(e -> e != this && e.getEffectType() == EffectType.CHILLED)) {
+                if (zombie.getActiveEffects().stream()
+                    .noneMatch(e -> e != this && e.getEffectType() == EffectType.CHILLED)) {
                     zombie.setXSpeed(zombie.getStableSpeed());
                 }
                 break;
@@ -77,6 +80,10 @@ public class StatusEffect {
         if (isExpired()) {
             removeFromZombie(zombie);
         }
+    }
+
+    public float getRemainingTime() {
+        return (durationTicks - elapsedTicks) * Constants.Game.TIME_COEFFICIENT;
     }
 
     // Getters

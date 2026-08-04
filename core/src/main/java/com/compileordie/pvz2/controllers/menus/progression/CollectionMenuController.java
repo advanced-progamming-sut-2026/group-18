@@ -67,7 +67,6 @@ public class CollectionMenuController {
 
         Player player = AppModel.player;
         boolean isUnlocked = player.unlockedPlants != null && player.unlockedPlants.contains(plantType);
-        // TODO: Expand this later when Plant Config/Stats models are fully implemented.
         return "--- " + plantType + " ---" + System.lineSeparator() +
             "Status: " + (isUnlocked ? "Unlocked" : "Locked");
     }
@@ -80,7 +79,6 @@ public class CollectionMenuController {
 
         Player player = AppModel.player;
         boolean isUnlocked = player.unlockedZombies != null && player.unlockedZombies.contains(zombieType);
-        // TODO: Expand this later when Zombie Config/Stats models are fully implemented.
         return "--- " + zombieType + " ---" + System.lineSeparator() +
             "Status: " + (isUnlocked ? "Unlocked" : "Locked");
     }
@@ -95,14 +93,14 @@ public class CollectionMenuController {
             return "[ERROR] You must unlock this plant before upgrading it.";
         }
 
-        int currentLevel = player.plantLevels.get(plantType);
+        int currentLevel = player.plantLevels.getOrDefault(plantType, 1);
         int coinCost = currentLevel * ConfigManager.economy().plantUpgradeCoinsPerLevel;
         int packetCost = currentLevel * ConfigManager.economy().plantUpgradeSeedsPerLevel;
-        int currentPackets = player.seedPackets.get(plantType);
+        int currentPackets = player.seedPackets.getOrDefault(plantType, 0);
 
         if (player.coins < coinCost || currentPackets < packetCost) {
-            return "[ERROR] Insufficient resources. You need " + (player.coins - coinCost) +
-                " more coins and " + (currentPackets - packetCost) + " more seed packets to upgrade.";
+            return "[ERROR] Insufficient resources. You need " + (coinCost - player.coins) +
+                " more coins and " + (packetCost - currentPackets) + " more seed packets to upgrade.";
         }
 
         player.coins -= coinCost;
@@ -126,7 +124,7 @@ public class CollectionMenuController {
             return "[ERROR] Plant is already unlocked.";
         }
         if (player.coins < price) {
-            return "[ERROR] Insufficient coins. You need " + (player.coins - price)
+            return "[ERROR] Insufficient coins. You need " + (price - player.coins)
                 + " more coins to purchase a new plant.";
         }
 

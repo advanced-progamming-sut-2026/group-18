@@ -3,15 +3,10 @@ package com.compileordie.pvz2.controllers.menus.auth;
 import com.compileordie.pvz2.config.PreferencesManager;
 import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.models.AppModel;
-import com.compileordie.pvz2.models.repositories.databases.AuthDatabase;
-import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.models.user.Player;
 import com.compileordie.pvz2.models.user.UserValidator;
 import com.compileordie.pvz2.models.user.authentication.AuthManager;
-import com.compileordie.pvz2.models.user.authentication.UserRegistry;
 import com.compileordie.pvz2.views.helpers.Menu;
-
-import java.util.ArrayList;
 
 public class LoginMenuController {
     private static PendingChange pendingChange = null;
@@ -100,22 +95,7 @@ public class LoginMenuController {
         }
 
         String username = pendingChange.user().username;
-        String newHash = AuthManager.hashPassword(newPassword.toCharArray());
-
-        AuthDatabase authDb = new AuthDatabase();
-        ArrayList<UserRegistry> registries = authDb.load();
-        for (UserRegistry userRegistry : registries) {
-            if (userRegistry.getUsername().equals(username)) {
-                userRegistry.setPasswordHash(newHash);
-                break;
-            }
-        }
-        authDb.save(registries);
-
-        UserDatabase userDb = new UserDatabase(username);
-        Player user = userDb.load();
-        user.passwordHash = newHash;
-        userDb.save(user);
+        AuthManager.setNewPassword(username, newPassword.toCharArray());
 
         // Clear the state so the user isn't stuck in the password reset loop
         pendingChange = null;

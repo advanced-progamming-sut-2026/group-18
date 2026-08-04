@@ -1,0 +1,487 @@
+[
+  {
+    class: com.compileordie.pvz2.models.missions.quests.BasicEventQuest
+    id: daily_sun_3000
+    title: Daily Sun Catcher
+    description: Collect 3000 sun units in a single day.
+    category: DAILY
+    targetAmount: 3000
+    rewardType: COINS
+    rewardAmount: 30
+    targetEvent: SUN_COLLECTED
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.BasicEventQuest
+    id: daily_sun_4000
+    title: Daily Sun Catcher
+    description: Collect 4000 sun units in a single day.
+    category: DAILY
+    targetAmount: 4000
+    rewardType: COINS
+    rewardAmount: 40
+    targetEvent: SUN_COLLECTED
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.BasicEventQuest
+    id: daily_sun_5000
+    title: Daily Sun Catcher
+    description: Collect 5000 sun units in a single day.
+    category: DAILY
+    targetAmount: 5000
+    rewardType: COINS
+    rewardAmount: 50
+    targetEvent: SUN_COLLECTED
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.SpecificEventQuest
+    id: main_chapter_egypt
+    title: Chapter Hunter
+    description: Defeat 50 zombies from the EGYPT world.
+    category: CRITICAL
+    targetAmount: 50
+    rewardType: RANDOM_SEED
+    rewardAmount: 10
+    targetEvent: ZOMBIE_KILLED
+    targetContext: EGYPT
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.SpecificEventQuest
+    id: main_chapter_pirate
+    title: Chapter Hunter
+    description: Defeat 50 zombies from the PIRATE world.
+    category: CRITICAL
+    targetAmount: 50
+    rewardType: RANDOM_SEED
+    rewardAmount: 10
+    targetEvent: ZOMBIE_KILLED
+    targetContext: PIRATE
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.SpecificEventQuest
+    id: main_chapter_west
+    title: Chapter Hunter
+    description: Defeat 50 zombies from the WEST world.
+    category: CRITICAL
+    targetAmount: 50
+    rewardType: RANDOM_SEED
+    rewardAmount: 10
+    targetEvent: ZOMBIE_KILLED
+    targetContext: WEST
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.SpecificEventQuest
+    id: daily_pro_peashooter
+    title: Pro Plant Player
+    description: Kill 10 zombies using only PEASHOOTER.
+    category: DAILY
+    targetAmount: 10
+    rewardType: RANDOM_PLANT
+    rewardAmount: 1
+    targetEvent: ZOMBIE_KILLED_BY_PLANT
+    targetContext: PEASHOOTER
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.SpecificEventQuest
+    id: daily_pro_cabbage_pult
+    title: Pro Plant Player
+    description: Kill 10 zombies using only CABBAGE_PULT.
+    category: DAILY
+    targetAmount: 10
+    rewardType: RANDOM_PLANT
+    rewardAmount: 1
+    targetEvent: ZOMBIE_KILLED_BY_PLANT
+    targetContext: CABBAGE_PULT
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.SpecificEventQuest
+    id: daily_pro_kernel_pult
+    title: Pro Plant Player
+    description: Kill 10 zombies using only KERNEL_PULT.
+    category: DAILY
+    targetAmount: 10
+    rewardType: RANDOM_PLANT
+    rewardAmount: 1
+    targetEvent: ZOMBIE_KILLED_BY_PLANT
+    targetContext: KERNEL_PULT
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.SpecificEventQuest
+    id: daily_cactus_only
+    title: Only Cactus
+    description: Kill 10 zombies using only Cactus.
+    category: DAILY
+    targetAmount: 10
+    rewardType: DIAMONDS
+    rewardAmount: 20
+    targetEvent: ZOMBIE_KILLED_BY_PLANT
+    targetContext: CACTUS
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: main_thrifty_0
+    title: Thrifty Herbivore
+    description: Win a level without losing more than 0 plants.
+    category: CRITICAL
+    targetAmount: 1
+    rewardType: RANDOM_SEED
+    rewardAmount: 20
+    requiredContext: PLANTS_LOST:<=0
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: main_thrifty_1
+    title: Thrifty Herbivore
+    description: Win a level without losing more than 1 plants.
+    category: CRITICAL
+    targetAmount: 1
+    rewardType: RANDOM_SEED
+    rewardAmount: 19
+    requiredContext: PLANTS_LOST:<=1
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: main_thrifty_2
+    title: Thrifty Herbivore
+    description: Win a level without losing more than 2 plants.
+    category: CRITICAL
+    targetAmount: 1
+    rewardType: RANDOM_SEED
+    rewardAmount: 18
+    requiredContext: PLANTS_LOST:<=2
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: main_thrifty_3
+    title: Thrifty Herbivore
+    description: Win a level without losing more than 3 plants.
+    category: CRITICAL
+    targetAmount: 1
+    rewardType: RANDOM_SEED
+    rewardAmount: 17
+    requiredContext: PLANTS_LOST:<=3
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: main_thrifty_4
+    title: Thrifty Herbivore
+    description: Win a level without losing more than 4 plants.
+    category: CRITICAL
+    targetAmount: 1
+    rewardType: RANDOM_SEED
+    rewardAmount: 16
+    requiredContext: PLANTS_LOST:<=4
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: main_thrifty_5
+    title: Thrifty Herbivore
+    description: Win a level without losing more than 5 plants.
+    category: CRITICAL
+    targetAmount: 1
+    rewardType: RANDOM_SEED
+    rewardAmount: 15
+    requiredContext: PLANTS_LOST:<=5
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: epic_defense_master
+    title: Defense Master
+    description: Complete a level with exactly zero sun.
+    category: EPIC
+    targetAmount: 1
+    rewardType: DIAMONDS
+    rewardAmount: 200
+    requiredContext: REMAINING_SUN:0
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.BasicEventQuest
+    id: main_quick_action
+    title: Quick Action
+    description: Kill 10 zombies in less than 30 seconds from the start of the first wave.
+    category: CRITICAL
+    targetAmount: 10
+    rewardType: COINS
+    rewardAmount: 500
+    targetEvent: ZOMBIE_KILLED_QUICKLY
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.BasicEventQuest
+    id: daily_demolisher
+    title: Master Demolisher
+    description: Use 3 explosive plants in a single level.
+    category: DAILY
+    targetAmount: 3
+    rewardType: COINS
+    rewardAmount: 100
+    targetEvent: EXPLOSIVE_PLANTED
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: daily_symmetry
+    title: Symmetry
+    description: The lawn must end up symmetrical.
+    category: DAILY
+    targetAmount: 1
+    rewardType: COINS
+    rewardAmount: 500
+    requiredContext: SYMMETRIC:TRUE
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: daily_anti_symmetry
+    title: What OCD?
+    description: Win a level such that there is no symmetry on the lawn (except for the middle row).
+    category: DAILY
+    targetAmount: 1
+    rewardType: COINS
+    rewardAmount: 800
+    requiredContext: ANTI_SYMMETRIC:TRUE
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: daily_family_slayer_pea
+    title: Family Slayer
+    description: Use only PEA family plants to kill zombies.
+    category: DAILY
+    targetAmount: 1
+    rewardType: COINS
+    rewardAmount: 1000
+    requiredContext: ONLY_FAMILY:PEA
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: daily_family_limit_pea
+    title: Flourishing in Limits
+    description: Do not use any plants from the PEA family.
+    category: DAILY
+    targetAmount: 1
+    rewardType: DIAMONDS
+    rewardAmount: 100
+    requiredContext: NO_FAMILY:PEA
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: daily_family_slayer_mint
+    title: Family Slayer
+    description: Use only MINT family plants to kill zombies.
+    category: DAILY
+    targetAmount: 1
+    rewardType: COINS
+    rewardAmount: 1000
+    requiredContext: ONLY_FAMILY:MINT
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: daily_family_limit_mint
+    title: Flourishing in Limits
+    description: Do not use any plants from the MINT family.
+    category: DAILY
+    targetAmount: 1
+    rewardType: DIAMONDS
+    rewardAmount: 100
+    requiredContext: NO_FAMILY:MINT
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: daily_family_slayer_armamint
+    title: Family Slayer
+    description: Use only ARMAMINT family plants to kill zombies.
+    category: DAILY
+    targetAmount: 1
+    rewardType: COINS
+    rewardAmount: 1000
+    requiredContext: ONLY_FAMILY:ARMAMINT
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: daily_family_limit_armamint
+    title: Flourishing in Limits
+    description: Do not use any plants from the ARMAMINT family.
+    category: DAILY
+    targetAmount: 1
+    rewardType: DIAMONDS
+    rewardAmount: 100
+    requiredContext: NO_FAMILY:ARMAMINT
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: epic_night_morning
+    title: Night or Morning
+    description: Complete a daytime level using night plants (mushrooms).
+    category: EPIC
+    targetAmount: 1
+    rewardType: DIAMONDS
+    rewardAmount: 20
+    requiredContext: DAY_WITH_NIGHT:TRUE
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.StreakQuest
+    id: daily_streak
+    title: Win After Win
+    description: Win 5 levels in a row on the highest difficulty.
+    category: DAILY
+    targetAmount: 5
+    rewardType: COINS
+    rewardAmount: 5000
+    requiredContext: DIFFICULTY:5
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.BasicEventQuest
+    id: daily_almost_vic
+    title: Almost Victorious
+    description: Kill 10 zombies in the first column of a row that has no lawn mower.
+    category: DAILY
+    targetAmount: 10
+    rewardType: COINS
+    rewardAmount: 300
+    targetEvent: ZOMBIE_KILLED_NO_MOWER_FIRST_COL
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: daily_cloudy
+    title: Cloudy Day
+    description: Complete a level using only 3 sun-producing plants.
+    category: DAILY
+    targetAmount: 1
+    rewardType: DIAMONDS
+    rewardAmount: 10
+    requiredContext: SUN_PLANTS_USED:<=3
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: daily_no_col_1
+    title: One Less Column
+    description: Win a level without planting in column 1.
+    category: DAILY
+    targetAmount: 1
+    rewardType: DIAMONDS
+    rewardAmount: 10
+    requiredContext: EMPTY_COL:1
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: daily_no_col_2
+    title: One Less Column
+    description: Win a level without planting in column 2.
+    category: DAILY
+    targetAmount: 1
+    rewardType: DIAMONDS
+    rewardAmount: 10
+    requiredContext: EMPTY_COL:2
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: daily_no_col_9
+    title: One Less Column
+    description: Win a level without planting in column 9.
+    category: DAILY
+    targetAmount: 1
+    rewardType: DIAMONDS
+    rewardAmount: 10
+    requiredContext: EMPTY_COL:9
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: daily_no_row_1
+    title: Defenseless Row
+    description: Win a level without planting in row 1.
+    category: DAILY
+    targetAmount: 1
+    rewardType: DIAMONDS
+    rewardAmount: 20
+    requiredContext: EMPTY_ROW:1
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: daily_no_row_3
+    title: Defenseless Row
+    description: Win a level without planting in row 3.
+    category: DAILY
+    targetAmount: 1
+    rewardType: DIAMONDS
+    rewardAmount: 20
+    requiredContext: EMPTY_ROW:3
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: daily_no_row_5
+    title: Defenseless Row
+    description: Win a level without planting in row 5.
+    category: DAILY
+    targetAmount: 1
+    rewardType: DIAMONDS
+    rewardAmount: 20
+    requiredContext: EMPTY_ROW:5
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.LevelConditionQuest
+    id: daily_no_cross_3_3
+    title: Defenseless Cross
+    description: Win a level where column 3 and row 3 are empty.
+    category: DAILY
+    targetAmount: 1
+    rewardType: DIAMONDS
+    rewardAmount: 25
+    requiredContext: "EMPTY_CROSS:3,3"
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.SpecificEventQuest
+    id: epic_mowing_10
+    title: Mowing Time
+    description: Kill at least 10 zombies with lawn mowers.
+    category: EPIC
+    targetAmount: 10
+    rewardType: DIAMONDS
+    rewardAmount: 10
+    targetEvent: ZOMBIE_KILLED_BY_PLANT
+    targetContext: MOWER
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.SpecificEventQuest
+    id: epic_mowing_20
+    title: Mowing Time
+    description: Kill at least 20 zombies with lawn mowers.
+    category: EPIC
+    targetAmount: 20
+    rewardType: DIAMONDS
+    rewardAmount: 20
+    targetEvent: ZOMBIE_KILLED_BY_PLANT
+    targetContext: MOWER
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.SpecificEventQuest
+    id: epic_mowing_30
+    title: Mowing Time
+    description: Kill at least 30 zombies with lawn mowers.
+    category: EPIC
+    targetAmount: 30
+    rewardType: DIAMONDS
+    rewardAmount: 30
+    targetEvent: ZOMBIE_KILLED_BY_PLANT
+    targetContext: MOWER
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.SpecificEventQuest
+    id: epic_mowing_40
+    title: Mowing Time
+    description: Kill at least 40 zombies with lawn mowers.
+    category: EPIC
+    targetAmount: 40
+    rewardType: DIAMONDS
+    rewardAmount: 40
+    targetEvent: ZOMBIE_KILLED_BY_PLANT
+    targetContext: MOWER
+  }
+  {
+    class: com.compileordie.pvz2.models.missions.quests.SpecificEventQuest
+    id: epic_mowing_50
+    title: Mowing Time
+    description: Kill at least 50 zombies with lawn mowers.
+    category: EPIC
+    targetAmount: 50
+    rewardType: DIAMONDS
+    rewardAmount: 50
+    targetEvent: ZOMBIE_KILLED_BY_PLANT
+    targetContext: MOWER
+  }
+]

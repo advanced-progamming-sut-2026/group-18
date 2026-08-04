@@ -149,7 +149,8 @@ public class ZombieBuilder {
                 return new ImpDragon(190, 0.185, 100, row, startX, x, y, 0.185, 0);
 
             default:
-                throw new IllegalArgumentException();
+//                throw new IllegalArgumentException();
+                return new BasicZombie(190, 0.185, 100, row, startX, x, y, 0.185, 0);
         }
     }
 }

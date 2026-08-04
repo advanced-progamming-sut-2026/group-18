@@ -2,6 +2,7 @@ package com.compileordie.pvz2.models.repositories.configs;
 
 public class EconomyConfig {
     public int pwygStartingSuns;
+    public int izStartingSuns;
     public float sunStealVelocity;
     public int normalSunValue;
     public int specialSunValue;

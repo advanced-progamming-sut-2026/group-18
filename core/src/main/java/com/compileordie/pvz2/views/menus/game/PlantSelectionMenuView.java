@@ -15,7 +15,7 @@ public class PlantSelectionMenuView implements MenuView {
         }
         if (Command.SELECTION_ADD_PLANT.matches(command)) {
             String type = Command.SELECTION_ADD_PLANT.getGroup(command, "type");
-            return PlantSelectionMenuController.addPant(type);
+            return PlantSelectionMenuController.addPlant(type);
         }
         if (Command.SELECTION_REMOVE_PLANT.matches(command)) {
             String type = Command.SELECTION_REMOVE_PLANT.getGroup(command, "type");

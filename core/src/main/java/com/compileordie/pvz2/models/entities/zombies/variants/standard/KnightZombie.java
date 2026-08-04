@@ -5,8 +5,8 @@ import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
 public class KnightZombie extends StandardZombie {
     public static final int WAVE_COST = 550;
-    private double helmetArmorHealth;
-    private double shoulderArmorHealth;
+    public double helmetArmorHealth;
+    public double shoulderArmorHealth;
 
     public KnightZombie(double health,
                         double speed,

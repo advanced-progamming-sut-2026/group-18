@@ -256,7 +256,7 @@ public class ZombieManager {
             if (((TurquoiseZombie) z).shouldWeBackSun()) {
                 for (int i = 0; i <= ((TurquoiseZombie) z).totalStolenSuns / 50; i++) {
                     myMap.economyManager.suns.add(
-                        new Sun(z.getX(), z.getY(), SunType.NORMAL, true, (float) z.getY()));
+                        new Sun(z.getX(), z.getY(), SunType.NORMAL, false, (float) z.getY()));
                 }
                 ((TurquoiseZombie) z).stopBackSun();
             }
@@ -266,7 +266,7 @@ public class ZombieManager {
             if (((RaZombie) z).shouldWeBackSun()) {
                 for (int i = 0; i < ((RaZombie) z).stolenSunCount / 25; i++) {
                     myMap.economyManager.suns.add(
-                        new Sun(z.getX(), z.getY(), SunType.NORMAL, true, (float) z.getY()));
+                        new Sun(z.getX(), z.getY(), SunType.NORMAL, false, (float) z.getY()));
                 }
                 ((RaZombie) z).stopBackSun();
             }
@@ -380,7 +380,8 @@ public class ZombieManager {
         // --- پرتاب اختاپوس ---
         if (z.getType() == ZombieType.OCTOPUS_ZOMBIE
             && (Math.abs(z.getY() - p.getY()) <= tileHeight / 6
-            && Math.abs(z.getX() - p.getX()) <= OctopusZombie.ABILITY_RANGE) // FIXED BUG: Fatal ClassCastException prevented
+            // FIXED BUG: Fatal ClassCastException prevented
+            && Math.abs(z.getX() - p.getX()) <= OctopusZombie.ABILITY_RANGE)
             && isVisible(p) && !p.hasActiveCover()) {
             p.applyOctopus(400.0);
         }

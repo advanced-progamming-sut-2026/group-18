@@ -5,6 +5,8 @@ import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.boss.GargantuarZombie;
 import com.compileordie.pvz2.models.game.board.Lane;
+import com.compileordie.pvz2.models.missions.quests.QuestEvent;
+import com.compileordie.pvz2.models.missions.quests.QuestManager;
 
 import java.util.ArrayList;
 
@@ -35,6 +37,7 @@ public class LawnMower extends GameEntity {
             }
 
             if (!casualties.isEmpty()) {
+                QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_BY_PLANT, casualties.size(), "MOWER");
                 StringBuilder sb = new StringBuilder();
                 sb.append("The lawn mower in the row ")
                     .append(lane.row)

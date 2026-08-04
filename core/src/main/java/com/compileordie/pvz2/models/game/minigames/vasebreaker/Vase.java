@@ -2,11 +2,15 @@ package com.compileordie.pvz2.models.game.minigames.vasebreaker;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.game.board.GameBoard;
+import com.compileordie.pvz2.models.game.economy.PlantCard;
+import com.compileordie.pvz2.models.game.economy.Sun;
+import com.compileordie.pvz2.models.game.economy.SunType;
 
 public class Vase extends GameEntity {
     public GameBoard gameBoard;
@@ -48,8 +52,17 @@ public class Vase extends GameEntity {
                 getX(),
                 getY(),
                 getTileRow()));
+            AppModel.addAfterPrompt("Vase released a " + zombieType + " zombie!");
         } else if (seedPacket != null) {
             gameBoard.seedPackets.add(seedPacket);
+            AppModel.addAfterPrompt("Vase dropped a " + seedPacket.plantType + " seed packet!");
+            // Phase 1:
+            gameBoard.seedPackets.remove(seedPacket);
+            gameBoard.economyManager.plantCards.add(new PlantCard(seedPacket.plantType));
+        }
+        if (type == VaseType.NORMAL) {
+            gameBoard.economyManager.suns.add(new Sun(getX(), getY(), SunType.NORMAL, false, 0));
+            AppModel.addAfterPrompt("Vase dropped a sun");
         }
         isBroken = true;
     }

@@ -11,7 +11,6 @@ import com.compileordie.pvz2.models.missions.shop.DailyOffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Player {
@@ -27,10 +26,10 @@ public class Player {
     public ArrayList<LevelID> unlockedLevelIDs;
     public ArrayList<Pot> greenhousePots;
     public ArrayList<News> news;
-    public Map<PlantType, Integer> seedPackets;
-    public Map<PlantType, Integer> plantLevels;
-    public Map<PlantType, Boolean> plantBoosts;
-    public Map<String, Integer> questProgress;
+    public HashMap<PlantType, Integer> seedPackets;
+    public HashMap<PlantType, Integer> plantLevels;
+    public HashMap<PlantType, Boolean> plantBoosts;
+    public HashMap<String, Integer> questProgress;
     public HashSet<String> claimedQuests;
     public DailyOffer dailyOffer;
     public int completedMiniGames;
@@ -81,21 +80,21 @@ public class Player {
         this.coins = 0;
         this.diamonds = 0;
         this.playtime = 0f;
-
+        unlockedPlants.add(PlantType.PEASHOOTER);
+        unlockedPlants.add(PlantType.SUNFLOWER);
+        unlockedPlants.add(PlantType.WALL_NUT);
+        unlockedPlants.add(PlantType.POTATO_MINE);
         for (PlantType plantType : PlantType.values()) {
             seedPackets.put(plantType, 0);
             plantLevels.put(plantType, 1);
             plantBoosts.put(plantType, false);
         }
-
         for (LevelID levelID : LevelID.values()) {
             if (levelID.chapterType == ChapterType.MINIGAME) {
                 unlockedLevelIDs.add(levelID);
             }
         }
         unlockedLevelIDs.add(LevelID.values()[0]);
-
-        // Initialize Row 1 (first 5 pots) as unlocked per the design requirements
         for (int i = 0; i < 5; i++) {
             this.greenhousePots.add(new Pot());
         }

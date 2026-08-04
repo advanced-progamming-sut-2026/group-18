@@ -216,7 +216,13 @@ public class Plant extends GameEntity {
         }
     }
 
+    @Override
     public void die() {
+        super.die();
+        AppModel.gameSession.gameBoard.lostPlants++;
+        if (isSpecial) {
+            AppModel.gameSession.gameBoard.specialIsLost = true;
+        }
         // Explosive plants, Mints, and cleanup logic hook into this!
 
         // Exact string format required by the project document

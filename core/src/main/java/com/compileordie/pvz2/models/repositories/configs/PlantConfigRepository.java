@@ -28,69 +28,93 @@ public class PlantConfigRepository {
                     continue;
                 }
 
+                // Split on commas not inside quotes
                 String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
                 if (parts.length < 16) continue;
 
-                try {
-                    PlantTemplate template = new PlantTemplate();
-
-                    template.setName(parts[1].trim());
-                    template.setCategory(PlantCategory.valueOf(parts[2].trim()
-                        .toUpperCase()
-                        .replace(" ", "_")
-                        .replace("-", "_")));
-
-                    List<PlantTag> tags = new ArrayList<>();
-                    String rawTags = parts[3].trim();
-                    if (!rawTags.equals("-") && !rawTags.isEmpty()) {
-                        for (String t : rawTags.split(",")) {
-                            try {
-                                tags.add(PlantTag.valueOf(t.trim().toUpperCase().replace(" ", "_")));
-                            } catch (IllegalArgumentException ignored) {
-                            }
-                        }
-                    }
-                    template.setTags(tags);
-
-                    template.setCost(Integer.parseInt(parts[4].trim()));
-                    template.setBaseHp(Integer.parseInt(parts[5].trim()));
-                    template.setBaseDamage(Integer.parseInt(parts[6].trim()));
-                    template.setActionIntervalTicks(Double.parseDouble(parts[12].trim()) * 10.0);
-
-                    Map<Integer, UpgradeLevel> upgradeMap = new HashMap<>();
-                    upgradeMap.put(2, parseUpgradeString(parts[9].trim()));
-                    upgradeMap.put(3, parseUpgradeString(parts[10].trim()));
-                    upgradeMap.put(4, parseUpgradeString(parts[11].trim()));
-                    template.setUpgradeMap(upgradeMap);
-
-                    String attackStr = parts[14].trim().toUpperCase();
-                    if (!attackStr.equals("NONE") && !attackStr.equals("-")) {
-                        template.setAttackStrategyType(AttackStrategyType.valueOf(attackStr));
-                    }
-
-                    String foodStr = parts[15].trim().toUpperCase();
-                    if (!foodStr.equals("NONE") && !foodStr.equals("-")) {
-                        template.setFoodEffectType(PlantFoodEffectType.valueOf(foodStr));
-                    }
-
-                    template.setProjectileType(NormalProjectile.class);
-                    template.setLaneOffsets(Collections.singletonList(0));
-                    template.setProjectileCount(1);
-                    template.setRangeTiles(3.0);
-                    template.setFoodEffectValue(1);
-
-                    assignSpecificParameters(template);
-
-                    plantDatabase.put(template.getName(), template);
-
-                } catch (Exception e) {
-                    System.err.println("Error parsing row for plant: " + parts[1]);
-                    e.printStackTrace();
-                }
+                processCsvRow(parts);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void processCsvRow(String[] parts) {
+        try {
+            PlantTemplate template = new PlantTemplate();
+
+            parseBasicInfo(template, parts);
+            template.setTags(parseTags(parts[3].trim()));
+            parseStats(template, parts);
+            template.setUpgradeMap(parseUpgradeMap(parts));
+            parseStrategies(template, parts);
+            applyDefaultValues(template);
+
+            assignSpecificParameters(template);
+
+            plantDatabase.put(template.getName(), template);
+
+        } catch (Exception e) {
+            System.err.println("Error parsing row for plant: " + parts[1]);
+            e.printStackTrace();
+        }
+    }
+
+    private void parseBasicInfo(PlantTemplate template, String[] parts) {
+        template.setName(parts[1].trim());
+        template.setCategory(PlantCategory.valueOf(parts[2].trim()
+            .toUpperCase()
+            .replace(" ", "_")
+            .replace("-", "_")));
+    }
+
+    private List<PlantTag> parseTags(String rawTags) {
+        List<PlantTag> tags = new ArrayList<>();
+        if (!rawTags.equals("-") && !rawTags.isEmpty()) {
+            for (String t : rawTags.split(",")) {
+                try {
+                    tags.add(PlantTag.valueOf(t.trim().toUpperCase().replace(" ", "_")));
+                } catch (IllegalArgumentException ignored) {
+                    // Ignore invalid tags as per original implementation
+                }
+            }
+        }
+        return tags;
+    }
+
+    private void parseStats(PlantTemplate template, String[] parts) {
+        template.setCost(Integer.parseInt(parts[4].trim()));
+        template.setBaseHp(Integer.parseInt(parts[5].trim()));
+        template.setBaseDamage(Integer.parseInt(parts[6].trim()));
+        template.setActionIntervalTicks(Double.parseDouble(parts[12].trim()) * 10.0);
+    }
+
+    private Map<Integer, UpgradeLevel> parseUpgradeMap(String[] parts) {
+        Map<Integer, UpgradeLevel> upgradeMap = new HashMap<>();
+        upgradeMap.put(2, parseUpgradeString(parts[9].trim()));
+        upgradeMap.put(3, parseUpgradeString(parts[10].trim()));
+        upgradeMap.put(4, parseUpgradeString(parts[11].trim()));
+        return upgradeMap;
+    }
+
+    private void parseStrategies(PlantTemplate template, String[] parts) {
+        String attackStr = parts[14].trim().toUpperCase();
+        if (!attackStr.equals("NONE") && !attackStr.equals("-")) {
+            template.setAttackStrategyType(AttackStrategyType.valueOf(attackStr));
+        }
+
+        String foodStr = parts[15].trim().toUpperCase();
+        if (!foodStr.equals("NONE") && !foodStr.equals("-")) {
+            template.setFoodEffectType(PlantFoodEffectType.valueOf(foodStr));
+        }
+    }
+
+    private void applyDefaultValues(PlantTemplate template) {
+        template.setProjectileType(NormalProjectile.class);
+        template.setLaneOffsets(Collections.singletonList(0));
+        template.setProjectileCount(1);
+        template.setRangeTiles(3.0);
+        template.setFoodEffectValue(1);
     }
 
     public PlantTemplate getTemplate(String plantName) {
@@ -122,7 +146,8 @@ public class PlantConfigRepository {
             t.setProjectileType(FireProjectile.class);
         } else if (name.equals("Goo Peashooter")) {
             t.setProjectileType(PoisonProjectile.class);
-        } else if (name.equals("Cabbage-pult") || name.equals("Melon-pult") || name.equals("Winter Melon") || name.equals("Pepper-pult") || name.equals("Kernel-pult")) {
+        } else if (name.equals("Cabbage-pult") || name.equals("Melon-pult") || name.equals("Winter Melon") ||
+            name.equals("Pepper-pult") || name.equals("Kernel-pult")) {
             t.setProjectileType(name.equals("Kernel-pult") ? ButterProjectile.class : LobbedProjectile.class);
             t.setRangeTiles(name.equals("Melon-pult") || name.equals("Winter Melon") ? 1.5 : 0.0);
         } else if (name.equals("Cactus") || name.equals("Fume-shroom")) {
@@ -147,7 +172,8 @@ public class PlantConfigRepository {
         if (name.equals("Twin Sunflower")) t.setFoodEffectValue(100);
         if (name.equals("Gold Bloom")) t.setFoodEffectValue(375);
         if (name.equals("Iceberg Lettuce")) t.setFoodEffectValue(50);
-        if (name.equals("Wall-nut") || name.equals("Explode-o-nut") || name.equals("Pumpkin")) t.setFoodEffectValue(4000);
+        if (name.equals("Wall-nut") || name.equals("Explode-o-nut")
+            || name.equals("Pumpkin")) t.setFoodEffectValue(4000);
         if (name.equals("Endurian") || name.equals("Sweet Potato")) t.setFoodEffectValue(3000);
         if (name.equals("Tall-nut")) t.setFoodEffectValue(8000);
     }

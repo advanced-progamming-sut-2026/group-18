@@ -1,15 +1,21 @@
 package com.compileordie.pvz2.models.entities.zombies.variants;
 
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
+import com.compileordie.pvz2.models.game.board.Lane;
+import com.compileordie.pvz2.models.missions.quests.QuestEvent;
+import com.compileordie.pvz2.models.missions.quests.QuestManager;
+import com.compileordie.pvz2.models.user.Player;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 public abstract class Zombie extends GameEntity {
     public boolean isEating;
@@ -24,6 +30,7 @@ public abstract class Zombie extends GameEntity {
     protected boolean isHypnotized = false;
     protected ZombieType type;
     protected boolean hasMetalArmor = false; // Tracks if armor was removed by Magnet-shroom
+    protected boolean isGlowing;
 
     public Zombie(double health,
                   double speed,
@@ -49,9 +56,29 @@ public abstract class Zombie extends GameEntity {
         // Check if this zombie variant starts with metal armor
         if (type != null) {
             String name = type.name().toUpperCase();
-            if (name.contains("BUCKET") || name.contains("FOOTBALL") || name.contains("KNIGHT") || name.contains("MACHINERY")) {
+            if (name.contains("BUCKET") || name.contains("FOOTBALL") || name.contains("KNIGHT")
+                || name.contains("MACHINERY")) {
                 this.hasMetalArmor = true;
             }
+        }
+        this.isGlowing = new Random().nextInt(100) < 5;
+    }
+
+    @Override
+    public void die() {
+        super.die();
+        AppModel.addAfterPrompt("Zombie " + type + " died!");
+        if (isGlowing) {
+            Player player = AppModel.player;
+            player.plantFoodCount++;
+            if (player.plantFoodCount > 3) player.plantFoodCount = 3;
+            AppModel.addAfterPrompt("The glowing zombie dropped a plant food; you have "
+                + player.plantFoodCount + " plant foods now.");
+        }
+        QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED, 1, AppModel.currentChapter.toString());
+        Lane lane = AppModel.gameSession.gameBoard.lanes.get((int) Math.floor(getY() / Constants.Game.TILE_HEIGHT));
+        if (lane.lawnMower == null || lane.lawnMower.isTriggered) {
+            QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_NO_MOWER_FIRST_COL, 1, null);
         }
     }
 

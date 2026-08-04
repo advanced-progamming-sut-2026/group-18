@@ -7,13 +7,6 @@ import com.compileordie.pvz2.views.helpers.MenuView;
 public class LoginMenuView implements MenuView {
     @Override
     public String handleCommandCore(String command) {
-        if (Command.MENU_ENTER.matches(command)) {
-            String name = Command.MENU_ENTER.getGroup(command, "name");
-            return LoginMenuController.enterMenu(name);
-        }
-        if (Command.MENU_EXIT.matches(command)) {
-            return LoginMenuController.exitMenu();
-        }
         if (Command.LOGIN.matches(command)) {
             String username = Command.LOGIN.getGroup(command, "username");
             String password = Command.LOGIN.getGroup(command, "password");
@@ -31,6 +24,13 @@ public class LoginMenuView implements MenuView {
         }
         if (LoginMenuController.isWaitingForNewPassword()) {
             return LoginMenuController.setNewPassword(command);
+        }
+        if (Command.MENU_ENTER.matches(command)) {
+            String name = Command.MENU_ENTER.getGroup(command, "name");
+            return LoginMenuController.enterMenu(name);
+        }
+        if (Command.MENU_EXIT.matches(command)) {
+            return LoginMenuController.exitMenu();
         }
         return null;
     }
