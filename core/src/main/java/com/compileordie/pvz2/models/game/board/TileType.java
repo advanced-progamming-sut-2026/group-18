@@ -62,7 +62,12 @@ public enum TileType {
         public void tick(int ticks, Tile self, GameBoard gameBoard) {
         }
     },
-    SAVE_SEED(true) {
+    NORMAL(true) {
+        @Override
+        public void tick(int ticks, Tile self, GameBoard gameBoard) {
+        }
+    },
+    CRATER(false) {
         @Override
         public void tick(int ticks, Tile self, GameBoard gameBoard) {
         }

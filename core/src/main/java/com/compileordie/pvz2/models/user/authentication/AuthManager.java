@@ -9,7 +9,14 @@ import com.compileordie.pvz2.models.user.Player;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HexFormat;
 
 import static com.compileordie.pvz2.config.Constants.ArgonHashing;
 
@@ -27,6 +34,25 @@ public class AuthManager {
                 plainTextPassword);
         } finally {
             ARGON_2.wipeArray(plainTextPassword);
+        }
+    }
+
+    public static String hashPasswordSHA256(char[] plainTextPassword) {
+        ByteBuffer byteBuffer = null;
+        try {
+            CharBuffer charBuffer = CharBuffer.wrap(plainTextPassword);
+            byteBuffer = StandardCharsets.UTF_8.encode(charBuffer);
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            digest.update(byteBuffer);
+            byte[] encodedHash = digest.digest();
+            return HexFormat.of().formatHex(encodedHash);
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not found", e);
+        } finally {
+            if (byteBuffer != null && byteBuffer.hasArray()) {
+                Arrays.fill(byteBuffer.array(), (byte) 0);
+            }
         }
     }
 
@@ -114,6 +140,18 @@ public class AuthManager {
     }
 
     public static void setNewPassword(String username, char[] newPassword) {
+        String newHash = AuthManager.hashPassword(newPassword);
+
+        AuthDatabase authDb = new AuthDatabase();
+        ArrayList<UserRegistry> registries = authDb.load();
+        for (UserRegistry userRegistry : registries) {
+            if (userRegistry.getUsername().equals(username)) {
+                userRegistry.setPasswordHash(newHash);
+                break;
+            }
+        }
+        authDb.save(registries);
+
         UserDatabase database = new UserDatabase(username);
         Player user = database.load();
         user.passwordHash = hashPassword(newPassword);

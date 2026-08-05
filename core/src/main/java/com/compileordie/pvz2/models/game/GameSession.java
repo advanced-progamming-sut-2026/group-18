@@ -13,7 +13,7 @@ import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.models.game.waves.WaveType;
 import com.compileordie.pvz2.models.user.Player;
 
-import java.util.ArrayList;
+import java.util.Map;
 
 public class GameSession {
     public LevelID levelID;
@@ -26,17 +26,17 @@ public class GameSession {
                        WaveType waveType,
                        WinCondition winCondition,
                        LossCondition lossCondition,
-                       ArrayList<PlantType> selectionDeck,
-                       int maxTideLevel) {
+                       Map<PlantType, Boolean> selectionDeck) {
         this.levelID = levelID;
         this.player = AppModel.player;
-        this.gameBoard = new GameBoard(Constants.Game.BOARD_ROWS,
+        this.gameBoard = new GameBoard(levelID,
+            Constants.Game.BOARD_ROWS,
             Constants.Game.BOARD_COLS,
             economyType,
             waveType,
             selectionDeck,
             levelID.waveNumber,
-            maxTideLevel);
+            levelID != LevelID.PLANT_WHAT_YOU_GET);
         this.gameJudge = new GameJudge(gameBoard, winCondition, lossCondition);
     }
 
@@ -51,6 +51,15 @@ public class GameSession {
     }
 
     public void afterSession(GameFlow gameResult) {
-        // TODO: To be implemented.
+        switch (gameResult) {
+            case WIN -> {
+                AppModel.addAfterPrompt("You won!");
+            }
+            case LOSS -> {
+                AppModel.addAfterPrompt("You lost!");
+            }
+        }
+        AppModel.clearSessionData();
+        // TODO: Expand and add quest event callback here
     }
 }

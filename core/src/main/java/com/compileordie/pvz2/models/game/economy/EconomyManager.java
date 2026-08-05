@@ -2,6 +2,7 @@ package com.compileordie.pvz2.models.game.economy;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.controllers.PlantSpawner;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
@@ -9,26 +10,26 @@ import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Tile;
-import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
-
-// Clean imports for the Quest System
+import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.models.missions.quests.QuestEvent;
 import com.compileordie.pvz2.models.missions.quests.QuestManager;
+import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class EconomyManager {
     public GameBoard gameBoard;
     public EconomyType type;
     public ArrayList<Sun> suns;
-    public ArrayList<PlantType> selectionDeck;
+    public Map<PlantType, Boolean> selectionDeck;
     public ArrayList<PlantCard> plantCards;
     public int sunAmount;
     public int totalSunsGenerated;
     public int ticksUntilNextNaturalSun;
     public int tickCounter;
 
-    public EconomyManager(GameBoard gameBoard, EconomyType economyType, ArrayList<PlantType> selectionDeck) {
+    public EconomyManager(GameBoard gameBoard, EconomyType economyType, Map<PlantType, Boolean> selectionDeck) {
         this.gameBoard = gameBoard;
         this.type = economyType;
         this.suns = new ArrayList<>();
@@ -150,6 +151,7 @@ public class EconomyManager {
             if (isInRangeX && isInRangeY) {
                 sunAmount += sun.type.value;
                 totalSunsGenerated += sun.type.value;
+                QuestManager.dispatch(QuestEvent.SUN_COLLECTED, sun.type.value, null);
 
                 if (sun.type == SunType.RADIOACTIVE && sun.getY() > sun.groundLevel) {
                     explode(sun);
@@ -157,11 +159,6 @@ public class EconomyManager {
 
                 suns.remove(i);
                 AppModel.addAfterPrompt("Sun collected at (" + (int) sun.getX() + ", " + (int) sun.getY() + ")");
-
-                // --- QUEST INJECTION: SUN COLLECTED ---
-                QuestManager.dispatch(QuestEvent.SUN_COLLECTED, sun.type.value, null);
-                // --------------------------------------
-
                 return true;
             }
         }
@@ -169,30 +166,67 @@ public class EconomyManager {
         return false;
     }
 
-    public void plant(PlantType type, float x, float y) {
-        Plant plant = null;
+    /*public void pluck(float x, float y) {
+        Tile tile = gameBoard.getTile(x, y);
+        if (tile == null) {
+            AppModel.addAfterPrompt(String.format("Tile at (%.1f, %.1f) not found!", x, y));
+            return;
+        }
+
+        Plant plant = tile.plant;
+        if (plant == null) {
+            AppModel.addAfterPrompt(String.format("Plant at (%.1f, %.1f) not found!", x, y));
+            return;
+        }
+
+        PlantType plantType = plant.type;
+        tile.plant = null;
+        gameBoard.removePlant(plant);
+
+        AppModel.addAfterPrompt(String.format("%s at (%.1f, %.1f) plucked!", plantType, x, y));
+    }*/
+
+    public void plant(PlantType plantType, float x, float y) {
+        Plant plant;
+        Tile tile = gameBoard.getTile(x, y);
         for (PlantCard plantCard : plantCards) {
-            if (plantCard.isReady() && plantCard.plantType == type) {
-                // TODO: Check if we have enough suns for that plant (if it's not conveyor belt).
-                // Make the actual plant here, check if it's boosted, add it to gameboard, remove the card,
-                // break out of the loop.
+            if (plantCard.isReady() && plantCard.plantType == plantType) {
+                plant = PlantSpawner.spawn(plantType, x, y, plantCard.isBoosted, false);
+                if (type == EconomyType.CONVEYOR_BELT) {
+                    plantCards.remove(plantCard);
+                } else if (gameBoard.levelID == LevelID.WALNUT_BOWLING) {
+                    if (x < Constants.Game.TILE_WIDTH * 5) {
+                        plantCards.remove(plantCard);
+                    } else {
+                        continue;
+                    }
+                } else if (sunAmount >= plant.getCost()) {
+                    this.sunAmount -= plant.getCost();
+                    plantCard.setTimer();
+                } else {
+                    continue;
+                }
+                tile.plant = plant;
+                QuestManager.dispatch(QuestEvent.PLANT_PLANTED, 1, AppModel.currentChapter.name());
+                AppModel.addAfterPrompt(String.format("Planted %s at (%.1f, %.1f).", plantType, x, y));
+                return;
             }
         }
+        AppModel.addAfterPrompt(String.format("Cannot plant chosen card at (%.1f, %.1f).", x, y));
     }
 
     public void pluck(float x, float y) {
         Tile tile = gameBoard.getTile(x, y);
         if (tile == null) {
-            AppModel.addAfterPrompt(String.format("Tile at (%.2f, %.2f) not found!", x, y));
+            AppModel.addAfterPrompt(String.format("Tile at (%.1f, %.1f) not found!", x, y));
             return;
         }
         Plant plant = tile.plant;
         if (plant == null) {
-            AppModel.addAfterPrompt(String.format("Plant at (%.2f, %.2f) not found!", x, y));
+            AppModel.addAfterPrompt(String.format("Plant at (%.1f, %.1f) not found!", x, y));
             return;
         }
         tile.plant = null;
-        // TODO: Add the plant type field and print the result:
-        // AppModel.addAfterPrompt(String.format("%s at (%.2f, %.2f) plucked!", plant.type, x, y));
+         AppModel.addAfterPrompt(String.format("%s at (%.1f, %.1f) plucked!", plant.getName(), x, y));
     }
 }

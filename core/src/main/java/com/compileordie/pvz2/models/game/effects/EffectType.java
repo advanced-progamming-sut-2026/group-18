@@ -14,7 +14,7 @@ public enum EffectType {
         public void tick(int ticks, EffectModifier self, GameBoard gameBoard) {
         }
     };
-    // TODO: Add more side effects needed, here.
+    // TODO: Add more side effects here if needed.
 
     abstract public void tick(int ticks, EffectModifier self, GameBoard gameBoard);
 

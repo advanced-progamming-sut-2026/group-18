@@ -1,5 +1,6 @@
 {
   "pwygStartingSuns": 800,
+  "izStartingSuns": 150,
   "sunStealVelocity": 0.5,
   "normalSunValue": 25,
   "specialSunValue": 100,

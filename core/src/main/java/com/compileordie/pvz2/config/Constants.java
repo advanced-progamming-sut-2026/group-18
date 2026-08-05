@@ -18,6 +18,7 @@ public final class Constants {
             public static final String ECONOMY = ROOT + "economy.json";
             public static final String ZOMBIES = ROOT + "zombie.json";
             public static final String SECURITY_QUESTIONS = ROOT + "security_questions.json";
+            public static final String PLANTS =  ROOT + "main_plantscsv.csv";
         }
 
         public static final class Assets {

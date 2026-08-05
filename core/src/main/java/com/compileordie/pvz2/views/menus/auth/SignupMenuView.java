@@ -7,13 +7,6 @@ import com.compileordie.pvz2.views.helpers.MenuView;
 public class SignupMenuView implements MenuView {
     @Override
     public String handleCommandCore(String command) {
-        if (Command.MENU_ENTER.matches(command)) {
-            String name = Command.MENU_ENTER.getGroup(command, "name");
-            return SignupMenuController.enterMenu(name);
-        }
-        if (Command.MENU_EXIT.matches(command)) {
-            return SignupMenuController.exitMenu();
-        }
         if (Command.REGISTER.matches(command)) {
             String username = Command.REGISTER.getGroup(command, "username");
             String password = Command.REGISTER.getGroup(command, "password");
@@ -28,6 +21,13 @@ public class SignupMenuView implements MenuView {
             String answer = Command.PICK_QUESTION.getGroup(command, "answer");
             String answerConfirm = Command.PICK_QUESTION.getGroup(command, "answerConfirm");
             return SignupMenuController.pickQuestionUser(number, answer, answerConfirm);
+        }
+        if (Command.MENU_ENTER.matches(command)) {
+            String name = Command.MENU_ENTER.getGroup(command, "name");
+            return SignupMenuController.enterMenu(name);
+        }
+        if (Command.MENU_EXIT.matches(command)) {
+            return SignupMenuController.exitMenu();
         }
         return null;
     }

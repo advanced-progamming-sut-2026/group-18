@@ -7,16 +7,13 @@ import com.compileordie.pvz2.views.helpers.MenuView;
 public class GameMenuView implements MenuView {
     @Override
     public String handleCommandCore(String command) {
-        if (Command.MENU_ENTER.matches(command)) {
-            String name = Command.MENU_ENTER.getGroup(command, "name");
-            return GameMenuController.enterMenu(name);
-        }
-        if (Command.MENU_EXIT.matches(command)) {
-            return GameMenuController.exitMenu();
-        }
         if (Command.ENTER_CHAPTER.matches(command)) {
             String name = Command.ENTER_CHAPTER.getGroup(command, "name");
             return GameMenuController.enterChapter(name);
+        }
+        if (Command.ENTER_LEVEL.matches(command)) {
+            String name = Command.ENTER_LEVEL.getGroup(command, "name");
+            return GameMenuController.enterLevel(name);
         }
         if (Command.MENU_GREENHOUSE.matches(command)) {
             return GameMenuController.enterGreenhouse();
@@ -37,6 +34,13 @@ public class GameMenuView implements MenuView {
             String count = Command.CHEAT_ADD.getGroup(command, "count");
             String type = Command.CHEAT_ADD.getGroup(command, "type");
             return GameMenuController.cheatAdd(count, type);
+        }
+        if (Command.MENU_ENTER.matches(command)) {
+            String name = Command.MENU_ENTER.getGroup(command, "name");
+            return GameMenuController.enterMenu(name);
+        }
+        if (Command.MENU_EXIT.matches(command)) {
+            return GameMenuController.exitMenu();
         }
         return null;
     }
