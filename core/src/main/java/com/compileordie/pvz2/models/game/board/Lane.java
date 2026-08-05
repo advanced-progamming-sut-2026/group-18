@@ -43,6 +43,7 @@ public class Lane {
 
     public ArrayList<Plant> getAllPlants() {
         return tiles.stream()
+            .filter(tile -> tile.plant != null)
             .map(tile -> tile.plant)
             .collect(Collectors.toCollection(ArrayList::new));
     }

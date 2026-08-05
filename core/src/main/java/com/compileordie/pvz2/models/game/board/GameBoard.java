@@ -94,7 +94,6 @@ public class GameBoard {
             projectile.tick(this, ticks);
         }
 
-        zombieManager.tick(new ZombieTickContext(ticks, this));
         economyManager.tick(ticks);
         waveManager.tick(ticks);
         tickCounter += ticks;
