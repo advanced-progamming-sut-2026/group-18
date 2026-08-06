@@ -29,7 +29,7 @@ public enum Command {
     CHEAT_ADD("menu\\s+cheat\\s+add\\s+(?<count>\\S+)\\s+(?<type>\\S+)"),
     // Settings Menu
     CHANGE_DIFFICULTY("menu\\s+settings\\s+change-difficulty\\s+-l\\s+(?<level>\\S+)"),
-    // New Menu
+    // News Menu
     NEWS_SHOW_UNREAD("menu\\s+news\\s+show-unread"),
     NEWS_SHOW_ALL("menu\\s+news\\s+show-all"),
     // Profile Menu
