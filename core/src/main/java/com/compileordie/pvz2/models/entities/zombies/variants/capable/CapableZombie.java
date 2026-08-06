@@ -14,6 +14,9 @@ public abstract class CapableZombie extends Zombie {
     @Override
     public void takeDamage(double amount, DamageType damageType) {
         if (isDead()) return;
+        if (damageType == DamageType.FIRE){
+            this.removeFrozen();
+        }
         this.health -= amount;
         if (this.health < 0) this.health = 0;
     }

@@ -32,7 +32,7 @@ public class DodoRiderZombie extends Zombie {
     private int numOfFlyTicks;
     private boolean endOfFlying = false;
 
-    public DodoRiderZombie(int health, double speed, int attackPower, int row, double startX,
+    public DodoRiderZombie(double health, double speed, int attackPower, int row, double startX,
                            double x, double y, double xSpeed, double ySpeed) {
         super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, ZombieType.DODO_RIDER);
         this.state = MovementState.WALKING;
@@ -90,6 +90,9 @@ public class DodoRiderZombie extends Zombie {
 
     @Override
     public void takeDamage(double amount, DamageType damageType) {
+        if (damageType == DamageType.FIRE){
+            this.removeFrozen();
+        }
         if (isDead()) return;
         this.health -= amount;
         if (this.health < 0) this.health = 0;

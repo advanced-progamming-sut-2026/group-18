@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.models.entities.zombies;
 
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
@@ -8,7 +9,9 @@ public class StatusEffect {
     private final EffectType effectType;
     private final int durationTicks;
     private int elapsedTicks;
-    private boolean isApplied;
+    public boolean isApplied;
+    private double cSpeed;
+    private int cAttack;
 
     public StatusEffect(EffectType effectType, int durationTicks) {
         this.effectType = effectType;
@@ -18,7 +21,7 @@ public class StatusEffect {
     }
 
     public boolean isExpired() {
-        return elapsedTicks >= durationTicks;
+        return (elapsedTicks >= durationTicks && !isApplied);
     }
 
     // NEW: Trigger the physical changes on the zombie
@@ -31,14 +34,20 @@ public class StatusEffect {
                 break;
             case CHILLED:
                 // Cuts speed in half
-                zombie.setXSpeed(zombie.getStableSpeed() * 0.5);
+                this.cSpeed = zombie.getXSpeed();
+                zombie.setXSpeed(cSpeed * 0.5);
+                this.cAttack = zombie.getAttackPower();
+                zombie.setAttackPower((int)(cAttack * 0.5));
                 break;
             case HYPNOTIZED:
                 zombie.setHypnotized(true);
                 break;
-            case CATIFIED:
-                zombie.setAttackPower(0); // Cannot eat while a cat
-                break;
+            case STUNNED:
+                this.elapsedTicks = 50; // 5 Seconds
+                zombie.setStopZombieNow(true);
+            case POISON:
+                this.elapsedTicks = 50; // 5 Seconds
+                zombie.takeDamage(6, DamageType.NORMAL);
         }
     }
 
@@ -48,24 +57,19 @@ public class StatusEffect {
 
         switch (effectType) {
             case FROZEN:
-                // Only unfreeze if the zombie doesn't have ANOTHER frozen effect stacked
-                if (zombie.getActiveEffects().stream()
-                    .noneMatch(e -> e != this && e.getEffectType() == EffectType.FROZEN)) {
-                    zombie.setStopZombieNow(false);
-                }
+                zombie.setStopZombieNow(false);
                 break;
             case CHILLED:
-                if (zombie.getActiveEffects().stream()
-                    .noneMatch(e -> e != this && e.getEffectType() == EffectType.CHILLED)) {
-                    zombie.setXSpeed(zombie.getStableSpeed());
-                }
+                zombie.setXSpeed(this.cSpeed);
+                zombie.setAttackPower(this.cAttack);
                 break;
             case HYPNOTIZED:
                 zombie.setHypnotized(false);
                 break;
-            case CATIFIED:
-                // Just let the natural attack power reset if handled elsewhere, or restore it here
-                break;
+            case STUNNED:
+                zombie.setStopZombieNow(false);
+            case POISON:
+
         }
     }
 
