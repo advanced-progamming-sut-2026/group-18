@@ -47,7 +47,6 @@ public class WaveManager {
 
         // Trigger wave 1 instantly, or next wave when 75% of previous health is depleted
         if ((shouldStartWaves && currentWave == 1) || currentHealthSum <= (previousWaveTotalMaxHealth * 0.25)) {
-            System.out.println(tickCounter + ":" + (currentHealthSum <= (previousWaveTotalMaxHealth * 0.25)));
             spawnWave();
         }
 
@@ -84,7 +83,6 @@ public class WaveManager {
         double spent = 0;
 
         int consecutiveFails = 0;
-
         // Buy zombies until budget is filled (limit consecutive fails to prevent infinite loops)
         while (spent < waveBudget && consecutiveFails < 64) {
             // Get a random zombie that is valid for the current map

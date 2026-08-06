@@ -14,7 +14,7 @@ abstract public class GameEntity {
         this.y = y;
         this.xSpeed = xSpeed;
         this.ySpeed = ySpeed;
-        this.isAlive = false;
+        this.isAlive = true;
     }
 
     public double getX() {

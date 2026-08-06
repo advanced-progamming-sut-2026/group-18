@@ -168,19 +168,18 @@ public class GameSessionMenuController {
         result.add("Wave number: " + gameBoard.waveManager.waveNumber);
         result.add("Plant foods: " + AppModel.player.plantFoodCount);
         result.add("Sun amount: " + gameBoard.economyManager.sunAmount);
+        result.add("");
         for (Tile tile : gameBoard.getAllTiles()) {
-            result.add(String.format("Tile at row=%d, column=%d):", tile.row, tile.column));
+            result.add(String.format("Tile at row=%d, column=%d:", tile.row, tile.column));
             result.add("Type: " + tile.type.toString());
             if (!tile.getZombies().isEmpty()) {
-                StringJoiner zombies = new StringJoiner(", ");
-                zombies.add("Zombie:");
+                result.add("Zombie:");
                 for (Zombie zombie : tile.getZombies()) {
-                    zombies.add(String.format("%s at (%.1f, %.1f)",
+                    result.add(String.format("%s at (%.1f, %.1f)",
                         zombie.getType().toString(),
                         zombie.getX(),
                         zombie.getY()));
                 }
-                result.add(zombies.toString());
             } else {
                 result.add("Has no zombies");
             }
@@ -236,7 +235,7 @@ public class GameSessionMenuController {
             return String.format("[ERROR] Tile not found at (%.1f, %.1f).", xPosition, yPosition);
         }
         StringJoiner result = new StringJoiner(System.lineSeparator());
-        result.add(String.format("Tile at row=%d, column=%d):", tile.row, tile.column));
+        result.add(String.format("Tile at row=%d, column=%d:", tile.row, tile.column));
         if (!tile.getZombies().isEmpty()) {
             result.add("Zombie:");
             for (Zombie zombie : tile.getZombies()) {
