@@ -6,7 +6,8 @@ public enum EffectType {
     FROZEN,     // منجمد کامل
     CHILLED,    // کند شده با یخ
     HYPNOTIZED, // هیپنوتیزم شده
-    CATIFIED;   // نفرین گربه
+    STUNNED,
+    POISON;
 
     public static EffectType getByName(String name) {
         for (EffectType effectType : EffectType.values()) {

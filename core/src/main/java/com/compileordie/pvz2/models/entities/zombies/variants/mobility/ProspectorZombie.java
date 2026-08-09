@@ -52,6 +52,9 @@ public class ProspectorZombie extends Zombie {
     @Override
     public void takeDamage(double amount, DamageType damageType) {
         if (isDead()) return;
+        if (damageType == DamageType.FIRE){
+            this.removeFrozen();
+        }
         this.health -= amount;
         if (damageType == DamageType.ICE) {
             dynamiteActive = false;

@@ -48,6 +48,9 @@ public class BarrelRollerZombie extends VehicleZombie {
     @Override
     public void takeDamage(double amount, DamageType damageType) {
         if (isDead()) return;
+        if (damageType == DamageType.FIRE){
+            this.removeFrozen();
+        }
 
         if (!this.isVehicleDestroyed()) {
             if (damageType == DamageType.LOBBER) {

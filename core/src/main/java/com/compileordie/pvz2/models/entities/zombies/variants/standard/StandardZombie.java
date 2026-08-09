@@ -59,6 +59,10 @@ public abstract class StandardZombie extends Zombie {
         if (isDead()) return;
         double newAmount = amount;
 
+        if (damageType == DamageType.FIRE){
+            this.removeFrozen();
+        }
+
         // فیکس: آسیب‌های نادیده‌گیرنده زره مستقیماً به گوشت زامبی می‌خورند
         if (damageType != DamageType.BYPASS_ARMOR && hasArmor()) {
             newAmount = takeArmorDamage(amount);

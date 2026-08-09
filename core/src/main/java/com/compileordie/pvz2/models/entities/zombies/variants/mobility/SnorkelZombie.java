@@ -49,6 +49,9 @@ public class SnorkelZombie extends Zombie {
     @Override
     public void takeDamage(double amount, DamageType damageType) {
         if (isDead()) return;
+        if (damageType == DamageType.FIRE){
+            this.removeFrozen();
+        }
         if (state == MovementState.UNDERWATER_NOT_SURFACED
             && !(damageType == DamageType.LOBBER || damageType == DamageType.EXPLOSIVE))
             return;

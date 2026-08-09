@@ -4,9 +4,12 @@ import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
+import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
+import com.compileordie.pvz2.models.entities.zombies.variants.standard.BucketHeadZombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.standard.KnightZombie;
 import com.compileordie.pvz2.models.game.board.Lane;
 import com.compileordie.pvz2.models.missions.quests.QuestEvent;
 import com.compileordie.pvz2.models.missions.quests.QuestManager;
@@ -54,12 +57,8 @@ public abstract class Zombie extends GameEntity {
         this.type = type;
 
         // Check if this zombie variant starts with metal armor
-        if (type != null) {
-            String name = type.name().toUpperCase();
-            if (name.contains("BUCKET") || name.contains("FOOTBALL") || name.contains("KNIGHT")
-                || name.contains("MACHINERY")) {
-                this.hasMetalArmor = true;
-            }
+        if (type == ZombieType.BUCKETHEAD || type == ZombieType.KNIGHT) {
+            this.hasMetalArmor = true;
         }
         this.isGlowing = new Random().nextInt(100) < 5;
     }
@@ -112,7 +111,7 @@ public abstract class Zombie extends GameEntity {
 
     @Override
     public void move(int ticks) {
-        if (isEating || isCombatingWithHypnotized) return;
+        if (isEating || isCombatingWithHypnotized || !canMove()) return;
         float dt = ticks * Constants.Game.TIME_COEFFICIENT;
         setX(getX() - getXSpeed() * dt);
         setY(getY() + getYSpeed() * dt);
@@ -134,6 +133,14 @@ public abstract class Zombie extends GameEntity {
 
     public void addEffect(StatusEffect effect) {
         activeEffects.add(effect);
+    }
+
+    public void removeFrozen(){
+        for (StatusEffect s: activeEffects){
+            if (!s.isExpired() && s.getEffectType()==EffectType.FROZEN){
+                s.isApplied = false;
+            }
+        }
     }
 
     public void removeStatusEffect(EffectType type) {
@@ -245,5 +252,12 @@ public abstract class Zombie extends GameEntity {
             // Instantly strip armor HP bonus (e.g., reduce health to standard zombie baseline)
             this.health = Math.min(this.health, 200.0);
         }
+    }
+
+    public void mushroomAbsorption() {
+        if (!hasMetalArmor) return;
+        if (this.type==ZombieType.KNIGHT) ((KnightZombie)this).setArmorHealth(0);
+        if (this.type==ZombieType.BUCKETHEAD) ((BucketHeadZombie)this).setArmorHealth(0);
+        // اینجا باید گیاه به محض رویت زامبی در نزدیکی اش این متد را فراخوانی کند
     }
 }

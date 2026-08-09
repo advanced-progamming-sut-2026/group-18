@@ -17,9 +17,4 @@ public class BucketHeadZombie extends StandardZombie {
                             double ySpeed) {
         super(health, speed, attackPower, row, startX, initialArmor, x, y, xSpeed, ySpeed, ZombieType.BUCKETHEAD);
     }
-
-    public void mushroomAbsorption() {
-        setArmorHealth(0);
-        // اینجا باید گیاه به محض رویت زامبی در نزدیکی اش این متد را فراخوانی کند
-    }
 }
