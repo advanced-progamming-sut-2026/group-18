@@ -1,12 +1,11 @@
 package com.compileordie.pvz2.models.game.economy;
 
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
-
-import static com.compileordie.pvz2.models.AppModel.addAfterPrompt;
 
 public class Sun extends GameEntity {
     public final float groundLevel;
@@ -48,7 +47,7 @@ public class Sun extends GameEntity {
 
             if (wasInAir && getY() <= groundLevel) {
                 setX(groundLevel);
-                addAfterPrompt("Sun reached the ground at position (" + (int) getX() + ", " + (int) groundLevel + ")");
+                AppModel.addAfterPrompt(String.format("Sun reached the ground at (%.1f, %.1f)", getX(), groundLevel));
             }
         } else {
             double deltaX = (target.getX() - this.getX()) * ConfigManager.economy().sunStealVelocity;
