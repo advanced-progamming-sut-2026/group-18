@@ -97,9 +97,7 @@ public class EconomyManager {
 
         Sun naturalSun = new Sun(x, y, selectedType, true, ground);
         suns.add(naturalSun);
-
-        AppModel.addAfterPrompt("New " + selectedType +
-            " sun is dropping at position (" + (int) x + ", " + (int) y + ")");
+        AppModel.addAfterPrompt(String.format("New %s sun is dropping at (%.1f, %.1f)", selectedType, x, y));
     }
 
     /**
@@ -141,7 +139,7 @@ public class EconomyManager {
     }
 
     public boolean collect(float x, float y) {
-        float reach = Constants.Game.TILE_SIZE / 4f;
+        float reach = Constants.Game.TILE_SIZE / 2f;
 
         for (int i = suns.size() - 1; i >= 0; i--) {
             Sun sun = suns.get(i);
@@ -158,33 +156,13 @@ public class EconomyManager {
                 }
 
                 suns.remove(i);
-                AppModel.addAfterPrompt("Sun collected at (" + (int) sun.getX() + ", " + (int) sun.getY() + ")");
+                AppModel.addAfterPrompt(String.format("Sun collected at (%.1f, %.1f)", sun.getX(), sun.getY()));
                 return true;
             }
         }
 
         return false;
     }
-
-    /*public void pluck(float x, float y) {
-        Tile tile = gameBoard.getTile(x, y);
-        if (tile == null) {
-            AppModel.addAfterPrompt(String.format("Tile at (%.1f, %.1f) not found!", x, y));
-            return;
-        }
-
-        Plant plant = tile.plant;
-        if (plant == null) {
-            AppModel.addAfterPrompt(String.format("Plant at (%.1f, %.1f) not found!", x, y));
-            return;
-        }
-
-        PlantType plantType = plant.type;
-        tile.plant = null;
-        gameBoard.removePlant(plant);
-
-        AppModel.addAfterPrompt(String.format("%s at (%.1f, %.1f) plucked!", plantType, x, y));
-    }*/
 
     public void plant(PlantType plantType, float x, float y) {
         Plant plant;

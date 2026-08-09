@@ -1,5 +1,7 @@
 package com.compileordie.pvz2.models.entities.plants.enums;
 
+import com.compileordie.pvz2.utils.Toolbox;
+
 public enum PlantCategory {
     SUN_PRODUCERS,
     SHOOTERS,
@@ -10,5 +12,19 @@ public enum PlantCategory {
     MODIFIERS,
     STRIKE_THROUGH,
     HOMING,
-    MINTS
+    MINTS;
+
+    public static PlantCategory getByName(String name) {
+        for (PlantCategory plantCategory : PlantCategory.values()) {
+            if (plantCategory.toString().equalsIgnoreCase(name)) {
+                return plantCategory;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        return Toolbox.enumToString(this, true);
+    }
 }

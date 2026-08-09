@@ -336,6 +336,6 @@ public class GameSessionMenuController {
             return "[ERROR] You must select a vase.";
         }
         selectedVase.breakVase();
-        return String.format("Tile at (%.1f, %.1f) not found!", yPosition, yPosition);
+        return "";
     }
 }
