@@ -12,9 +12,7 @@ public class Lwjgl3Launcher {
     }
 
     private static Lwjgl3Application createApplication() {
-        // Uncomment the line bellow and remove the line after to switch from CLI to GUI!
-        /*return new Lwjgl3Application(new Main(), getDefaultConfiguration());*/
-        throw new IllegalStateException("FIX lwjgl3.Lwjgl3Launcher.createApplication BEFORE STARTING THE GUI PHASE!");
+        return new Lwjgl3Application(new Main(), getDefaultConfiguration());
     }
 
     private static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {
