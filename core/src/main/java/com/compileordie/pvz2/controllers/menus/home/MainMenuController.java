@@ -3,6 +3,8 @@ package com.compileordie.pvz2.controllers.menus.home;
 import com.compileordie.pvz2.config.PreferencesManager;
 import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.views.ScreenManager;
+import com.compileordie.pvz2.views.ScreenType;
 import com.compileordie.pvz2.views.helpers.Menu;
 
 import java.util.List;
@@ -21,6 +23,11 @@ public class MainMenuController {
         }
 
         return AppController.changeMenu(menu);
+    }
+
+    public static void enterMenu(ScreenType type) {
+        // TODO: Later migrate to full GUI
+        ScreenManager.setMenuScreen(type);
     }
 
     public static String exitMenu() {

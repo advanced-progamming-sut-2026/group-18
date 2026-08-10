@@ -6,7 +6,7 @@ public final class Constants {
 
     public static final class Paths {
         public static final class Saves {
-            public static final String ROOT = "saves/";
+            public static final String ROOT = "../saves/";
             public static final String PREFERENCES = ROOT + "preferences.json";
             public static final String AUTH = ROOT + "auth.json";
             public static final String USERS = ROOT + "users/";
@@ -43,6 +43,13 @@ public final class Constants {
         public static final float TIME_COEFFICIENT = 0.1f;
         public static final float TILE_WIDTH = 1f;
         public static final float TILE_HEIGHT = 1f;
+    }
+
+    public static final class UI {
+        public static final int DEFAULT_WIDTH = 1920;
+        public static final int DEFAULT_HEIGHT = 1080;
+        // Note: UPP value is an early guess and subject to change
+        public static final float UPP = 2f; // Units Per Pixel UI scaling
     }
 
     public static final class QuestCallbacks {
