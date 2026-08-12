@@ -1,11 +1,9 @@
 package com.compileordie.pvz2.controllers.menus.game;
 
-import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.game.SessionBuilder;
 import com.compileordie.pvz2.models.game.levels.LevelID;
-import com.compileordie.pvz2.views.helpers.Menu;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -125,12 +123,14 @@ public class PlantSelectionMenuController {
             return "[ERROR] You must select at least 2 plants.";
         }
         AppModel.gameSession = SessionBuilder.create(AppModel.currentLevel, AppModel.selectionDeck);
+        // GUI migration in progress
         return "Starting level: "
-            + AppModel.currentLevel + System.lineSeparator() + AppController.changeMenu(Menu.GAME_SESSION);
+            + AppModel.currentLevel + System.lineSeparator()/* + AppController.changeMenu(Menu.GAME_SESSION)*/;
     }
 
     public static String cancelGame() {
         AppModel.clearSessionData();
-        return "Mission aborted!" + System.lineSeparator() + AppController.changeMenu(Menu.GAME);
+        // GUI migration in progress
+        return "Mission aborted!" + System.lineSeparator()/* + AppController.changeMenu(Menu.GAME)*/;
     }
 }

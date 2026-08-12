@@ -7,17 +7,20 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.compileordie.pvz2.config.Constants;
+import pvz.libpvz.textures.TextureBank;
 import pvz.skin.PvzSkin;
 
 abstract public class MenuScreen implements Screen {
     protected final Stage stage;
     protected final Skin skin;
+    protected TextureBank textureBank;
 
     public MenuScreen() {
         ScreenViewport viewport = new ScreenViewport();
         viewport.setUnitsPerPixel(1f / Constants.UI.UPP);
         this.stage = new Stage(viewport);
         this.skin = PvzSkin.get();
+        this.textureBank = new TextureBank("768", Gdx.files.internal("pvz-assets"));
     }
 
     abstract public void showCore();
@@ -31,10 +34,11 @@ abstract public class MenuScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClearColor(240 / 255f, 230 / 255f, 195 / 255f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         // Step and render the Scene2D UI actors overlaid on top of the background
+        textureBank.update();
         stage.act(delta);
         stage.draw();
     }
@@ -62,5 +66,6 @@ abstract public class MenuScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
+        textureBank.dispose();
     }
 }

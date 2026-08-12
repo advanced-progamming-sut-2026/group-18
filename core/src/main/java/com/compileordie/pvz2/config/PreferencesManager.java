@@ -26,7 +26,6 @@ public class PreferencesManager {
         if (preferences == null) {
             return null;
         }
-        System.out.println(preferences.defaultUserField);
         return preferences.defaultUserField;
     }
 

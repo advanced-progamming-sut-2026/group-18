@@ -1,11 +1,9 @@
 package com.compileordie.pvz2.controllers.menus.network;
 
-import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.models.repositories.databases.AuthDatabase;
 import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.models.user.Player;
 import com.compileordie.pvz2.models.user.authentication.UserRegistry;
-import com.compileordie.pvz2.views.helpers.Menu;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -17,10 +15,6 @@ public class LeaderboardMenuController {
     private static boolean isAscending = false;
 
     private LeaderboardMenuController() {
-    }
-
-    public static String exitMenu() {
-        return AppController.changeMenu(Menu.GAME);
     }
 
     private static List<Player> loadAllPlayers() {

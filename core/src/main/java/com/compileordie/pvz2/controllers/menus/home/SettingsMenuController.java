@@ -1,17 +1,11 @@
 package com.compileordie.pvz2.controllers.menus.home;
 
-import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.models.user.Player;
-import com.compileordie.pvz2.views.helpers.Menu;
 
 public class SettingsMenuController {
     private SettingsMenuController() {
-    }
-
-    public static String exitMenu() {
-        return AppController.changeMenu(Menu.MAIN);
     }
 
     public static String setDifficulty(String level) {

@@ -1,26 +1,22 @@
 package com.compileordie.pvz2.controllers.menus.auth;
 
 import com.compileordie.pvz2.config.PreferencesManager;
-import com.compileordie.pvz2.controllers.AppController;
-import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.models.components.Result;
 import com.compileordie.pvz2.models.user.Player;
 import com.compileordie.pvz2.models.user.UserValidator;
 import com.compileordie.pvz2.models.user.authentication.AuthManager;
-import com.compileordie.pvz2.views.helpers.Menu;
 
 public class LoginMenuController {
-    private static PendingChange pendingChange = null;
-
     private LoginMenuController() {
     }
 
-    public static String loginUser(String username, String password, boolean stay) {
+    public static Result<Void> loginUser(String username, String password, boolean stay) {
         switch (AuthManager.authenticateStepOne(username, password.toCharArray())) {
             case USER_NOT_FOUND -> {
-                return "[ERROR] User not found.";
+                return Result.failure("User not found");
             }
             case WRONG_PASSWORD -> {
-                return "[ERROR] Wrong password.";
+                return Result.failure("Wrong password");
             }
         }
 
@@ -31,81 +27,27 @@ public class LoginMenuController {
         }
 
         AuthManager.loginPlayer(username);
-        return "Logged in as '" + username + "' successfully! Now you can change to Main menu.";
+        return Result.success();
     }
 
-    public static String enterMenu(String name) {
-        Menu menu = Menu.getByName(name);
-        if (menu == null) {
-            return "[ERROR] Wrong menu name.";
-        }
-        if (menu != Menu.MAIN) {
-            return "[ERROR] You can only enter Main Menu from here.";
-        }
-        if (AppModel.isLoggedOut()) {
-            return "[ERROR] You need to login first.";
-        }
-
-        return AppController.changeMenu(menu);
-    }
-
-    public static String exitMenu() {
-        return AppController.changeMenu(Menu.SIGNUP);
-    }
-
-    public static String forgetPassword(String username, String email) {
+    public static Result<Void> resetPassword(String username, String email, String securityAnswer, String newPassword) {
         Player user = AuthManager.getUserByUsername(username);
         if (user == null) {
-            return "[ERROR] User not found, try another username.";
+            return Result.failure("User not found");
         }
         if (!user.email.equals(email)) {
-            return "[ERROR] Email does not match.";
+            return Result.failure("Email does not match");
+        }
+        if (!user.isSecurityAnswerCorrect(securityAnswer)) {
+            return Result.failure("Incorrect security answer");
         }
 
-        pendingChange = new PendingChange(user, false);
-        AppModel.addAfterPrompt(user.securityQuestion);
-        AppModel.addAfterPrompt("Use the command bellow: (answer is case-insensitive)");
-        AppModel.addAfterPrompt("answer -a <answer>");
-        return "Now answer the following security question:";
-    }
-
-    public static String answerQuestionUser(String answer) {
-        if (pendingChange == null) {
-            return "[ERROR] You must complete the 'forgot password' command first!";
-        }
-        if (pendingChange.answered()) {
-            return "[ERROR] You have already answered the security question! Type in your new password:";
-        }
-        if (!pendingChange.user().isSecurityAnswerCorrect(answer)) {
-            return "[ERROR] Answer is wrong, please try again.";
+        Result<Void> result = UserValidator.isPasswordStrong(newPassword);
+        if (!result.isSuccess) {
+            return result;
         }
 
-        pendingChange = new PendingChange(pendingChange.user(), true);
-        return "Answer was correct. Now enter your new password:";
-    }
-
-    public static boolean isWaitingForNewPassword() {
-        return pendingChange != null && pendingChange.answered();
-    }
-
-    public static String setNewPassword(String newPassword) {
-        String passwordStrength = UserValidator.isPasswordStrong(newPassword);
-        if (passwordStrength != null) {
-            return passwordStrength;
-        }
-
-        String username = pendingChange.user().username;
         AuthManager.setNewPassword(username, newPassword.toCharArray());
-
-        // Clear the state so the user isn't stuck in the password reset loop
-        pendingChange = null;
-
-        return "Password successfully changed for user '" + username + "'!";
-    }
-
-    private record PendingChange(
-        Player user,
-        boolean answered
-    ) {
+        return Result.success();
     }
 }
