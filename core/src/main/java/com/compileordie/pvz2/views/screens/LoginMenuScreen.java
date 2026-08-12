@@ -100,7 +100,7 @@ public class LoginMenuScreen extends MenuScreen {
         forgotBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                ForgotPasswordModal modal = new ForgotPasswordModal();
+                ForgotPasswordModal modal = new ForgotPasswordModal(skin);
                 modal.show(stage);
             }
         });

@@ -30,6 +30,18 @@ public class LoginMenuController {
         return Result.success();
     }
 
+    public static Result<String> fetchSecurityQuestion(String username, String email) {
+        Player user = AuthManager.getUserByUsername(username);
+        if (user == null) {
+            return Result.failure("User not found");
+        }
+        if (!user.email.equals(email)) {
+            return Result.failure("Email does not match");
+        }
+
+        return Result.success(user.securityQuestion);
+    }
+
     public static Result<Void> resetPassword(String username, String email, String securityAnswer, String newPassword) {
         Player user = AuthManager.getUserByUsername(username);
         if (user == null) {

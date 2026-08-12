@@ -7,17 +7,17 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import pvz.skin.BorderedTable;
-import pvz.skin.PvzSkin;
 
 public abstract class BaseModal extends Table {
     protected final BorderedTable contentWindow;
     protected final Table bodyTable;
     protected final Table buttonTable;
 
-    public BaseModal(String titleText) {
+    public BaseModal(String titleText, Skin skin) {
         setFillParent(true);
         setTouchable(Touchable.enabled); // Blocks clicks from falling through to the screen behind it
 
@@ -33,7 +33,7 @@ public abstract class BaseModal extends Table {
         add(contentWindow).minWidth(600).minHeight(400); // Guarantees a good size
 
         // 3. Title
-        Label title = new Label(titleText, PvzSkin.get(), "medium_outline");
+        Label title = new Label(titleText, skin, "medium_outline");
         contentWindow.add(title).padBottom(20).center().row();
 
         // 4. Containers for child classes to populate
