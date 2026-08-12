@@ -3,10 +3,7 @@ package com.compileordie.pvz2.views;
 import com.badlogic.gdx.Screen;
 import com.compileordie.pvz2.Main;
 import com.compileordie.pvz2.views.game.GameScreen;
-import com.compileordie.pvz2.views.screens.GameMenuScreen;
-import com.compileordie.pvz2.views.screens.MainMenuScreen;
-import com.compileordie.pvz2.views.screens.PlantSelectionScreen;
-import com.compileordie.pvz2.views.screens.SignupMenuScreen;
+import com.compileordie.pvz2.views.screens.*;
 
 public class ScreenManager {
     private static Main main;
@@ -23,19 +20,18 @@ public class ScreenManager {
     public static void setMenuScreen(ScreenType type) {
         Screen screen = switch (type) {
             case SIGNUP -> new SignupMenuScreen();
-            case LOGIN -> null;
+            case LOGIN -> new LoginMenuScreen();
             case MAIN -> new MainMenuScreen();
             case GAME -> new GameMenuScreen();
-            case SETTINGS -> null;
-            case NETWORK -> null;
-            case NEWS -> null;
-            case PROFILE -> null;
-            case COLLECTION -> null;
-            case GREENHOUSE -> null;
-            case TRAVEL_LOG -> null;
-            case LEADERBOARD -> null;
-            case SHOP -> null;
-            case PLANT_SELECTION -> new PlantSelectionScreen();
+            case SETTINGS -> new SettingsMenuScreen();
+            case NETWORK -> new NetworkMenuScreen();
+            case NEWS -> new NewsMenuScreen();
+            case PROFILE -> new ProfileMenuScreen();
+            case COLLECTION -> new CollectionMenuScreen();
+            case GREENHOUSE -> new GreenhouseMenuScreen();
+            case TRAVEL_LOG -> new TravelLogMenuScreen();
+            case LEADERBOARD -> new LeaderboardMenuScreen();
+            case SHOP -> new ShopMenuScreen();
             case GAME_SESSION -> new GameScreen();
         };
 

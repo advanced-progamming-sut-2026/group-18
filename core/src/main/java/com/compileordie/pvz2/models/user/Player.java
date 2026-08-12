@@ -126,7 +126,6 @@ public class Player {
         return 3f / difficultyLevel;
     }
 
-    // --- Helper Methods for Economy and Boosts ---
     public void spendDiamonds(int amount) {
         this.diamonds = Math.max(0, this.diamonds - amount);
     }
@@ -145,5 +144,13 @@ public class Player {
 
     public void consumePlantFood() {
         this.plantFoodCount = Math.max(0, this.plantFoodCount - 1);
+    }
+
+    public int getUnreadNewsCount() {
+        int counter = 0;
+        for (News news : news) {
+            if (!news.isRead) counter++;
+        }
+        return counter;
     }
 }

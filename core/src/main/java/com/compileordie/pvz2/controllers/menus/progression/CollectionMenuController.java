@@ -1,13 +1,11 @@
 package com.compileordie.pvz2.controllers.menus.progression;
 
-import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.models.user.Player;
-import com.compileordie.pvz2.views.helpers.Menu;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,10 +13,6 @@ import java.util.stream.Collectors;
 
 public class CollectionMenuController {
     private CollectionMenuController() {
-    }
-
-    public static String exitMenu() {
-        return AppController.changeMenu(Menu.GAME);
     }
 
     public static String showPlants() {

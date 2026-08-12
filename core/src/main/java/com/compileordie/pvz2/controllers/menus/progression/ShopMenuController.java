@@ -1,6 +1,5 @@
 package com.compileordie.pvz2.controllers.menus.progression;
 
-import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.missions.Pot;
@@ -9,16 +8,11 @@ import com.compileordie.pvz2.models.missions.shop.Shop;
 import com.compileordie.pvz2.models.missions.shop.ShopItem;
 import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.models.user.Player;
-import com.compileordie.pvz2.views.helpers.Menu;
 
 import java.util.Random;
 
 public class ShopMenuController {
     private ShopMenuController() {
-    }
-
-    public static String exitMenu() {
-        return AppController.changeMenu(Menu.COLLECTION);
     }
 
     public static String showList() {

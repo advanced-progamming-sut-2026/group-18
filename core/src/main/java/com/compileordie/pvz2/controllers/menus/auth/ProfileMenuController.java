@@ -1,27 +1,14 @@
 package com.compileordie.pvz2.controllers.menus.auth;
 
-import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.models.AppModel;
-import com.compileordie.pvz2.models.repositories.databases.AuthDatabase;
-import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.models.user.Player;
-import com.compileordie.pvz2.models.user.UserValidator;
-import com.compileordie.pvz2.models.user.authentication.AuthManager;
-import com.compileordie.pvz2.models.user.authentication.AuthStatus;
-import com.compileordie.pvz2.models.user.authentication.UserRegistry;
-import com.compileordie.pvz2.views.helpers.Menu;
-
-import java.util.ArrayList;
 
 public class ProfileMenuController {
     private ProfileMenuController() {
     }
 
-    public static String exitMenu() {
-        return AppController.changeMenu(Menu.MAIN);
-    }
-
-    public static String changeUsername(String newUsername) {
+    // GUI migration in progress
+    /*public static String changeUsername(String newUsername) {
         Player player = AppModel.player;
         if (newUsername.equals(player.username)) {
             return "[ERROR] New username cannot be the same as the current username.";
@@ -51,9 +38,10 @@ public class ProfileMenuController {
         new UserDatabase(newUsername).save(player);
 
         return "Username changed successfully.";
-    }
+    }*/
 
-    public static String changeNickname(String newNickname) {
+    // GUI migration in progress
+    /*public static String changeNickname(String newNickname) {
         Player player = AppModel.player;
         if (newNickname.equals(player.nickname)) {
             return "[ERROR] New nickname cannot be the same as the current nickname.";
@@ -66,9 +54,10 @@ public class ProfileMenuController {
         new UserDatabase(player.username).save(player);
 
         return "Nickname changed successfully.";
-    }
+    }*/
 
-    public static String changeEmail(String newEmail) {
+    // GUI migration in progress
+    /*public static String changeEmail(String newEmail) {
         Player player = AppModel.player;
         if (newEmail.equals(player.email)) {
             return "[ERROR] New email cannot be the same as the current email.";
@@ -81,9 +70,10 @@ public class ProfileMenuController {
         new UserDatabase(player.username).save(player);
 
         return "Email changed successfully.";
-    }
+    }*/
 
-    public static String changePassword(String oldPassword, String newPassword) {
+    // GUI migration in progress
+    /*public static String changePassword(String oldPassword, String newPassword) {
         Player player = AppModel.player;
         if (oldPassword.equals(newPassword)) {
             return "[ERROR] New password cannot be the same as the old password.";
@@ -113,7 +103,7 @@ public class ProfileMenuController {
         new UserDatabase(player.username).save(player);
 
         return "Password changed successfully.";
-    }
+    }*/
 
     public static String showPlayerInfo() {
         Player player = AppModel.player;

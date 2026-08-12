@@ -14,6 +14,5 @@ public enum ScreenType {
     TRAVEL_LOG,
     LEADERBOARD,
     SHOP,
-    PLANT_SELECTION,
     GAME_SESSION;
 }

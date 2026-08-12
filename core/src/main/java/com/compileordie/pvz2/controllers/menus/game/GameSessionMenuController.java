@@ -1,7 +1,6 @@
 package com.compileordie.pvz2.controllers.menus.game;
 
 import com.compileordie.pvz2.config.Constants;
-import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.controllers.PlantSpawner;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.Plant;
@@ -20,7 +19,6 @@ import com.compileordie.pvz2.models.game.economy.EconomyType;
 import com.compileordie.pvz2.models.game.economy.PlantCard;
 import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
 import com.compileordie.pvz2.models.user.Player;
-import com.compileordie.pvz2.views.helpers.Menu;
 
 import java.util.ArrayList;
 import java.util.StringJoiner;
@@ -311,7 +309,8 @@ public class GameSessionMenuController {
 
     public static String quitGame() {
         AppModel.clearSessionData();
-        return "Mission aborted!" + System.lineSeparator() + AppController.changeMenu(Menu.GAME);
+        // GUI migration in progress
+        return "Mission aborted!" + System.lineSeparator()/* + AppController.changeMenu(Menu.GAME)*/;
     }
 
     public static String breakVase(String x, String y) {

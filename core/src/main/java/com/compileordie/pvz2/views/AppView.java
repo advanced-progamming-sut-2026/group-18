@@ -26,7 +26,6 @@ public class AppView {
 
             printIfPresent(AppController.getBeforePrompt());
             String prompt = scanner.nextLine().trim();
-            printIfPresent(AppModel.menu.handleCommand(prompt));
             printIfPresent(AppController.getAfterPrompt());
         } while (AppModel.isRunning);
 
