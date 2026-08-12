@@ -227,8 +227,9 @@ public abstract class Zombie extends GameEntity {
 
     // ==== بسیار خطرناک ولی موقت ====
     public void takeDamage(double amount, DamageType damageType){
-        this.health -= amount;
-        if (health<=0) health = 0;
+//        this.health -= amount;
+//        if (health<=0) health = 0;
+        this.takeDamage(amount, damageType, null);
     }
     // ===============================
 
