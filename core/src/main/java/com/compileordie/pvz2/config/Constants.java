@@ -1,5 +1,7 @@
 package com.compileordie.pvz2.config;
 
+import com.compileordie.pvz2.models.AppModel;
+
 public final class Constants {
     private Constants() {
     }
@@ -42,7 +44,7 @@ public final class Constants {
         public static final float GRAVITY_COEFFICIENT = 1f;
         public static final float TIME_COEFFICIENT = 0.1f;
         public static final float TILE_WIDTH = 1f;
-        public static final float TILE_HEIGHT = 1f;
+        public static final float TILE_HEIGHT = 1.285f;
     }
 
     public static final class UI {
@@ -50,6 +52,10 @@ public final class Constants {
         public static final int DEFAULT_HEIGHT = 1080;
         // Note: UPP value is an early guess and subject to change
         public static final float UPP = 2f; // Units Per Pixel UI scaling
+        public static final float MeterToPix = 105f;
+
+        public static final float bottomLinePix = 190f;
+        public static final float bottomLineMeter = 1.8f;
     }
 
     public static final class QuestCallbacks {

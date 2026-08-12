@@ -21,6 +21,10 @@ public class GameSession {
     public GameBoard gameBoard;
     public GameJudge gameJudge;
 
+
+    public boolean flagForFirstWave = false;
+    public float elapsedTimeFromFirstWave = 99999f;
+
     public GameSession(LevelID levelID,
                        EconomyType economyType,
                        WaveType waveType,
@@ -41,6 +45,15 @@ public class GameSession {
     }
 
     public void tick(int ticks) {
+        //---
+        if (AppModel.gameSession.flagForFirstWave){
+            if (Math.abs(elapsedTimeFromFirstWave-99999)<=0.01){
+                elapsedTimeFromFirstWave = 0;
+            }
+            elapsedTimeFromFirstWave += ticks*Constants.Game.TIME_COEFFICIENT;
+
+        }
+        //---
         player.playtime += ticks * Constants.Game.TIME_COEFFICIENT;
         gameBoard.tick(ticks);
 

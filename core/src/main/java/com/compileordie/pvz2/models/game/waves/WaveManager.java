@@ -60,11 +60,13 @@ public class WaveManager {
         if (isLastWave()) {
             AppModel.addAfterPrompt("The final wave has come.");
             waveBudget *= 2; // Final wave is 2x previous wave difficulty
+
         } else if (currentWave > 1) {
             AppModel.addAfterPrompt("Wave " + currentWave + " started.");
             waveBudget = (int) Math.floor(waveBudget * 1.25f); // Standard waves scale by 25%
         } else {
             AppModel.addAfterPrompt("Wave 1 started.");
+            AppModel.gameSession.flagForFirstWave = true;
         }
 
         previousWaveTotalMaxHealth = 0;

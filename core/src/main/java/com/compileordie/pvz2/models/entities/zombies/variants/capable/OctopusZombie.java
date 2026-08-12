@@ -20,11 +20,4 @@ public class OctopusZombie extends CapableZombie {
         if (isDead()) return;
     }
 
-    @Override
-    public void takeDamage(double amount, DamageType damageType) {
-        if (isDead()) return;
-        this.health -= amount;
-        if (this.health < 0) this.health = 0;
-    }
-
 }

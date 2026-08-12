@@ -4,8 +4,9 @@ public enum DamageType {
     NORMAL,
     FIRE,
     ICE,
-    POISON,
     EXPLOSIVE,    // افنجاری
     BYPASS_ARMOR, // بدون در نظر گرفتن آرمور
-    LOBBER        // تیر قوسی
+    LOBBER,        // تیر قوسی
+    POISON,
+    LawnMower
 }

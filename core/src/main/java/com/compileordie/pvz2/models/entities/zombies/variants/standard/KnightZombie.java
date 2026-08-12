@@ -66,10 +66,4 @@ public class KnightZombie extends StandardZombie {
     public boolean isShoulderArmorBroken() {
         return this.shoulderArmorHealth <= 0;
     }
-
-
-    @Override
-    public void takeDamage(double amount, DamageType damageType) {
-        super.takeDamage(amount, damageType);
-    }
 }
