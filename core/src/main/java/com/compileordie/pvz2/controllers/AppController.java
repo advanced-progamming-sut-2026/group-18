@@ -1,7 +1,6 @@
 package com.compileordie.pvz2.controllers;
 
 import com.compileordie.pvz2.models.AppModel;
-import com.compileordie.pvz2.views.helpers.Menu;
 
 import java.util.StringJoiner;
 
@@ -27,14 +26,5 @@ public class AppController {
         }
 
         return joiner.toString();
-    }
-
-    public static String showCurrentMenu() {
-        return "You're in the " + AppModel.menu + " menu now.";
-    }
-
-    public static String changeMenu(Menu menu) {
-        AppModel.menu = menu;
-        return "Menu changed successfully!" + System.lineSeparator() + showCurrentMenu();
     }
 }

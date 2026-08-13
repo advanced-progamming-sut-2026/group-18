@@ -1,6 +1,5 @@
 package com.compileordie.pvz2.controllers.menus.progression;
 
-import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.missions.quests.Quest;
@@ -9,17 +8,12 @@ import com.compileordie.pvz2.models.missions.quests.QuestManager;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.models.user.Player;
-import com.compileordie.pvz2.views.helpers.Menu;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class TravelLogMenuController {
     private TravelLogMenuController() {
-    }
-
-    public static String exitMenu() {
-        return AppController.changeMenu(Menu.GAME);
     }
 
     public static String showPage(String name) {

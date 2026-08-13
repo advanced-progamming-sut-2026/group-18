@@ -65,5 +65,6 @@ public class Vase extends GameEntity {
             AppModel.addAfterPrompt("Vase dropped a sun");
         }
         isBroken = true;
+        gameBoard.vases.remove(this);
     }
 }

@@ -1,35 +1,19 @@
 package com.compileordie.pvz2.controllers.menus.home;
 
-import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.models.user.Player;
-import com.compileordie.pvz2.views.helpers.Menu;
 
 public class SettingsMenuController {
     private SettingsMenuController() {
     }
 
-    public static String exitMenu() {
-        return AppController.changeMenu(Menu.MAIN);
-    }
-
-    public static String setDifficulty(String level) {
-        int difficulty;
-        try {
-            difficulty = Integer.parseInt(level);
-        } catch (NumberFormatException e) {
-            return "[ERROR] Difficulty must be an integer.";
-        }
-
-        if (difficulty < 1 || difficulty > 5) {
-            return "[ERROR] Difficulty level must be a value between 1 and 5.";
-        }
-
+    public static void saveSettings(int difficulty, int speed, boolean gridBox, boolean debug) {
         Player player = AppModel.player;
         player.difficultyLevel = difficulty;
+        player.gameSpeedCoefficient = speed;
+        player.showGridBox = gridBox;
+        player.debugMode = debug;
         new UserDatabase(player.username).save(player);
-
-        return "Difficulty level successfully set to " + difficulty + ".";
     }
 }

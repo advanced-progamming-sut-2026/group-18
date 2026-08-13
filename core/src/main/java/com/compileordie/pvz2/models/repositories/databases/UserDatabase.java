@@ -18,10 +18,14 @@ public class UserDatabase extends MutableDatabase<Player> {
 
     @Override
     public Player load() {
-        FileHandle file = Gdx.files.local(filePath);
+        if (filePath != null) {
+            FileHandle file = Gdx.files.local(filePath);
 
-        if (file.exists()) {
-            return json.fromJson(Player.class, file);
+            if (file.exists()) {
+                return json.fromJson(Player.class, file);
+            } else {
+                return null;
+            }
         } else {
             return null;
         }

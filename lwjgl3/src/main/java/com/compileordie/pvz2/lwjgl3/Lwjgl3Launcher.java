@@ -3,6 +3,7 @@ package com.compileordie.pvz2.lwjgl3;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.compileordie.pvz2.Main;
+import com.compileordie.pvz2.config.Constants;
 
 /** Launches the desktop (LWJGL3) application. */
 public class Lwjgl3Launcher {
@@ -12,9 +13,7 @@ public class Lwjgl3Launcher {
     }
 
     private static Lwjgl3Application createApplication() {
-        // Uncomment the line bellow and remove the line after to switch from CLI to GUI!
-        /*return new Lwjgl3Application(new Main(), getDefaultConfiguration());*/
-        throw new IllegalStateException("FIX lwjgl3.Lwjgl3Launcher.createApplication BEFORE STARTING THE GUI PHASE!");
+        return new Lwjgl3Application(new Main(), getDefaultConfiguration());
     }
 
     private static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {
@@ -30,7 +29,7 @@ public class Lwjgl3Launcher {
         //// useful for testing performance, but can also be very stressful to some hardware.
         //// You may also need to configure GPU drivers to fully disable Vsync; this can cause screen tearing.
 
-        configuration.setWindowedMode(1280, 720);
+        configuration.setWindowedMode(Constants.UI.DEFAULT_WIDTH, Constants.UI.DEFAULT_HEIGHT);
         //// You can change these files; they are in lwjgl3/src/main/resources/ .
         //// They can also be loaded from the root of assets/ .
         configuration.setWindowIcon("PVZ2Icon1-256.png", "PVZ2Icon1-128.png", "PVZ2Icon1-64.png", "PVZ2Icon1-48.png", "PVZ2Icon1-32.png");

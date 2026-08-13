@@ -1,16 +1,22 @@
-[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+tasks.withType(JavaCompile).configureEach {
+  options.encoding = 'UTF-8'
+}
+
 eclipse.project.name = appName + '-core'
 
 dependencies {
   api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
   api "com.badlogicgames.gdx:gdx:$gdxVersion"
   api "com.github.raeleus.TenPatch:tenpatch:$tenPatchVersion"
-  implementation "de.mkammerer:argon2-jvm:$argon2Version"
-  implementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
-  implementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
-  implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
 
-  if(enableGraalNative == 'true') {
+  implementation "de.mkammerer:argon2-jvm:$argon2Version"
+  implementation "com.github.pizpizi:pvz-skin:$pvzSkinVersion"
+  implementation "com.github.pizpizi:libPVZ:$libPvzVersion"
+
+  // Used in utility scripts/headless tools
+  implementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
+
+  if (enableGraalNative == 'true') {
     implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"
   }
 }

@@ -1,39 +1,44 @@
 package com.compileordie.pvz2;
 
-import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.backends.headless.HeadlessApplication;
-import com.badlogic.gdx.backends.headless.HeadlessApplicationConfiguration;
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.compileordie.pvz2.config.PreferencesManager;
-import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 import com.compileordie.pvz2.models.user.authentication.AuthManager;
-import com.compileordie.pvz2.views.AppView;
-import com.compileordie.pvz2.views.helpers.Menu;
+import com.compileordie.pvz2.views.ScreenManager;
+import com.compileordie.pvz2.views.ScreenType;
+import com.compileordie.pvz2.views.helpers.ToastManager;
 
-public class Main {
-    static void main(String[] args) {
-        HeadlessApplicationConfiguration config = new HeadlessApplicationConfiguration();
+public class Main extends Game {
+    @Override
+    public void create() {
+        ConfigManager.init();
+        ScreenManager.init(this);
+        ToastManager.init();
 
-        new HeadlessApplication(new ApplicationAdapter() {
-            @Override
-            public void create() {
-                // Here Gdx.files is successfully initialized.
-                ConfigManager.init();
+        // Auto-login logic
+        String savedField = PreferencesManager.getDefaultUserField();
+        String username = AuthManager.getUsernameByField(savedField);
+        if (username != null) {
+            AuthManager.loginPlayer(username);
+            ScreenManager.setMenuScreen(ScreenType.MAIN);
+            System.out.println("Auto-logged in as '" + username + "'.");
+        } else {
+            ScreenManager.setMenuScreen(ScreenType.SIGNUP);
+        }
+    }
 
-                // Auto-login logic
-                String savedField = PreferencesManager.getDefaultUserField();
-                String username = AuthManager.getUsernameByField(savedField);
+    // Override render to draw the active screen first, then the toasts
+    @Override
+    public void render() {
+        super.render();
+        ToastManager.render(Gdx.graphics.getDeltaTime());
+    }
 
-                if (username != null) {
-                    AuthManager.loginPlayer(username);
-                    AppModel.menu = Menu.MAIN;
-                    System.out.println("Auto-logged in as '" + username + "'.");
-                }
-
-                // Note: Running a blocking Scanner loop here will block the LibGDX
-                // main thread, but for a pure CLI phase, this is generally acceptable.
-                AppView.run();
-            }
-        }, config);
+    // Override resize to ensure both the active screen and the toast overlay scale properly
+    @Override
+    public void resize(int width, int height) {
+        super.resize(width, height);
+        ToastManager.resize(width, height);
     }
 }

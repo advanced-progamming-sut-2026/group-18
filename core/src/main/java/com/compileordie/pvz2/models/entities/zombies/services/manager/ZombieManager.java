@@ -92,8 +92,12 @@ public class ZombieManager {
         spawnImpFromBarrel(myZombies, myObstacles);
 
         //========== 5.تیک عادی زامبی ها ==========
-        for (Zombie z : myZombies) {
+        for (int i = myZombies.size() - 1; i >= 0; i--) {
+            Zombie z = myZombies.get(i);
             z.move(1);
+            if (z.getHealth() <= 0) {
+                myZombies.remove(i);
+            }
             z.tick();
         }
 
@@ -137,9 +141,9 @@ public class ZombieManager {
                     z.isCombatingWithHypnotized = true;
                     z1.isCombatingWithHypnotized = true;
                     z.takeDamage((z1.getType() == ZombieType.ALL_STAR ? smashDamage : z1.getAttackPower() * dt),
-                        DamageType.NORMAL);
+                        DamageType.NORMAL, null);
                     z1.takeDamage((z.getType() == ZombieType.ALL_STAR ? smashDamage : z.getAttackPower() * dt),
-                        DamageType.NORMAL);
+                        DamageType.NORMAL, null);
                 }
             }
         }
@@ -195,8 +199,8 @@ public class ZombieManager {
     public void playingPiano(Zombie z, List<Zombie> myZombies) {
         for (Zombie pied : myZombies) {
             if (PIANOABLE_ZOMBIES.contains(pied.getType()) && !pied.isEating && !pied.isCombatingWithHypnotized
-                && !pied.isHypnotized() && pied.getY() >= tileHeight && pied.getY() <= 3 * tileHeight) {
-                if (Math.random() <= 5) {
+                && !pied.isHypnotized() && pied.getY() >= tileHeight+Constants.UI.bottomLineMeter && pied.getY() <= 3 * tileHeight+Constants.UI.bottomLineMeter) {
+                if (Math.random() <= 0.5) {
                     pied.setY(pied.getY() - tileHeight);
                     pied.setCurrentRow(pied.getCurrentRow() - 1);
                 } else {

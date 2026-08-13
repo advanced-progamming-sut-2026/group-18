@@ -3,10 +3,14 @@ package com.compileordie.pvz2.models.entities.zombies.variants;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.GameEntity;
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
+import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
+import com.compileordie.pvz2.models.entities.zombies.variants.standard.BucketHeadZombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.standard.KnightZombie;
 import com.compileordie.pvz2.models.game.board.Lane;
 import com.compileordie.pvz2.models.missions.quests.QuestEvent;
 import com.compileordie.pvz2.models.missions.quests.QuestManager;
@@ -54,12 +58,8 @@ public abstract class Zombie extends GameEntity {
         this.type = type;
 
         // Check if this zombie variant starts with metal armor
-        if (type != null) {
-            String name = type.name().toUpperCase();
-            if (name.contains("BUCKET") || name.contains("FOOTBALL") || name.contains("KNIGHT")
-                || name.contains("MACHINERY")) {
-                this.hasMetalArmor = true;
-            }
+        if (type == ZombieType.BUCKETHEAD || type == ZombieType.KNIGHT) {
+            this.hasMetalArmor = true;
         }
         this.isGlowing = new Random().nextInt(100) < 5;
     }
@@ -76,15 +76,24 @@ public abstract class Zombie extends GameEntity {
                 + player.plantFoodCount + " plant foods now.");
         }
         QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED, 1, AppModel.currentChapter.toString());
-        Lane lane = AppModel.gameSession.gameBoard.lanes.get((int) Math.floor(getY() / Constants.Game.TILE_HEIGHT));
-        if (lane.lawnMower == null || lane.lawnMower.isTriggered) {
-            QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_NO_MOWER_FIRST_COL, 1, null);
+
+        //----
+        int tileCol = (int) Math.floor(getX() / Constants.Game.TILE_WIDTH);
+        if (tileCol == 0) {
+            Lane lane = AppModel.gameSession.gameBoard.lanes.get((int) Math.floor(getY() / Constants.Game.TILE_HEIGHT));
+            if (lane.lawnMower == null || lane.lawnMower.isTriggered) {
+                QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_NO_MOWER_FIRST_COL, 1, null);
+            }
         }
+        //----
     }
 
     // تیک ما در کلاس والد زامبی صرفا برای هندل کردن مرگ و افکت ها هست
     public void tick() {
         if (isDead() || this.health <= 0) {
+            if (AppModel.gameSession.elapsedTimeFromFirstWave <= 30){
+                QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_QUICKLY, 1, null);
+            }
             die();
             handleDeath();
             return;
@@ -112,7 +121,7 @@ public abstract class Zombie extends GameEntity {
 
     @Override
     public void move(int ticks) {
-        if (isEating || isCombatingWithHypnotized) return;
+        if (isEating || isCombatingWithHypnotized || !canMove()) return;
         float dt = ticks * Constants.Game.TIME_COEFFICIENT;
         setX(getX() - getXSpeed() * dt);
         setY(getY() + getYSpeed() * dt);
@@ -134,6 +143,14 @@ public abstract class Zombie extends GameEntity {
 
     public void addEffect(StatusEffect effect) {
         activeEffects.add(effect);
+    }
+
+    public void removeFrozen(){
+        for (StatusEffect s: activeEffects){
+            if (!s.isExpired() && s.getEffectType()==EffectType.FROZEN){
+                s.isApplied = false;
+            }
+        }
     }
 
     public void removeStatusEffect(EffectType type) {
@@ -208,7 +225,15 @@ public abstract class Zombie extends GameEntity {
         this.currentRow = currentRow;
     }
 
-    public abstract void takeDamage(double amount, DamageType damageType);
+    // ==== بسیار خطرناک ولی موقت ====
+    public void takeDamage(double amount, DamageType damageType){
+//        this.health -= amount;
+//        if (health<=0) health = 0;
+        this.takeDamage(amount, damageType, null);
+    }
+    // ===============================
+
+    public abstract void takeDamage(double amount, DamageType damageType, PlantType plantType);
 
     public ZombieType getType() {
         return type;
@@ -245,5 +270,12 @@ public abstract class Zombie extends GameEntity {
             // Instantly strip armor HP bonus (e.g., reduce health to standard zombie baseline)
             this.health = Math.min(this.health, 200.0);
         }
+    }
+
+    public void mushroomAbsorption() {
+        if (!hasMetalArmor) return;
+        if (this.type==ZombieType.KNIGHT) ((KnightZombie)this).setArmorHealth(0);
+        if (this.type==ZombieType.BUCKETHEAD) ((BucketHeadZombie)this).setArmorHealth(0);
+        // اینجا باید گیاه به محض رویت زامبی در نزدیکی اش این متد را فراخوانی کند
     }
 }

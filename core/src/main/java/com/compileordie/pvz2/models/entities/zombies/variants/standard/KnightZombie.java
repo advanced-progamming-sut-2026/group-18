@@ -66,20 +66,4 @@ public class KnightZombie extends StandardZombie {
     public boolean isShoulderArmorBroken() {
         return this.shoulderArmorHealth <= 0;
     }
-
-    public void mushroomAbsorption() {
-        this.helmetArmorHealth = 0;
-
-        // شک دارم اینا رو هم جذب می کنه یا ن
-//        this.shoulderArmorHealth = 0;
-//        setArmorHealth(0);
-
-
-        // اینجا باید گیاه به محض رویت زامبی در نزدیکی اش این متد را فراخوانی کند
-    }
-
-    @Override
-    public void takeDamage(double amount, DamageType damageType) {
-        super.takeDamage(amount, damageType);
-    }
 }

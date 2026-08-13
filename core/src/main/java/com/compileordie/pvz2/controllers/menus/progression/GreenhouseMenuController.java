@@ -1,13 +1,11 @@
 package com.compileordie.pvz2.controllers.menus.progression;
 
 import com.badlogic.gdx.utils.TimeUtils;
-import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.missions.Pot;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.models.user.Player;
-import com.compileordie.pvz2.views.helpers.Menu;
 
 import java.util.Random;
 
@@ -16,10 +14,6 @@ public class GreenhouseMenuController {
     private static final Random RANDOM = new Random();
 
     private GreenhouseMenuController() {
-    }
-
-    public static String exitMenu() {
-        return AppController.changeMenu(Menu.GAME);
     }
 
     private static int getPotIndex(String xStr, String yStr) {
@@ -188,7 +182,8 @@ public class GreenhouseMenuController {
             + " diamonds! The plant is now ready to be collected.";
     }
 
-    public static String enterShop() {
+    // GUI migration in progress
+    /*public static String enterShop() {
         return AppController.changeMenu(Menu.SHOP);
-    }
+    }*/
 }

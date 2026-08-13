@@ -1,30 +1,12 @@
 package com.compileordie.pvz2.controllers.menus.game;
 
-import com.compileordie.pvz2.controllers.AppController;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.game.SessionBuilder;
 import com.compileordie.pvz2.models.game.levels.ChapterType;
 import com.compileordie.pvz2.models.game.levels.LevelID;
-import com.compileordie.pvz2.views.helpers.Menu;
 
 public class GameMenuController {
     private GameMenuController() {
-    }
-
-    public static String enterMenu(String name) {
-        Menu menu = Menu.getByName(name);
-        if (menu == null) {
-            return "[ERROR] Wrong menu name.";
-        }
-        if (menu != Menu.COLLECTION) {
-            return "[ERROR] You can only enter Collection Menu from here.";
-        }
-
-        return AppController.changeMenu(menu);
-    }
-
-    public static String exitMenu() {
-        return AppController.changeMenu(Menu.MAIN);
     }
 
     public static String enterChapter(String name) {
@@ -60,26 +42,31 @@ public class GameMenuController {
 
         AppModel.currentLevel = level;
         if (level.needsPlantSelection()) {
+            // GUI migration in progress
             return "Starting level: "
-                + level + System.lineSeparator() + AppController.changeMenu(Menu.PLANT_SELECTION);
+                + level + System.lineSeparator()/* + AppController.changeMenu(Menu.PLANT_SELECTION)*/;
         } else {
             AppModel.gameSession = SessionBuilder.create(level);
+            // GUI migration in progress
             return "Starting level: "
-                + level + System.lineSeparator() + AppController.changeMenu(Menu.GAME_SESSION);
+                + level + System.lineSeparator()/* + AppController.changeMenu(Menu.GAME_SESSION)*/;
         }
     }
 
-    public static String enterGreenhouse() {
+    // GUI migration in progress
+    /*public static String enterGreenhouse() {
         return AppController.changeMenu(Menu.GREENHOUSE);
-    }
+    }*/
 
-    public static String enterTravelLog() {
+    // GUI migration in progress
+    /*public static String enterTravelLog() {
         return AppController.changeMenu(Menu.TRAVEL_LOG);
-    }
+    }*/
 
-    public static String enterLeaderboard() {
+    // GUI migration in progress
+    /*public static String enterLeaderboard() {
         return AppController.changeMenu(Menu.LEADERBOARD);
-    }
+    }*/
 
     public static String showCoinWallet() {
         int coins = AppModel.player.coins;

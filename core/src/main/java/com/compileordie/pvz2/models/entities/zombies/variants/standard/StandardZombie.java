@@ -1,8 +1,11 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.standard;
 
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
+import com.compileordie.pvz2.models.missions.quests.QuestEvent;
+import com.compileordie.pvz2.models.missions.quests.QuestManager;
 
 public abstract class StandardZombie extends Zombie {
     protected double armorHealth;
@@ -55,9 +58,13 @@ public abstract class StandardZombie extends Zombie {
     }
 
     @Override
-    public void takeDamage(double amount, DamageType damageType) {
+    public void takeDamage(double amount, DamageType damageType, PlantType plantType) {
         if (isDead()) return;
         double newAmount = amount;
+
+        if (damageType == DamageType.FIRE){
+            this.removeFrozen();
+        }
 
         // فیکس: آسیب‌های نادیده‌گیرنده زره مستقیماً به گوشت زامبی می‌خورند
         if (damageType != DamageType.BYPASS_ARMOR && hasArmor()) {
@@ -65,6 +72,14 @@ public abstract class StandardZombie extends Zombie {
         }
 
         this.health -= newAmount;
-        if (this.health < 0) this.health = 0;
+        if (health <= 0){
+            health = 0;
+            if (damageType==DamageType.LawnMower){
+                QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_BY_PLANT, 1, "MOWER");
+            }
+            else{
+                QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_BY_PLANT, 1, plantType.name());
+            }
+        }
     }
 }
