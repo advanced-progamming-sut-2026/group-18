@@ -24,7 +24,6 @@ public class ScreenManager {
             case MAIN -> new MainMenuScreen();
             case GAME -> new GameMenuScreen();
             case NETWORK -> new NetworkMenuScreen();
-            case NEWS -> new NewsMenuScreen();
             case PROFILE -> new ProfileMenuScreen();
             case COLLECTION -> new CollectionMenuScreen();
             case GREENHOUSE -> new GreenhouseMenuScreen();

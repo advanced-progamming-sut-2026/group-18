@@ -6,7 +6,6 @@ public enum ScreenType {
     MAIN,
     GAME,
     NETWORK,
-    NEWS,
     PROFILE,
     COLLECTION,
     GREENHOUSE,
