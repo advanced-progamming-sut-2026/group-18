@@ -23,7 +23,6 @@ public class ScreenManager {
             case LOGIN -> new LoginMenuScreen();
             case MAIN -> new MainMenuScreen();
             case GAME -> new GameMenuScreen();
-            case SETTINGS -> new SettingsMenuScreen();
             case NETWORK -> new NetworkMenuScreen();
             case NEWS -> new NewsMenuScreen();
             case PROFILE -> new ProfileMenuScreen();

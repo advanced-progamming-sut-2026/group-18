@@ -10,34 +10,48 @@ import com.compileordie.pvz2.models.components.Result;
 import com.compileordie.pvz2.views.helpers.ToastManager;
 
 public class ForgotPasswordModal extends BaseModal {
+    private TextField userField;
+    private TextField emailField;
+    private TextField answerField;
+    private TextField newPassField;
+    private Label questionLabel;
+    private TextButton fetchBtn;
+    private TextButton cancelBtn;
+    private TextButton resetBtn;
+    private Table phaseTwoTable;
+    private Stack actionStack;
+
     public ForgotPasswordModal(Skin skin) {
         super("Reset Password", skin);
 
-        TextField userField = createTextField("Username", skin, false);
-        TextField emailField = createTextField("Email Address", skin, false);
-        TextField answerField = createTextField("Security Answer", skin, false);
-        TextField newPassField = createTextField("New Password", skin, true);
+        initComponents(skin);
+        buildLayout();
+        attachListeners();
+    }
 
-        Label questionLabel = createQuestionLabel(skin);
-        TextButton fetchBtn = new TextButton("Get Question", skin, "default");
-        Table phaseTwoTable = buildPhaseTwoTable(answerField, newPassField);
+    private void initComponents(Skin skin) {
+        userField = createTextField("Username", skin, false);
+        emailField = createTextField("Email Address", skin, false);
+        answerField = createTextField("Security Answer", skin, false);
+        newPassField = createTextField("New Password", skin, true);
 
-        setupBodyTable(userField, emailField, questionLabel); // fetchBtn removed here
+        questionLabel = createQuestionLabel(skin);
+        fetchBtn = new TextButton("Get Question", skin, "default");
 
-        TextButton cancelBtn = new TextButton("Cancel", skin, "brown");
-        TextButton resetBtn = new TextButton("Reset", skin, "green");
+        cancelBtn = new TextButton("Cancel", skin, "brown");
+        resetBtn = new TextButton("Reset", skin, "green");
         resetBtn.setVisible(false);
 
+        // Build Phase Two Table
+        phaseTwoTable = new Table();
+        phaseTwoTable.setVisible(false);
+        phaseTwoTable.add(answerField).size(300, 45).padBottom(15).row();
+        phaseTwoTable.add(newPassField).size(300, 45).row();
+
         // Create a Stack to hold both buttons in the exact same layout space
-        Stack actionStack = new Stack();
+        actionStack = new Stack();
         actionStack.add(resetBtn);
         actionStack.add(fetchBtn);
-
-        buttonTable.add(cancelBtn).size(150, 50).padRight(20);
-        buttonTable.add(actionStack).size(150, 50); // Add the Stack instead of just resetBtn
-
-        attachListeners(userField, emailField, answerField, newPassField,
-            questionLabel, fetchBtn, phaseTwoTable, cancelBtn, resetBtn);
     }
 
     private TextField createTextField(String message, Skin skin, boolean isPassword) {
@@ -58,24 +72,17 @@ public class ForgotPasswordModal extends BaseModal {
         return label;
     }
 
-    private Table buildPhaseTwoTable(TextField answerField, TextField newPassField) {
-        Table table = new Table();
-        table.setVisible(false);
-        table.add(answerField).size(300, 45).padBottom(15).row();
-        table.add(newPassField).size(300, 45).row();
-        return table;
-    }
-
-    private void setupBodyTable(TextField userField, TextField emailField, Label questionLabel) {
+    private void buildLayout() {
         bodyTable.top();
         bodyTable.add(userField).size(300, 45).padBottom(15).row();
         bodyTable.add(emailField).size(300, 45).padBottom(15).row();
         bodyTable.add(questionLabel).width(300).padBottom(20).center().row();
+
+        buttonTable.add(cancelBtn).size(150, 50).padRight(20);
+        buttonTable.add(actionStack).size(150, 50); // Add the Stack instead of just resetBtn
     }
 
-    private void attachListeners(TextField userField, TextField emailField, TextField answerField,
-                                 TextField newPassField, Label questionLabel, TextButton fetchBtn,
-                                 Table phaseTwoTable, TextButton cancelBtn, TextButton resetBtn) {
+    private void attachListeners() {
         cancelBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -103,18 +110,16 @@ public class ForgotPasswordModal extends BaseModal {
         fetchBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // Pass fetchBtn into the handler
-                handleFetchClick(userField, emailField, questionLabel, phaseTwoTable, resetBtn, fetchBtn);
+                handleFetchClick();
             }
         });
     }
 
-    private void handleFetchClick(TextField userField, TextField emailField, Label questionLabel,
-                                  Table phaseTwoTable, TextButton resetBtn, TextButton fetchBtn) {
+    private void handleFetchClick() {
         Result<String> result = LoginMenuController.fetchSecurityQuestion(userField.getText(), emailField.getText());
 
         if (result.isSuccess) {
-            questionLabel.setText("Type in your " + result.data.toLowerCase());
+            questionLabel.setText("Type in your \"" + result.data.toLowerCase() + "\"");
             questionLabel.setAlignment(Align.center);
 
             // 1. Clear the layout

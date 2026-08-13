@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.views.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
@@ -18,6 +19,7 @@ import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.views.ScreenManager;
 import com.compileordie.pvz2.views.ScreenType;
 import com.compileordie.pvz2.views.customelements.BadgeWrapper;
+import com.compileordie.pvz2.views.customelements.SettingsModal;
 import com.compileordie.pvz2.views.helpers.ToastManager;
 
 public class MainMenuScreen extends MenuScreen {
@@ -72,6 +74,11 @@ public class MainMenuScreen extends MenuScreen {
                 float excessWidth = drawWidth - getWidth();
                 float drawX = getX() - (excessWidth * currentPercent);
                 float drawY = getY() + (getHeight() - drawHeight) / 2f;
+
+                // Set the batch color using the actor's color and the parent's alpha
+                Color color = getColor();
+                batch.setColor(color.r, color.g, color.b, color.a * parentAlpha);
+
                 getDrawable().draw(batch, drawX, drawY, drawWidth, drawHeight);
             }
         };
@@ -98,7 +105,7 @@ public class MainMenuScreen extends MenuScreen {
         hudTable.add().expandX();
 
         ImageButton closeBtn = new ImageButton(skin, "generic_close");
-        hudTable.add(closeBtn).size(64, 64).padRight(35).padBottom(-2).right().bottom();
+        hudTable.add(closeBtn).size(64, 64).padRight(35).padBottom(-3).right().bottom();
 
         attachHudListeners(settingsBtn, newsBtn, closeBtn);
     }
@@ -107,9 +114,9 @@ public class MainMenuScreen extends MenuScreen {
         settingsBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                ScreenManager.setMenuScreen(ScreenType.SETTINGS);
+                SettingsModal settingsModal = new SettingsModal(skin);
+                settingsModal.show(stage);
             }
-
         });
         newsBtn.addListener(new ClickListener() {
             @Override
