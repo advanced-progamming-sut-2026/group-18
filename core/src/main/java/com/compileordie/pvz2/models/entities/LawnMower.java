@@ -2,6 +2,7 @@ package com.compileordie.pvz2.models.entities;
 
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.boss.GargantuarZombie;
 import com.compileordie.pvz2.models.game.board.Lane;
@@ -30,7 +31,7 @@ public class LawnMower extends GameEntity {
                 if (zombie.getX() <= this.getX()) {
                     if (!(zombie instanceof GargantuarZombie) && zombie.isAlive()) {
                         casualties.add(zombie);
-                        zombie.die();
+                        zombie.takeDamage(Double.POSITIVE_INFINITY, DamageType.LawnMower);
                         lane.zombies.remove(i);
                     }
                 }

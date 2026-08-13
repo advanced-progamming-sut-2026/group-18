@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.standard;
 
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 
@@ -12,11 +13,11 @@ public class ImpDragon extends StandardZombie {
     }
 
     @Override
-    public void takeDamage(double amount, DamageType damageType) {
+    public void takeDamage(double amount, DamageType damageType, PlantType plantType) {
         if (isDead()) return;
         if (damageType == DamageType.FIRE) {
             return;
         }
-        super.takeDamage(amount, damageType);
+        super.takeDamage(amount, damageType, plantType);
     }
 }

@@ -29,13 +29,6 @@ public class PianistZombie extends CapableZombie {
         }
     }
 
-    @Override
-    public void takeDamage(double amount, DamageType damageType) {
-        if (isDead()) return;
-        this.health -= amount;
-        if (this.health < 0) this.health = 0;
-    }
-
     public boolean isPlaying() {
         return isPlaying;
     }

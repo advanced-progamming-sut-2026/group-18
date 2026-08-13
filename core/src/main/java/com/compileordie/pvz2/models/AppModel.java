@@ -23,6 +23,8 @@ public class AppModel {
     public static GameSession gameSession = null;
     public static Map<PlantType, Boolean> selectionDeck = new EnumMap<>(PlantType.class);
 
+
+
     private AppModel() {
     }
 

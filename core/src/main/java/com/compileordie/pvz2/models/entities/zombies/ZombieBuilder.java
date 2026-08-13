@@ -8,7 +8,7 @@ import com.compileordie.pvz2.models.entities.zombies.variants.mobility.DodoRider
 import com.compileordie.pvz2.models.entities.zombies.variants.mobility.ProspectorZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.mobility.SnorkelZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.*;
-import com.compileordie.pvz2.models.entities.zombies.variants.summoner.KingZombie;
+//import com.compileordie.pvz2.models.entities.zombies.variants.summoner.KingZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.TombraiserZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.BarrelRollerZombie;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
@@ -123,8 +123,8 @@ public class ZombieBuilder {
                 return new HunterZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             // === ۴. زامبی‌های ساحل (Big Wave Beach) ===
-            case FISHERMAN_ZOMBIE:
-                return new FishermanZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+//            case FISHERMAN_ZOMBIE:
+//                return new FishermanZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             case SNORKEL_ZOMBIE:
                 return new SnorkelZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
@@ -133,14 +133,14 @@ public class ZombieBuilder {
                 return new OctopusZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             // === ۵. زامبی‌های قرون وسطی (Dark Ages) ===
-            case JESTER_ZOMBIE:
-                return new JesterZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
-
-            case WIZARD_ZOMBIE:
-                return new WizardZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
-
-            case KING_ZOMBIE:
-                return new KingZombie(stats.hitpoints, row, startX, x, y, 3, 1, 5.0);
+//            case JESTER_ZOMBIE:
+//                return new JesterZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+//
+//            case WIZARD_ZOMBIE:
+//                return new WizardZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+//
+//            case KING_ZOMBIE:
+//                return new KingZombie(stats.hitpoints, row, startX, x, y, 3, 1, 5.0);
 
             case IMP_DRAGON:
                 return new ImpDragon(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
