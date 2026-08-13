@@ -1,5 +1,7 @@
 package com.compileordie.pvz2.models.user;
 
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.game.levels.ChapterType;
@@ -13,34 +15,38 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
-public class Player {
-    public String username;
-    public String nickname;
-    public String email;
-    public Gender gender;
-    public String passwordHash;
-    public String securityQuestion;
-    public String securityAnswer;
-    public ArrayList<PlantType> unlockedPlants;
-    public ArrayList<ZombieType> unlockedZombies;
-    public ArrayList<LevelID> unlockedLevelIDs;
-    public ArrayList<Pot> greenhousePots;
-    public ArrayList<News> news;
-    public HashMap<PlantType, Integer> seedPackets;
-    public HashMap<PlantType, Integer> plantLevels;
-    public HashMap<PlantType, Boolean> plantBoosts;
-    public HashMap<String, Integer> questProgress;
-    public HashSet<String> claimedQuests;
-    public DailyOffer dailyOffer;
-    public int completedMiniGames;
-    public int completedTotalDailyQuests;
-    public int completedTotalNonDailyQuests;
-    public int bestScore;
-    public int difficultyLevel;
-    public int plantFoodCount;
-    public int coins;
-    public int diamonds;
-    public float playtime;
+public class Player implements Json.Serializable {
+    public String username = "undefined";
+    public String nickname = "undefined";
+    public String email = "undefined@undefined.com";
+    public Gender gender = Gender.MALE;
+    public String passwordHash =
+        "$argon2id$v=19$m=20480,t=2,p=1$P+7t3z9MTbQYJxkoJVY/7w$1ZN99CUv/LXi8S/eBiVIEL7teLDb4xsD27pKokhdxKw";
+    public String securityQuestion = "answer for x = 33 + 77";
+    public String securityAnswer = "110";
+    public ArrayList<PlantType> unlockedPlants = new ArrayList<>();
+    public ArrayList<ZombieType> unlockedZombies = new ArrayList<>();
+    public ArrayList<LevelID> unlockedLevelIDs = new ArrayList<>();
+    public ArrayList<Pot> greenhousePots = new ArrayList<>();
+    public ArrayList<News> news = new ArrayList<>();
+    public HashMap<PlantType, Integer> seedPackets = new HashMap<>();
+    public HashMap<PlantType, Integer> plantLevels = new HashMap<>();
+    public HashMap<PlantType, Boolean> plantBoosts = new HashMap<>();
+    public HashMap<String, Integer> questProgress = new HashMap<>();
+    public HashSet<String> claimedQuests = new HashSet<>();
+    public DailyOffer dailyOffer = null;
+    public int completedMiniGames = 0;
+    public int completedTotalDailyQuests = 0;
+    public int completedTotalNonDailyQuests = 0;
+    public int bestScore = 0;
+    public int plantFoodCount = 0;
+    public int coins = 0;
+    public int diamonds = 0;
+    public float playtime = 0f;
+    public int difficultyLevel = 3;
+    public int gameSpeedCoefficient = 1;
+    public boolean showGridBox = false;
+    public boolean debugMode = false;
 
     public Player() {
     }
@@ -60,44 +66,37 @@ public class Player {
         this.passwordHash = passwordHash;
         this.securityQuestion = securityQuestion;
         this.securityAnswer = securityAnswer;
-        this.unlockedPlants = new ArrayList<>();
-        this.unlockedZombies = new ArrayList<>();
-        this.unlockedLevelIDs = new ArrayList<>();
-        this.greenhousePots = new ArrayList<>();
-        this.news = new ArrayList<>();
-        this.seedPackets = new HashMap<>();
-        this.plantLevels = new HashMap<>();
-        this.plantBoosts = new HashMap<>();
-        this.questProgress = new HashMap<>();
-        this.claimedQuests = new HashSet<>();
-        this.dailyOffer = null;
-        this.completedMiniGames = 0;
-        this.completedTotalDailyQuests = 0;
-        this.completedTotalNonDailyQuests = 0;
-        this.bestScore = 0;
-        this.difficultyLevel = 3;
-        this.plantFoodCount = 0;
-        this.coins = 0;
-        this.diamonds = 0;
-        this.playtime = 0f;
-        unlockedPlants.add(PlantType.PEASHOOTER);
-        unlockedPlants.add(PlantType.SUNFLOWER);
-        unlockedPlants.add(PlantType.WALL_NUT);
-        unlockedPlants.add(PlantType.POTATO_MINE);
-        for (PlantType plantType : PlantType.values()) {
-            seedPackets.put(plantType, 0);
-            plantLevels.put(plantType, 1);
-            plantBoosts.put(plantType, false);
-        }
+        // Call the setup method for BRAND-NEW players
+        initializeMissingData();
+        // Setup new-player-only things (like unlocking starting levels)
         for (LevelID levelID : LevelID.values()) {
             if (levelID.chapterType == ChapterType.MINIGAME) {
                 unlockedLevelIDs.add(levelID);
             }
         }
         unlockedLevelIDs.add(LevelID.values()[0]);
-        for (int i = 0; i < 5; i++) {
-            this.greenhousePots.add(new Pot());
+    }
+
+    private void initializeMissingData() {
+        // Ensures maps have all current enum values safely
+        for (PlantType plantType : PlantType.values()) {
+            seedPackets.putIfAbsent(plantType, 0);
+            plantLevels.putIfAbsent(plantType, 1);
+            plantBoosts.putIfAbsent(plantType, false);
         }
+
+        // Pre-populate the greenhouse
+        if (greenhousePots.isEmpty()) {
+            for (int i = 0; i < 5; i++) {
+                this.greenhousePots.add(new Pot());
+            }
+        }
+
+        // Core plants failsafe
+        if (!unlockedPlants.contains(PlantType.PEASHOOTER)) unlockedPlants.add(PlantType.PEASHOOTER);
+        if (!unlockedPlants.contains(PlantType.SUNFLOWER)) unlockedPlants.add(PlantType.SUNFLOWER);
+        if (!unlockedPlants.contains(PlantType.WALL_NUT)) unlockedPlants.add(PlantType.WALL_NUT);
+        if (!unlockedPlants.contains(PlantType.POTATO_MINE)) unlockedPlants.add(PlantType.POTATO_MINE);
     }
 
     public boolean isSecurityAnswerCorrect(String answer) {
@@ -152,5 +151,18 @@ public class Player {
             if (!news.isRead) counter++;
         }
         return counter;
+    }
+
+    @Override
+    public void write(Json json) {
+        json.writeFields(this);
+    }
+
+    @Override
+    public void read(Json json, JsonValue jsonData) {
+        // Step A: Load the user's actual save data and overwrite the defaults
+        json.readFields(this, jsonData);
+        // Step B: Patch missing data!
+        initializeMissingData();
     }
 }

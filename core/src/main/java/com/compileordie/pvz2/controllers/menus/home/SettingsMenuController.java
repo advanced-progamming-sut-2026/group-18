@@ -8,22 +8,12 @@ public class SettingsMenuController {
     private SettingsMenuController() {
     }
 
-    public static String setDifficulty(String level) {
-        int difficulty;
-        try {
-            difficulty = Integer.parseInt(level);
-        } catch (NumberFormatException e) {
-            return "[ERROR] Difficulty must be an integer.";
-        }
-
-        if (difficulty < 1 || difficulty > 5) {
-            return "[ERROR] Difficulty level must be a value between 1 and 5.";
-        }
-
+    public static void saveSettings(int difficulty, int speed, boolean gridBox, boolean debug) {
         Player player = AppModel.player;
         player.difficultyLevel = difficulty;
+        player.gameSpeedCoefficient = speed;
+        player.showGridBox = gridBox;
+        player.debugMode = debug;
         new UserDatabase(player.username).save(player);
-
-        return "Difficulty level successfully set to " + difficulty + ".";
     }
 }
