@@ -7,8 +7,6 @@ import com.compileordie.pvz2.views.screens.*;
 
 public class ScreenManager {
     private static Main main;
-    @SuppressWarnings("GDXJavaStaticResource")
-    private static GameScreen currentGameScreen;
 
     private ScreenManager() {
     }
