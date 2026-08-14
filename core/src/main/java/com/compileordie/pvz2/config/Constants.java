@@ -51,7 +51,7 @@ public final class Constants {
         public static final int DEFAULT_WIDTH = 1920;
         public static final int DEFAULT_HEIGHT = 1080;
         // Note: UPP value is an early guess and subject to change
-        public static final float UPP = 2f; // Units Per Pixel UI scaling
+        public static final float UPP = 1.5f; // Units Per Pixel UI scaling
         public static final float MeterToPix = 105f;
 
         public static final float bottomLinePix = 190f;
