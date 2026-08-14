@@ -35,6 +35,7 @@ public class Player implements Json.Serializable {
     public HashMap<String, Integer> questProgress = new HashMap<>();
     public HashSet<String> claimedQuests = new HashSet<>();
     public DailyOffer dailyOffer = null;
+    public int playedGames = 0;
     public int completedMiniGames = 0;
     public int completedTotalDailyQuests = 0;
     public int completedTotalNonDailyQuests = 0;
