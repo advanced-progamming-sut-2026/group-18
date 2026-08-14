@@ -132,8 +132,8 @@ public class MainMenuScreen extends MenuScreen {
 
         hudTable.add(currencyHud).pad(25).left();
         hudTable.add().expandX();
-        hudTable.add(settingsBtn).pad(25).left();
-        hudTable.add(badgedNewsBtn).pad(25).right();
+        hudTable.add(badgedNewsBtn);
+        hudTable.add(settingsBtn).pad(30).right();
 
         hudTable.row().expandY().bottom();
         hudTable.add(teamName).pad(25).padBottom(20).left();

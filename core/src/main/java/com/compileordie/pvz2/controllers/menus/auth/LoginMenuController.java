@@ -11,7 +11,7 @@ public class LoginMenuController {
     }
 
     public static Result<Void> loginUser(String username, String password, boolean stay) {
-        switch (AuthManager.authenticateStepOne(username, password.toCharArray())) {
+        switch (AuthManager.authenticate(username, password.toCharArray())) {
             case USER_NOT_FOUND -> {
                 return Result.failure("User not found");
             }

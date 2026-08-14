@@ -1,139 +1,58 @@
 package com.compileordie.pvz2.controllers.menus.auth;
 
 import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.models.components.Result;
+import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.models.user.Player;
+import com.compileordie.pvz2.models.user.UserValidator;
+import com.compileordie.pvz2.models.user.authentication.AuthManager;
 
 public class ProfileMenuController {
     private ProfileMenuController() {
     }
 
-    // GUI migration in progress
-    /*public static String changeUsername(String newUsername) {
-        Player player = AppModel.player;
-        if (newUsername.equals(player.username)) {
-            return "[ERROR] New username cannot be the same as the current username.";
-        }
-        if (!UserValidator.isUsernameValid(newUsername)) {
-            return "[ERROR] Invalid username format.";
-        }
-        AuthDatabase authDb = new AuthDatabase();
-        if (authDb.loadOne(newUsername) != null) {
-            return "[ERROR] This username is already taken.";
-        }
+    public static Result<Void> updateProfile(String newUsername, String newNickname, String newEmail) {
+        Player currentUser = AppModel.player;
 
-        String oldUsername = player.username;
-        player.username = newUsername;
-
-        // Update the AuthRegistry to map the new username to the existing save file UUID
-        ArrayList<UserRegistry> registries = authDb.load();
-        for (UserRegistry userRegistry : registries) {
-            if (userRegistry.getUsername().equals(oldUsername)) {
-                userRegistry.setUsername(newUsername);
-                break;
-            }
+        Result<Void> result = UserValidator.isUsernameValid(newUsername);
+        if (!result.isSuccess) {
+            return result;
         }
-        authDb.save(registries);
-
-        // Save the updated player object
-        new UserDatabase(newUsername).save(player);
-
-        return "Username changed successfully.";
-    }*/
-
-    // GUI migration in progress
-    /*public static String changeNickname(String newNickname) {
-        Player player = AppModel.player;
-        if (newNickname.equals(player.nickname)) {
-            return "[ERROR] New nickname cannot be the same as the current nickname.";
+        result = UserValidator.isUsernameUnique(newUsername);
+        if (!result.isSuccess && !currentUser.username.equals(newUsername)) {
+            return result;
         }
-        if (!UserValidator.isNicknameValid(newNickname)) {
-            return "[ERROR] Invalid nickname format. Must be 3 to 30 characters.";
+        result = UserValidator.isNicknameValid(newNickname);
+        if (!result.isSuccess) {
+            return result;
+        }
+        result = UserValidator.isEmailValid(newEmail);
+        if (!result.isSuccess) {
+            return result;
         }
 
-        player.nickname = newNickname;
-        new UserDatabase(player.username).save(player);
+        AuthManager.setNewUsername(newUsername);
+        currentUser.nickname = newNickname;
+        currentUser.email = newEmail;
+        new UserDatabase().save(currentUser);
+        return Result.success();
+    }
 
-        return "Nickname changed successfully.";
-    }*/
+    public static Result<Void> changePassword(String oldPassword, String newPassword) {
+        Player currentUser = AppModel.player;
 
-    // GUI migration in progress
-    /*public static String changeEmail(String newEmail) {
-        Player player = AppModel.player;
-        if (newEmail.equals(player.email)) {
-            return "[ERROR] New email cannot be the same as the current email.";
+        if (!AuthManager.checkPassword(oldPassword.toCharArray())) {
+            return Result.failure("Incorrect password");
         }
-        if (!UserValidator.isEmailValid(newEmail)) {
-            return "[ERROR] Invalid email format.";
-        }
-
-        player.email = newEmail;
-        new UserDatabase(player.username).save(player);
-
-        return "Email changed successfully.";
-    }*/
-
-    // GUI migration in progress
-    /*public static String changePassword(String oldPassword, String newPassword) {
-        Player player = AppModel.player;
         if (oldPassword.equals(newPassword)) {
-            return "[ERROR] New password cannot be the same as the old password.";
+            return Result.failure("New password cannot be the same as the current password");
         }
-        AuthStatus status = AuthManager.authenticateStepOne(player.username, oldPassword.toCharArray());
-        if (status != AuthStatus.SUCCESS) {
-            return "[ERROR] Old password is incorrect.";
-        }
-        String passwordStrength = UserValidator.isPasswordStrong(newPassword);
-        if (passwordStrength != null) {
-            return passwordStrength;
+        Result<Void> result = UserValidator.isPasswordStrong(newPassword);
+        if (!result.isSuccess) {
+            return result;
         }
 
-        String newHash = AuthManager.hashPassword(newPassword.toCharArray());
-
-        AuthDatabase authDb = new AuthDatabase();
-        ArrayList<UserRegistry> registries = authDb.load();
-        for (UserRegistry reg : registries) {
-            if (reg.getUsername().equals(player.username)) {
-                reg.setPasswordHash(newHash);
-                break;
-            }
-        }
-        authDb.save(registries);
-
-        player.passwordHash = newHash;
-        new UserDatabase(player.username).save(player);
-
-        return "Password changed successfully.";
-    }*/
-
-    public static String showPlayerInfo() {
-        Player player = AppModel.player;
-
-        // Null-safety checks for arrays/lists
-        int plantsUnlocked = (player.unlockedPlants != null) ? player.unlockedPlants.size() : 0;
-        int zombiesDiscovered = (player.unlockedZombies != null) ? player.unlockedZombies.size() : 0;
-        int potsUnlocked = (player.greenhousePots != null) ? player.greenhousePots.size() : 0;
-
-        return "=== PLAYER PROFILE ===" + System.lineSeparator() +
-            "Username: " + player.username + System.lineSeparator() +
-            "Nickname: " + player.nickname + System.lineSeparator() +
-            "Email: " + player.email + System.lineSeparator() +
-            "Difficulty Level: " + player.difficultyLevel + System.lineSeparator() +
-            System.lineSeparator() +
-            "=== WALLET ===" + System.lineSeparator() +
-            "Coins: " + player.coins + System.lineSeparator() +
-            "Diamonds: " + player.diamonds + System.lineSeparator() +
-            System.lineSeparator() +
-            "=== PROGRESSION ===" + System.lineSeparator() +
-            "Levels Unlocked: " + player.getUnlockedLevels().size() + System.lineSeparator() +
-            "Chapters Unlocked: " + player.getUnlockedChapters().size() + System.lineSeparator() +
-            "Plants Unlocked: " + plantsUnlocked + System.lineSeparator() +
-            "Zombies Discovered: " + zombiesDiscovered + System.lineSeparator() +
-            "Greenhouse Pots: " + potsUnlocked + "/20" + System.lineSeparator() +
-            System.lineSeparator() +
-            "=== STATISTICS ===" + System.lineSeparator() +
-            "Minigames Completed: " + player.completedMiniGames + System.lineSeparator() +
-            "Daily Quests Completed: " + player.completedTotalDailyQuests + System.lineSeparator() +
-            "Epic/Critical Quests Completed: " + player.completedTotalNonDailyQuests + System.lineSeparator() +
-            "Highest Score (Meow Point): " + player.bestScore;
+        AuthManager.setNewPassword(currentUser.username, newPassword.toCharArray());
+        return Result.success();
     }
 }

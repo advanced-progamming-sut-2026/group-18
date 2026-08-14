@@ -117,7 +117,16 @@ public class AuthManager {
         addUser(username, hashedPassword, nickname, email, gender, securityQuestion, securityAnswer);
     }
 
-    public static AuthStatus authenticateStepOne(String username, char[] plainTextPassword) {
+    public static boolean checkPassword(char[] plainTextPassword) {
+        System.out.println(Arrays.toString(plainTextPassword));
+        try {
+            return ARGON_2.verify(AppModel.player.passwordHash, plainTextPassword);
+        } finally {
+            ARGON_2.wipeArray(plainTextPassword);
+        }
+    }
+
+    public static AuthStatus authenticate(String username, char[] plainTextPassword) {
         UserRegistry user = new AuthDatabase().loadOne(username);
         if (user == null) {
             return AuthStatus.USER_NOT_FOUND;
@@ -140,7 +149,7 @@ public class AuthManager {
     }
 
     public static void setNewPassword(String username, char[] newPassword) {
-        String newHash = AuthManager.hashPassword(newPassword);
+        String newHash = hashPassword(newPassword);
 
         AuthDatabase authDb = new AuthDatabase();
         ArrayList<UserRegistry> registries = authDb.load();
@@ -154,7 +163,24 @@ public class AuthManager {
 
         UserDatabase database = new UserDatabase(username);
         Player user = database.load();
-        user.passwordHash = hashPassword(newPassword);
+        user.passwordHash = newHash;
         database.save(user);
+        Player player = AppModel.player;
+        if (player != null && player.username.equals(username)) AppModel.player.passwordHash = newHash;
+    }
+
+    public static void setNewUsername(String newUsername) {
+        AuthDatabase authDb = new AuthDatabase();
+        ArrayList<UserRegistry> registries = authDb.load();
+        for (UserRegistry userRegistry : registries) {
+            if (userRegistry.getUsername().equals(AppModel.player.username)) {
+                userRegistry.setUsername(newUsername);
+                break;
+            }
+        }
+        authDb.save(registries);
+
+        AppModel.player.username = newUsername;
+        new UserDatabase().save(AppModel.player);
     }
 }
