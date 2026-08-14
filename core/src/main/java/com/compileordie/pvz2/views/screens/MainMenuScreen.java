@@ -19,6 +19,7 @@ import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.views.ScreenManager;
 import com.compileordie.pvz2.views.ScreenType;
 import com.compileordie.pvz2.views.customelements.BadgeWrapper;
+import com.compileordie.pvz2.views.customelements.CurrencyHud;
 import com.compileordie.pvz2.views.customelements.NewsModal;
 import com.compileordie.pvz2.views.customelements.SettingsModal;
 import com.compileordie.pvz2.views.helpers.ToastManager;
@@ -28,6 +29,7 @@ public class MainMenuScreen extends MenuScreen {
     private Table hudTable;
     private Table centerTable;
     private Table subButtons;
+    private CurrencyHud currencyHud;
     private ImageButton settingsBtn;
     private ImageButton newsBtn;
     private BadgeWrapper badgedNewsBtn;
@@ -48,16 +50,13 @@ public class MainMenuScreen extends MenuScreen {
         stack = new Stack();
         stack.setFillParent(true);
         stage.addActor(stack);
-
         hudTable = new Table();
         hudTable.setFillParent(true);
-
         centerTable = new Table();
         centerTable.setFillParent(true);
-
         subButtons = new Table();
-
         // HUD Initialization
+        currencyHud = new CurrencyHud(skin, stage, textureBank);
         settingsBtn = new ImageButton(skin, "default");
         newsBtn = new ImageButton(skin, "almanac");
         badgedNewsBtn = new BadgeWrapper(newsBtn, skin);
@@ -129,17 +128,18 @@ public class MainMenuScreen extends MenuScreen {
 
     private void setupHud() {
         stack.add(hudTable);
-
         hudTable.top();
-        hudTable.add(settingsBtn).pad(25).left();
+
+        hudTable.add(currencyHud).pad(25).left();
         hudTable.add().expandX();
+        hudTable.add(settingsBtn).pad(25).left();
         hudTable.add(badgedNewsBtn).pad(25).right();
 
         hudTable.row().expandY().bottom();
         hudTable.add(teamName).pad(25).padBottom(20).left();
         hudTable.add().expandX();
 
-        hudTable.add(closeBtn).size(64, 64).padRight(35).padBottom(-3).right().bottom();
+        hudTable.add(closeBtn).colspan(2).size(64, 64).padRight(35).padBottom(-3).right().bottom();
     }
 
     private void setupCenterTable() {
