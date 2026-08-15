@@ -310,20 +310,8 @@ public class ZombieManager {
 
                     // Collision threshold (adjust based on your visual hitboxes, usually half a tile)
                     if (distance <= tileWidth / 2.0) {
-
-                        // 2. SUBJECT/OBJECT DELEGATION
-                        // Projectile passes damage and type. Zombie handles armor, immunities, etc.
-                        zombie.takeDamage(proj.getDamage(), proj.getType());
-
-                        // 3. PROJECTILE CLEANUP
-                        // Normal projectiles set isDead = true.
-                        // Piercing/Bouncing override this and stay alive!
-                        proj.destroy();
-
-                        // If the projectile was consumed, stop checking it against other zombies
-                        if (proj.isDead()) {
-                            break;
-                        }
+                        // PERFECT OOP DELEGATION: Tell the projectile it hit!
+                        proj.onHit(zombie, myMap);
                     }
                 }
             }

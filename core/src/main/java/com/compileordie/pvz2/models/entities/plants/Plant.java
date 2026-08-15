@@ -25,7 +25,6 @@ public class Plant extends GameEntity {
     private PlantCoverState coverState = PlantCoverState.NONE;
     private double coverHp = 0;
     private int chillLevel = 0; // Reaches 3 -> Turns into ICE
-
     private boolean isSpecial;
     private String name;
     private PlantCategory category;
@@ -38,15 +37,24 @@ public class Plant extends GameEntity {
     private double actionIntervalTicks;
     private double currentActionTimer = 0;
     private int level = 1;
-
     public PlantTemplate template;
 
     // Special flags for specific AI behaviors
+    private boolean doubleSunChance = false;
     private boolean targetsHighestHp = false;
-
+    private int extraSunYield = 0;
+    // life cycle tracking ...
+    private double ageTicks = 0;
+    private double growTimeReductionTicks = 0;
+    public double getAgeTicks() { return ageTicks; }
+    public double getGrowTimeReductionTicks() { return growTimeReductionTicks; }
+    // life cycle tracking ...
     private AttackStrategy attackStrategy;
     private PlantFoodEffectStrategy foodStrategy;
     private Map<Integer, UpgradeLevel> upgradeMap;
+    // NEW: engine variables for our advanced shooters : 1-Pea Pod 2- Snow Pea
+    private int stackCount = 1;
+    private double chillTimeBonusTicks = 0;
 
     public Plant(String name, PlantCategory category, List<PlantTag> tags,
                  double x, double y, int hp, int damage, int cost, double actionIntervalTicks,
@@ -61,6 +69,8 @@ public class Plant extends GameEntity {
         this.baseDamage = damage;
         this.cost = cost;
         this.actionIntervalTicks = actionIntervalTicks;
+        // NEW: Starts fully charged so it takes action immediately on the first tick!
+        this.currentActionTimer = actionIntervalTicks;
         this.attackStrategy = attackStrategy;
         this.foodStrategy = foodStrategy;
         this.upgradeMap = upgradeMap;
@@ -81,6 +91,8 @@ public class Plant extends GameEntity {
             }
             return; // Skip attacking while covered!
         }
+        // NEW: The plant gets older every single frame!
+        this.ageTicks += tickDelta;
 
         currentActionTimer += tickDelta;
 
@@ -199,21 +211,27 @@ public class Plant extends GameEntity {
         }
     }
 
-    public void applyLevelUpgrade(int newLevel) {
-        this.level = newLevel;
-        if (upgradeMap != null && upgradeMap.containsKey(newLevel)) {
-            UpgradeLevel stats = upgradeMap.get(newLevel);
-
-            this.baseHp += stats.hpBonus;
-            this.currentHp += stats.hpBonus;
-            this.baseDamage += stats.damageBonus;
-            this.cost = Math.max(0, this.cost - stats.costReduction);
-            this.actionIntervalTicks = Math.max(1.0, this.actionIntervalTicks - stats.cooldownReductionTicks);
-
-            if (stats.targetPriorityUp) {
-                this.targetsHighestHp = true;
+    public void applyLevelUpgrade(int targetLevel) {
+        // Loop from level 2 up to the player's current max level to stack everything!
+        for (int i = 2; i <= targetLevel; i++) {
+            if (upgradeMap != null && upgradeMap.containsKey(i)) {
+                UpgradeLevel stats = upgradeMap.get(i);
+                if (stats.doubleSunChance) {
+                    this.doubleSunChance = true;
+                }
+                this.baseHp += stats.hpBonus;
+                this.currentHp += stats.hpBonus;
+                this.baseDamage += stats.damageBonus;
+                this.cost = Math.max(0, this.cost - stats.costReduction);
+                this.actionIntervalTicks = Math.max(1.0, this.actionIntervalTicks - stats.actionIntervalReductionTicks);
+                // Stack the growth time reduction
+                this.growTimeReductionTicks += stats.growTimeReductionTicks;
+                // stack the extra sun yield(Gold Bloom)
+                this.extraSunYield += stats.extraSunYield;
+                this.chillTimeBonusTicks += stats.chillTimeBonusTicks;
             }
         }
+        this.level = targetLevel;
     }
 
     @Override
@@ -233,6 +251,10 @@ public class Plant extends GameEntity {
         AppModel.addAfterPrompt("Plant " + this.name + " at (" + xInt + ", " + yInt + ") is destroyed.");
     }
 
+    // NEW: Getters and modifiers for the advanced strategies
+    public int getStackCount() { return stackCount; }
+    public void addStack() { if (this.stackCount < 5) this.stackCount++; }
+    public double getChillTimeBonusTicks() { return chillTimeBonusTicks; }
 
     // --- Standard Getters & Setters ---
     public PlantFoodEffectStrategy getFoodEffectStrategy() { return foodStrategy; }
@@ -254,4 +276,6 @@ public class Plant extends GameEntity {
     public int getLevel() { return level; }
     public boolean isSpecial() { return isSpecial; }
     public void setSpecial() { isSpecial = true; }
+    public boolean hasDoubleSunChance() { return this.doubleSunChance; }
+    public int getExtraSunYield() { return extraSunYield; }
 }

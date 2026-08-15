@@ -9,7 +9,6 @@ import com.compileordie.pvz2.models.user.Player;
 
 public class BurstSunEffect implements PlantFoodEffectStrategy {
 
-    // We keep this in case your factory passes it, but we will rely on the plant's name for precision
     private final int sunAmount;
 
     public BurstSunEffect(int sunAmount) {
@@ -24,8 +23,7 @@ public class BurstSunEffect implements PlantFoodEffectStrategy {
         float ground = (float) plant.getY();
 
         try {
-            // 1. Force the Sun-shroom to grow to its maximum stage instantly!
-            if (plant.getAttackStrategy() instanceof SunProduceStrategy) {
+            if (name.equals("Sun-shroom") && plant.getAttackStrategy() instanceof SunProduceStrategy) {
                 ((SunProduceStrategy) plant.getAttackStrategy()).forceMaxStage();
             }
 
@@ -49,7 +47,7 @@ public class BurstSunEffect implements PlantFoodEffectStrategy {
                 board.economyManager.suns.add(new Sun(x + 0.3, y, SunType.LARGE, false, ground));
             }
             else {
-                // Generic fallback just in case a custom plant triggers this
+                // Generic fallback
                 board.economyManager.suns.add(new Sun(x, y, SunType.NORMAL, false, ground));
             }
 

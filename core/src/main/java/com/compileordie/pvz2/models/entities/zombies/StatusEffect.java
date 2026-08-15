@@ -21,9 +21,13 @@ public class StatusEffect {
     }
 
     public boolean isExpired() {
-        return (elapsedTicks >= durationTicks && !isApplied);
+        return elapsedTicks >= durationTicks;
     }
 
+    // NEW: Safely resets the timer without stacking the physical stat reductions!
+    public void refreshDuration() {
+        this.elapsedTicks = 0;
+    }
     // NEW: Trigger the physical changes on the zombie
     public void applyToZombie(Zombie zombie) {
         this.isApplied = true;
@@ -52,6 +56,8 @@ public class StatusEffect {
     }
 
     public void removeFromZombie(Zombie zombie) {
+        if(!isApplied) return;
+
         this.isApplied = false;
         this.elapsedTicks = 0;
 

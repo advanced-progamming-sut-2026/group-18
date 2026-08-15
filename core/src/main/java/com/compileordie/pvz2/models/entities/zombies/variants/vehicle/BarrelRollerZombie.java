@@ -3,6 +3,7 @@ package com.compileordie.pvz2.models.entities.zombies.variants.vehicle;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.missions.quests.QuestEvent;
 import com.compileordie.pvz2.models.missions.quests.QuestManager;
@@ -52,7 +53,8 @@ public class BarrelRollerZombie extends VehicleZombie {
     public void takeDamage(double amount, DamageType damageType, PlantType plantType) {
         if (isDead()) return;
         if (damageType == DamageType.FIRE){
-            this.removeFrozen();
+            this.removeStatusEffect(EffectType.FROZEN);
+            this.removeStatusEffect(EffectType.CHILLED);
         }
 
         if (!this.isVehicleDestroyed()) {

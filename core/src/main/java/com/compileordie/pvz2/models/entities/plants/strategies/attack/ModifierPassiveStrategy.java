@@ -42,14 +42,16 @@ public class ModifierPassiveStrategy implements AttackStrategy {
                         if (zombie.isDead()) continue;
                         double distance = Math.hypot(zombie.getX() - plant.getX(), zombie.getY() - plant.getY());
 
-                        if (distance <= rangeTiles && zombie.hasMetalArmor()) { // Assuming hasMetalArmor() exists
-                            zombie.removeMetalArmor();
+                        // Relying on the teammate's clean boolean check and new absorption method
+                        if (distance <= rangeTiles && zombie.hasMetalArmor()) {
+                            zombie.mushroomAbsorption();
                             cooldownTimer = 0; // Reset cooldown after stealing
                             break; // Only steal one piece of metal at a time
                         }
                     }
                 }
                 break;
+
 
             case REDIRECT_ON_EAT:
                 // Garlic: This is usually handled inside the takeDamage() method of Plant.java

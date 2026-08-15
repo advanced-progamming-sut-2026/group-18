@@ -4,20 +4,32 @@ public class UpgradeLevel {
     public final int hpBonus;
     public final int damageBonus;
     public final int costReduction;
-    public final double cooldownReductionTicks;
-
-    // Custom flags for specific upgrades (like Electric Blueberry's Lvl 3)
-    public final boolean targetPriorityUp;
-
+    public final int extraSunYield;
+    // For upgrades like "Prod. Time -2s" or "Arm Time -3s"
+    public final double actionIntervalReductionTicks;
+    // For upgrades like "Cooldown -5s"
+    public final double rechargeReductionTicks;
+    public final boolean doubleSunChance;
+    // NEW: For upgrades like "Grow Time -5s" (Sun-shroom)
+    public final double growTimeReductionTicks;
+    public final double chillTimeBonusTicks;
     public UpgradeLevel(int hpBonus,
                         int damageBonus,
                         int costReduction,
-                        double cooldownReductionTicks,
-                        boolean targetPriorityUp) {
+                        double actionIntervalReductionTicks,
+                        double rechargeReductionTicks,
+                        boolean doubleSunChance,
+                        double growTimeReductionTicks,
+                        int extraSunYield,
+                        double chillTimeBonusTicks) {
         this.hpBonus = hpBonus;
         this.damageBonus = damageBonus;
         this.costReduction = costReduction;
-        this.cooldownReductionTicks = cooldownReductionTicks;
-        this.targetPriorityUp = targetPriorityUp;
+        this.actionIntervalReductionTicks = actionIntervalReductionTicks;
+        this.rechargeReductionTicks = rechargeReductionTicks;
+        this.doubleSunChance = doubleSunChance;
+        this.growTimeReductionTicks = growTimeReductionTicks;
+        this.extraSunYield = extraSunYield;
+        this.chillTimeBonusTicks = chillTimeBonusTicks;
     }
 }

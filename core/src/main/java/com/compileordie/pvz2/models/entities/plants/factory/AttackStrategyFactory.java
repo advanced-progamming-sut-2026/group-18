@@ -12,48 +12,25 @@ public class AttackStrategyFactory {
         AttackStrategyType type,
         Class<? extends Projectile> projectileClass,
         List<Integer> laneOffsets,
-        int projectileCount,
+        List<int[]> shootVectors,
         double rangeTiles,
         boolean isAoE,
-        boolean isInstaKill) {
+        boolean isInstantKill) {
 
         switch (type) {
             case DIRECT_SHOOT:
-            case MULTI_SHOOT:
-                // Peashooter, Repeater, Threepeater
-                return new DirectShootStrategy(laneOffsets, null, projectileClass, projectileCount);
-
-            case DIAGONAL:
-                // Rotobaga: 4 vectors mapping to your bottom-left coordinate system
-                List<int[]> diagonalVectors = List.of(
-                    new int[]{-1, 1},  // Backward-Up
-                    new int[]{-1, -1}, // Backward-Down
-                    new int[]{1, 1},   // Forward-Up
-                    new int[]{1, -1}   // Forward-Down
-                );
-                return new DirectShootStrategy(List.of(0), diagonalVectors, projectileClass, projectileCount);
-
-            case STAR:
-                // Starfruit: 5 vectors
-                List<int[]> starVectors = List.of(
-                    new int[]{-1, 0},  // Backward
-                    new int[]{0, 1},   // Up
-                    new int[]{0, -1},  // Down
-                    new int[]{1, 1},   // Forward-Up
-                    new int[]{1, -1}   // Forward-Down
-                );
-                return new DirectShootStrategy(List.of(0), starVectors, projectileClass, projectileCount);
+                return new DirectShootStrategy(laneOffsets, shootVectors, projectileClass);
 
             case HOMING:
                 return new HomingStrategy(projectileClass, HomingStrategy.TargetingMode.RANDOM);
 
             case MELEE:
-                return new MeleeStrategy(rangeTiles, isAoE, isInstaKill);
+                return new MeleeStrategy(rangeTiles, isAoE, isInstantKill);
 
             case MINE:
                 return new MineStrategy(rangeTiles);
 
-            case LOBBER:
+            case LOB:
                 return new LobberStrategy(projectileClass, rangeTiles);
 
             case SUN_PRODUCE:

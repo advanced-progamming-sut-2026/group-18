@@ -5,7 +5,6 @@ import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
-import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
@@ -141,26 +140,35 @@ public abstract class Zombie extends GameEntity {
         return this.isEating;
     }
 
-    public void addEffect(StatusEffect effect) {
-        activeEffects.add(effect);
-    }
+    public void addEffect(StatusEffect newEffect) {
+        // 1. The Interception Check
+        for (StatusEffect existingEffect : activeEffects) {
+            if (existingEffect.getEffectType() == newEffect.getEffectType()) {
+                // Effect already exists! Just refresh the timer.
+                existingEffect.refreshDuration();
 
-    public void removeFrozen(){
-        for (StatusEffect s: activeEffects){
-            if (!s.isExpired() && s.getEffectType()==EffectType.FROZEN){
-                s.isApplied = false;
+                // CRITICAL: Return immediately so the duplicate is NEVER added to the list!
+                return;
             }
         }
+        // 2. If we reach this line, the effect is brand new. Add it normally.
+        activeEffects.add(newEffect);
     }
 
-    public void removeStatusEffect(EffectType type) {
-        activeEffects.removeIf(effect -> {
-            if (effect.getEffectType() == type) {
+    public void removeStatusEffect(EffectType targetType){
+        if (activeEffects == null) return;
+
+        Iterator<StatusEffect> iterator = activeEffects.iterator();
+
+        while (iterator.hasNext()) {
+            StatusEffect effect = iterator.next();
+
+            // It only targets the EXACT effect you pass into the parameter!
+            if (effect.getEffectType() == targetType) {
                 effect.removeFromZombie(this);
-                return true;
+                iterator.remove();
             }
-            return false;
-        });
+        }
     }
 
     public boolean canMove() {

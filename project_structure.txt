@@ -1,0 +1,943 @@
+.
+├── LICENSE.txt
+├── README.md
+├── assets
+│   ├── assets.txt
+│   ├── configs
+│   │   ├── economy.json
+│   │   ├── gameplay.json
+│   │   ├── main_plantscsv.csv
+│   │   ├── quests.csv
+│   │   ├── security_questions.json
+│   │   └── zombie.json
+│   ├── quests
+│   │   └── quests.json
+│   └── ui
+│       ├── font-list.fnt
+│       ├── font-subtitle.fnt
+│       ├── font-window.fnt
+│       ├── font.fnt
+│       ├── uiskin.atlas
+│       ├── uiskin.json
+│       └── uiskin.png
+├── build
+│   └── reports
+│       └── problems
+│           └── problems-report.html
+├── build.gradle
+├── checkstyle.xml
+├── core
+│   ├── build
+│   │   ├── classes
+│   │   │   └── java
+│   │   │       └── main
+│   │   │           └── com
+│   │   │               └── compileordie
+│   │   │                   └── pvz2
+│   │   │                       ├── Main 2.class
+│   │   │                       ├── Main$1 2.class
+│   │   │                       ├── Main$1 3.class
+│   │   │                       ├── Main$1.class
+│   │   │                       ├── Main.class
+│   │   │                       ├── config
+│   │   │                       │   ├── Constants$ArgonHashing.class
+│   │   │                       │   ├── Constants$Game.class
+│   │   │                       │   ├── Constants$Imp.class
+│   │   │                       │   ├── Constants$Paths$Assets$Quests.class
+│   │   │                       │   ├── Constants$Paths$Assets.class
+│   │   │                       │   ├── Constants$Paths$Configs.class
+│   │   │                       │   ├── Constants$Paths$Saves.class
+│   │   │                       │   ├── Constants$Paths.class
+│   │   │                       │   ├── Constants$QuestCallbacks.class
+│   │   │                       │   ├── Constants.class
+│   │   │                       │   ├── GamePreferences.class
+│   │   │                       │   └── PreferencesManager.class
+│   │   │                       ├── controllers
+│   │   │                       │   ├── AppController 2.class
+│   │   │                       │   ├── AppController 3.class
+│   │   │                       │   ├── AppController.class
+│   │   │                       │   ├── PlantPlacementController 2.class
+│   │   │                       │   ├── PlantPlacementController 3.class
+│   │   │                       │   ├── PlantPlacementController.class
+│   │   │                       │   ├── PlantSpawner 2.class
+│   │   │                       │   ├── PlantSpawner 3.class
+│   │   │                       │   ├── PlantSpawner.class
+│   │   │                       │   └── menus
+│   │   │                       │       ├── auth
+│   │   │                       │       │   ├── LoginMenuController 2.class
+│   │   │                       │       │   ├── LoginMenuController 3.class
+│   │   │                       │       │   ├── LoginMenuController$1 2.class
+│   │   │                       │       │   ├── LoginMenuController$1 3.class
+│   │   │                       │       │   ├── LoginMenuController$1.class
+│   │   │                       │       │   ├── LoginMenuController$PendingChange 2.class
+│   │   │                       │       │   ├── LoginMenuController$PendingChange 3.class
+│   │   │                       │       │   ├── LoginMenuController$PendingChange.class
+│   │   │                       │       │   ├── LoginMenuController.class
+│   │   │                       │       │   ├── ProfileMenuController 2.class
+│   │   │                       │       │   ├── ProfileMenuController 3.class
+│   │   │                       │       │   ├── ProfileMenuController.class
+│   │   │                       │       │   ├── SignupMenuController$PendingRegistration 2.class
+│   │   │                       │       │   ├── SignupMenuController$PendingRegistration 3.class
+│   │   │                       │       │   ├── SignupMenuController$PendingRegistration.class
+│   │   │                       │       │   └── SignupMenuController.class
+│   │   │                       │       ├── game
+│   │   │                       │       │   ├── GameMenuController.class
+│   │   │                       │       │   ├── GameSessionMenuController 2.class
+│   │   │                       │       │   ├── GameSessionMenuController 3.class
+│   │   │                       │       │   ├── GameSessionMenuController.class
+│   │   │                       │       │   └── PlantSelectionMenuController.class
+│   │   │                       │       ├── home
+│   │   │                       │       │   ├── MainMenuController.class
+│   │   │                       │       │   ├── NewsMenuController.class
+│   │   │                       │       │   ├── SettingsMenuController 2.class
+│   │   │                       │       │   ├── SettingsMenuController 3.class
+│   │   │                       │       │   └── SettingsMenuController.class
+│   │   │                       │       ├── network
+│   │   │                       │       │   ├── LeaderboardMenuController.class
+│   │   │                       │       │   └── NetworkMenuController.class
+│   │   │                       │       └── progression
+│   │   │                       │           ├── CollectionMenuController 2.class
+│   │   │                       │           ├── CollectionMenuController 3.class
+│   │   │                       │           ├── CollectionMenuController.class
+│   │   │                       │           ├── GreenhouseMenuController 2.class
+│   │   │                       │           ├── GreenhouseMenuController 3.class
+│   │   │                       │           ├── GreenhouseMenuController.class
+│   │   │                       │           ├── ShopMenuController 2.class
+│   │   │                       │           ├── ShopMenuController 3.class
+│   │   │                       │           ├── ShopMenuController.class
+│   │   │                       │           ├── TravelLogMenuController 2.class
+│   │   │                       │           ├── TravelLogMenuController 3.class
+│   │   │                       │           └── TravelLogMenuController.class
+│   │   │                       ├── models
+│   │   │                       │   ├── AppModel.class
+│   │   │                       │   ├── entities
+│   │   │                       │   │   ├── GameEntity.class
+│   │   │                       │   │   ├── LawnMower 2.class
+│   │   │                       │   │   ├── LawnMower 3.class
+│   │   │                       │   │   ├── LawnMower.class
+│   │   │                       │   │   ├── obstacles
+│   │   │                       │   │   │   ├── Obstacle 2.class
+│   │   │                       │   │   │   ├── Obstacle 3.class
+│   │   │                       │   │   │   ├── Obstacle.class
+│   │   │                       │   │   │   └── ObstacleType.class
+│   │   │                       │   │   ├── plants
+│   │   │                       │   │   │   ├── Plant.class
+│   │   │                       │   │   │   ├── PlantCoverState 2.class
+│   │   │                       │   │   │   ├── PlantCoverState 3.class
+│   │   │                       │   │   │   ├── PlantCoverState.class
+│   │   │                       │   │   │   ├── PlantTemplate 2.class
+│   │   │                       │   │   │   ├── PlantTemplate 3.class
+│   │   │                       │   │   │   ├── PlantTemplate.class
+│   │   │                       │   │   │   ├── UpgradeLevel.class
+│   │   │                       │   │   │   ├── enums
+│   │   │                       │   │   │   │   ├── AttackStrategyType.class
+│   │   │                       │   │   │   │   ├── PlantCategory 2.class
+│   │   │                       │   │   │   │   ├── PlantCategory.class
+│   │   │                       │   │   │   │   ├── PlantFoodEffectType.class
+│   │   │                       │   │   │   │   ├── PlantTag.class
+│   │   │                       │   │   │   │   ├── ProjectileType.class
+│   │   │                       │   │   │   │   ├── RedirectDirection.class
+│   │   │                       │   │   │   │   └── TargetPriority.class
+│   │   │                       │   │   │   ├── factory
+│   │   │                       │   │   │   │   ├── AttackStrategyFactory$1 2.class
+│   │   │                       │   │   │   │   ├── AttackStrategyFactory$1 3.class
+│   │   │                       │   │   │   │   ├── AttackStrategyFactory$1.class
+│   │   │                       │   │   │   │   ├── AttackStrategyFactory.class
+│   │   │                       │   │   │   │   ├── FoodEffectFactory 2.class
+│   │   │                       │   │   │   │   ├── FoodEffectFactory 3.class
+│   │   │                       │   │   │   │   ├── FoodEffectFactory$1.class
+│   │   │                       │   │   │   │   ├── FoodEffectFactory.class
+│   │   │                       │   │   │   │   └── PlantFactory.class
+│   │   │                       │   │   │   ├── interfaces
+│   │   │                       │   │   │   │   └── ZombiesRedirector.class
+│   │   │                       │   │   │   ├── strategies
+│   │   │                       │   │   │   │   ├── attack
+│   │   │                       │   │   │   │   │   ├── AttackStrategy.class
+│   │   │                       │   │   │   │   │   ├── BowlingStrategy.class
+│   │   │                       │   │   │   │   │   ├── ChargeShootStrategy 2.class
+│   │   │                       │   │   │   │   │   ├── ChargeShootStrategy.class
+│   │   │                       │   │   │   │   │   ├── DirectShootStrategy 2.class
+│   │   │                       │   │   │   │   │   ├── DirectShootStrategy 3.class
+│   │   │                       │   │   │   │   │   ├── DirectShootStrategy.class
+│   │   │                       │   │   │   │   │   ├── HomingStrategy 2.class
+│   │   │                       │   │   │   │   │   ├── HomingStrategy 3.class
+│   │   │                       │   │   │   │   │   ├── HomingStrategy$TargetingMode 2.class
+│   │   │                       │   │   │   │   │   ├── HomingStrategy$TargetingMode 3.class
+│   │   │                       │   │   │   │   │   ├── HomingStrategy$TargetingMode.class
+│   │   │                       │   │   │   │   │   ├── HomingStrategy.class
+│   │   │                       │   │   │   │   │   ├── LobberStrategy.class
+│   │   │                       │   │   │   │   │   ├── MeleeStrategy 2.class
+│   │   │                       │   │   │   │   │   ├── MeleeStrategy 3.class
+│   │   │                       │   │   │   │   │   ├── MeleeStrategy.class
+│   │   │                       │   │   │   │   │   ├── MineStrategy 2.class
+│   │   │                       │   │   │   │   │   ├── MineStrategy 3.class
+│   │   │                       │   │   │   │   │   ├── MineStrategy.class
+│   │   │                       │   │   │   │   │   ├── MintActivateStrategy 2.class
+│   │   │                       │   │   │   │   │   ├── MintActivateStrategy 3.class
+│   │   │                       │   │   │   │   │   ├── MintActivateStrategy.class
+│   │   │                       │   │   │   │   │   ├── ModifierPassiveStrategy 2.class
+│   │   │                       │   │   │   │   │   ├── ModifierPassiveStrategy$ModifierType 2.class
+│   │   │                       │   │   │   │   │   ├── ModifierPassiveStrategy$ModifierType 3.class
+│   │   │                       │   │   │   │   │   ├── ModifierPassiveStrategy$ModifierType.class
+│   │   │                       │   │   │   │   │   ├── ModifierPassiveStrategy.class
+│   │   │                       │   │   │   │   │   ├── SunProduceStrategy 2.class
+│   │   │                       │   │   │   │   │   ├── SunProduceStrategy 3.class
+│   │   │                       │   │   │   │   │   └── SunProduceStrategy.class
+│   │   │                       │   │   │   │   └── food
+│   │   │                       │   │   │   │       ├── AreaDamageEffect 2.class
+│   │   │                       │   │   │   │       ├── AreaDamageEffect 3.class
+│   │   │                       │   │   │   │       ├── AreaDamageEffect.class
+│   │   │                       │   │   │   │       ├── ArmorBuffEffect 2.class
+│   │   │                       │   │   │   │       ├── ArmorBuffEffect 3.class
+│   │   │                       │   │   │   │       ├── ArmorBuffEffect.class
+│   │   │                       │   │   │   │       ├── BurstSunEffect 2.class
+│   │   │                       │   │   │   │       ├── BurstSunEffect 3.class
+│   │   │                       │   │   │   │       ├── BurstSunEffect.class
+│   │   │                       │   │   │   │       ├── HealAndRedirectEffect 2.class
+│   │   │                       │   │   │   │       ├── HealAndRedirectEffect 3.class
+│   │   │                       │   │   │   │       ├── HealAndRedirectEffect.class
+│   │   │                       │   │   │   │       ├── HomingBurstEffect 2.class
+│   │   │                       │   │   │   │       ├── HomingBurstEffect 3.class
+│   │   │                       │   │   │   │       ├── HomingBurstEffect.class
+│   │   │                       │   │   │   │       ├── HypnotizeEffect 2.class
+│   │   │                       │   │   │   │       ├── HypnotizeEffect 3.class
+│   │   │                       │   │   │   │       ├── HypnotizeEffect.class
+│   │   │                       │   │   │   │       ├── InstantKillEffect 2.class
+│   │   │                       │   │   │   │       ├── InstantKillEffect 3.class
+│   │   │                       │   │   │   │       ├── InstantKillEffect.class
+│   │   │                       │   │   │   │       ├── LaneClearEffect 2.class
+│   │   │                       │   │   │   │       ├── LaneClearEffect.class
+│   │   │                       │   │   │   │       ├── MagneticEffect.class
+│   │   │                       │   │   │   │       ├── PlantFoodEffectStrategy 2.class
+│   │   │                       │   │   │   │       ├── PlantFoodEffectStrategy 3.class
+│   │   │                       │   │   │   │       ├── PlantFoodEffectStrategy.class
+│   │   │                       │   │   │   │       ├── ProjectileEnhanceEffect 2.class
+│   │   │                       │   │   │   │       ├── ProjectileEnhanceEffect 3.class
+│   │   │                       │   │   │   │       ├── ProjectileEnhanceEffect.class
+│   │   │                       │   │   │   │       ├── RapidFireEffect.class
+│   │   │                       │   │   │   │       ├── ScreenFreezeEffect 2.class
+│   │   │                       │   │   │   │       ├── ScreenFreezeEffect 3.class
+│   │   │                       │   │   │   │       ├── ScreenFreezeEffect.class
+│   │   │                       │   │   │   │       ├── SpawnClonesEffect 2.class
+│   │   │                       │   │   │   │       └── SpawnClonesEffect.class
+│   │   │                       │   │   │   └── types
+│   │   │                       │   │   │       └── PlantType.class
+│   │   │                       │   │   ├── projectiles
+│   │   │                       │   │   │   ├── BouncingProjectile 2.class
+│   │   │                       │   │   │   ├── BouncingProjectile 3.class
+│   │   │                       │   │   │   ├── BouncingProjectile.class
+│   │   │                       │   │   │   ├── ButterProjectile 2.class
+│   │   │                       │   │   │   ├── ButterProjectile 3.class
+│   │   │                       │   │   │   ├── ButterProjectile.class
+│   │   │                       │   │   │   ├── FireProjectile 2.class
+│   │   │                       │   │   │   ├── FireProjectile 3.class
+│   │   │                       │   │   │   ├── FireProjectile.class
+│   │   │                       │   │   │   ├── HomingProjectile 2.class
+│   │   │                       │   │   │   ├── HomingProjectile 3.class
+│   │   │                       │   │   │   ├── HomingProjectile.class
+│   │   │                       │   │   │   ├── IceProjectile 2.class
+│   │   │                       │   │   │   ├── IceProjectile 3.class
+│   │   │                       │   │   │   ├── IceProjectile.class
+│   │   │                       │   │   │   ├── LobbedProjectile 2.class
+│   │   │                       │   │   │   ├── LobbedProjectile 3.class
+│   │   │                       │   │   │   ├── LobbedProjectile.class
+│   │   │                       │   │   │   ├── NormalProjectile.class
+│   │   │                       │   │   │   ├── PiercingProjectile 2.class
+│   │   │                       │   │   │   ├── PiercingProjectile 3.class
+│   │   │                       │   │   │   ├── PiercingProjectile.class
+│   │   │                       │   │   │   ├── PoisonProjectile.class
+│   │   │                       │   │   │   ├── Projectile 2.class
+│   │   │                       │   │   │   ├── Projectile 3.class
+│   │   │                       │   │   │   └── Projectile.class
+│   │   │                       │   │   └── zombies
+│   │   │                       │   │       ├── StatusEffect$1.class
+│   │   │                       │   │       ├── StatusEffect.class
+│   │   │                       │   │       ├── ZombieBuilder 2.class
+│   │   │                       │   │       ├── ZombieBuilder 3.class
+│   │   │                       │   │       ├── ZombieBuilder$1.class
+│   │   │                       │   │       ├── ZombieBuilder.class
+│   │   │                       │   │       ├── services
+│   │   │                       │   │       │   └── manager
+│   │   │                       │   │       │       ├── PlantEatabilityChecker 2.class
+│   │   │                       │   │       │       ├── PlantEatabilityChecker 3.class
+│   │   │                       │   │       │       ├── PlantEatabilityChecker.class
+│   │   │                       │   │       │       ├── PlantVisibilityChecker.class
+│   │   │                       │   │       │       ├── ZombieManager 2.class
+│   │   │                       │   │       │       ├── ZombieManager 3.class
+│   │   │                       │   │       │       ├── ZombieManager.class
+│   │   │                       │   │       │       ├── ZombieTickContext 2.class
+│   │   │                       │   │       │       ├── ZombieTickContext 3.class
+│   │   │                       │   │       │       └── ZombieTickContext.class
+│   │   │                       │   │       ├── types
+│   │   │                       │   │       │   ├── DamageType.class
+│   │   │                       │   │       │   ├── EffectType.class
+│   │   │                       │   │       │   └── ZombieType.class
+│   │   │                       │   │       └── variants
+│   │   │                       │   │           ├── Zombie.class
+│   │   │                       │   │           ├── boss
+│   │   │                       │   │           │   └── GargantuarZombie.class
+│   │   │                       │   │           ├── capable
+│   │   │                       │   │           │   ├── CapableZombie.class
+│   │   │                       │   │           │   ├── ExplorerZombie.class
+│   │   │                       │   │           │   ├── FishermanZombie.class
+│   │   │                       │   │           │   ├── HunterZombie.class
+│   │   │                       │   │           │   ├── JesterZombie.class
+│   │   │                       │   │           │   ├── OctopusZombie.class
+│   │   │                       │   │           │   ├── PianistZombie.class
+│   │   │                       │   │           │   ├── RaZombie.class
+│   │   │                       │   │           │   ├── TurquoiseZombie.class
+│   │   │                       │   │           │   └── WizardZombie.class
+│   │   │                       │   │           ├── mobility
+│   │   │                       │   │           │   ├── DodoRiderZombie.class
+│   │   │                       │   │           │   ├── MovementState.class
+│   │   │                       │   │           │   ├── ProspectorZombie.class
+│   │   │                       │   │           │   ├── SnorkelZombie 2.class
+│   │   │                       │   │           │   ├── SnorkelZombie 3.class
+│   │   │                       │   │           │   └── SnorkelZombie.class
+│   │   │                       │   │           ├── standard
+│   │   │                       │   │           │   ├── AllStarZombie.class
+│   │   │                       │   │           │   ├── BasicZombie.class
+│   │   │                       │   │           │   ├── BlockheadZombie.class
+│   │   │                       │   │           │   ├── BucketHeadZombie.class
+│   │   │                       │   │           │   ├── ConeHeadZombie.class
+│   │   │                       │   │           │   ├── ImpDragon.class
+│   │   │                       │   │           │   ├── ImpZombie.class
+│   │   │                       │   │           │   ├── KnightZombie.class
+│   │   │                       │   │           │   ├── NewspaperZombie.class
+│   │   │                       │   │           │   ├── ParasolZombie.class
+│   │   │                       │   │           │   └── StandardZombie.class
+│   │   │                       │   │           ├── summoner
+│   │   │                       │   │           │   ├── KingZombie.class
+│   │   │                       │   │           │   ├── SummonerZombie.class
+│   │   │                       │   │           │   ├── Tomb 2.class
+│   │   │                       │   │           │   ├── Tomb 3.class
+│   │   │                       │   │           │   ├── Tomb.class
+│   │   │                       │   │           │   └── TombraiserZombie.class
+│   │   │                       │   │           └── vehicle
+│   │   │                       │   │               ├── Barrel.class
+│   │   │                       │   │               ├── BarrelRollerZombie 2.class
+│   │   │                       │   │               ├── BarrelRollerZombie 3.class
+│   │   │                       │   │               ├── BarrelRollerZombie.class
+│   │   │                       │   │               ├── MovableObject 2.class
+│   │   │                       │   │               ├── MovableObject 3.class
+│   │   │                       │   │               ├── MovableObject.class
+│   │   │                       │   │               ├── VehicleZombie 2.class
+│   │   │                       │   │               └── VehicleZombie.class
+│   │   │                       │   ├── game
+│   │   │                       │   │   ├── GameSession 2.class
+│   │   │                       │   │   ├── GameSession 3.class
+│   │   │                       │   │   ├── GameSession$1 2.class
+│   │   │                       │   │   ├── GameSession$1.class
+│   │   │                       │   │   ├── GameSession.class
+│   │   │                       │   │   ├── SessionBuilder 2.class
+│   │   │                       │   │   ├── SessionBuilder 3.class
+│   │   │                       │   │   ├── SessionBuilder.class
+│   │   │                       │   │   ├── board
+│   │   │                       │   │   │   ├── GameBoard.class
+│   │   │                       │   │   │   ├── Lane 2.class
+│   │   │                       │   │   │   ├── Lane 3.class
+│   │   │                       │   │   │   ├── Lane.class
+│   │   │                       │   │   │   ├── Tile 2.class
+│   │   │                       │   │   │   ├── Tile 3.class
+│   │   │                       │   │   │   ├── Tile.class
+│   │   │                       │   │   │   ├── TileType 2.class
+│   │   │                       │   │   │   ├── TileType 3.class
+│   │   │                       │   │   │   ├── TileType$1 2.class
+│   │   │                       │   │   │   ├── TileType$1.class
+│   │   │                       │   │   │   ├── TileType$10.class
+│   │   │                       │   │   │   ├── TileType$11.class
+│   │   │                       │   │   │   ├── TileType$12.class
+│   │   │                       │   │   │   ├── TileType$2 2.class
+│   │   │                       │   │   │   ├── TileType$2 3.class
+│   │   │                       │   │   │   ├── TileType$2.class
+│   │   │                       │   │   │   ├── TileType$3 2.class
+│   │   │                       │   │   │   ├── TileType$3 3.class
+│   │   │                       │   │   │   ├── TileType$3.class
+│   │   │                       │   │   │   ├── TileType$4 2.class
+│   │   │                       │   │   │   ├── TileType$4 3.class
+│   │   │                       │   │   │   ├── TileType$4.class
+│   │   │                       │   │   │   ├── TileType$5 2.class
+│   │   │                       │   │   │   ├── TileType$5 3.class
+│   │   │                       │   │   │   ├── TileType$5.class
+│   │   │                       │   │   │   ├── TileType$6 2.class
+│   │   │                       │   │   │   ├── TileType$6 3.class
+│   │   │                       │   │   │   ├── TileType$6.class
+│   │   │                       │   │   │   ├── TileType$7 2.class
+│   │   │                       │   │   │   ├── TileType$7 3.class
+│   │   │                       │   │   │   ├── TileType$7.class
+│   │   │                       │   │   │   ├── TileType$8 2.class
+│   │   │                       │   │   │   ├── TileType$8 3.class
+│   │   │                       │   │   │   ├── TileType$8.class
+│   │   │                       │   │   │   ├── TileType$9 2.class
+│   │   │                       │   │   │   ├── TileType$9 3.class
+│   │   │                       │   │   │   ├── TileType$9.class
+│   │   │                       │   │   │   └── TileType.class
+│   │   │                       │   │   ├── economy
+│   │   │                       │   │   │   ├── EconomyManager 2.class
+│   │   │                       │   │   │   ├── EconomyManager 3.class
+│   │   │                       │   │   │   ├── EconomyManager.class
+│   │   │                       │   │   │   ├── EconomyType 2.class
+│   │   │                       │   │   │   ├── EconomyType 3.class
+│   │   │                       │   │   │   ├── EconomyType$1.class
+│   │   │                       │   │   │   ├── EconomyType$2.class
+│   │   │                       │   │   │   ├── EconomyType$3.class
+│   │   │                       │   │   │   ├── EconomyType$4 2.class
+│   │   │                       │   │   │   ├── EconomyType$4 3.class
+│   │   │                       │   │   │   ├── EconomyType$4.class
+│   │   │                       │   │   │   ├── EconomyType$5 2.class
+│   │   │                       │   │   │   ├── EconomyType$5 3.class
+│   │   │                       │   │   │   ├── EconomyType$5.class
+│   │   │                       │   │   │   ├── EconomyType.class
+│   │   │                       │   │   │   ├── PlantCard.class
+│   │   │                       │   │   │   ├── SeedPacket 2.class
+│   │   │                       │   │   │   ├── SeedPacket 3.class
+│   │   │                       │   │   │   ├── SeedPacket.class
+│   │   │                       │   │   │   ├── Sun 2.class
+│   │   │                       │   │   │   ├── Sun.class
+│   │   │                       │   │   │   ├── SunType$1 2.class
+│   │   │                       │   │   │   ├── SunType$1 3.class
+│   │   │                       │   │   │   ├── SunType$1.class
+│   │   │                       │   │   │   ├── SunType$2 2.class
+│   │   │                       │   │   │   ├── SunType$2 3.class
+│   │   │                       │   │   │   ├── SunType$2.class
+│   │   │                       │   │   │   ├── SunType$3 2.class
+│   │   │                       │   │   │   ├── SunType$3 3.class
+│   │   │                       │   │   │   ├── SunType$3.class
+│   │   │                       │   │   │   ├── SunType$4.class
+│   │   │                       │   │   │   ├── SunType$5 2.class
+│   │   │                       │   │   │   ├── SunType$5 3.class
+│   │   │                       │   │   │   ├── SunType$5.class
+│   │   │                       │   │   │   └── SunType.class
+│   │   │                       │   │   ├── effects
+│   │   │                       │   │   │   ├── EffectModifier 2.class
+│   │   │                       │   │   │   ├── EffectModifier 3.class
+│   │   │                       │   │   │   ├── EffectModifier.class
+│   │   │                       │   │   │   ├── EffectType 2.class
+│   │   │                       │   │   │   ├── EffectType 3.class
+│   │   │                       │   │   │   ├── EffectType$1 2.class
+│   │   │                       │   │   │   ├── EffectType$1.class
+│   │   │                       │   │   │   ├── EffectType$2 2.class
+│   │   │                       │   │   │   ├── EffectType$2 3.class
+│   │   │                       │   │   │   ├── EffectType$2.class
+│   │   │                       │   │   │   └── EffectType.class
+│   │   │                       │   │   ├── judges
+│   │   │                       │   │   │   ├── GameFlow.class
+│   │   │                       │   │   │   ├── GameJudge.class
+│   │   │                       │   │   │   ├── LossCondition$1 2.class
+│   │   │                       │   │   │   ├── LossCondition$1 3.class
+│   │   │                       │   │   │   ├── LossCondition$1.class
+│   │   │                       │   │   │   ├── LossCondition$2.class
+│   │   │                       │   │   │   ├── LossCondition$3.class
+│   │   │                       │   │   │   ├── LossCondition$4.class
+│   │   │                       │   │   │   ├── LossCondition$5.class
+│   │   │                       │   │   │   ├── LossCondition$6 2.class
+│   │   │                       │   │   │   ├── LossCondition$6 3.class
+│   │   │                       │   │   │   ├── LossCondition$6.class
+│   │   │                       │   │   │   ├── LossCondition.class
+│   │   │                       │   │   │   ├── WinCondition 2.class
+│   │   │                       │   │   │   ├── WinCondition 3.class
+│   │   │                       │   │   │   ├── WinCondition$1.class
+│   │   │                       │   │   │   ├── WinCondition$2 2.class
+│   │   │                       │   │   │   ├── WinCondition$2 3.class
+│   │   │                       │   │   │   ├── WinCondition$2.class
+│   │   │                       │   │   │   ├── WinCondition$3 2.class
+│   │   │                       │   │   │   ├── WinCondition$3 3.class
+│   │   │                       │   │   │   ├── WinCondition$3.class
+│   │   │                       │   │   │   ├── WinCondition$4.class
+│   │   │                       │   │   │   ├── WinCondition$5 2.class
+│   │   │                       │   │   │   ├── WinCondition$5 3.class
+│   │   │                       │   │   │   ├── WinCondition$5.class
+│   │   │                       │   │   │   └── WinCondition.class
+│   │   │                       │   │   ├── levels
+│   │   │                       │   │   │   ├── ChapterType.class
+│   │   │                       │   │   │   ├── LevelID.class
+│   │   │                       │   │   │   └── LevelType.class
+│   │   │                       │   │   ├── minigames
+│   │   │                       │   │   │   ├── MiniGameType.class
+│   │   │                       │   │   │   └── vasebreaker
+│   │   │                       │   │   │       ├── SeedPacket 2.class
+│   │   │                       │   │   │       ├── SeedPacket 3.class
+│   │   │                       │   │   │       ├── SeedPacket.class
+│   │   │                       │   │   │       ├── Vase 2.class
+│   │   │                       │   │   │       ├── Vase 3.class
+│   │   │                       │   │   │       ├── Vase.class
+│   │   │                       │   │   │       ├── VaseType 2.class
+│   │   │                       │   │   │       ├── VaseType 3.class
+│   │   │                       │   │   │       ├── VaseType$1.class
+│   │   │                       │   │   │       ├── VaseType$2 2.class
+│   │   │                       │   │   │       ├── VaseType$2 3.class
+│   │   │                       │   │   │       ├── VaseType$2.class
+│   │   │                       │   │   │       ├── VaseType$3 2.class
+│   │   │                       │   │   │       ├── VaseType$3.class
+│   │   │                       │   │   │       └── VaseType.class
+│   │   │                       │   │   └── waves
+│   │   │                       │   │       ├── WaveManager 2.class
+│   │   │                       │   │       ├── WaveManager 3.class
+│   │   │                       │   │       ├── WaveManager.class
+│   │   │                       │   │       ├── WaveType 2.class
+│   │   │                       │   │       ├── WaveType 3.class
+│   │   │                       │   │       ├── WaveType$1.class
+│   │   │                       │   │       ├── WaveType$2 2.class
+│   │   │                       │   │       ├── WaveType$2 3.class
+│   │   │                       │   │       ├── WaveType$2.class
+│   │   │                       │   │       ├── WaveType$3.class
+│   │   │                       │   │       ├── WaveType$4 2.class
+│   │   │                       │   │       ├── WaveType$4 3.class
+│   │   │                       │   │       ├── WaveType$4.class
+│   │   │                       │   │       ├── WaveType$5 2.class
+│   │   │                       │   │       ├── WaveType$5 3.class
+│   │   │                       │   │       ├── WaveType$5.class
+│   │   │                       │   │       ├── WaveType$6.class
+│   │   │                       │   │       ├── WaveType$7 2.class
+│   │   │                       │   │       ├── WaveType$7 3.class
+│   │   │                       │   │       ├── WaveType$7.class
+│   │   │                       │   │       └── WaveType.class
+│   │   │                       │   ├── missions
+│   │   │                       │   │   ├── News.class
+│   │   │                       │   │   ├── Pot.class
+│   │   │                       │   │   ├── quests
+│   │   │                       │   │   │   ├── BasicEventQuest.class
+│   │   │                       │   │   │   ├── LevelConditionQuest.class
+│   │   │                       │   │   │   ├── Quest.class
+│   │   │                       │   │   │   ├── QuestCategory.class
+│   │   │                       │   │   │   ├── QuestEvent.class
+│   │   │                       │   │   │   ├── QuestManager 2.class
+│   │   │                       │   │   │   ├── QuestManager 3.class
+│   │   │                       │   │   │   ├── QuestManager.class
+│   │   │                       │   │   │   ├── SpecificEventQuest.class
+│   │   │                       │   │   │   └── StreakQuest.class
+│   │   │                       │   │   └── shop
+│   │   │                       │   │       ├── CurrencyType.class
+│   │   │                       │   │       ├── DailyOffer.class
+│   │   │                       │   │       ├── Shop.class
+│   │   │                       │   │       └── ShopItem.class
+│   │   │                       │   ├── repositories
+│   │   │                       │   │   ├── configs
+│   │   │                       │   │   │   ├── ConfigLoader.class
+│   │   │                       │   │   │   ├── ConfigManager.class
+│   │   │                       │   │   │   ├── EconomyConfig.class
+│   │   │                       │   │   │   ├── GameplayConfig.class
+│   │   │                       │   │   │   ├── PlantConfigRepository 2.class
+│   │   │                       │   │   │   ├── PlantConfigRepository 3.class
+│   │   │                       │   │   │   ├── PlantConfigRepository.class
+│   │   │                       │   │   │   ├── SecurityQuestionConfig.class
+│   │   │                       │   │   │   ├── ZombieStatsConfig.class
+│   │   │                       │   │   │   └── ZombiesConfig.class
+│   │   │                       │   │   └── databases
+│   │   │                       │   │       ├── AuthDatabase.class
+│   │   │                       │   │       ├── PreferencesDatabase.class
+│   │   │                       │   │       ├── QuestDatabase.class
+│   │   │                       │   │       ├── UserDatabase.class
+│   │   │                       │   │       └── fundamentals
+│   │   │                       │   │           ├── DatabaseConnector.class
+│   │   │                       │   │           ├── ImmutableDatabase.class
+│   │   │                       │   │           └── MutableDatabase.class
+│   │   │                       │   └── user
+│   │   │                       │       ├── Gender.class
+│   │   │                       │       ├── Player.class
+│   │   │                       │       ├── UserValidator.class
+│   │   │                       │       └── authentication
+│   │   │                       │           ├── AuthManager 2.class
+│   │   │                       │           ├── AuthManager 3.class
+│   │   │                       │           ├── AuthManager.class
+│   │   │                       │           ├── AuthStatus.class
+│   │   │                       │           └── UserRegistry.class
+│   │   │                       ├── utils
+│   │   │                       │   ├── DatabaseSeeder$1.class
+│   │   │                       │   ├── DatabaseSeeder.class
+│   │   │                       │   ├── QuestDatabaseSeeder.class
+│   │   │                       │   ├── SaveMigrationHelper.class
+│   │   │                       │   ├── SaveMigrator$1.class
+│   │   │                       │   ├── SaveMigrator.class
+│   │   │                       │   └── Toolbox.class
+│   │   │                       └── views
+│   │   │                           ├── AppView 2.class
+│   │   │                           ├── AppView 3.class
+│   │   │                           ├── AppView.class
+│   │   │                           ├── helpers
+│   │   │                           │   ├── Command.class
+│   │   │                           │   ├── Menu.class
+│   │   │                           │   ├── MenuView 2.class
+│   │   │                           │   ├── MenuView 3.class
+│   │   │                           │   └── MenuView.class
+│   │   │                           └── menus
+│   │   │                               ├── auth
+│   │   │                               │   ├── LoginMenuView.class
+│   │   │                               │   ├── ProfileMenuView.class
+│   │   │                               │   └── SignupMenuView.class
+│   │   │                               ├── game
+│   │   │                               │   ├── GameMenuView.class
+│   │   │                               │   ├── GameSessionMenuView.class
+│   │   │                               │   └── PlantSelectionMenuView.class
+│   │   │                               ├── home
+│   │   │                               │   ├── MainMenuView.class
+│   │   │                               │   ├── NewsMenuView.class
+│   │   │                               │   └── SettingsMenuView.class
+│   │   │                               ├── network
+│   │   │                               │   ├── LeaderboardMenuView.class
+│   │   │                               │   └── NetworkMenuView.class
+│   │   │                               └── progression
+│   │   │                                   ├── CollectionMenuView.class
+│   │   │                                   ├── GreenhouseMenuView.class
+│   │   │                                   ├── ShopMenuView.class
+│   │   │                                   └── TravelLogMenuView.class
+│   │   ├── generated
+│   │   │   └── sources
+│   │   │       ├── annotationProcessor
+│   │   │       │   └── java
+│   │   │       │       └── main
+│   │   │       └── headers
+│   │   │           └── java
+│   │   │               └── main
+│   │   ├── resources
+│   │   │   └── main
+│   │   │       ├── assets.txt
+│   │   │       ├── configs
+│   │   │       │   ├── economy.json
+│   │   │       │   ├── gameplay.json
+│   │   │       │   ├── main_plantscsv.csv
+│   │   │       │   ├── quests.csv
+│   │   │       │   ├── security_questions.json
+│   │   │       │   └── zombie.json
+│   │   │       ├── quests
+│   │   │       │   └── quests.json
+│   │   │       └── ui
+│   │   │           ├── font-list.fnt
+│   │   │           ├── font-subtitle.fnt
+│   │   │           ├── font-window.fnt
+│   │   │           ├── font.fnt
+│   │   │           ├── uiskin.atlas
+│   │   │           ├── uiskin.json
+│   │   │           └── uiskin.png
+│   │   └── tmp
+│   │       └── compileJava
+│   │           ├── compileTransaction
+│   │           │   ├── backup-dir
+│   │           │   └── stash-dir
+│   │           │       ├── PlantConfigRepository.class.uniqueId1
+│   │           │       └── PlantSpawner.class.uniqueId0
+│   │           └── previous-compilation-data.bin
+│   ├── build.gradle
+│   └── src
+│       └── main
+│           └── java
+│               └── com
+│                   └── compileordie
+│                       └── pvz2
+│                           ├── Main.java
+│                           ├── config
+│                           │   ├── Constants.java
+│                           │   ├── GamePreferences.java
+│                           │   └── PreferencesManager.java
+│                           ├── controllers
+│                           │   ├── AppController.java
+│                           │   ├── PlantPlacementController.java
+│                           │   ├── PlantSpawner.java
+│                           │   └── menus
+│                           │       ├── auth
+│                           │       │   ├── LoginMenuController.java
+│                           │       │   ├── ProfileMenuController.java
+│                           │       │   └── SignupMenuController.java
+│                           │       ├── game
+│                           │       │   ├── GameMenuController.java
+│                           │       │   ├── GameSessionMenuController.java
+│                           │       │   └── PlantSelectionMenuController.java
+│                           │       ├── home
+│                           │       │   ├── MainMenuController.java
+│                           │       │   ├── NewsMenuController.java
+│                           │       │   └── SettingsMenuController.java
+│                           │       ├── network
+│                           │       │   ├── LeaderboardMenuController.java
+│                           │       │   └── NetworkMenuController.java
+│                           │       └── progression
+│                           │           ├── CollectionMenuController.java
+│                           │           ├── GreenhouseMenuController.java
+│                           │           ├── ShopMenuController.java
+│                           │           └── TravelLogMenuController.java
+│                           ├── models
+│                           │   ├── AppModel.java
+│                           │   ├── entities
+│                           │   │   ├── GameEntity.java
+│                           │   │   ├── LawnMower.java
+│                           │   │   ├── obstacles
+│                           │   │   │   ├── Obstacle.java
+│                           │   │   │   └── ObstacleType.java
+│                           │   │   ├── plants
+│                           │   │   │   ├── Plant.java
+│                           │   │   │   ├── PlantTemplate.java
+│                           │   │   │   ├── UpgradeLevel.java
+│                           │   │   │   ├── enums
+│                           │   │   │   │   ├── AttackStrategyType.java
+│                           │   │   │   │   ├── PlantCategory.java
+│                           │   │   │   │   ├── PlantFoodEffectType.java
+│                           │   │   │   │   ├── PlantTag.java
+│                           │   │   │   │   ├── ProjectileType.java
+│                           │   │   │   │   ├── RedirectDirection.java
+│                           │   │   │   │   └── TargetPriority.java
+│                           │   │   │   ├── factory
+│                           │   │   │   │   ├── AttackStrategyFactory.java
+│                           │   │   │   │   ├── FoodEffectFactory.java
+│                           │   │   │   │   └── PlantFactory.java
+│                           │   │   │   ├── interfaces
+│                           │   │   │   │   └── ZombiesRedirector.java
+│                           │   │   │   ├── strategies
+│                           │   │   │   │   ├── attack
+│                           │   │   │   │   │   ├── AttackStrategy.java
+│                           │   │   │   │   │   ├── BowlingStrategy.java
+│                           │   │   │   │   │   ├── ChargeShootStrategy.java
+│                           │   │   │   │   │   ├── DirectShootStrategy.java
+│                           │   │   │   │   │   ├── HomingStrategy.java
+│                           │   │   │   │   │   ├── LobberStrategy.java
+│                           │   │   │   │   │   ├── MeleeStrategy.java
+│                           │   │   │   │   │   ├── MineStrategy.java
+│                           │   │   │   │   │   ├── MintActivateStrategy.java
+│                           │   │   │   │   │   ├── ModifierPassiveStrategy.java
+│                           │   │   │   │   │   └── SunProduceStrategy.java
+│                           │   │   │   │   └── food
+│                           │   │   │   │       ├── AreaDamageEffect.java
+│                           │   │   │   │       ├── ArmorBuffEffect.java
+│                           │   │   │   │       ├── BurstSunEffect.java
+│                           │   │   │   │       ├── HealAndRedirectEffect.java
+│                           │   │   │   │       ├── HomingBurstEffect.java
+│                           │   │   │   │       ├── HypnotizeEffect.java
+│                           │   │   │   │       ├── InstantKillEffect.java
+│                           │   │   │   │       ├── LaneClearEffect.java
+│                           │   │   │   │       ├── MagneticEffect.java
+│                           │   │   │   │       ├── PlantFoodEffectStrategy.java
+│                           │   │   │   │       ├── ProjectileEnhanceEffect.java
+│                           │   │   │   │       ├── RapidFireEffect.java
+│                           │   │   │   │       ├── ScreenFreezeEffect.java
+│                           │   │   │   │       └── SpawnClonesEffect.java
+│                           │   │   │   └── types
+│                           │   │   │       └── PlantType.java
+│                           │   │   ├── projectiles
+│                           │   │   │   ├── BouncingProjectile.java
+│                           │   │   │   ├── ButterProjectile.java
+│                           │   │   │   ├── FireProjectile.java
+│                           │   │   │   ├── HomingProjectile.java
+│                           │   │   │   ├── IceProjectile.java
+│                           │   │   │   ├── LobbedProjectile.java
+│                           │   │   │   ├── NormalProjectile.java
+│                           │   │   │   ├── PiercingProjectile.java
+│                           │   │   │   ├── PoisonProjectile.java
+│                           │   │   │   └── Projectile.java
+│                           │   │   └── zombies
+│                           │   │       ├── StatusEffect.java
+│                           │   │       ├── ZombieBuilder.java
+│                           │   │       ├── services
+│                           │   │       │   └── manager
+│                           │   │       │       ├── PlantEatabilityChecker.java
+│                           │   │       │       ├── PlantVisibilityChecker.java
+│                           │   │       │       ├── ZombieManager.java
+│                           │   │       │       └── ZombieTickContext.java
+│                           │   │       ├── types
+│                           │   │       │   ├── DamageType.java
+│                           │   │       │   ├── EffectType.java
+│                           │   │       │   └── ZombieType.java
+│                           │   │       └── variants
+│                           │   │           ├── Zombie.java
+│                           │   │           ├── boss
+│                           │   │           │   └── GargantuarZombie.java
+│                           │   │           ├── capable
+│                           │   │           │   ├── CapableZombie.java
+│                           │   │           │   ├── ExplorerZombie.java
+│                           │   │           │   ├── FishermanZombie.java
+│                           │   │           │   ├── HunterZombie.java
+│                           │   │           │   ├── JesterZombie.java
+│                           │   │           │   ├── OctopusZombie.java
+│                           │   │           │   ├── PianistZombie.java
+│                           │   │           │   ├── RaZombie.java
+│                           │   │           │   ├── TurquoiseZombie.java
+│                           │   │           │   └── WizardZombie.java
+│                           │   │           ├── mobility
+│                           │   │           │   ├── DodoRiderZombie.java
+│                           │   │           │   ├── MovementState.java
+│                           │   │           │   ├── ProspectorZombie.java
+│                           │   │           │   └── SnorkelZombie.java
+│                           │   │           ├── standard
+│                           │   │           │   ├── AllStarZombie.java
+│                           │   │           │   ├── BasicZombie.java
+│                           │   │           │   ├── BlockheadZombie.java
+│                           │   │           │   ├── BucketHeadZombie.java
+│                           │   │           │   ├── ConeHeadZombie.java
+│                           │   │           │   ├── ImpDragon.java
+│                           │   │           │   ├── ImpZombie.java
+│                           │   │           │   ├── KnightZombie.java
+│                           │   │           │   ├── NewspaperZombie.java
+│                           │   │           │   ├── ParasolZombie.java
+│                           │   │           │   └── StandardZombie.java
+│                           │   │           ├── summoner
+│                           │   │           │   ├── KingZombie.java
+│                           │   │           │   ├── SummonerZombie.java
+│                           │   │           │   ├── Tomb.java
+│                           │   │           │   └── TombraiserZombie.java
+│                           │   │           └── vehicle
+│                           │   │               ├── ArcadeMachine.java
+│                           │   │               ├── ArcadeZombie.java
+│                           │   │               ├── Barrel.java
+│                           │   │               ├── BarrelRollerZombie.java
+│                           │   │               ├── IceBlock.java
+│                           │   │               ├── MovableObject.java
+│                           │   │               ├── TroglobiteZombie.java
+│                           │   │               └── VehicleZombie.java
+│                           │   ├── game
+│                           │   │   ├── GameSession.java
+│                           │   │   ├── SessionBuilder.java
+│                           │   │   ├── board
+│                           │   │   │   ├── GameBoard.java
+│                           │   │   │   ├── Lane.java
+│                           │   │   │   ├── Tile.java
+│                           │   │   │   └── TileType.java
+│                           │   │   ├── economy
+│                           │   │   │   ├── EconomyManager.java
+│                           │   │   │   ├── EconomyType.java
+│                           │   │   │   ├── PlantCard.java
+│                           │   │   │   ├── SeedPacket.java
+│                           │   │   │   ├── Sun.java
+│                           │   │   │   └── SunType.java
+│                           │   │   ├── effects
+│                           │   │   │   ├── EffectModifier.java
+│                           │   │   │   └── EffectType.java
+│                           │   │   ├── judges
+│                           │   │   │   ├── GameFlow.java
+│                           │   │   │   ├── GameJudge.java
+│                           │   │   │   ├── LossCondition.java
+│                           │   │   │   └── WinCondition.java
+│                           │   │   ├── levels
+│                           │   │   │   ├── ChapterType.java
+│                           │   │   │   ├── LevelID.java
+│                           │   │   │   └── LevelType.java
+│                           │   │   ├── minigames
+│                           │   │   │   ├── MiniGameType.java
+│                           │   │   │   └── vasebreaker
+│                           │   │   │       ├── SeedPacket.java
+│                           │   │   │       ├── Vase.java
+│                           │   │   │       └── VaseType.java
+│                           │   │   └── waves
+│                           │   │       ├── WaveManager.java
+│                           │   │       └── WaveType.java
+│                           │   ├── levels
+│                           │   │   └── types
+│                           │   ├── missions
+│                           │   │   ├── News.java
+│                           │   │   ├── Pot.java
+│                           │   │   ├── quests
+│                           │   │   │   ├── BasicEventQuest.java
+│                           │   │   │   ├── LevelConditionQuest.java
+│                           │   │   │   ├── Quest.java
+│                           │   │   │   ├── QuestCategory.java
+│                           │   │   │   ├── QuestEvent.java
+│                           │   │   │   ├── QuestManager.java
+│                           │   │   │   ├── SpecificEventQuest.java
+│                           │   │   │   └── StreakQuest.java
+│                           │   │   └── shop
+│                           │   │       ├── CurrencyType.java
+│                           │   │       ├── DailyOffer.java
+│                           │   │       ├── Shop.java
+│                           │   │       └── ShopItem.java
+│                           │   ├── repositories
+│                           │   │   ├── configs
+│                           │   │   │   ├── ConfigLoader.java
+│                           │   │   │   ├── ConfigManager.java
+│                           │   │   │   ├── EconomyConfig.java
+│                           │   │   │   ├── GameplayConfig.java
+│                           │   │   │   ├── PlantConfigRepository.java
+│                           │   │   │   ├── SecurityQuestionConfig.java
+│                           │   │   │   ├── ZombieStatsConfig.java
+│                           │   │   │   └── ZombiesConfig.java
+│                           │   │   └── databases
+│                           │   │       ├── AuthDatabase.java
+│                           │   │       ├── PreferencesDatabase.java
+│                           │   │       ├── QuestDatabase.java
+│                           │   │       ├── UserDatabase.java
+│                           │   │       └── fundamentals
+│                           │   │           ├── DatabaseConnector.java
+│                           │   │           ├── ImmutableDatabase.java
+│                           │   │           └── MutableDatabase.java
+│                           │   └── user
+│                           │       ├── Gender.java
+│                           │       ├── Player.java
+│                           │       ├── UserValidator.java
+│                           │       └── authentication
+│                           │           ├── AuthManager.java
+│                           │           ├── AuthStatus.java
+│                           │           └── UserRegistry.java
+│                           ├── utils
+│                           │   ├── DatabaseSeeder.java
+│                           │   ├── QuestDatabaseSeeder.java
+│                           │   ├── SaveMigrationHelper.java
+│                           │   ├── SaveMigrator.java
+│                           │   └── Toolbox.java
+│                           └── views
+│                               ├── AppView.java
+│                               ├── helpers
+│                               │   ├── Command.java
+│                               │   ├── Menu.java
+│                               │   └── MenuView.java
+│                               └── menus
+│                                   ├── auth
+│                                   │   ├── LoginMenuView.java
+│                                   │   ├── ProfileMenuView.java
+│                                   │   └── SignupMenuView.java
+│                                   ├── game
+│                                   │   ├── GameMenuView.java
+│                                   │   ├── GameSessionMenuView.java
+│                                   │   └── PlantSelectionMenuView.java
+│                                   ├── home
+│                                   │   ├── MainMenuView.java
+│                                   │   ├── NewsMenuView.java
+│                                   │   └── SettingsMenuView.java
+│                                   ├── network
+│                                   │   ├── LeaderboardMenuView.java
+│                                   │   └── NetworkMenuView.java
+│                                   └── progression
+│                                       ├── CollectionMenuView.java
+│                                       ├── GreenhouseMenuView.java
+│                                       ├── ShopMenuView.java
+│                                       └── TravelLogMenuView.java
+├── docs
+│   └── project-documentation.pdf
+├── gradle
+│   ├── gradle-daemon-jvm.properties
+│   └── wrapper
+│       ├── gradle-wrapper.jar
+│       └── gradle-wrapper.properties
+├── gradle.properties
+├── gradlew
+├── gradlew.bat
+├── lwjgl3
+│   ├── build.gradle
+│   ├── icons
+│   │   ├── PVZ2Icon1.svg
+│   │   ├── logo.icns
+│   │   ├── logo.ico
+│   │   └── logo.png
+│   ├── nativeimage.gradle
+│   └── src
+│       └── main
+│           ├── java
+│           │   └── com
+│           │       └── compileordie
+│           │           └── pvz2
+│           │               └── lwjgl3
+│           │                   ├── Lwjgl3Launcher.java
+│           │                   └── StartupHelper.java
+│           └── resources
+│               ├── PVZ2Icon1-128.png
+│               ├── PVZ2Icon1-256.png
+│               ├── PVZ2Icon1-32.png
+│               ├── PVZ2Icon1-48.png
+│               └── PVZ2Icon1-64.png
+├── pmd.xml
+├── project_structure.txt
+├── saves
+│   ├── auth.json
+│   ├── preferences.json
+│   └── users
+│       ├── 5148ad84-786b-425f-a689-415cd0b74197.json
+│       └── 8138ea26-a7a3-4bf0-a67e-669758198554.json
+├── settings.gradle
+└── uml-diagrams
+    └── uml-class-diagram.pdf
+
+174 directories, 767 files

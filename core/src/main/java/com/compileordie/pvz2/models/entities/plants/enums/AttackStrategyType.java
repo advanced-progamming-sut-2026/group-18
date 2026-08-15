@@ -4,7 +4,7 @@ public enum AttackStrategyType {
     DIRECT_SHOOT,
     CHARGE_SHOOT,
     MULTI_SHOOT,
-    LOBBER,
+    LOB,           // Updated from LOBBER to match the CSV
     MELEE,
     HOMING,
     PIERCE,
