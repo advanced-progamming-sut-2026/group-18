@@ -14,6 +14,12 @@ public class RaZombie extends CapableZombie {
     private double stealTimer;
     private boolean shouldSteal = false;
     private boolean shouldBackSun = false;
+    // 🌞 طبق منطق واقعی: وقتی شروع به دزدی می‌کنه، باید دقیقا ۱۰ ثانیه کامل
+    // بایسته (صرف‌نظر از اینکه خورشیدی برای دزدیدن پیدا می‌کنه یا نه)، نه اینکه
+    // به محض نبودِ خورشید در همون لحظه، دزدی رو قطع کنه. این تایمر مستقل از
+    // stealTimer (که فاصله‌ی بین دو نوبت دزدیه) همین مدت ایستادن رو می‌شمره.
+    public static final double STEAL_STAND_DURATION = 10.0;
+    private double stealStandRemaining = 0;
 
     public RaZombie(double health,
                     double speed,
@@ -33,17 +39,19 @@ public class RaZombie extends CapableZombie {
     @Override
     public void takeDamage(double amount, DamageType damageType, PlantType plantType) {
         if (isDead()) return;
+        takedDamage = true;
         this.health -= amount;
         if (damageType == DamageType.FIRE){
             this.removeFrozen();
         }
         if (this.health <= 0) {
             this.health = 0;
+            if (damageType==DamageType.EXPLOSIVE) killByExplosive = true;
             if (damageType==DamageType.LawnMower){
                 QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_BY_PLANT, 1, "MOWER");
             }
             else{
-                QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_BY_PLANT, 1, plantType.name());
+                if (plantType!=null) QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_BY_PLANT, 1, plantType.name());
             }
             handleDeath();
         }
@@ -65,6 +73,18 @@ public class RaZombie extends CapableZombie {
         if (stealTimer >= stealTime) {
             stealTimer = 0;
             shouldSteal = true;
+            stealStandRemaining = STEAL_STAND_DURATION;
+        }
+        // ⏳ تا وقتی در حال دزدیه، این ۱۰ ثانیه رو می‌شمریم؛ فقط وقتی کامل تموم
+        // بشه واقعا shouldSteal رو false می‌کنیم - نه زودتر (نگاه کن به
+        // ZombieManager.stealingByRaZombie که دیگه خودش زودهنگام stopStealing
+        // صدا نمی‌زنه).
+        if (shouldSteal) {
+            stealStandRemaining -= dt;
+            if (stealStandRemaining <= 0) {
+                stealStandRemaining = 0;
+                shouldSteal = false;
+            }
         }
     }
 
@@ -80,6 +100,7 @@ public class RaZombie extends CapableZombie {
 
     public void stopStealing() {
         shouldSteal = false;
+        stealStandRemaining = 0;
     }
 
     public boolean shouldWeBackSun() {

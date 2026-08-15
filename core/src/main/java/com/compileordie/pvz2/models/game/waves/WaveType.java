@@ -98,7 +98,7 @@ public enum WaveType {
 //            double x = (gameBoard.totalCols - 0.5f - columnOffset) * Constants.Game.TILE_SIZE;
 //            double y = (randomLaneIndex + 0.5f) * Constants.Game.TILE_SIZE;
             double x = 18f;
-            double y = (randomLaneIndex) * Constants.Game.TILE_HEIGHT + Constants.UI.bottomLineMeter;
+            double y = (randomLaneIndex) * Constants.Game.TILE_HEIGHT + Constants.UI.BOTTOM_LINE_METER;
 
 
             Zombie zombie = ZombieBuilder.create(zombieType, x, y, randomLaneIndex);

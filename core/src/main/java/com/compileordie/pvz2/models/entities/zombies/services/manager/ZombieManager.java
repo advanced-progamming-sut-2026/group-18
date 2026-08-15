@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.models.entities.zombies.services.manager;
 
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
 import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
 import com.compileordie.pvz2.models.entities.plants.Plant;
@@ -23,6 +24,7 @@ import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.TombraiserZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.Barrel;
 import com.compileordie.pvz2.models.game.board.GameBoard;
+import com.compileordie.pvz2.models.game.board.Lane;
 import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.economy.Sun;
 import com.compileordie.pvz2.models.game.economy.SunType;
@@ -37,12 +39,14 @@ public class ZombieManager {
 
     //---
     private static final Set<ZombieType> PIANOABLE_ZOMBIES = EnumSet.of(
-        ZombieType.STANDARD,
-        ZombieType.NEWSPAPER_ZOMBIE,
-        ZombieType.PARASOL_ZOMBIE,
-        ZombieType.BLOCKHEAD,
-        ZombieType.BUCKETHEAD,
-        ZombieType.TOMBRAISER
+        ZombieType.GARGANTUAR,
+        ZombieType.OCTOPUS_ZOMBIE,
+        ZombieType.PIANIST_ZOMBIE,
+        ZombieType.RA_ZOMBIE,
+        ZombieType.TURQUOISE_ZOMBIE,
+        ZombieType.DODO_RIDER,
+        ZombieType.SNORKEL_ZOMBIE,
+        ZombieType.BARREL_ROLLER
     );
     //---
     float dt = Constants.Game.TIME_COEFFICIENT;
@@ -57,8 +61,8 @@ public class ZombieManager {
 //        double delta = (context.getDelta() != 0 ? context.getDelta() : 1 * Constants.Game.TIME_COEFFICIENT);
         GameBoard myMap = context.getGameMap();
 //        List<Sun> mySuns = context.getSunsOnGround();
-        List<Zombie> myZombies = context.getActiveZombies();
-        List<Plant> myPlants = context.getActivePlants();
+        List<Zombie> myZombies = context.getGameMap().getAllZombies();
+        List<Plant> myPlants = context.getGameMap().getAllPlants();
         //--------------------
         List<Tile> myTiles = new ArrayList<>();
         for (int r = 0; r <= 4; r++) {
@@ -104,27 +108,57 @@ public class ZombieManager {
     }
 
     public void spawnImpFromGargantuar(Zombie z, List<Zombie> activeZs) {
-        activeZs.add(ZombieBuilder.create(ZombieType.IMP,
-            Math.max(z.getX() - 3 * tileWidth,
-                tileWidth),
+        // ساختن ایمپ - دقیقا سرجای فرود نهایی‌اش ساخته می‌شه (۳ ستون سمت چپ غول،
+        // همون سطر). این X/Y همون «مقصد» انیمیشن پرتابه.
+        Zombie imp = ZombieBuilder.create(ZombieType.IMP,
+            Math.max(z.getX() - 3 * tileWidth, tileWidth),
             z.getY(),
-            z.getCurrentRow()));
+            z.getCurrentRow());
+        imp.fromGarg = true;
+
+        // 🎯 مبدا پرتاب: ۱۰۰ پیکسل سمت راست‌تر و ۲۰۰ پیکسل بالاتر از موقعیت غول،
+        // تبدیل‌شده به همون واحد متری که بقیه‌ی مختصات مدل باهاش کار می‌کنن.
+        // برای ۱ ثانیه هم زامبی رو فریز می‌کنیم تا در طول انیمیشن پرتاب (که View
+        // رسمش می‌کنه) از جاش تکون نخوره؛ بعد از این ۱ ثانیه خودش خودکار آزاد
+        // می‌شه و طبق روال عادی شروع به حرکت می‌کنه (به Zombie.tick() نگاه کن).
+        double originX = z.getX() + 100.0 / Constants.UI.METER_TO_PIX;
+        double originY = z.getY() + 200.0 / Constants.UI.METER_TO_PIX;
+        imp.startFlyInFreeze(1.0, originX, originY);
+
+        // اضافه کردن به لیست لوکال (برای آپدیت‌های همین فریم)
+        activeZs.add(imp);
+
+        // 💡 اضافه کردن به لاین واقعی بورد (برای رندر شدن تو بازی)
+        AppModel.gameSession.gameBoard.getAllZombies().add(imp);
+        AppModel.gameSession.gameBoard.lanes.get(z.getCurrentRow()).zombies.add(imp);
     }
 
     public void spawnImpFromBarrel(List<Zombie> activeZs, List<Obstacle> myObstacles) {
-        for (Obstacle b : myObstacles) {
+        List<Obstacle> obstaclesCopy = new ArrayList<>(myObstacles);
+        for (Obstacle b : obstaclesCopy) {
             if (b.type == ObstacleType.BARREL) {
                 if (((Barrel) b).isDestroyed() && ((Barrel) b).shouldWeSpawnImp()) {
-                    activeZs.add(ZombieBuilder.create(ZombieType.IMP,
+
+                    // --- ایمپ بالایی ---
+                    int row1 = Math.min(((Barrel) b).getRow() + 1, 4);
+                    Zombie imp1 = ZombieBuilder.create(ZombieType.IMP,
                         b.getX(),
                         ((Barrel) b).getRow() == 4 ? b.getY() : b.getY() + tileHeight,
-                        Math.min(((Barrel) b).getRow() + 1,
-                            4)));
-                    activeZs.add(ZombieBuilder.create(ZombieType.IMP,
+                        row1);
+                    activeZs.add(imp1);
+                    AppModel.gameSession.gameBoard.getAllZombies().add(imp1);
+                    AppModel.gameSession.gameBoard.lanes.get(row1).zombies.add(imp1); // 💡 ثبت در لاین
+
+                    // --- ایمپ پایینی ---
+                    int row2 = Math.max(((Barrel) b).getRow() - 1, 0);
+                    Zombie imp2 = ZombieBuilder.create(ZombieType.IMP,
                         b.getX(),
                         ((Barrel) b).getRow() == 0 ? b.getY() : b.getY() - tileHeight,
-                        Math.max(((Barrel) b).getRow() - 1,
-                            0)));
+                        row2);
+                    activeZs.add(imp2);
+                    AppModel.gameSession.gameBoard.getAllZombies().add(imp2);
+                    AppModel.gameSession.gameBoard.lanes.get(row2).zombies.add(imp2); // 💡 ثبت در لاین
+
                     ((Barrel) b).stopSpawnImp();
                 }
             }
@@ -132,8 +166,9 @@ public class ZombieManager {
     }
 
     public void combatingTwoZombie(List<Zombie> myZombies) {
-        for (Zombie z : myZombies) {
-            for (Zombie z1 : myZombies) {
+        List<Zombie> zombiesCopy = new ArrayList<>(myZombies);
+        for (Zombie z : zombiesCopy) {
+            for (Zombie z1 : zombiesCopy) {
                 if (z == z1 || !(Math.abs(z.getY() - z1.getY())
                     <= tileHeight / 6 && Math.abs(z.getX() - z1.getX()) <= tileWidth / 6))
                     continue;
@@ -158,28 +193,46 @@ public class ZombieManager {
                 }
             }
         }
+        if (ts.isEmpty()) return;
         int index1 = random.nextInt(ts.size());
         int index2;
-        do {
-            index2 = random.nextInt(ts.size());
-        } while (index1 == index2);
+        if (ts.size() > 1) {
+            do {
+                index2 = random.nextInt(ts.size());
+            } while (index1 == index2);
+        } else {
+            index2 = index1;
+        }
         Tile randomTile1 = ts.get(index1);
         Tile randomTile2 = ts.get(index2);
         //---
-        randomTile1.obstacle = new Tomb(700,
+        Tomb tomb1 = new Tomb(700,
             randomTile1.row,
             randomTile1.column,
             (randomTile1.column + 0.5) * tileWidth,
             (randomTile1.row) * tileHeight);
-        randomTile2.obstacle = new Tomb(700,
+        randomTile1.obstacle = tomb1;
+        // 👈 علاوه بر tile.obstacle، به لیست lane.tombs هم اضافه می‌شه تا هم در
+        // بخش منطق (مثلا شمارش قبرهای یک لاین) و هم در لایه‌ی رندر (GameScreen)
+        // قابل بررسی/پیمایش مستقیم باشه.
+        gb.getLane(randomTile1.row).tombs.add(tomb1);
+
+        Tomb tomb2 = new Tomb(700,
             randomTile2.row,
             randomTile2.column,
             (randomTile2.column + 0.5) * tileWidth,
             (randomTile2.row) * tileHeight);
+        randomTile2.obstacle = tomb2;
+        gb.getLane(randomTile2.row).tombs.add(tomb2);
     }
 
     public void stealingByRaZombie(Zombie z, GameBoard map) {
-        boolean flag = false;
+        // 👈 دیگه این متد خودش زودهنگام دزدی رو قطع نمی‌کنه (قبلا اگه هیچ
+        // خورشیدی برای هدف‌گیری پیدا نمی‌شد، همون لحظه stopStealing() صدا زده
+        // می‌شد و را زامبی قبل از تموم‌شدن ۱۰ ثانیه‌ی واقعی دوباره راه می‌افتاد).
+        // پایان دزدی الان کاملا داخل RaZombie.tick() و بر اساس تایمر ۱۰ ثانیه‌ی
+        // stealStandRemaining کنترل می‌شه؛ اینجا فقط خورشیدهای در دسترس رو
+        // جمع می‌کنیم، هر چند بار که در طول این ۱۰ ثانیه پیدا بشن.
         Iterator<Sun> iterator = map.economyManager.suns.iterator();
         while (iterator.hasNext()) {
             Sun sun = iterator.next();
@@ -190,29 +243,61 @@ public class ZombieManager {
                 iterator.remove();
             } else if (sun.target == null || sun.target == z) {
                 sun.target = z;
-                flag = true;
             }
         }
-        if (!flag) ((RaZombie) z).stopStealing();
     }
 
     public void playingPiano(Zombie z, List<Zombie> myZombies) {
-        for (Zombie pied : myZombies) {
-            if (PIANOABLE_ZOMBIES.contains(pied.getType()) && !pied.isEating && !pied.isCombatingWithHypnotized
-                && !pied.isHypnotized() && pied.getY() >= tileHeight+Constants.UI.bottomLineMeter && pied.getY() <= 3 * tileHeight+Constants.UI.bottomLineMeter) {
+        int i = 0;
+        List<Zombie> zombiesCopy = new ArrayList<>(myZombies);
+        for (Zombie pied : zombiesCopy) {
+            if (!PIANOABLE_ZOMBIES.contains(pied.getType()) && !pied.isEating && !pied.isCombatingWithHypnotized
+                && !pied.isHypnotized() && Math.abs(z.getX()-pied.getX())<=4*tileWidth) {
+                int currentRow = pied.getCurrentRow();
+                int targetRow;
+                float newY;
+
                 if (Math.random() <= 0.5) {
-                    pied.setY(pied.getY() - tileHeight);
-                    pied.setCurrentRow(pied.getCurrentRow() - 1);
-                } else {
-                    pied.setY(pied.getY() + tileHeight);
-                    pied.setCurrentRow(pied.getCurrentRow() + 1);
+                    int a = (currentRow>=1? -1 : +1);
+                    targetRow = currentRow + a;
+                    newY = (float) (pied.getY() + a*tileHeight);
+                } else{
+                    int a = (currentRow<=3? +1 : -1);
+                    targetRow = currentRow + a;
+                    newY = (float) (pied.getY() + a*tileHeight);
                 }
+
+                var lanes = AppModel.gameSession.gameBoard.lanes;
+
+                if (targetRow >= 0 && targetRow < lanes.size()) {
+                    Lane currentLane = lanes.get(currentRow);
+                    Lane nextLane = lanes.get(targetRow);
+
+                    // ۴. بررسی اینکه آیا زامبی واقعاً در لاین فعلی وجود دارد یا نه
+                    if (currentLane.zombies.contains(pied)) {
+
+                        // اول زامبی را از لاین فعلی حذف می‌کنیم
+                        currentLane.zombies.remove(pied);
+
+                        // حالا که جابه‌جایی قطعی و امن است، مختصات خود زامبی را آپدیت می‌کنیم
+                        pied.setY(newY);
+                        pied.setCurrentRow(targetRow);
+
+                        // در نهایت زامبی را به لاین جدید اضافه می‌کنیم
+                        nextLane.zombies.add(pied);
+
+                        i++; // شمارنده شما
+                    }
+                }
+                if (i>=6) break;
             }
+
         }
     }
 
     public void miniTick(List<Zombie> myZombies, GameBoard myMap) {
-        for (Zombie z : myZombies) {
+        List<Zombie> zombiesCopy = new ArrayList<>(myZombies);
+        for (Zombie z : zombiesCopy) {
             processMiniTickSpawns(z, myZombies, myMap);
             processMiniTickMovement(z, myMap);
             processMiniTickAbilities(z, myZombies, myMap);
@@ -224,6 +309,7 @@ public class ZombieManager {
         if (z.getType() == ZombieType.GARGANTUAR && ((GargantuarZombie) z).shouldWeSpawnImp()) {
             spawnImpFromGargantuar(z, myZombies);
             ((GargantuarZombie) z).stopSpawnImp();
+            ((GargantuarZombie) z).canSpawn = false;
         }
         // --- اسپاون قبر ---
         if (z.getType() == ZombieType.TOMBRAISER) {
@@ -237,7 +323,14 @@ public class ZombieManager {
     private void processMiniTickMovement(Zombie z, GameBoard myMap) {
         // --- پردازش بالا پایین اومدن غواص ---
         if (z.getType() == ZombieType.SNORKEL_ZOMBIE) {
-            if (SnorkelZombie.isOceanTile((myMap.getTile((float) (z.getX()), (float) (z.getY()))).type)) {
+            Tile currentTile = myMap.getTile((float) z.getX(), (float) z.getY());
+
+            if (currentTile == null) {
+                ((SnorkelZombie) z).walk();
+                return;
+            }
+
+            if (SnorkelZombie.isOceanTile(currentTile.type)) {
                 if (z.isEating) {
                     ((SnorkelZombie) z).surface();
                 } else {
@@ -276,14 +369,19 @@ public class ZombieManager {
             }
         }
         // --- جابجایی سطر توسط پیانیست ---
-        if (z.getType() == ZombieType.PIANIST_ZOMBIE && ((PianistZombie) z).isPlaying()) playingPiano(z, myZombies);
+        if (z.getType() == ZombieType.PIANIST_ZOMBIE && ((PianistZombie) z).isPlaying()) {
+            playingPiano(z, myZombies);
+            ((PianistZombie) z).stopPlaying();
+        }
         // --- خورشید دزدی را زامبی ---
         if (z.getType() == ZombieType.RA_ZOMBIE && ((RaZombie) z).shouldWeSteal()) stealingByRaZombie(z, myMap);
     }
 
     public void combatTick(List<Zombie> myZombies, List<Plant> myPlants) {
-        for (Zombie z : myZombies) {
-            for (Plant p : myPlants) {
+        List<Zombie> zombiesCopy = new ArrayList<>(myZombies);
+        List<Plant> plantsCopy = new ArrayList<>(myPlants);
+        for (Zombie z : zombiesCopy) {
+            for (Plant p : plantsCopy) {
                 processPlantEating(z, p);
                 processSpecialCombatAbilities(z, p);
             }
@@ -291,8 +389,8 @@ public class ZombieManager {
     }
 
     public void projectileCollisionTick(GameBoard myMap) {
-        List<Projectile> projectiles = myMap.getActiveProjectiles();
-        List<Zombie> zombies = myMap.getAllZombies();
+        List<Projectile> projectiles = new ArrayList<>(myMap.getActiveProjectiles());
+        List<Zombie> zombies = new ArrayList<>(myMap.getAllZombies());
 
         // Iterate backwards safely in case projectiles are removed
         for (int p = projectiles.size() - 1; p >= 0; p--) {
@@ -379,6 +477,8 @@ public class ZombieManager {
             if (((HunterZombie) z).getShouldShut()) {
                 p.addChill();
                 ((HunterZombie) z).setShouldShut(false);
+                // 👈 دقیقا لحظه‌ی شلیک واقعی یخ - همون‌جا انیمیشن "throw" هم شروع می‌شه
+                ((HunterZombie) z).startThrowAnimation();
             }
         }
         // --- پرتاب اختاپوس ---
@@ -388,6 +488,8 @@ public class ZombieManager {
             && Math.abs(z.getX() - p.getX()) <= OctopusZombie.ABILITY_RANGE)
             && isVisible(p) && !p.hasActiveCover()) {
             p.applyOctopus(400.0);
+            // 👈 دقیقا لحظه‌ی پرتاب واقعی اختاپوس - همون‌جا انیمیشن "toss" هم شروع می‌شه
+            ((OctopusZombie) z).startTossAnimation();
         }
     }
 }

@@ -8,7 +8,7 @@ public class PianistZombie extends CapableZombie {
     public static final int WAVE_COST = 450;
     private boolean isPlaying;
     private double playingTimer;
-    private double playingTime = 7;
+    private double playingTime = 10;
 
     public PianistZombie(double health, double speed, int attackPower, int row, double startX,
                          double x, double y,

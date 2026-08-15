@@ -7,6 +7,11 @@ public class KnightZombie extends StandardZombie {
     public static final int WAVE_COST = 550;
     public double helmetArmorHealth;
     public double shoulderArmorHealth;
+    // 🛡️ ماکزیمم HP اولیه‌ی هر تکه زره (ثابت) - برای محاسبه‌ی درصد سلامت هر
+    // تکه (helmet/shoulder) به‌صورت جدا از هم، تا مرحله‌ی بصری صدمه‌دیدگی هر
+    // کدوم مستقل از اون یکی تعیین بشه.
+    public final double maxHelmetArmorHealth;
+    public final double maxShoulderArmorHealth;
 
     public KnightZombie(double health,
                         double speed,
@@ -22,6 +27,8 @@ public class KnightZombie extends StandardZombie {
         super(health, speed, attackPower, row, startX, helmet + shoulder, x, y, xSpeed, ySpeed, ZombieType.KNIGHT);
         this.helmetArmorHealth = helmet;
         this.shoulderArmorHealth = shoulder;
+        this.maxHelmetArmorHealth = helmet;
+        this.maxShoulderArmorHealth = shoulder;
     }
 
     @Override

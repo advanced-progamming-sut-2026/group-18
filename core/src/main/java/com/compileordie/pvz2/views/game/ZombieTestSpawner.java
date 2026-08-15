@@ -6,6 +6,7 @@ import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
+import com.compileordie.pvz2.models.game.levels.ChapterType; // 👈 این ایمپورت اضافه شد
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.List;
 public class ZombieTestSpawner {
 
     private float timer = 0f;
-    private static final float SPAWN_INTERVAL = 3.0f; // فاصله زمانی ۳ ثانیه
+    private static final float SPAWN_INTERVAL = 5f; // فاصله زمانی ۳ ثانیه
 
     private int currentZombieIndex = 0;
     private int currentLane = 1;
@@ -26,11 +27,26 @@ public class ZombieTestSpawner {
     private final List<ZombieType> zombieTypes = new ArrayList<>();
 
     public ZombieTestSpawner() {
+        // =========================================================
+        // 👈 فورس کردن چپتر به حالت DARK برای تست
+        // با این خط، تمام تگ‌های {CH} در رجیستری تبدیل به "DARK" می‌شوند
+        // و زامبی‌ها (مثل شوالیه، جستر و...) با Assetهای قرون وسطی لود می‌شوند.
+        // =========================================================
+        AppModel.currentChapter = ChapterType.DARK_AGES;
+
+
+
+
+
+
+
+
+
         // جمع‌آوری تمام انواع زامبی‌های تعریف‌شده در Enum
         for (ZombieType type : ZombieType.values()) {
             zombieTypes.add(type);
         }
-        Gdx.app.log("PVZ-TEST-SPAWNER", " تعداد " + zombieTypes.size() + " نوع زامبی برای تست شناسایی شد.");
+        Gdx.app.log("PVZ-TEST-SPAWNER", " تعداد " + zombieTypes.size() + " نوع زامبی برای تست در حالت DARK شناسایی شد.");
     }
 
     /**
@@ -57,7 +73,7 @@ public class ZombieTestSpawner {
         float spawnX = 18f;
 
         // محاسبه ارتفاع ردیف (Y بر حسب متر یا پیکسل بر اساس متغیرهای ساختار بازی شما)
-        float spawnY = (currentLane * (float) Constants.Game.TILE_HEIGHT) + Constants.UI.bottomLineMeter;
+        float spawnY = (currentLane * (float) Constants.Game.TILE_HEIGHT) + Constants.UI.BOTTOM_LINE_METER;
 
         try {
             // ساخت زامبی با استفاده از ZombieBuilder مدل
@@ -68,7 +84,7 @@ public class ZombieTestSpawner {
                 AppModel.gameSession.gameBoard.lanes.get(currentLane).zombies.add(zombie);
 
                 Gdx.app.log("PVZ-TEST-SPAWNER", String.format(
-                    "🧟 [SPAWN TEST] زامبی نوع <%s> در ردیف %d اسپاون شد. (X: %.1f, Y: %.1f)",
+                    "🧟 [SPAWN TEST DARK] زامبی نوع <%s> در ردیف %d اسپاون شد. (X: %.1f, Y: %.1f)",
                     typeToSpawn.name(), currentLane, spawnX, spawnY
                 ));
             }

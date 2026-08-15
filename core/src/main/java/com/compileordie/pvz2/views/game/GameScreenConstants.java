@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.views.game;
 
+import com.badlogic.gdx.graphics.Color;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.game.levels.ChapterType;
 
@@ -35,7 +36,43 @@ public final class GameScreenConstants {
     // تنظیمات نمایش/رندر
     // ---------------------------------------------------------------
     public static final float ZOMBIE_SCALE = 0.8f;
+    public static final float MOWER_SCALE = 0.8f;
+    public static final float TOMB_SCALE = 0.8f;
     public static final float BG_SIDE_SCALE = 0.9f;
+
+    // ---------------------------------------------------------------
+    // منوی پاز (Pause Menu)
+    // ---------------------------------------------------------------
+    // نکته: آیکون دکمه‌ی پاز و پس‌زمینه‌ی دکمه‌های resume/restart/save-exit دیگه
+    // اینجا به‌عنوان مسیر asset خام نگه‌داری نمی‌شن، چون به‌جاشون از استایل‌های
+    // واقعی pvz-skin استفاده می‌کنیم ("ingame_pause" برای دکمه‌ی پاز، "green"/"brown"
+    // برای دکمه‌های متنی) - دقیقا هم‌راستا با الگوی MainMenuScreen.
+    public static final String PAUSE_PANEL_BG_REGION = "IMAGE_UI_GENERIC_PURPLEBUTTON_DOWN";
+    public static final String PAUSE_FOG_DECORATION_REGION = "IMAGE_UI_PAUSEMENU_ZOMBOSS_FOG";
+
+    public static final String RESUME_BUTTON_TEXT = "RESUME";
+    public static final String RESTART_BUTTON_TEXT = "RESTART";
+    public static final String SAVE_EXIT_BUTTON_TEXT = "SAVE AND EXIT";
+
+    public static final float PAUSE_BUTTON_PAD = 20f;
+
+    // ابعاد صفحه‌ی کوچک پاز (طبق درخواست: کل صفحه رو نگیره، ولی به‌اندازه‌ی کافی
+    // بزرگ باشه که بک‌گراند کوچیکش کش‌اومده و خوشگل دیده بشه، نه تکه‌تکه/تکرارشونده)
+    public static final float PAUSE_PANEL_WIDTH = 650f;
+    public static final float PAUSE_PANEL_HEIGHT = 450f;
+    public static final float PAUSE_MENU_BUTTON_WIDTH = 320f;
+    public static final float PAUSE_MENU_BUTTON_HEIGHT = 90f;
+    public static final float PAUSE_MENU_BUTTON_PAD = 12f;
+
+    public static final Color PAUSE_PANEL_FILL_COLOR = new Color(1f, 0.45f, 0.75f, 1f); // صورتی
+    public static final Color PAUSE_PANEL_BORDER_COLOR = Color.WHITE;
+    public static final int PAUSE_PANEL_BORDER_PX = 6; // ضخامت بردر سفید، هر عددی خواستی عوض کن
+
+    // تزئین مه (fog) بالای پنل - عرضش نسبتی از عرض پنله (تا با تغییر PAUSE_PANEL_WIDTH
+    // هم متناسب بمونه)، ارتفاعش از روی نسبت واقعی تصویر (aspect ratio) در GameScreen
+    // محاسبه می‌شه تا کش/کوتاه نشه. OVERLAP_RATIO میگه چقدرش روی لبه‌ی بالایی پنل بیفته.
+    public static final float PAUSE_FOG_WIDTH_RATIO = 1.0f;
+    public static final float PAUSE_FOG_OVERLAP_RATIO = 0.62f;
 
     /**
      * گام زمانی ثابت شبیه‌سازی (بر حسب ثانیه) که هر بار سپری شدنش یک تیک

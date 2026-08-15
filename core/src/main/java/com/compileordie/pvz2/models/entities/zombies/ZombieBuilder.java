@@ -100,7 +100,7 @@ public class ZombieBuilder {
                 return new PianistZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             case NEWSPAPER_ZOMBIE:
-                return new NewspaperZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, stats.armorHp, x, y, stats.chargeSpeed, 0);
+                return new NewspaperZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, stats.armorHp, x, y, stats.speed, 0);
 
             case BARREL_ROLLER:
                 return new BarrelRollerZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, 0, stats.armorHp);

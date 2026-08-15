@@ -81,7 +81,7 @@ public class GameBoard {
     }
 
     public Lane getLane(float y) {
-        return getLane((int) Math.floor(y / Constants.Game.TILE_SIZE));
+        return getLane((int) Math.floor(y / Constants.Game.TILE_HEIGHT));
     }
 
     public void tick(int ticks) {
@@ -108,7 +108,17 @@ public class GameBoard {
     }
 
     public Tile getTile(float x, float y) {
-        return getTile((int) (y / Constants.Game.TILE_SIZE), (int) (x / Constants.Game.TILE_SIZE));
+        // نکته‌ی مهم (باگ پیدا شده): قبلاً اینجا y هم بر Constants.Game.TILE_SIZE (که
+        // عرض/اندازه‌ی ستونه، = 1f) تقسیم می‌شد. ولی جایگاه واقعی لاین‌ها (ردیف‌ها) روی
+        // محور Y بر اساس Constants.Game.TILE_HEIGHT (=1.285f) محاسبه می‌شه (مثلا در
+        // WaveType.placeZombiesRandomly: y = (row-1)*TILE_HEIGHT + bottomLineMeter).
+        // چون TILE_SIZE != TILE_HEIGHT، تقسیم y بر TILE_SIZE ایندکس ردیف اشتباهی
+        // می‌ساخت (مثلا برای زامبی‌های ردیف‌های بالاتر، ایندکس محاسبه‌شده از محدوده‌ی
+        // معتبر لاین‌ها (0..totalRows-1) خارج می‌شد)، getTile(row, column) هم چون
+        // exception رو catch و null برمی‌گردونه، این null بی‌سروصدا به بالادست
+        // (مثلا ZombieManager.processMiniTickMovement) می‌رسید و چون اونجا چک null
+        // نمی‌شد، باعث NullPointerException و کرش کل بازی می‌شد.
+        return getTile((int) (y / Constants.Game.TILE_HEIGHT), (int) (x / Constants.Game.TILE_SIZE));
     }
 
     public ArrayList<Tile> getAllTiles() {

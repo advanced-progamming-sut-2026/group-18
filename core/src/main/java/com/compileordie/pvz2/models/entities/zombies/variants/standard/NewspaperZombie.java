@@ -40,8 +40,12 @@ public class NewspaperZombie extends StandardZombie {
     @Override
     public void enterEnrageMode() {
         this.isEnraged = true;
-        setXSpeed(0.22);
-        setAttackPower(200);
+        // 👈 setXSpeed ساده کافی نیست (تیک بعدی Zombie.tick() دوباره سرعت رو از
+        // replacedSpeed بازیابی می‌کرد و enrage عملا هیچ‌وقت دیده نمی‌شد). با
+        // setPermanentXSpeed هم سرعت فعلی و هم مرجع داخلی که هر فریم ازش
+        // بازخوانی می‌شه با هم عوض می‌شن.
+        setPermanentXSpeed(0.5);
+        setAttackPower(300);
     }
 
     public boolean isEnraged() {

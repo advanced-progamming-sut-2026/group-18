@@ -21,7 +21,7 @@ public class StatusEffect {
     }
 
     public boolean isExpired() {
-        return (elapsedTicks >= durationTicks && !isApplied);
+        return (elapsedTicks >= durationTicks && isApplied);
     }
 
     // NEW: Trigger the physical changes on the zombie
