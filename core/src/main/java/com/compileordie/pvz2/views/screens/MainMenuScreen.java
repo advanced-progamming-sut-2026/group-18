@@ -12,10 +12,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Scaling;
 import com.compileordie.pvz2.controllers.menus.home.MainMenuController;
 import com.compileordie.pvz2.models.AppModel;
-import com.compileordie.pvz2.models.entities.plants.types.PlantType;
-import com.compileordie.pvz2.models.game.SessionBuilder;
-import com.compileordie.pvz2.models.game.levels.ChapterType;
-import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.views.ScreenManager;
 import com.compileordie.pvz2.views.ScreenType;
 import com.compileordie.pvz2.views.customelements.BadgeWrapper;
@@ -187,16 +183,7 @@ public class MainMenuScreen extends MenuScreen {
         playBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                AppModel.currentChapter = ChapterType.ANCIENT_EGYPT;
-                AppModel.currentLevel = LevelID.STANDARD_ANCIENT_EGYPT;
-                AppModel.selectionDeck.clear();
-                if (AppModel.player.unlockedPlants != null) {
-                    for (PlantType type : AppModel.player.unlockedPlants) {
-                        AppModel.selectionDeck.put(type, false);
-                    }
-                }
-                AppModel.gameSession = SessionBuilder.create(AppModel.currentLevel, AppModel.selectionDeck);
-                ScreenManager.setMenuScreen(ScreenType.GAME_SESSION);
+                ScreenManager.setMenuScreen(ScreenType.GAME);
             }
         });
 
