@@ -58,7 +58,7 @@ public class MainMenuScreen extends MenuScreen {
         badgedNewsBtn = new BadgeWrapper(newsBtn, skin);
         badgedNewsBtn.setBadgeCount(AppModel.player.getUnreadNewsCount());
 
-        teamName = new Label("Compile or Die!", skin, "medium_outline");
+        teamName = new Label("Welcome " + AppModel.player.nickname, skin, "medium_outline");
         closeBtn = new ImageButton(skin, "generic_close");
 
         // Center Initialization

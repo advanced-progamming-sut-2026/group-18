@@ -249,8 +249,9 @@ public class GameMenuScreen extends MenuScreen {
     private Table buildBottomNav() {
         Table bottomNavTable = new Table();
         bottomNavTable.setFillParent(true);
-        bottomNavTable.bottom().left();
+        bottomNavTable.bottom(); // Removed .left() so we can split the layout
 
+        // Back Button
         ImageButton backBtn = new ImageButton(skin, "generic_close_circle");
         backBtn.addListener(new ClickListener() {
             @Override
@@ -259,7 +260,38 @@ public class GameMenuScreen extends MenuScreen {
             }
         });
 
-        bottomNavTable.add(backBtn).size(64, 64).pad(35);
+        // Collection Button (using PvZ Skin)
+        ImageButton collectionBtn = new ImageButton(skin, "hud_minigames");
+        collectionBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                ScreenManager.setMenuScreen(ScreenType.COLLECTION);
+            }
+        });
+
+        // Shop Button (Custom textures for Normal and Pressed states)
+        TextureRegionDrawable shopUp = new TextureRegionDrawable(
+            textureBank.region("IMAGE_UI_HUD_EVENTSHOP_BUTTONS_HUD_EVENT_SHOP_NORMAL")
+        );
+        TextureRegionDrawable shopDown = new TextureRegionDrawable(
+            textureBank.region("IMAGE_UI_HUD_EVENTSHOP_BUTTONS_HUD_EVENT_SHOP_SELECTED")
+        );
+        ImageButton shopBtn = new ImageButton(shopUp, shopDown);
+        shopBtn.getImage().setScaling(Scaling.fit);
+
+        shopBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                ScreenManager.setMenuScreen(ScreenType.SHOP);
+            }
+        });
+
+        // Layout: Left align back button, expand the middle, right align the new buttons
+        bottomNavTable.add(backBtn).size(64, 64).pad(35).left();
+        bottomNavTable.add().expandX(); // This invisible cell pushes everything else to the edges
+        bottomNavTable.add(collectionBtn).pad(10);
+        bottomNavTable.add(shopBtn).size(75, 75).pad(30).right();
+
         return bottomNavTable;
     }
 
