@@ -167,13 +167,15 @@ public class PlantConfigRepository {
         double rechargeReductionTicks = 0.0;
         double chillTimeBonusTicks = 0.0; // NEW
         boolean doubleSun = false;
+        boolean targetPriorityUp = false;
         int extraSunYield = 0;
+        int pierceBonus = 0;
 
         upgradeStr = upgradeStr.toLowerCase();
 
         // NEW: Catch Damage bonuses!
         if (upgradeStr.contains("dmg +")) damageBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
-
+        if (upgradeStr.contains("target priority up")) targetPriorityUp = true;
         if (upgradeStr.contains("hp +")) hpBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
         if (upgradeStr.contains("cost -")) costReduction = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
         if (upgradeStr.contains("double sun")) doubleSun = true;
@@ -184,15 +186,16 @@ public class PlantConfigRepository {
             double timeValue = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
 
             if (upgradeStr.contains("cooldown -")) rechargeReductionTicks = timeValue;
-            if (upgradeStr.contains("prod. time -") || upgradeStr.contains("charge time -")) actionIntervalReductionTicks = timeValue;
+            if (upgradeStr.contains("prod. time -") || upgradeStr.contains("charge time -") || upgradeStr.contains("regen -")) actionIntervalReductionTicks = timeValue;
             if (upgradeStr.contains("grow time -")) growTimeReductionTicks = timeValue;
 
             // NEW: Catch Chill Time bonus!
             if (upgradeStr.contains("chill time +")) chillTimeBonusTicks = timeValue;
+            if (upgradeStr.contains("pierce +")) pierceBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
         }
 
         // NOTE: Make sure your UpgradeLevel constructor accepts chillTimeBonusTicks as the 9th parameter!
-        return new UpgradeLevel(hpBonus, damageBonus, costReduction, actionIntervalReductionTicks, rechargeReductionTicks, doubleSun, growTimeReductionTicks, extraSunYield, chillTimeBonusTicks);
+        return new UpgradeLevel(hpBonus, damageBonus, costReduction, actionIntervalReductionTicks, rechargeReductionTicks, doubleSun, growTimeReductionTicks, extraSunYield, chillTimeBonusTicks, targetPriorityUp, pierceBonus);
     }
 
     private void assignSpecificParameters(PlantTemplate t) {
@@ -213,6 +216,8 @@ public class PlantConfigRepository {
             t.setProjectileType(PiercingProjectile.class);
         } else if (name.equals("Bowling Bulb")) {
             t.setProjectileType(BouncingProjectile.class);
+        } else if (name.equals("Caulipower") || name.equals("Electric Blueberry")) {
+            t.setProjectileType(HomingProjectile.class);
         }
 
         // 2. Vector Routing & Physics (Replaces the obsolete projectileCount!)

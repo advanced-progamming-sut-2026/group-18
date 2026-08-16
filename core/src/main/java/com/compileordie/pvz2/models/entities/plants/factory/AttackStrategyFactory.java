@@ -21,6 +21,9 @@ public class AttackStrategyFactory {
             case DIRECT_SHOOT:
                 return new DirectShootStrategy(laneOffsets, shootVectors, projectileClass);
 
+            case CHARGE_SHOOT:
+                return new ChargeShootStrategy(projectileClass);
+
             case HOMING:
                 return new HomingStrategy(projectileClass, HomingStrategy.TargetingMode.RANDOM);
 

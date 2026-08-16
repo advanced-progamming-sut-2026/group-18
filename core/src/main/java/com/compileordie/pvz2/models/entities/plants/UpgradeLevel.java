@@ -13,6 +13,9 @@ public class UpgradeLevel {
     // NEW: For upgrades like "Grow Time -5s" (Sun-shroom)
     public final double growTimeReductionTicks;
     public final double chillTimeBonusTicks;
+    public boolean targetPriorityUp;
+    public final int pierceBonus;
+
     public UpgradeLevel(int hpBonus,
                         int damageBonus,
                         int costReduction,
@@ -21,7 +24,9 @@ public class UpgradeLevel {
                         boolean doubleSunChance,
                         double growTimeReductionTicks,
                         int extraSunYield,
-                        double chillTimeBonusTicks) {
+                        double chillTimeBonusTicks,
+                        boolean targetPriorityUp,
+                        int pierceBonus) {
         this.hpBonus = hpBonus;
         this.damageBonus = damageBonus;
         this.costReduction = costReduction;
@@ -31,5 +36,7 @@ public class UpgradeLevel {
         this.growTimeReductionTicks = growTimeReductionTicks;
         this.extraSunYield = extraSunYield;
         this.chillTimeBonusTicks = chillTimeBonusTicks;
+        this.targetPriorityUp = targetPriorityUp;
+        this.pierceBonus = pierceBonus;
     }
 }

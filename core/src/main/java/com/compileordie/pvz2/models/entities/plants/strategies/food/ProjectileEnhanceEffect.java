@@ -1,6 +1,10 @@
 package com.compileordie.pvz2.models.entities.plants.strategies.food;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.Plant;
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
+import com.compileordie.pvz2.models.entities.projectiles.PiercingProjectile;
+import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.user.Player;
 
@@ -13,10 +17,31 @@ public class ProjectileEnhanceEffect implements PlantFoodEffectStrategy {
 
     @Override
     public void applyEffect(Plant plant, GameBoard board, Player player) {
-        plant.setBaseDamage(plant.getBaseDamage() * damageMultiplier);
-        plant.setCurrentHp(plant.getBaseHp() * 2);
 
-        // Effect resolved! Reset the feed flag.
+        if (plant.getName().equals("Cactus")) {
+            // Spawn 3 high-damage thorns with UNLIMITED penetration
+            for (int i = 0; i < 3; i++) {
+                try {
+                    Projectile thorn = new PiercingProjectile(
+                        plant.getX() + (i * 0.5 * Constants.Game.TILE_SIZE),
+                        plant.getY(),
+                        6.0,
+                        200,
+                        9999 // Unlimited penetration!
+                    );
+
+                    thorn.setSourcePlantType(PlantType.CACTUS);
+                    board.getActiveProjectiles().add(thorn);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            // Failsafe for other plants using this effect
+            plant.setBaseDamage(plant.getBaseDamage() * damageMultiplier);
+            plant.setCurrentHp(plant.getBaseHp() * 2);
+        }
+
         plant.resetFeed();
     }
 }

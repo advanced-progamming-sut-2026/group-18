@@ -38,6 +38,7 @@ public class Plant extends GameEntity {
     private double currentActionTimer = 0;
     private int level = 1;
     public PlantTemplate template;
+    public boolean holdAction = false; // charge plants hold their charge if there are no zombies in the lane!
 
     // Special flags for specific AI behaviors
     private boolean doubleSunChance = false;
@@ -52,9 +53,13 @@ public class Plant extends GameEntity {
     private AttackStrategy attackStrategy;
     private PlantFoodEffectStrategy foodStrategy;
     private Map<Integer, UpgradeLevel> upgradeMap;
-    // NEW: engine variables for our advanced shooters : 1-Pea Pod 2- Snow Pea
+    // NEW: engine variables for our advanced shooters : 1-Pea Pod 2- Snow Pea 3- bowling bulb
     private int stackCount = 1;
     private double chillTimeBonusTicks = 0;
+    private int bulbCount = 3;
+    private double bulbRegenTimer = 0;
+    private double actionIntervalReductionTicks = 0.0;
+    private int pierceBonus = 0;
 
     public Plant(String name, PlantCategory category, List<PlantTag> tags,
                  double x, double y, int hp, int damage, int cost, double actionIntervalTicks,
@@ -94,14 +99,34 @@ public class Plant extends GameEntity {
         // NEW: The plant gets older every single frame!
         this.ageTicks += tickDelta;
 
+        // NEW: Bowling Bulb Ammo Regeneration
+        if (this.name.equals("Bowling Bulb") && bulbCount < 3) {
+            bulbRegenTimer += tickDelta;
+
+            // Base delays: Cyan (20 ticks), Blue (50 ticks), Orange (100 ticks)
+            double regenThreshold = (bulbCount == 2) ? 100.0 : (bulbCount == 1 ? 50.0 : 20.0);
+
+            // Apply the Regen -1s upgrade!
+            regenThreshold = Math.max(1.0, regenThreshold - this.actionIntervalReductionTicks);
+
+            if (bulbRegenTimer >= regenThreshold) {
+                bulbCount++;
+                bulbRegenTimer = 0;
+            }
+        }
+
         currentActionTimer += tickDelta;
 
         // 2. Execute attack strategy
         if (currentActionTimer >= actionIntervalTicks) {
+            this.holdAction = false; // reset the flag
             if (attackStrategy != null) {
                 attackStrategy.attack(this, board, tickDelta);
             }
-            currentActionTimer = 0;
+            // If the strategy didn't request a hold, reset the timer!
+            if(!this.holdAction) {
+                currentActionTimer = 0;
+            }
         }
     }
 
@@ -219,6 +244,9 @@ public class Plant extends GameEntity {
                 if (stats.doubleSunChance) {
                     this.doubleSunChance = true;
                 }
+                if (stats.targetPriorityUp) {
+                    this.targetsHighestHp = true;
+                }
                 this.baseHp += stats.hpBonus;
                 this.currentHp += stats.hpBonus;
                 this.baseDamage += stats.damageBonus;
@@ -229,6 +257,8 @@ public class Plant extends GameEntity {
                 // stack the extra sun yield(Gold Bloom)
                 this.extraSunYield += stats.extraSunYield;
                 this.chillTimeBonusTicks += stats.chillTimeBonusTicks;
+                this.actionIntervalReductionTicks += stats.actionIntervalReductionTicks;
+                this.pierceBonus += stats.pierceBonus;
             }
         }
         this.level = targetLevel;
@@ -278,4 +308,9 @@ public class Plant extends GameEntity {
     public void setSpecial() { isSpecial = true; }
     public boolean hasDoubleSunChance() { return this.doubleSunChance; }
     public int getExtraSunYield() { return extraSunYield; }
+    public int getPierceBonus() { return pierceBonus; }
+    // bowling bulb
+    public int getBulbCount() { return bulbCount; }
+    public void consumeBulb() { if (this.bulbCount > 0) this.bulbCount--; }
+    public void reloadAllBulbs() { this.bulbCount = 3; this.bulbRegenTimer = 0; }
 }

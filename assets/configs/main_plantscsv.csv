@@ -15,7 +15,7 @@ ID,Name,Category,Tags,Cost,Base HP,Damage,Base Ability,Plant Food Effect,Lvl 2,L
 14,Caulipower,Homing,"Magic, charge",250,300,Insta-kill,شلیک تیر جادویی (جهت رندوم، عبور از موانع، هیپنوتیزم‌کننده).,هیپنوتیزم کردن چند زامبی تصادفی در باغچه.,Cooldown -2s,HP +150,Cost -50,12,15,HOMING,HYPNOTIZE
 15,Electric Blueberry,Homing,charge,150,300,5000,شلیک رعدوبرق (جهت رندوم، نابودی کامل یک زامبی).,نابودی کامل ۳ زامبی تصادفی.,Cooldown -2s,Target Priority Up,Cost -25,12,15,HOMING,INSTANT_KILL
 16,Bowling Bulb,Shooter,charge,200,300,40/120/180,شلیک 3 نوع پیاز که بین لاین‌ها کمانه می‌کند (مثل wall nut bowling). تاخیر هر یک Cyan: 2s | Blue: 5s | Orange: 10s,شلیک ۳ پیاز انفجاری بزرگ که کمانه می‌کنند.,Regen -1s,Dmg +15,Cost -25,2,5,BOWLING,AREA_DAMAGE
-17,Cactus,Strike-through,-,175,300,30,شلیک خار مستقیم (عبور از ۳ زامبی).,تیغ‌های برقی با دمیج بالا و نفوذ نامحدود.,Pierce +1,Dmg +10,Cost -25,1.5,5,PIERCE,PROJECTILE_ENHANCE
+17,Cactus,Strike-through,-,175,300,30,شلیک خار مستقیم (عبور از ۳ زامبی).,تیغ‌های برقی با دمیج بالا و نفوذ نامحدود.,Pierce +1,Dmg +10,Cost -25,1.5,5,DIRECT_SHOOT,PROJECTILE_ENHANCE
 18,Fire Peashooter,Shooter,"Fire, Pea",175,300,40,شلیک تیر مستقیم آتشی (دمیج ۲ برابر).,شلیک رگباری آتشین در کل لاین.,Dmg +10,HP +200,Cost -25,1.5,5,DIRECT_SHOOT,RAPID_FIRE
 19,Starfruit,Shooter,-,150,300,20,شلیک در ۵ جهت ستاره‌ای شامل عقب.,شلیک رگباری ستاره در تمام جهات.,Atk Speed +10%,Dmg +10,Cost -25,1.5,5,STAR,RAPID_FIRE
 20,Goo Peashooter,Shooter,Poison,125,300,20,شلیک تیر مستقیم (نادیده گرفتن زره + آسیب مستمر).,شلیک رگباری سمی که زامبی‌ها را درجا مسموم می‌کند.,Dmg/Tick +5,HP +150,Cost -25,1.5,5,DIRECT_SHOOT,RAPID_FIRE

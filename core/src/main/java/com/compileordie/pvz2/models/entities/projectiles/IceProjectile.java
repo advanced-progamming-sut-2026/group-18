@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.models.entities.projectiles;
 
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
 import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
@@ -14,6 +15,7 @@ public class IceProjectile extends Projectile {
     public IceProjectile(double x, double y, double speed, int damage, double chillDurationTicks) {
         super(x, y, speed, damage, DamageType.ICE);
         this.chillDurationTicks = chillDurationTicks;
+        this.enumType = ProjectileType.ICE;
     }
 
     @Override

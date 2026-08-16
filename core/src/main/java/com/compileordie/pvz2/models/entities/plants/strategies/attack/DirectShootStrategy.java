@@ -6,7 +6,7 @@ import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.projectiles.IceProjectile;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.game.board.GameBoard;
-
+import com.compileordie.pvz2.models.entities.projectiles.PiercingProjectile;
 import java.util.List;
 
 public class DirectShootStrategy implements AttackStrategy {
@@ -51,6 +51,14 @@ public class DirectShootStrategy implements AttackStrategy {
                                 proj = projectileType
                                     .getDeclaredConstructor(double.class, double.class, double.class, int.class, double.class)
                                     .newInstance(spawnX, finalSpawnY, speed, damage, totalChillTime);
+
+                            } else if (projectileType == PiercingProjectile.class) {
+                                // NEW: Cactus piercing math! (3 base pierces + any upgrades)
+                                int totalPierces = 3 + plant.getPierceBonus();
+                                proj = projectileType
+                                    .getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
+                                    .newInstance(spawnX, finalSpawnY, speed, damage, totalPierces);
+
                             } else {
                                 proj = projectileType
                                     .getDeclaredConstructor(double.class, double.class, double.class, int.class)
