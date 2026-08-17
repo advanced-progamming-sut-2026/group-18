@@ -26,14 +26,9 @@ public class Tomb extends Obstacle {
         FIRE,
         ICE,
         POISON,
-        BLUE_FIRE,
-        PLASMA,
-        SPORE,
-        SPIKE,
-        STAR,
-        BULB_CYAN,
-        BULB_BLUE,
-        BULB_ORANGE
+        LOBBED,
+        ELECTRIC,
+        BUTTER
     );
 
     public Tomb(double health, int row, int col, double positionX, double positionY) {

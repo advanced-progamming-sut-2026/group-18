@@ -18,6 +18,10 @@ public class Tile {
     public Tomb tomb; // Redundant
     public boolean hasLilyPad;
 
+    // NEW: Puddle memory
+    public double puddleTimer = 0;
+    public int puddleDamage = 0;
+
     public Tile(GameBoard gameBoard, int row, int column, TileType type, Plant plant, Obstacle obstacle) {
         this.gameBoard = gameBoard;
         this.row = row;
@@ -33,6 +37,17 @@ public class Tile {
         type.tick(ticks, this, gameBoard);
         if (plant != null) plant.tick(gameBoard, ticks);
         if (obstacle != null) obstacle.tick(ticks, gameBoard);
+
+        // NEW: Process the puddle fading away!
+        tickPuddle(ticks);
+    }
+
+    // NEW: The tick logic for the puddle
+    public void tickPuddle(double delta) {
+        if (puddleTimer > 0) {
+            puddleTimer -= delta;
+            if (puddleTimer < 0) puddleTimer = 0; // Clean up when the 10 seconds are over
+        }
     }
 
     public boolean isEmpty() {

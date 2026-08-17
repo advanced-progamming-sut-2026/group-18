@@ -15,7 +15,11 @@ public class UpgradeLevel {
     public final double chillTimeBonusTicks;
     public boolean targetPriorityUp;
     public final int pierceBonus;
-
+    public final double atkSpeedBonusPercentage;
+    public final int poisonDmgTickBonus;
+    public final double plantFoodChanceBonus;
+    public final double rangeBonus;
+    public final double lifespanBonusTicks;
     public UpgradeLevel(int hpBonus,
                         int damageBonus,
                         int costReduction,
@@ -26,7 +30,12 @@ public class UpgradeLevel {
                         int extraSunYield,
                         double chillTimeBonusTicks,
                         boolean targetPriorityUp,
-                        int pierceBonus) {
+                        int pierceBonus,
+                        double atkSpeedBonusPercentage,
+                        int poisonDmgTickBonus,
+                        double plantFoodChanceBonus,
+                        double rangeBonus,
+                        double lifespanBonusTicks) {
         this.hpBonus = hpBonus;
         this.damageBonus = damageBonus;
         this.costReduction = costReduction;
@@ -38,5 +47,10 @@ public class UpgradeLevel {
         this.chillTimeBonusTicks = chillTimeBonusTicks;
         this.targetPriorityUp = targetPriorityUp;
         this.pierceBonus = pierceBonus;
+        this.atkSpeedBonusPercentage = atkSpeedBonusPercentage;
+        this.poisonDmgTickBonus = poisonDmgTickBonus;
+        this.plantFoodChanceBonus = plantFoodChanceBonus;
+        this.rangeBonus = rangeBonus;
+        this.lifespanBonusTicks = lifespanBonusTicks;
     }
 }

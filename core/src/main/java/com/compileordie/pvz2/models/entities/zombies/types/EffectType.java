@@ -7,6 +7,7 @@ public enum EffectType {
     CHILLED,    // کند شده با یخ
     HYPNOTIZED, // هیپنوتیزم شده
     STUNNED,
+    GOO_SLOW,
     POISON;
 
     public static EffectType getByName(String name) {

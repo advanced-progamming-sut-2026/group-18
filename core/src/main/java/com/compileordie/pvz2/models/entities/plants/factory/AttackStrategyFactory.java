@@ -12,7 +12,7 @@ public class AttackStrategyFactory {
         AttackStrategyType type,
         Class<? extends Projectile> projectileClass,
         List<Integer> laneOffsets,
-        List<int[]> shootVectors,
+        List<double[]> shootVectors,
         double rangeTiles,
         boolean isAoE,
         boolean isInstantKill) {

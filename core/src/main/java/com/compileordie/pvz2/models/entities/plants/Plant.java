@@ -39,7 +39,10 @@ public class Plant extends GameEntity {
     private int level = 1;
     public PlantTemplate template;
     public boolean holdAction = false; // charge plants hold their charge if there are no zombies in the lane!
-
+    private double atkSpeedBonusPercentage = 0.0;
+    private double maxLifespanTicks = -1; // -1 means infinite lifespan (like Peashooter)
+    private double currentLifespanTicks = -1;
+    private double rangeBonus = 0.0;
     // Special flags for specific AI behaviors
     private boolean doubleSunChance = false;
     private boolean targetsHighestHp = false;
@@ -60,6 +63,8 @@ public class Plant extends GameEntity {
     private double bulbRegenTimer = 0;
     private double actionIntervalReductionTicks = 0.0;
     private int pierceBonus = 0;
+    private int poisonDmgTickBonus = 0;
+    private double plantFoodChance = 0.0;
 
     public Plant(String name, PlantCategory category, List<PlantTag> tags,
                  double x, double y, int hp, int damage, int cost, double actionIntervalTicks,
@@ -79,6 +84,13 @@ public class Plant extends GameEntity {
         this.attackStrategy = attackStrategy;
         this.foodStrategy = foodStrategy;
         this.upgradeMap = upgradeMap;
+        if (this.name.equals("Mega Gatling Pea")) {
+            this.plantFoodChance = 5.0; // Base 5% chance!
+        }
+        if (this.name.equals("Puff-shroom") || this.name.equals("Sea-shroom")) {
+            this.maxLifespanTicks = 600.0; // 60 Seconds
+            this.currentLifespanTicks = 600.0;
+        }
     }
 
     public void tick(GameBoard board, int tickDelta) {
@@ -98,7 +110,13 @@ public class Plant extends GameEntity {
         }
         // NEW: The plant gets older every single frame!
         this.ageTicks += tickDelta;
-
+        if (this.maxLifespanTicks > 0) {
+            this.currentLifespanTicks -= tickDelta;
+            if (this.currentLifespanTicks <= 0) {
+                this.die();
+                return;
+            }
+        }
         // NEW: Bowling Bulb Ammo Regeneration
         if (this.name.equals("Bowling Bulb") && bulbCount < 3) {
             bulbRegenTimer += tickDelta;
@@ -120,7 +138,13 @@ public class Plant extends GameEntity {
         // 2. Execute attack strategy
         if (currentActionTimer >= actionIntervalTicks) {
             this.holdAction = false; // reset the flag
-            if (attackStrategy != null) {
+
+            if (this.plantFoodChance > 0 && (Math.random() * 100 < this.plantFoodChance)) {
+                // It won the dice roll! Trigger the ultimate for free!
+                this.feed(board, null);
+            }
+
+            else if (attackStrategy != null) {
                 attackStrategy.attack(this, board, tickDelta);
             }
             // If the strategy didn't request a hold, reset the timer!
@@ -247,6 +271,10 @@ public class Plant extends GameEntity {
                 if (stats.targetPriorityUp) {
                     this.targetsHighestHp = true;
                 }
+                if (this.maxLifespanTicks > 0) {
+                    this.maxLifespanTicks += stats.lifespanBonusTicks;
+                    this.currentLifespanTicks += stats.lifespanBonusTicks; // Instantly give the bonus time!
+                }
                 this.baseHp += stats.hpBonus;
                 this.currentHp += stats.hpBonus;
                 this.baseDamage += stats.damageBonus;
@@ -259,7 +287,14 @@ public class Plant extends GameEntity {
                 this.chillTimeBonusTicks += stats.chillTimeBonusTicks;
                 this.actionIntervalReductionTicks += stats.actionIntervalReductionTicks;
                 this.pierceBonus += stats.pierceBonus;
+                this.atkSpeedBonusPercentage += stats.atkSpeedBonusPercentage;
+                this.poisonDmgTickBonus += stats.poisonDmgTickBonus;
+                this.plantFoodChance += stats.plantFoodChanceBonus;
+                this.rangeBonus += stats.rangeBonus;
             }
+        }
+        if (this.atkSpeedBonusPercentage > 0) {
+            this.actionIntervalTicks = Math.max(1.0, this.actionIntervalTicks * (1.0 - (this.atkSpeedBonusPercentage / 100.0)));
         }
         this.level = targetLevel;
     }
@@ -313,4 +348,9 @@ public class Plant extends GameEntity {
     public int getBulbCount() { return bulbCount; }
     public void consumeBulb() { if (this.bulbCount > 0) this.bulbCount--; }
     public void reloadAllBulbs() { this.bulbCount = 3; this.bulbRegenTimer = 0; }
+    public int getPoisonDmgTickBonus() { return poisonDmgTickBonus; }
+    public double getRangeTiles() { return (template != null ? template.getRangeTiles() : 10.0) + rangeBonus; }
+    public void resetLifespan() {
+        if (this.maxLifespanTicks > 0) this.currentLifespanTicks = this.maxLifespanTicks;
+    }
 }

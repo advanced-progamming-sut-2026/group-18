@@ -148,9 +148,9 @@ public class PlantConfigRepository {
         template.setLaneOffsets(Collections.singletonList(0));
 
         // NEW: Default to shooting one standard projectile straight forward
-        template.setShootVectors(Collections.singletonList(new int[]{1, 0, 0}));
+        template.setShootVectors(Collections.singletonList(new double[]{1.0, 0.0, 0.0}));
 
-        template.setRangeTiles(3.0);
+        template.setRangeTiles(10.0);
         template.setFoodEffectValue(1);
     }
 
@@ -170,7 +170,11 @@ public class PlantConfigRepository {
         boolean targetPriorityUp = false;
         int extraSunYield = 0;
         int pierceBonus = 0;
-
+        double atkSpeedBonusPercentage = 0.0;
+        int poisonDmgTickBonus = 0;
+        double plantFoodChanceBonus = 0.0;
+        double rangeBonus = 0.0;
+        double lifespanBonusTicks = 0.0;
         upgradeStr = upgradeStr.toLowerCase();
 
         // NEW: Catch Damage bonuses!
@@ -180,7 +184,7 @@ public class PlantConfigRepository {
         if (upgradeStr.contains("cost -")) costReduction = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
         if (upgradeStr.contains("double sun")) doubleSun = true;
         if (upgradeStr.contains("sun +")) extraSunYield = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
-
+        if (upgradeStr.contains("dmg/tick +")) poisonDmgTickBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
         // Add parsing for time-based stats
         if (upgradeStr.contains("time +") || upgradeStr.contains("time -") || upgradeStr.contains("cooldown -")) {
             double timeValue = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
@@ -188,14 +192,17 @@ public class PlantConfigRepository {
             if (upgradeStr.contains("cooldown -")) rechargeReductionTicks = timeValue;
             if (upgradeStr.contains("prod. time -") || upgradeStr.contains("charge time -") || upgradeStr.contains("regen -")) actionIntervalReductionTicks = timeValue;
             if (upgradeStr.contains("grow time -")) growTimeReductionTicks = timeValue;
-
+            if (upgradeStr.contains("atk speed +")) atkSpeedBonusPercentage = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", ""));
             // NEW: Catch Chill Time bonus!
             if (upgradeStr.contains("chill time +")) chillTimeBonusTicks = timeValue;
             if (upgradeStr.contains("pierce +")) pierceBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
+            if (upgradeStr.contains("plant food chance +")) plantFoodChanceBonus = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", ""));
+            if (upgradeStr.contains("range +")) rangeBonus = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", ""));
+            if (upgradeStr.contains("lifespan +")) lifespanBonusTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
         }
 
         // NOTE: Make sure your UpgradeLevel constructor accepts chillTimeBonusTicks as the 9th parameter!
-        return new UpgradeLevel(hpBonus, damageBonus, costReduction, actionIntervalReductionTicks, rechargeReductionTicks, doubleSun, growTimeReductionTicks, extraSunYield, chillTimeBonusTicks, targetPriorityUp, pierceBonus);
+        return new UpgradeLevel(hpBonus, damageBonus, costReduction, actionIntervalReductionTicks, rechargeReductionTicks, doubleSun, growTimeReductionTicks, extraSunYield, chillTimeBonusTicks, targetPriorityUp, pierceBonus, atkSpeedBonusPercentage, poisonDmgTickBonus, plantFoodChanceBonus, rangeBonus, lifespanBonusTicks);
     }
 
     private void assignSpecificParameters(PlantTemplate t) {
@@ -212,32 +219,55 @@ public class PlantConfigRepository {
             name.equals("Pepper-pult") || name.equals("Kernel-pult")) {
             t.setProjectileType(name.equals("Kernel-pult") ? ButterProjectile.class : LobbedProjectile.class);
             t.setRangeTiles(name.equals("Melon-pult") || name.equals("Winter Melon") ? 1.5 : 0.0);
-        } else if (name.equals("Cactus") || name.equals("Fume-shroom")) {
+        } else if (name.equals("Cactus")) {
             t.setProjectileType(PiercingProjectile.class);
+        }else if (name.equals("Fume-shroom")) {
+            // NEW: Fume-shroom gets its own projectile and a base range of 5!
+            t.setProjectileType(com.compileordie.pvz2.models.entities.projectiles.FumeProjectile.class);
+            t.setRangeTiles(5.0);
         } else if (name.equals("Bowling Bulb")) {
             t.setProjectileType(BouncingProjectile.class);
         } else if (name.equals("Caulipower") || name.equals("Electric Blueberry")) {
             t.setProjectileType(HomingProjectile.class);
         }
+        if (name.equals("Puff-shroom") || name.equals("Sea-shroom")) {
+            t.setRangeTiles(3.0); // Base short range!
+        }
 
         // 2. Vector Routing & Physics (Replaces the obsolete projectileCount!)
         if (name.equals("Repeater")) {
-            t.setShootVectors(Arrays.asList(new int[]{1, 0, 0}, new int[]{1, 0, 1}));
+            t.setShootVectors(Arrays.asList(new double[]{1.0, 0.0, 0.0}, new double[]{1.0, 0.0, 1.0}));
         } else if (name.equals("Split Pea")) {
-            t.setShootVectors(Arrays.asList(new int[]{1, 0, 0}, new int[]{-1, 0, 0}, new int[]{-1, 0, 1}));
+            t.setShootVectors(Arrays.asList(new double[]{1.0, 0.0, 0.0}, new double[]{-1.0, 0.0, 0.0}, new double[]{-1.0, 0.0, 1.0}));
+        } else if (name.equals("Mega Gatling Pea")) {
+            t.setShootVectors(Arrays.asList(
+                new double[]{1.0, 0.0, 0.0}, // Pea 1
+                new double[]{1.0, 0.0, 1.0}, // Pea 2 (staggered slightly)
+                new double[]{1.0, 0.0, 2.0}, // Pea 3 (staggered more)
+                new double[]{1.0, 0.0, 3.0}  // Pea 4 (staggered most)
+            ));
         } else if (name.equals("Threepeater")) {
             t.setLaneOffsets(Arrays.asList(1, 0, -1));
-            t.setShootVectors(Collections.singletonList(new int[]{1, 0, 0}));
+            t.setShootVectors(Collections.singletonList(new double[]{1.0, 0.0, 0.0}));
         } else if (name.equals("Rotobaga")) {
-            List<int[]> rotoVectors = new ArrayList<>();
+            List<double[]> rotoVectors = new ArrayList<>();
             for (int i = 0; i < 3; i++) {
-                rotoVectors.add(new int[]{1, 1, i});
-                rotoVectors.add(new int[]{1, -1, i});
-                rotoVectors.add(new int[]{-1, 1, i});
-                rotoVectors.add(new int[]{-1, -1, i});
+                rotoVectors.add(new double[]{1.0, 1.0, i});
+                rotoVectors.add(new double[]{1.0, -1.0, i});
+                rotoVectors.add(new double[]{-1.0, 1.0, i});
+                rotoVectors.add(new double[]{-1.0, -1.0, i});
             }
             t.setShootVectors(rotoVectors);
+        } else if (name.equals("Starfruit")) { // NEW: Starfruit 5-way vectors
+            t.setShootVectors(Arrays.asList(
+                new double[]{-1.0, 0.0, 0.0},  // Backward
+                new double[]{0.0, -1.0, 0.0},  // Up
+                new double[]{0.0, 1.0, 0.0},   // Down
+                new double[]{1.0, -0.5, 0.0},  // Up-Forward
+                new double[]{1.0, 0.5, 0.0}    // Down-Forward
+            ));
         }
+
 
         // 3. Special Values
         if (name.equals("Sunflower") || name.equals("Sun Bean")) t.setFoodEffectValue(50);

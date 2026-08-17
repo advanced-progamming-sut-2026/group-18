@@ -26,7 +26,7 @@ public class PlantTemplate {
     private AttackStrategyType attackStrategyType;
     private Class<? extends Projectile> projectileType;
     private List<Integer> laneOffsets;
-    private List<int[]> shootVectors;
+    private List<double[]> shootVectors;
     private double rangeTiles;
     private boolean isAoE;
     private boolean isInstantKill;
@@ -66,8 +66,8 @@ public class PlantTemplate {
     public void setLaneOffsets(List<Integer> laneOffsets) { this.laneOffsets = laneOffsets; }
 
     // NEW: Getters and Setters for the vectors
-    public List<int[]> getShootVectors() { return shootVectors; }
-    public void setShootVectors(List<int[]> shootVectors) { this.shootVectors = shootVectors; }
+    public List<double[]> getShootVectors() { return shootVectors; }
+    public void setShootVectors(List<double[]> shootVectors) { this.shootVectors = shootVectors; }
 
     public double getRangeTiles() { return rangeTiles; }
     public void setRangeTiles(double rangeTiles) { this.rangeTiles = rangeTiles; }

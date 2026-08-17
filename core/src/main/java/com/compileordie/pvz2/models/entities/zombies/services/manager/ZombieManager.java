@@ -6,8 +6,10 @@ import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
+import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
 import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.boss.GargantuarZombie;
@@ -94,6 +96,18 @@ public class ZombieManager {
         //========== 5.تیک عادی زامبی ها ==========
         for (int i = myZombies.size() - 1; i >= 0; i--) {
             Zombie z = myZombies.get(i);
+
+            // --- NEW: Floor Radar for Goo Peashooter Puddles! ---
+            Tile currentTile = myMap.getTile((float) z.getX(), (float) z.getY());
+
+            if (currentTile != null && currentTile.puddleTimer > 0) {
+                // The secondary poison effect (using the dynamically upgraded damage!)
+                z.addEffect(new StatusEffect(EffectType.POISON, 20, currentTile.puddleDamage));
+                // The heavy speed reduction
+                z.addEffect(new StatusEffect(EffectType.GOO_SLOW, 20));
+            }
+            // ----------------------------------------------------
+
             z.move(1);
             if (z.getHealth() <= 0) {
                 myZombies.remove(i);

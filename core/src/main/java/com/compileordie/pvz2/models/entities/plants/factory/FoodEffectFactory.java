@@ -42,6 +42,8 @@ public class FoodEffectFactory {
                 return new HealAndRedirectEffect(true, effectValue);
             case HOMING_BURST:
                 return new HomingBurstEffect(projectileClass, effectValue);
+            case GOO_PUDDLE:
+                return new GooPuddleEffect();
             default:
                 return null;
         }

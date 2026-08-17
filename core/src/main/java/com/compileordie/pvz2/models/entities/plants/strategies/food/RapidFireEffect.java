@@ -62,6 +62,36 @@ public class RapidFireEffect implements PlantFoodEffectStrategy {
                     }
                 }
                 spawnStream(board, x, y, 1.0, 0.0, 60, baseDamage, plant);
+            } else if (name.equals("Mega Gatling Pea")) {
+                // 1. Massive 90-pea continuous barrage
+                spawnStream(board, x, y, 1.0, 0.0, 90, baseDamage, plant);
+
+                // 2. The 4 Giant Peas (Staggered slightly so they don't overlap into one sprite)
+                spawnGiantPea(board, x, y, 1.0, 0.0, baseDamage * 20, plant);
+                spawnGiantPea(board, x + 0.5, y, 1.0, 0.0, baseDamage * 20, plant);
+                spawnGiantPea(board, x + 1.0, y, 1.0, 0.0, baseDamage * 20, plant);
+                spawnGiantPea(board, x + 1.5, y, 1.0, 0.0, baseDamage * 20, plant);
+            } else if (name.equals("Puff-shroom") || name.equals("Sea-shroom")) {
+
+                // 1. Safe Global Reset using the beautiful getAllPlants()!
+                for (Plant p : board.getAllPlants()) {
+                    if (p.getName().equals(name)) {
+                        p.resetLifespan();
+                    }
+                }
+
+                // 2. Unleash the barrage
+                spawnStream(board, x, y, 1.0, 0.0, 60, baseDamage, plant);
+            }
+            else if (name.equals("Starfruit")) {
+                spawnStream(board, x, y, -1.0, 0.0, 15, baseDamage, plant);  // Back
+                spawnStream(board, x, y, 0.0, -1.0, 15, baseDamage, plant);  // Up
+                spawnStream(board, x, y, 0.0, 1.0, 15, baseDamage, plant);   // Down
+                spawnStream(board, x, y, 1.0, -0.5, 15, baseDamage, plant);  // Up-Forward
+                spawnStream(board, x, y, 1.0, 0.5, 15, baseDamage, plant);   // Down-Forward
+            }
+            else if (name.equals("Fire Peashooter") || name.equals("Peashooter")) {
+                spawnStream(board, x, y, 1.0, 0.0, 60, baseDamage, plant);
             }
             else {
                 spawnStream(board, x, y, 1.0, 0.0, 20, baseDamage, plant);
