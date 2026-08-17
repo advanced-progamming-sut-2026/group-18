@@ -17,5 +17,6 @@ public enum PlantFoodEffectType {
     HOMING_BURST,
     SCREEN_FREEZE,
     GOO_PUDDLE,
+    FLATTEN,
     NONE
 }

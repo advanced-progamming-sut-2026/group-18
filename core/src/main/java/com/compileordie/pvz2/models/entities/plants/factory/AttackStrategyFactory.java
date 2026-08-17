@@ -36,6 +36,8 @@ public class AttackStrategyFactory {
             case LOB:
                 return new LobberStrategy(projectileClass, rangeTiles);
 
+            case SQUASH:
+                return new SquashStrategy();
             case SUN_PRODUCE:
                 return new SunProduceStrategy();
 

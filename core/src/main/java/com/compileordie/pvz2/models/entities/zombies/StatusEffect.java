@@ -62,7 +62,6 @@ public class StatusEffect {
                 zombie.setHypnotized(true);
                 break;
             case STUNNED:
-                this.elapsedTicks = 50;
                 zombie.setStopZombieNow(true);
                 break;
             case POISON:

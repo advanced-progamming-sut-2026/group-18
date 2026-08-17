@@ -2,61 +2,91 @@ package com.compileordie.pvz2.models.entities.plants.strategies.attack;
 
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.Plant;
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
+import com.compileordie.pvz2.models.entities.projectiles.GrapeProjectile;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 
-import java.util.List;
-
 public class MineStrategy implements AttackStrategy {
 
-    private final double explosionRadiusTiles;
-    private final double armingTimeRequired = 15.0; // 15 seconds to arm (adjust to ticks as needed)
-    private double armingTimer = 0;
-    private boolean isArmed = false;
+    private final double splashRadiusTiles;
 
-    public MineStrategy(double explosionRadiusTiles) {
-        this.explosionRadiusTiles = explosionRadiusTiles;
+    public MineStrategy(double splashRadiusTiles) {
+        this.splashRadiusTiles = splashRadiusTiles;
     }
 
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
-        // Step 1: Handle Arming
-        if (!isArmed) {
-            armingTimer += (tickDelta / 60.0); // Assuming 60 ticks per second
-            if (armingTimer >= armingTimeRequired) {
-                isArmed = true;
-            }
-            return; // Cannot detonate while arming
-        }
+        if (!plant.isArmed()) return;
 
-        // Step 2: Collision Detection
-        List<Zombie> zombies = board.getAllZombies();
+        int plantRow = (int) (plant.getY() / Constants.Game.TILE_SIZE);
+        int plantCol = (int) (plant.getX() / Constants.Game.TILE_SIZE);
+
         boolean triggered = false;
 
-        for (Zombie zombie : zombies) {
-            if (zombie.isDead()) continue;
+        // --- INSTANT EXPLOSIVE BYPASS ---
+        if (plant.getName().equals("Cherry Bomb") || plant.getName().equals("Grapeshot")) {
+            triggered = true; // Bombs detonate instantly, they don't wait for zombies!
+        }
+        // --- STANDARD TRAP LOGIC ---
+        else {
+            // 2. Trigger Detection: Did a zombie step exactly into our tile column?
+            for (Zombie z : board.getAllZombies()) {
+                if (z.isDead()) continue;
 
-            // Trigger radius is very tight (must step directly on it)
-            double distance = Math.hypot(zombie.getX() - plant.getX(), zombie.getY() - plant.getY());
-            if (distance <= Constants.Game.TILE_SIZE * 0.4) {
-                triggered = true;
-                break;
+                if (z.getCurrentRow() == plantRow) {
+                    int zCol = (int) (z.getX() / Constants.Game.TILE_SIZE);
+                    if (zCol == plantCol) {
+                        triggered = true;
+                        break;
+                    }
+                }
             }
         }
 
-        // Step 3: Detonation
+        // 3. Detonation Engine
         if (triggered) {
-            double explosionRadius = explosionRadiusTiles * Constants.Game.TILE_SIZE;
-            for (Zombie zombie : zombies) {
-                if (zombie.isDead()) continue;
+            if (splashRadiusTiles > 0) {
+                // --- Primal Potato Mine, Cherry Bomb, Grapeshot (3x3 Splash Damage) ---
+                double radiusPixels = splashRadiusTiles * Constants.Game.TILE_SIZE;
+                for (Zombie z : board.getAllZombies()) {
+                    if (z.isDead()) continue;
 
-                double distance = Math.hypot(zombie.getX() - plant.getX(), zombie.getY() - plant.getY());
-                if (distance <= explosionRadius) {
-                    zombie.takeDamage(plant.getBaseDamage(), DamageType.EXPLOSIVE);
+                    double dist = Math.hypot(z.getX() - plant.getX(), z.getY() - plant.getY());
+                    if (dist <= radiusPixels) {
+                        z.takeDamage(plant.getBaseDamage(), DamageType.EXPLOSIVE, PlantType.getByName(plant.getName()));
+                    }
+                }
+            } else {
+                // --- Normal Potato Mine (Single Tile Damage) ---
+                for (Zombie z : board.getAllZombies()) {
+                    if (!z.isDead() && z.getCurrentRow() == plantRow) {
+                        int zCol = (int) (z.getX() / Constants.Game.TILE_SIZE);
+                        if (zCol == plantCol) {
+                            z.takeDamage(plant.getBaseDamage(), DamageType.EXPLOSIVE, PlantType.getByName(plant.getName()));
+                        }
+                    }
                 }
             }
-            plant.setCurrentHp(0); // Destroys the mine after explosion
+
+            // --- THE GRAPESHOT PAYLOAD ---
+            if (plant.getName().equals("Grapeshot")) {
+                // Base Bounces = 3. Plus upgrades!
+                int totalBounces = 3 + plant.getExtraBounces();
+
+                // Spawn EXACTLY 5 grapes!
+                for (int i = 0; i < 5; i++) {
+                    // Randomize the angle completely (0 to 360 degrees)
+                    double randomAngle = Math.random() * Math.PI * 2;
+
+                    // Grapes do exactly 200 damage per your prompt
+                    GrapeProjectile grape = new GrapeProjectile(plant.getX(), plant.getY(), randomAngle, 200, totalBounces);
+                    board.getActiveProjectiles().add(grape);
+                }
+            }
+
+            plant.die();
         }
     }
 }

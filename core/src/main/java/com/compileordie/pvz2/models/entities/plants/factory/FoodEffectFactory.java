@@ -44,7 +44,10 @@ public class FoodEffectFactory {
                 return new HomingBurstEffect(projectileClass, effectValue);
             case GOO_PUDDLE:
                 return new GooPuddleEffect();
-            default:
+            case FLATTEN:
+                return new FlattenEffect();
+
+                default:
                 return null;
         }
     }

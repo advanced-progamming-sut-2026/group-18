@@ -6,6 +6,7 @@ import com.compileordie.pvz2.models.entities.plants.enums.AttackStrategyType;
 import com.compileordie.pvz2.models.entities.plants.enums.PlantCategory;
 import com.compileordie.pvz2.models.entities.plants.enums.PlantFoodEffectType;
 import com.compileordie.pvz2.models.entities.plants.enums.PlantTag;
+import com.compileordie.pvz2.models.entities.plants.strategies.attack.LobberStrategy;
 import com.compileordie.pvz2.models.entities.projectiles.*;
 
 import java.io.BufferedReader;
@@ -165,7 +166,7 @@ public class PlantConfigRepository {
         double actionIntervalReductionTicks = 0.0;
         double growTimeReductionTicks = 0.0;
         double rechargeReductionTicks = 0.0;
-        double chillTimeBonusTicks = 0.0; // NEW
+        double chillTimeBonusTicks = 0.0;
         boolean doubleSun = false;
         boolean targetPriorityUp = false;
         int extraSunYield = 0;
@@ -175,9 +176,15 @@ public class PlantConfigRepository {
         double plantFoodChanceBonus = 0.0;
         double rangeBonus = 0.0;
         double lifespanBonusTicks = 0.0;
+        double butterChanceBonus = 0.0;
+        int aoeDamageBonus = 0;
+        int warmthRadiusBonus = 0;
+        double armTimeReductionTicks = 0.0;
+        int extraCrushes = 0;
+        int extraBounces = 0;
         upgradeStr = upgradeStr.toLowerCase();
 
-        // NEW: Catch Damage bonuses!
+        // Standard Stats
         if (upgradeStr.contains("dmg +")) damageBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
         if (upgradeStr.contains("target priority up")) targetPriorityUp = true;
         if (upgradeStr.contains("hp +")) hpBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
@@ -185,45 +192,58 @@ public class PlantConfigRepository {
         if (upgradeStr.contains("double sun")) doubleSun = true;
         if (upgradeStr.contains("sun +")) extraSunYield = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
         if (upgradeStr.contains("dmg/tick +")) poisonDmgTickBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
-        // Add parsing for time-based stats
-        if (upgradeStr.contains("time +") || upgradeStr.contains("time -") || upgradeStr.contains("cooldown -")) {
-            double timeValue = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
-
-            if (upgradeStr.contains("cooldown -")) rechargeReductionTicks = timeValue;
-            if (upgradeStr.contains("prod. time -") || upgradeStr.contains("charge time -") || upgradeStr.contains("regen -")) actionIntervalReductionTicks = timeValue;
-            if (upgradeStr.contains("grow time -")) growTimeReductionTicks = timeValue;
-            if (upgradeStr.contains("atk speed +")) atkSpeedBonusPercentage = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", ""));
-            // NEW: Catch Chill Time bonus!
-            if (upgradeStr.contains("chill time +")) chillTimeBonusTicks = timeValue;
-            if (upgradeStr.contains("pierce +")) pierceBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
-            if (upgradeStr.contains("plant food chance +")) plantFoodChanceBonus = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", ""));
-            if (upgradeStr.contains("range +")) rangeBonus = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", ""));
-            if (upgradeStr.contains("lifespan +")) lifespanBonusTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
-        }
-
-        // NOTE: Make sure your UpgradeLevel constructor accepts chillTimeBonusTicks as the 9th parameter!
-        return new UpgradeLevel(hpBonus, damageBonus, costReduction, actionIntervalReductionTicks, rechargeReductionTicks, doubleSun, growTimeReductionTicks, extraSunYield, chillTimeBonusTicks, targetPriorityUp, pierceBonus, atkSpeedBonusPercentage, poisonDmgTickBonus, plantFoodChanceBonus, rangeBonus, lifespanBonusTicks);
+        if (upgradeStr.contains("atk speed +")) atkSpeedBonusPercentage = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", ""));
+        if (upgradeStr.contains("pierce +")) pierceBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
+        if (upgradeStr.contains("plant food chance +")) plantFoodChanceBonus = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", ""));
+        if (upgradeStr.contains("range +")) rangeBonus = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", ""));
+        if (upgradeStr.contains("lifespan +")) lifespanBonusTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
+        if (upgradeStr.contains("butter +")) butterChanceBonus = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", ""));
+        if (upgradeStr.contains("cooldown -")) rechargeReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
+        if (upgradeStr.contains("prod. time -") || upgradeStr.contains("charge time -") || upgradeStr.contains("regen -")) actionIntervalReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
+        if (upgradeStr.contains("grow time -")) growTimeReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
+        if (upgradeStr.contains("chill time +")) chillTimeBonusTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
+        if (upgradeStr.contains("aoe dmg +")) aoeDamageBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
+        if (upgradeStr.contains("warmth radius +")) warmthRadiusBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
+        if (upgradeStr.contains("arm time -")) armTimeReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
+        if (upgradeStr.contains("crush 2x")) extraCrushes = 1;
+        if (upgradeStr.contains("bounces +")) extraBounces = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
+        return new UpgradeLevel(hpBonus, damageBonus, costReduction, actionIntervalReductionTicks, rechargeReductionTicks, doubleSun, growTimeReductionTicks, extraSunYield, chillTimeBonusTicks, targetPriorityUp, pierceBonus, atkSpeedBonusPercentage, poisonDmgTickBonus, plantFoodChanceBonus, rangeBonus, lifespanBonusTicks, butterChanceBonus, aoeDamageBonus, warmthRadiusBonus, armTimeReductionTicks,extraCrushes, extraBounces);
     }
 
     private void assignSpecificParameters(PlantTemplate t) {
         String name = t.getName();
 
         // 1. Specific Projectiles & Payloads
-        if (name.equals("Snow Pea") || name.equals("Winter Melon") || name.equals("Ice-shroom")) {
+        if (name.equals("Snow Pea") || name.equals("Ice-shroom")) {
             t.setProjectileType(IceProjectile.class);
-        } else if (name.equals("Fire Peashooter") || name.equals("Pepper-pult")) {
+        } else if (name.equals("Fire Peashooter")) {
             t.setProjectileType(FireProjectile.class);
         } else if (name.equals("Goo Peashooter")) {
             t.setProjectileType(PoisonProjectile.class);
-        } else if (name.equals("Cabbage-pult") || name.equals("Melon-pult") || name.equals("Winter Melon") ||
-            name.equals("Pepper-pult") || name.equals("Kernel-pult")) {
-            t.setProjectileType(name.equals("Kernel-pult") ? ButterProjectile.class : LobbedProjectile.class);
-            t.setRangeTiles(name.equals("Melon-pult") || name.equals("Winter Melon") ? 1.5 : 0.0);
-        } else if (name.equals("Cactus")) {
+        } else if (name.equals("Cabbage-pult") || name.equals("Melon-pult") || name.equals("Winter Melon") || name.equals("Pepper-pult") || name.equals("Kernel-pult")) {
+            if (name.equals("Winter Melon")) {
+                t.setProjectileType(IceLobbedProjectile.class);
+            } else if (name.equals("Pepper-pult")) {
+                t.setProjectileType(FireLobbedProjectile.class);
+            } else {
+                t.setProjectileType(LobbedProjectile.class);
+            }
+            t.setProjectileType(LobbedProjectile.class);
+            // 2. Melon-pults get 1.5 tiles of splash damage. The others get 0.0 (single target).
+            t.setRangeTiles(name.equals("Melon-pult") || name.equals("Winter Melon")  || name.equals("Pepper-pult") ? 1.5 : 0.0);
+        }
+        else if (name.equals("Potato Mine") || name.equals("Primal Potato Mine")) {
+            // Primal has a 3x3 AoE (1.5 radius). Standard only hits its own tile (0.0).
+            t.setRangeTiles(name.equals("Primal Potato Mine") ? 1.5 : 0.0);
+            t.setFoodEffectValue(2);
+        }
+        else if (name.equals("Cherry Bomb") || name.equals("Grapeshot")) {
+            t.setRangeTiles(1.5); // 3x3 Splash Damage
+        }
+        else if (name.equals("Cactus")) {
             t.setProjectileType(PiercingProjectile.class);
-        }else if (name.equals("Fume-shroom")) {
-            // NEW: Fume-shroom gets its own projectile and a base range of 5!
-            t.setProjectileType(com.compileordie.pvz2.models.entities.projectiles.FumeProjectile.class);
+        } else if (name.equals("Fume-shroom")) {
+            t.setProjectileType(FumeProjectile.class);
             t.setRangeTiles(5.0);
         } else if (name.equals("Bowling Bulb")) {
             t.setProjectileType(BouncingProjectile.class);
@@ -269,7 +289,8 @@ public class PlantConfigRepository {
         }
 
 
-        // 3. Special Values
+        /*
+ 3. Special Values /////////////////----> check this matter bro <---- ////////////////////////
         if (name.equals("Sunflower") || name.equals("Sun Bean")) t.setFoodEffectValue(50);
         if (name.equals("Primal Sunflower")) t.setFoodEffectValue(75);
         if (name.equals("Twin Sunflower")) t.setFoodEffectValue(100);
@@ -278,5 +299,6 @@ public class PlantConfigRepository {
         if (name.equals("Wall-nut") || name.equals("Explode-o-nut") || name.equals("Pumpkin")) t.setFoodEffectValue(4000);
         if (name.equals("Endurian") || name.equals("Sweet Potato")) t.setFoodEffectValue(3000);
         if (name.equals("Tall-nut")) t.setFoodEffectValue(8000);
+*/
     }
 }

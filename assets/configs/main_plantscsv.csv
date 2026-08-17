@@ -22,7 +22,7 @@ ID,Name,Category,Tags,Cost,Base HP,Damage,Base Ability,Plant Food Effect,Lvl 2,L
 21,Mega Gatling Pea,Shooter,Pea,400,300,20x4,شلیک ۴ تیر مستقیم متوالی با سرعت بسیار بالا.,شلیک رگباری عظیم و طولانی در لاین به همراه 4 تیر غول‌پیکر.,Dmg +10,Plant Food Chance +5%,Cost -50,1.5,5,DIRECT_SHOOT,RAPID_FIRE
 22,Sea-shroom,Shooter,"Shroom, Water",0,300,20,شلیک تیر با برد کوتاه. دارای طول عمر محدود 60 ثانیه.,شلیک رگباری و ریست شدن طول عمر تمام Sea-shroomها.,Range +1 Tile,Dmg +5,Lifespan +10s,1.5,15,DIRECT_SHOOT,RAPID_FIRE
 23,Puff-shroom,Shooter,Shroom,0,300,20,شلیک تیر با برد کوتاه. دارای طول عمر محدود 60 ثانیه.,شلیک رگباری و ریست شدن طول عمر تمامی Puff-shroomها.,Lifespan +10s,Dmg +10,Range +1 Tile,1.5,5,DIRECT_SHOOT,RAPID_FIRE
-24,Fume-shroom,Strike-through,Shroom,125,300,20,شلیک دود با برد متوسط که از زامبی‌ها رد می‌شود.,پرتاب توده دود عظیم که زامبی‌ها را به عقب می‌راند.,Range +1 Tile,Dmg +10,Cost -25,1.5,5,PIERCE,LANE_CLEAR
+24,Fume-shroom,Strike-through,Shroom,125,300,20,شلیک دود با برد متوسط که از زامبی‌ها رد می‌شود.,پرتاب توده دود عظیم که زامبی‌ها را به عقب می‌راند.,Range +1 Tile,Dmg +10,Cost -25,1.5,5,DIRECT_SHOOT,LANE_CLEAR
 25,Cabbage-pult,Lobber,-,100,300,40,شلیک هوایی از روی موانع.,پرتاب کلم به چند زامبی تصادفی.,Dmg +10,Atk Speed +15%,HP +150,2.9,5,LOB,AREA_DAMAGE
 26,Kernel-pult,Lobber,-,100,300,20/40,شلیک دانه ذرت (آسیب کم) یا کره (توقف موقت زامبی).,پرتاب کره به سر تمامی زامبی‌های زمین.,Butter +5%,Dmg +10,HP +150,2.9,5,LOB,AREA_DAMAGE
 27,Melon-pult,Lobber,AoE,325,300,80,شلیک هوایی سنگین با آسیب مساحتی.,پرتاب هندوانه غول‌پیکر به زامبی‌های تصادفی.,Cost -25,AoE Dmg +15,Dmg +30,2.9,5,LOB,AREA_DAMAGE
@@ -30,11 +30,11 @@ ID,Name,Category,Tags,Cost,Base HP,Damage,Base Ability,Plant Food Effect,Lvl 2,L
 29,Pepper-pult,Lobber,"Fire, AoE",200,300,50,شلیک هوایی با آسیب مساحتی (گرم‌کننده محیط اطراف).,پرتاب فلفل‌های بزرگ به ۳ زامبی تصادفی.,Dmg +15,Warmth Radius +1,Cost -25,2.9,5,LOB,AREA_DAMAGE
 30,Potato Mine,Explosive,"Trap, charge",25,300,1800,مسلح شدن با تاخیر ۱۵ ثانیه؛ انفجار هنگام تماس.,مسلح شدن آنی و پرتاب ۲ مین کلون دیگر.,Arm Time -3s,Cooldown -5s,Dmg +600,-,25,MINE,SPAWN_CLONES
 31,Primal Potato Mine,Explosive,"Trap, charge",50,300,2400,مسلح شدن سریع‌تر ۵ ثانیه ای و انفجار مساحتی ۳x۳.,مسلح شدن آنی و پرتاب ۲ مین به نقاط دیگر.,Arm Time -1s,Cooldown -3s,Dmg +400,-,5,MINE,SPAWN_CLONES
-32,Cherry Bomb,Explosive,-,150,0,1800,انفجار فوری مساحت ۳x۳.,ندارد (مصرفی آنی),Cooldown -5s,Dmg +600,Cost -25,-,35,INSTANT_USE,NONE
-33,Squash,Explosive,Trap,50,300,1800,له کردن اولین زامبی مجاور.,له کردن ۲ زامبی تصادفی در سطح زمین.,Cooldown -3s,Dmg +600,Can crush 2x,-,20,INSTANT_USE,AREA_DAMAGE
-34,Grapeshot,Explosive,-,150,0,1800,انفجار مساحتی ۳x۳ و پرتاب حبه‌های کمانه‌کننده که پس از ۵ ثانیه نابود می‌شوند.,ندارد (مصرفی آنی),Dmg +600,Bounces +1,Cost -25,-,35,INSTANT_USE,NONE
-35,Jalapeno,Explosive,Fire,125,0,1800,آتش زدن کل زامبی‌های یک لاین به صورت آنی (ذوب یخ).,ندارد (مصرفی آنی),Cooldown -5s,Dmg +600,Cost -25,-,35,INSTANT_USE,NONE
-36,Doom-shroom,Explosive,Shroom,125,0,1800,انفجار مهیب در کل باغچه و ایجاد یک گودال غیرقابل کشت.,ندارد (مصرفی آنی),Cooldown -5s,Dmg +800,Cost -50,-,15,INSTANT_USE,NONE
+32,Cherry Bomb,Explosive,-,150,100,1800,انفجار فوری مساحت ۳x۳.,ندارد (مصرفی آنی),Cooldown -5s,Dmg +600,Cost -25,-,35,MINE,NONE
+33,Squash,Explosive,Trap,50,300,1800,له کردن اولین زامبی مجاور.,له کردن ۲ زامبی تصادفی در سطح زمین.,Cooldown -3s,Dmg +600,Can crush 2x,-,20,SQUASH,FLATTEN
+34,Grapeshot,Explosive,-,150,300,1800,انفجار مساحتی ۳x۳ و پرتاب حبه‌های کمانه‌کننده که پس از ۵ ثانیه نابود می‌شوند.,ندارد (مصرفی آنی),Dmg +600,Bounces +1,Cost -25,-,35,MINE,NONE
+35,Jalapeno,Explosive,Fire,125,0,1800,آتش زدن کل زامبی‌های یک لاین به صورت آنی (ذوب یخ).,ندارد (مصرفی آنی),Cooldown -5s,Dmg +600,Cost -25,-,35,MINE,NONE
+36,Doom-shroom,Explosive,Shroom,125,0,1800,انفجار مهیب در کل باغچه و ایجاد یک گودال غیرقابل کشت.,ندارد (مصرفی آنی),Cooldown -5s,Dmg +800,Cost -50,-,15,MINE,NONE
 37,Tangle Kelp,Explosive,"Trap, Water",25,300,Insta-kill,کشیدن اولین زامبی آبی به زیر آب و نابودی آن (مخصوص ساحل).,کشیدن چند زامبی تصادفی در آب به زیر آب.,Cooldown -5s,Targets +1,Cost -25,-,15,MINE,AREA_DAMAGE
 38,Iceberg Lettuce,Explosive,"Trap, Ice",0,300,0,یخ زدن اولین زامبی که روی آن پا بگذارد.,یخ زدن تمامی زامبی‌های موجود در تصویر.,Cooldown -2s,Freeze Time +2s,Cost -0,-,20,MINE,SCREEN_FREEZE
 39,Bonk Choy,Melee,-,150,300,15,ضربه فیزیکی به خانه‌های جلو و عقب.,مشت زدن رگباری به شعاع ۳x۳ اطراف خود.,Dmg +5,Atk Speed +10%,HP +200,0.25,5,MELEE,AREA_DAMAGE

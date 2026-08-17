@@ -6,6 +6,7 @@ import com.compileordie.pvz2.models.entities.plants.enums.PlantCategory;
 import com.compileordie.pvz2.models.entities.plants.enums.PlantTag;
 import com.compileordie.pvz2.models.entities.plants.factory.FoodEffectFactory;
 import com.compileordie.pvz2.models.entities.plants.strategies.attack.AttackStrategy;
+import com.compileordie.pvz2.models.entities.plants.strategies.attack.SunProduceStrategy;
 import com.compileordie.pvz2.models.entities.plants.strategies.food.PlantFoodEffectStrategy;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Tile;
@@ -47,6 +48,9 @@ public class Plant extends GameEntity {
     private boolean doubleSunChance = false;
     private boolean targetsHighestHp = false;
     private int extraSunYield = 0;
+    private boolean isHidden = false; // True when Squash is jumping!
+    private boolean isExhausted = false; // True when Squash is done attacking and becomes a meat shield
+    private int extraCrushes = 0; // For the "Can crush 2x" upgrade!
     // life cycle tracking ...
     private double ageTicks = 0;
     private double growTimeReductionTicks = 0;
@@ -65,6 +69,13 @@ public class Plant extends GameEntity {
     private int pierceBonus = 0;
     private int poisonDmgTickBonus = 0;
     private double plantFoodChance = 0.0;
+    private double butterChance = 0.0;
+    private int aoeDamageBonus = 0;
+    private int warmthRadiusBonus = 0;
+    private double maxArmTimeTicks = 0;
+    private double currentArmTimer = 0;
+    private boolean isArmed = true; // True by default for non-traps!
+    private int extraBounces = 0;
 
     public Plant(String name, PlantCategory category, List<PlantTag> tags,
                  double x, double y, int hp, int damage, int cost, double actionIntervalTicks,
@@ -79,8 +90,9 @@ public class Plant extends GameEntity {
         this.baseDamage = damage;
         this.cost = cost;
         this.actionIntervalTicks = actionIntervalTicks;
-        // NEW: Starts fully charged so it takes action immediately on the first tick!
-        this.currentActionTimer = actionIntervalTicks;
+        // FIX: Sun producers must WAIT first. Everyone else starts fully charged!
+        if (attackStrategy instanceof SunProduceStrategy) { this.currentActionTimer = 0; }
+        else { this.currentActionTimer = actionIntervalTicks; }
         this.attackStrategy = attackStrategy;
         this.foodStrategy = foodStrategy;
         this.upgradeMap = upgradeMap;
@@ -90,6 +102,16 @@ public class Plant extends GameEntity {
         if (this.name.equals("Puff-shroom") || this.name.equals("Sea-shroom")) {
             this.maxLifespanTicks = 600.0; // 60 Seconds
             this.currentLifespanTicks = 600.0;
+        }
+        if (this.name.equals("Kernel-pult")) {
+            this.butterChance = 25.0;
+        }
+        if (this.name.equals("Potato Mine")) {
+            this.maxArmTimeTicks = 150.0; // 15 seconds
+            this.isArmed = false;
+        } else if (this.name.equals("Primal Potato Mine")) {
+            this.maxArmTimeTicks = 50.0; // 5 seconds
+            this.isArmed = false;
         }
     }
 
@@ -135,6 +157,15 @@ public class Plant extends GameEntity {
 
         currentActionTimer += tickDelta;
 
+        // --- THE TRAP ARMING ENGINE ---
+        if (!this.isArmed) {
+            this.currentArmTimer += tickDelta;
+            if (this.currentArmTimer >= this.maxArmTimeTicks) {
+                this.isArmed = true;
+            }
+            // An unarmed trap cannot trigger its attack strategy! (If a zombie reaches it now, the zombie will just eat it normally!)
+            return;
+        }
         // 2. Execute attack strategy
         if (currentActionTimer >= actionIntervalTicks) {
             this.holdAction = false; // reset the flag
@@ -187,17 +218,24 @@ public class Plant extends GameEntity {
         int row = currentTile.row;
         int col = currentTile.column;
 
-        // Scan the 8 surrounding tiles for a FIRE plant
-        for (int r = row - 1; r <= row + 1; r++) {
-            for (int c = col - 1; c <= col + 1; c++) {
+        for (int r = row - 2; r <= row + 2; r++) {
+            for (int c = col - 2; c <= col + 2; c++) {
                 if (r == row && c == col) continue;
 
                 if (r >= 0 && r < board.totalRows && c >= 0 && c < board.totalCols) {
                     Tile adjacentTile = board.getTile(r, c);
                     if (adjacentTile != null && adjacentTile.plant != null) {
-                        if (adjacentTile.plant.hasTag(PlantTag.FIRE)) {
-                            hasAdjacentFire = true;
-                            break;
+                        Plant checkingPlant = adjacentTile.plant;
+
+                        // If it's a fire plant, check if we are within its specific warmth radius!
+                        if (checkingPlant.hasTag(PlantTag.FIRE)) {
+                            int effectiveRadius = checkingPlant.getWarmthRadius() > 0 ? checkingPlant.getWarmthRadius() : 1;
+
+                            // Check if this frozen plant is actually inside that radius
+                            if (Math.abs(r - row) <= effectiveRadius && Math.abs(c - col) <= effectiveRadius) {
+                                hasAdjacentFire = true;
+                                break;
+                            }
                         }
                     }
                 }
@@ -280,9 +318,7 @@ public class Plant extends GameEntity {
                 this.baseDamage += stats.damageBonus;
                 this.cost = Math.max(0, this.cost - stats.costReduction);
                 this.actionIntervalTicks = Math.max(1.0, this.actionIntervalTicks - stats.actionIntervalReductionTicks);
-                // Stack the growth time reduction
                 this.growTimeReductionTicks += stats.growTimeReductionTicks;
-                // stack the extra sun yield(Gold Bloom)
                 this.extraSunYield += stats.extraSunYield;
                 this.chillTimeBonusTicks += stats.chillTimeBonusTicks;
                 this.actionIntervalReductionTicks += stats.actionIntervalReductionTicks;
@@ -291,6 +327,12 @@ public class Plant extends GameEntity {
                 this.poisonDmgTickBonus += stats.poisonDmgTickBonus;
                 this.plantFoodChance += stats.plantFoodChanceBonus;
                 this.rangeBonus += stats.rangeBonus;
+                this.butterChance += stats.butterChanceBonus;
+                this.aoeDamageBonus += stats.aoeDamageBonus;
+                this.warmthRadiusBonus += stats.warmthRadiusBonus;
+                this.maxArmTimeTicks = Math.max(0, this.maxArmTimeTicks - stats.armTimeReductionTicks);
+                this.extraCrushes += stats.extraCrushes;
+                this.extraBounces += stats.extraBounces;
             }
         }
         if (this.atkSpeedBonusPercentage > 0) {
@@ -321,7 +363,7 @@ public class Plant extends GameEntity {
     public void addStack() { if (this.stackCount < 5) this.stackCount++; }
     public double getChillTimeBonusTicks() { return chillTimeBonusTicks; }
 
-    // --- Standard Getters & Setters ---
+    // --- Standard Getters & Setters & helpers ---
     public PlantFoodEffectStrategy getFoodEffectStrategy() { return foodStrategy; }
     public AttackStrategy getAttackStrategy() { return attackStrategy; }
     public int getBaseHp() { return baseHp; }
@@ -344,7 +386,6 @@ public class Plant extends GameEntity {
     public boolean hasDoubleSunChance() { return this.doubleSunChance; }
     public int getExtraSunYield() { return extraSunYield; }
     public int getPierceBonus() { return pierceBonus; }
-    // bowling bulb
     public int getBulbCount() { return bulbCount; }
     public void consumeBulb() { if (this.bulbCount > 0) this.bulbCount--; }
     public void reloadAllBulbs() { this.bulbCount = 3; this.bulbRegenTimer = 0; }
@@ -353,4 +394,15 @@ public class Plant extends GameEntity {
     public void resetLifespan() {
         if (this.maxLifespanTicks > 0) this.currentLifespanTicks = this.maxLifespanTicks;
     }
+    public double getButterChance() { return butterChance; }
+    public int getAoeDamage() { return (this.baseDamage / 2) + this.aoeDamageBonus; }
+    public int getWarmthRadius() { return (this.name.equals("Pepper-pult") ? 1 : 0) + this.warmthRadiusBonus; }
+    public boolean isArmed() { return isArmed; }
+    public void forceArm() { this.isArmed = true; } // For the Plant Food effect!
+    public boolean isHidden() { return isHidden; }
+    public void setHidden(boolean hidden) { this.isHidden = hidden; }
+    public boolean isExhausted() { return isExhausted; }
+    public void setExhausted(boolean exhausted) { this.isExhausted = exhausted; }
+    public int getExtraCrushes() { return extraCrushes; }
+    public int getExtraBounces() { return extraBounces; }
 }

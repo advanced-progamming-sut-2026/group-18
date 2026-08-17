@@ -16,5 +16,6 @@ public enum AttackStrategyType {
     BOWLING,
     DIAGONAL,
     STAR,
+    SQUASH,
     NONE
 }

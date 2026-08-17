@@ -5,12 +5,9 @@ public class UpgradeLevel {
     public final int damageBonus;
     public final int costReduction;
     public final int extraSunYield;
-    // For upgrades like "Prod. Time -2s" or "Arm Time -3s"
     public final double actionIntervalReductionTicks;
-    // For upgrades like "Cooldown -5s"
     public final double rechargeReductionTicks;
     public final boolean doubleSunChance;
-    // NEW: For upgrades like "Grow Time -5s" (Sun-shroom)
     public final double growTimeReductionTicks;
     public final double chillTimeBonusTicks;
     public boolean targetPriorityUp;
@@ -20,6 +17,13 @@ public class UpgradeLevel {
     public final double plantFoodChanceBonus;
     public final double rangeBonus;
     public final double lifespanBonusTicks;
+    public final double butterChanceBonus;
+    public final int aoeDamageBonus;
+    public final int warmthRadiusBonus;
+    public final double armTimeReductionTicks;
+    public int extraCrushes;
+    public final int extraBounces;
+
     public UpgradeLevel(int hpBonus,
                         int damageBonus,
                         int costReduction,
@@ -35,7 +39,13 @@ public class UpgradeLevel {
                         int poisonDmgTickBonus,
                         double plantFoodChanceBonus,
                         double rangeBonus,
-                        double lifespanBonusTicks) {
+                        double lifespanBonusTicks,
+                        double butterChanceBonus,
+                        int aoeDamageBonus,
+                        int warmthRadiusBonus,
+                        double armTimeReductionTicks,
+                        int extraCrushes,
+                        int extraBounces) {
         this.hpBonus = hpBonus;
         this.damageBonus = damageBonus;
         this.costReduction = costReduction;
@@ -52,5 +62,11 @@ public class UpgradeLevel {
         this.plantFoodChanceBonus = plantFoodChanceBonus;
         this.rangeBonus = rangeBonus;
         this.lifespanBonusTicks = lifespanBonusTicks;
+        this.butterChanceBonus = butterChanceBonus;
+        this.aoeDamageBonus = aoeDamageBonus;
+        this.warmthRadiusBonus = warmthRadiusBonus;
+        this.armTimeReductionTicks = armTimeReductionTicks;
+        this.extraCrushes = extraCrushes;
+        this.extraBounces = extraBounces;
     }
 }
