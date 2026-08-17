@@ -1,120 +1,101 @@
 package com.compileordie.pvz2.controllers.menus.progression;
 
 import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.models.components.Result;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.missions.Pot;
 import com.compileordie.pvz2.models.missions.shop.CurrencyType;
+import com.compileordie.pvz2.models.missions.shop.DailyOffer;
 import com.compileordie.pvz2.models.missions.shop.Shop;
 import com.compileordie.pvz2.models.missions.shop.ShopItem;
 import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.models.user.Player;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class ShopMenuController {
     private ShopMenuController() {
     }
 
-    public static String showList() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%-15s | %-25s | %-10s | %-10s%n", "Item ID", "Name", "Cost", "Yield"));
-        sb.repeat("-", 65).append(System.lineSeparator());
-
-        for (ShopItem item : Shop.PERMANENT_ITEMS) {
-            String cost = item.price + " " + item.currencyType;
-            String yield = (item.itemId.equals("exchange") ? item.quantity + " coins" : "x" + item.quantity);
-            sb.append(String.format("%-15s | %-25s | %-10s | %-10s%n", item.itemId, item.displayName, cost, yield));
-        }
-        return sb.toString().trim();
+    public static List<ShopItem> getPermanentItems() {
+        return Shop.PERMANENT_ITEMS;
     }
 
-    public static String showDaily() {
+    public static Result<DailyOffer> getDailyOffer() {
         Player player = AppModel.player;
         Shop.refreshDailyOfferIfNeeded(player);
 
         if (player.dailyOffer.targetPlant == null) {
-            return "Daily Offer: Unavailable. Unlock some plants first!";
+            return Result.failure("Unlock some plants first to receive daily offers!");
         }
 
-        return "--- DAILY OFFER ---" + System.lineSeparator() +
-            "Item: " + player.dailyOffer.quantity + "x Seed Packets for "
-            + player.dailyOffer.targetPlant + System.lineSeparator() +
-            "Price: " + player.dailyOffer.price + " coins" + System.lineSeparator() +
-            "Status: " + (player.dailyOffer.purchased ? "Sold Out" : "Available");
+        return Result.success(player.dailyOffer);
     }
 
-    public static String buy(String id, String countStr, String type) {
+    public static Result<String> buyDailyOffer() {
         Player player = AppModel.player;
-        int count;
-
-        try {
-            count = Integer.parseInt(countStr);
-            if (count <= 0) return "[ERROR] Count must be positive.";
-        } catch (NumberFormatException e) {
-            return "[ERROR] Count must be an integer.";
-        }
-
-        if (id.equalsIgnoreCase("daily")) {
-            return buyDailyOffer(player, count);
-        }
-
-        return buyCatalogItem(player, id, count, type);
-    }
-
-    private static String buyDailyOffer(Player player, int count) {
+        DailyOffer dailyOffer = player.dailyOffer;
         Shop.refreshDailyOfferIfNeeded(player);
 
-        if (player.dailyOffer.targetPlant == null) return "[ERROR] No daily offer available.";
-        if (player.dailyOffer.purchased) return "[ERROR] You have already purchased the daily offer today.";
-        if (count > 1) return "[ERROR] You can only buy 1 daily offer.";
-        if (player.coins < player.dailyOffer.price) return "[ERROR] Insufficient coins.";
+        if (dailyOffer.targetPlant == null) return Result.failure("No daily offer available");
+        if (dailyOffer.purchased) return Result.failure("You have already purchased the daily offer today");
+        if (player.coins < dailyOffer.price) return Result.failure("Insufficient coins");
 
-        player.coins -= player.dailyOffer.price;
-        player.seedPackets.put(player.dailyOffer.targetPlant,
-            player.seedPackets.getOrDefault(player.dailyOffer.targetPlant, 0) + player.dailyOffer.quantity);
-        player.dailyOffer.purchased = true;
+        player.coins -= dailyOffer.price;
+        player.seedPackets.put(dailyOffer.targetPlant,
+            player.seedPackets.getOrDefault(dailyOffer.targetPlant, 0) + dailyOffer.quantity);
+        dailyOffer.purchased = true;
 
         new UserDatabase(player.username).save(player);
-        return "Successfully purchased the daily offer for " + player.dailyOffer.targetPlant + "!";
+        return Result.success(
+            "Purchased " + dailyOffer.quantity + " " + dailyOffer.targetPlant.toString() + " seeds successfully!"
+        );
     }
 
-    private static String buyCatalogItem(Player player, String id, int count, String type) {
+    public static Result<String> buyCatalogItem(String id, int count, PlantType selectedPlant) {
+        if (count <= 0) return Result.failure("Count must be positive");
+
+        Player player = AppModel.player;
         ShopItem item = Shop.getItemById(id);
-        if (item == null) return "[ERROR] Item ID not found.";
+
+        if (item == null) return Result.failure("Item ID not found");
 
         int totalCost = item.price * count;
 
         String validationError = validatePurchase(player, item, count, totalCost);
-        if (validationError != null) return validationError;
+        if (validationError != null) return Result.failure(validationError);
 
-        // Attempt to execute the effect BEFORE deducting currency to prevent lost funds on error
-        String executionError = executeItemEffect(player, item, count, type);
-        if (executionError != null) return executionError;
+        Result<String> result = executeItemEffect(player, item, count, selectedPlant);
+        if (!result.isSuccess) return result;
 
+        // Deduct currency
         if (item.currencyType == CurrencyType.COINS) player.coins -= totalCost;
         if (item.currencyType == CurrencyType.DIAMONDS) player.diamonds -= totalCost;
 
         new UserDatabase(player.username).save(player);
-        return "Successfully purchased " + count + "x " + item.displayName + ".";
+        return result;
     }
 
     private static String validatePurchase(Player player, ShopItem item, int count, int totalCost) {
         if (item.currencyType == CurrencyType.COINS && player.coins < totalCost) {
-            return "[ERROR] Insufficient coins. You need " + totalCost + " coins.";
+            return "Insufficient coins. You need " + totalCost + " coins";
         }
         if (item.currencyType == CurrencyType.DIAMONDS && player.diamonds < totalCost) {
-            return "[ERROR] Insufficient diamonds. You need " + totalCost + " diamonds.";
+            return "Insufficient diamonds. You need " + totalCost + " diamonds";
         }
         if (item.itemId.equals("pot") && (player.greenhousePots.size() + count) > item.maxOwnable) {
-            return "[ERROR] You cannot exceed the maximum limit of " + item.maxOwnable + " pots.";
+            return "You cannot exceed the maximum limit of " + item.maxOwnable + " pots";
         }
         if (item.itemId.equals("plant_food") && (player.plantFoodCount + count) > item.maxOwnable) {
-            return "[ERROR] You cannot exceed the maximum limit of " + item.maxOwnable + " plant foods.";
+            return "You cannot exceed the maximum limit of " + item.maxOwnable + " plant foods";
         }
         return null;
     }
 
-    private static String executeItemEffect(Player player, ShopItem item, int count, String type) {
+    private static Result<String> executeItemEffect(Player player, ShopItem item, int count, PlantType selectedPlant) {
         switch (item.itemId) {
             case "pot":
                 for (int i = 0; i < count; i++) player.greenhousePots.add(new Pot());
@@ -127,27 +108,37 @@ public class ShopMenuController {
                 break;
             case "random_seed":
                 if (player.unlockedPlants == null || player.unlockedPlants.isEmpty()) {
-                    return "[ERROR] You must unlock plants before buying random seeds.";
+                    return Result.failure("You must unlock plants before buying random seeds");
                 }
-                for (int i = 0; i < count; i++) {
-                    PlantType randomPlant =
-                        player.unlockedPlants.get(new Random().nextInt(player.unlockedPlants.size()));
-                    player.seedPackets.put(randomPlant,
-                        player.seedPackets.getOrDefault(randomPlant, 0) + item.quantity);
+                Random random = new Random();
+                Map<PlantType, Integer> gainedSeeds = new HashMap<>();
+                int totalSeedsToGive = count * item.quantity;
+                for (int i = 0; i < totalSeedsToGive; i++) {
+                    PlantType randomPlant = player.unlockedPlants.get(random.nextInt(player.unlockedPlants.size()));
+                    player.seedPackets.put(randomPlant, player.seedPackets.getOrDefault(randomPlant, 0) + 1);
+                    gainedSeeds.put(randomPlant, gainedSeeds.getOrDefault(randomPlant, 0) + 1);
                 }
-                break;
+                StringBuilder messageBuilder = new StringBuilder("Obtained: ");
+                int index = 0;
+                for (Map.Entry<PlantType, Integer> entry : gainedSeeds.entrySet()) {
+                    messageBuilder.append(entry.getValue()).append("x ").append(entry.getKey().toString());
+                    if (index < gainedSeeds.size() - 1) {
+                        messageBuilder.append(", ");
+                    }
+                    index++;
+                }
+                return Result.success(messageBuilder.toString());
             case "selected_seed":
-                if (type == null || type.isEmpty()) {
-                    return "[ERROR] You must specify a plant type (-t) for selected seeds.";
+                if (selectedPlant == null) {
+                    return Result.failure("You must specify a plant type for selected seeds");
                 }
-                PlantType targetPlant = PlantType.getByName(type);
-                if (targetPlant == null || !player.unlockedPlants.contains(targetPlant)) {
-                    return "[ERROR] Plant not found or not unlocked yet.";
+                if (!player.unlockedPlants.contains(selectedPlant)) {
+                    return Result.failure("Selected plant is not unlocked yet");
                 }
-                player.seedPackets.put(targetPlant,
-                    player.seedPackets.getOrDefault(targetPlant, 0) + (item.quantity * count));
+                player.seedPackets.put(selectedPlant,
+                    player.seedPackets.getOrDefault(selectedPlant, 0) + (item.quantity * count));
                 break;
         }
-        return null;
+        return Result.success("Purchase successful!");
     }
 }
