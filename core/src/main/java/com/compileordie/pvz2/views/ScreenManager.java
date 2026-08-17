@@ -26,7 +26,6 @@ public class ScreenManager {
             case COLLECTION -> new CollectionMenuScreen();
             case GREENHOUSE -> new GreenhouseMenuScreen();
             case TRAVEL_LOG -> new TravelLogMenuScreen();
-            case LEADERBOARD -> new LeaderboardMenuScreen();
             case SHOP -> new ShopMenuScreen();
             case GAME_SESSION -> new GameScreen();
         };

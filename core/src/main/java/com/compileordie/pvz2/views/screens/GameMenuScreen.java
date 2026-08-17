@@ -25,6 +25,7 @@ import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.views.ScreenManager;
 import com.compileordie.pvz2.views.ScreenType;
 import com.compileordie.pvz2.views.customelements.CurrencyHud;
+import com.compileordie.pvz2.views.customelements.LeaderboardModal;
 
 public class GameMenuScreen extends MenuScreen {
     private Image backgroundImage;
@@ -241,7 +242,8 @@ public class GameMenuScreen extends MenuScreen {
 
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                System.out.println("Leaderboard button clicked!");
+                LeaderboardModal modal = new LeaderboardModal(skin);
+                modal.show(stage);
             }
         });
     }
