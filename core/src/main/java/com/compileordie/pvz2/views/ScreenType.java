@@ -10,7 +10,6 @@ public enum ScreenType {
     COLLECTION,
     GREENHOUSE,
     TRAVEL_LOG,
-    LEADERBOARD,
     SHOP,
     GAME_SESSION;
 }
