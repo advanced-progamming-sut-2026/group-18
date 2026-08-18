@@ -8,11 +8,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ZombieVisualRegistry {
-
-    /**
-     * ریشه‌ی واقعی‌ای که PamPlayer/TextureBank هنگام لودکردن فایل از آن استفاده می‌کند.
-     * این مقدار برای جلوگیری از خطای NoSuchFileException و بررسی دقیق دیسک ضروری است.
-     */
     private static final String REAL_ASSET_ROOT = "pvz-assets/IMAGES/";
 
     public static class PamSpec {
@@ -30,30 +25,15 @@ public class ZombieVisualRegistry {
             this(pathTemplate, 0f, 0f);
         }
 
-        /**
-         * 🚨 ریشه‌ی اصلی باگ «زامبی اسپاون شده ولی رندر نشده»:
-         * getResolvedPath() همیشه، برای *هر* PamSpec، بر اساس چپتر فعلی
-         * FULL<->INITIAL رو جابه‌جا می‌کنه (خط پایین‌تر). این برای زامبی‌های
-         * "بدون چپتر" (allstar, parasol, prospector, explorer, dodo rider،
-         * imp عادی و ده‌ها مورد دیگه) فاجعه‌ست: مسیر واقعی‌شون ثابته (مثلا
-         * همیشه FULL)، ولی اگه چپتر فعلی EGYPT باشه (یا هر جای دیگه که این
-         * زامبی رو تست‌اسپاون کنی)، این تابع بی‌سروصدا "/FULL/" رو به
-         * "/INITIAL/" تبدیل می‌کنه -> یه مسیر ناموجود -> existsOnDisk()==false
-         * -> isAvailable()==false -> GameScreen کاملا رد می‌کنه (نه کرش، فقط
-         * نامرئی). از fixed(...) استفاده کن تا این جایگزینی خودکار خنثی بشه.
-         */
         public static PamSpec fixed(String literalPath) {
             return new PamSpec(literalPath) {
                 @Override
                 public String getResolvedPath() {
-                    return this.pathTemplate; // مسیر واقعی، بدون هیچ جایگزینی FULL/INITIAL یا {CH}
+                    return this.pathTemplate;
                 }
             };
         }
 
-        /**
-         * جایگزینی تگ چپتر و تنظیم خودکار مسیر (INITIAL برای مصر، FULL برای سایر).
-         */
         public String getResolvedPath() {
             if (pathTemplate == null) return "";
 
@@ -69,9 +49,6 @@ public class ZombieVisualRegistry {
             return path.replace("{CH}", chTag);
         }
 
-        /**
-         * بررسی ایمن وجود فیزیکی فایل روی دیسک با استفاده از پیشوند واقعی.
-         */
         public boolean existsOnDisk() {
             try {
                 String realPath = REAL_ASSET_ROOT + getResolvedPath();
@@ -101,9 +78,6 @@ public class ZombieVisualRegistry {
             return resolved;
         }
 
-        /**
-         * بررسی اینکه آیا تمام فایل‌های Asset این زامبی برای چپتر فعلی روی دیسک موجودند یا خیر.
-         */
         public boolean isAvailableForCurrentChapter() {
             if (pams.isEmpty()) return false;
             for (PamSpec pam : pams) {
@@ -116,8 +90,6 @@ public class ZombieVisualRegistry {
     }
 
     private static final Map<String, ZombieVisualDef> REGISTRY = new HashMap<>();
-
-    // استفاده از ConcurrentHashMap برای جلوگیری از خطاهای همزمانی (Concurrency) در ترد رندر
     private static final Map<String, Boolean> AVAILABILITY_CACHE = new ConcurrentHashMap<>();
 
     public static void register(String zombieTypeName, ZombieVisualDef def) {
@@ -150,9 +122,6 @@ public class ZombieVisualRegistry {
         return def;
     }
 
-    /**
-     * بررسی وجود فایل‌های زامبی با استفاده از کش برای جلوگیری از افت فریم (I/O Bottleneck).
-     */
     public static boolean isAvailable(String zombieTypeName) {
         if (zombieTypeName == null) return false;
         ZombieVisualDef def = get(zombieTypeName);
@@ -160,19 +129,14 @@ public class ZombieVisualRegistry {
 
         String cacheKey = zombieTypeName.toUpperCase() + "@" + getChapterTag();
 
-        // بررسی کش
         Boolean cached = AVAILABILITY_CACHE.get(cacheKey);
         if (cached != null) return cached;
 
-        // محاسبه و ذخیره در کش
         boolean available = def.isAvailableForCurrentChapter();
         AVAILABILITY_CACHE.put(cacheKey, available);
         return available;
     }
 
-    /**
-     * پاک‌سازی کش. در متدهای show() یا loadAssets() کلاس GameScreen حتماً فراخوانی شود.
-     */
     public static void clearAvailabilityCache() {
         AVAILABILITY_CACHE.clear();
     }
@@ -181,22 +145,17 @@ public class ZombieVisualRegistry {
         if (AppModel.currentChapter == null) {
             return "EGYPT";
         }
-        // 🕹️ طبق درخواست: مینی‌گیم‌ها (و هر چپتر دیگه‌ای که این switch نمی‌شناستش)
-        // باید دقیقا مثل EGYPT رفتار کنن؛ همین default از قبل این کار رو می‌کنه.
-        return switch (AppModel.currentChapter) {
-            case ANCIENT_EGYPT -> "EGYPT";
-            case BIG_WAVE_BEACH -> "BEACH";
-            case DARK_AGES -> "DARK";
-            case FROSTBITE_CAVES -> "ICEAGE";
-            default -> "EGYPT";
-        };
+        String tag;
+        if (AppModel.currentChapter == ChapterType.ANCIENT_EGYPT) {
+            tag = "EGYPT";
+        } else if (AppModel.currentChapter == ChapterType.DARK_AGES) {
+            tag = "DARK";
+        } else if (AppModel.currentChapter == ChapterType.FROSTBITE_CAVES) {
+            tag = "ICEAGE";
+        } else tag = "BEACH";
+        return tag;
     }
 
-    /**
-     * 🧾 برای هر PamSpec این تعریف، مسیر resolve‌شده‌اش رو برمی‌گردونه به همراه
-     * اینکه رو دیسک هست یا نه - صرفا برای ساختن لاگ‌های دقیق (GameScreen ازش
-     * استفاده می‌کنه تا بگه *دقیقا* کدوم فایل گمه، نه فقط «یه چیزی گم شده»).
-     */
     public static List<String> describeMissingAssets(String zombieTypeName) {
         List<String> missing = new ArrayList<>();
         ZombieVisualDef def = get(zombieTypeName);
@@ -209,9 +168,7 @@ public class ZombieVisualRegistry {
         return missing;
     }
 
-    // مقداردهی اولیه‌ی رجیستری
     static {
-        // ۱. زامبی استاندارد
         ZombieVisualDef standardDef = new ZombieVisualDef(
             List.of(new PamSpec("768/INITIAL/ZOMBIE/ZOMBIE_{CH}_BASIC/ZOMBIE_{CH}_BASIC.PAM")),
             Collections.emptyList()
@@ -220,12 +177,6 @@ public class ZombieVisualRegistry {
         register("BASIC", standardDef);
         register("STANDARD_ZOMBIE", standardDef);
 
-        // ۲. سر مخروطی
-        // 🛡️ مراتب دمیج تدریجی (از سالم به شکسته): norm -> damage_01 -> damage_02
-        // -> (وقتی armorHealth<=0) هیچ‌کدوم. مقدار true/false هر کلید دیگه به‌صورت
-        // ثابت اینجا ست نمی‌شه؛ GameScreen.drawSingleZombie هر فریم بر اساس
-        // armorHealth/maxArmorHealth واقعیِ زامبی، دقیقا یکی از این‌ها رو انتخاب
-        // می‌کنه (نگاه کن به GameScreen#buildArmorVisibilityMap).
         ZombieVisualDef coneheadDef = new ZombieVisualDef(
             List.of(new PamSpec("768/INITIAL/ZOMBIE/ZOMBIE_{CH}_BASIC/ZOMBIE_{CH}_BASIC.PAM")),
             List.of(
@@ -238,7 +189,6 @@ public class ZombieVisualRegistry {
         register("CONEHEAD", coneheadDef);
         register("CONEHEAD_ZOMBIE", coneheadDef);
 
-        // ۳. سر سطلی (همون منطق بالا، برای bucket)
         ZombieVisualDef bucketheadDef = new ZombieVisualDef(
             List.of(new PamSpec("768/INITIAL/ZOMBIE/ZOMBIE_{CH}_BASIC/ZOMBIE_{CH}_BASIC.PAM")),
             List.of(
@@ -251,7 +201,6 @@ public class ZombieVisualRegistry {
         register("BUCKETHEAD", bucketheadDef);
         register("BUCKETHEAD_ZOMBIE", bucketheadDef);
 
-        // ۴. سر بلوکی (بدون کلید master جدا - طبق مشخصات، فقط ۳ مرحله‌ی خود brick)
         ZombieVisualDef blockheadDef = new ZombieVisualDef(
             List.of(new PamSpec("768/INITIAL/ZOMBIE/ZOMBIE_{CH}_BASIC/ZOMBIE_{CH}_BASIC.PAM")),
             List.of(
@@ -263,10 +212,6 @@ public class ZombieVisualRegistry {
         register("BLOCKHEAD", blockheadDef);
         register("BLOCKHEAD_ZOMBIE", blockheadDef);
 
-        // ۵. شوالیه: دو تکه‌ی زره‌ی مستقل از هم - هلمت (crown) اول دمیج می‌بینه،
-        // بعد شولدر (shoulder)، بعد خودِ زامبی. هر تکه مراتب norm/damage_01/damage_02
-        // خودش رو داره و مستقل از اون یکی محاسبه می‌شه (نگاه کن به KnightZombie
-        // #helmetArmorHealth/#shoulderArmorHealth و GameScreen#buildArmorVisibilityMap).
         ZombieVisualDef knightDef = new ZombieVisualDef(
             List.of(new PamSpec("768/INITIAL/ZOMBIE/ZOMBIE_{CH}_BASIC/ZOMBIE_{CH}_BASIC.PAM")),
             List.of(
@@ -283,7 +228,6 @@ public class ZombieVisualRegistry {
         register("KNIGHT", knightDef);
         register("KNIGHT_ZOMBIE", knightDef);
 
-        // ۶. را زامبی
         ZombieVisualDef raDef = new ZombieVisualDef(
             List.of(new PamSpec("768/INITIAL/ZOMBIE/ZOMBIE_{CH}_RA/ZOMBIE_{CH}_RA.PAM")),
             Collections.emptyList()
@@ -291,7 +235,6 @@ public class ZombieVisualRegistry {
         register("RA", raDef);
         register("RA_ZOMBIE", raDef);
 
-        // ۷. غول (Gargantuar - با در نظر گرفتن استثنای فصل ICEAGE)
         ZombieVisualDef gargDef = new ZombieVisualDef(
             List.of(new PamSpec("768/INITIAL/ZOMBIE/{CH}_GARGANTUAR/{CH}_GARGANTUAR.PAM") {
                 @Override
@@ -308,19 +251,14 @@ public class ZombieVisualRegistry {
         register("GARGANTUAR", gargDef);
         register("GARGANTUAR_ZOMBIE", gargDef);
 
-        // ۸. ایمپ - مسیر ثابت و تایید شده، مستقل از چپتر. (⚠️ قبلا این‌جا یه
-        // switch حدسی بر اساس چپتر بود که مسیرهای تایید‌نشده مثل ZOMBIE_EGYPT_IMP
-        // و ZOMBIE_BEACH_IMP_MERMAID می‌ساخت؛ اگه اون پوشه‌ها واقعا رو دیسک وجود
-        // نداشته باشن، دقیقا همون باگ «اسپاون شده ولی رندر نشده» رخ می‌ده. طبق
-        // تایید نهایی، ایمپ همیشه همین یک مسیره.)
+        String imp_name = (AppModel.currentChapter == ChapterType.ANCIENT_EGYPT) ? "768/INITIAL/ZOMBIE/ZOMBIE_{CH}_IMP/ZOMBIE_{CH}_IMP.PAM" : AppModel.currentChapter == ChapterType.DARK_AGES ? "768/FULL/ZOMBIE/ZOMBIE_{CH}_IMP_MONK/ZOMBIE_{CH}_IMP_MONK.PAM" : AppModel.currentChapter == ChapterType.BIG_WAVE_BEACH ? "768/FULL/ZOMBIE/ZOMBIE_{CH}_IMP_MERMAID/ZOMBIE_{CH}_IMP_MERMAID.PAM" : "768/FULL/ZOMBIE/ZOMBIE_{CH}_IMP/ZOMBIE_{CH}_IMP.PAM";
         ZombieVisualDef impDef = new ZombieVisualDef(
-            List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_DARK_IMP_MONK/ZOMBIE_DARK_IMP_MONK.PAM")),
+            List.of(new PamSpec(imp_name)),
             Collections.emptyList()
         );
         register("IMP", impDef);
         register("IMP_ZOMBIE", impDef);
 
-        // ۹. آل استار
         ZombieVisualDef allstarDef = new ZombieVisualDef(
             List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_MODERN_ALLSTAR/ZOMBIE_MODERN_ALLSTAR.PAM")),
             Collections.emptyList()
@@ -329,7 +267,6 @@ public class ZombieVisualRegistry {
         register("ALL_STAR", allstarDef);
         register("ALL_STAR_ZOMBIE", allstarDef);
 
-        // ۱۰. پارازول
         ZombieVisualDef parasolDef = new ZombieVisualDef(
             List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_LOSTCITY_JANE/ZOMBIE_LOSTCITY_JANE.PAM")),
             Collections.emptyList()
@@ -337,7 +274,6 @@ public class ZombieVisualRegistry {
         register("PARASOL", parasolDef);
         register("PARASOL_ZOMBIE", parasolDef);
 
-        // ۱۱. جمجمه کریستالی
         ZombieVisualDef turquoiseDef = new ZombieVisualDef(
             List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_LOSTCITY_CRYSTALSKULL/ZOMBIE_LOSTCITY_CRYSTALSKULL.PAM")),
             Collections.emptyList()
@@ -345,7 +281,6 @@ public class ZombieVisualRegistry {
         register("TURQUOISE", turquoiseDef);
         register("TURQUOISE_ZOMBIE", turquoiseDef);
 
-        // ۱۲. روزنامه
         ZombieVisualDef newspaperDef = new ZombieVisualDef(
             List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_MODERN_NEWSPAPER/ZOMBIE_MODERN_NEWSPAPER.PAM")),
             Collections.emptyList()
@@ -353,7 +288,6 @@ public class ZombieVisualRegistry {
         register("NEWSPAPER", newspaperDef);
         register("NEWSPAPER_ZOMBIE", newspaperDef);
 
-        // ۱۳. کاوشگر
         ZombieVisualDef prospectorDef = new ZombieVisualDef(
             List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_PROSPECTOR/ZOMBIE_PROSPECTOR.PAM")),
             Collections.emptyList()
@@ -361,7 +295,6 @@ public class ZombieVisualRegistry {
         register("PROSPECTOR", prospectorDef);
         register("PROSPECTOR_ZOMBIE", prospectorDef);
 
-        // ۱۴. پیانو
         ZombieVisualDef pianistDef = new ZombieVisualDef(
             List.of(
                 PamSpec.fixed("768/FULL/ZOMBIE/PIANO/PIANO.PAM"),
@@ -373,7 +306,6 @@ public class ZombieVisualRegistry {
         register("PIANIST_ZOMBIE", pianistDef);
         register("PIANO", pianistDef);
 
-        // ۱۵. بشکه‌ران
         ZombieVisualDef barrelDef = new ZombieVisualDef(
             List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_PIRATE_BARREL_PUSHER/ZOMBIE_PIRATE_BARREL_PUSHER.PAM")),
             Collections.emptyList()
@@ -382,7 +314,6 @@ public class ZombieVisualRegistry {
         register("BARREL_ROLLER", barrelDef);
         register("BARREL_ZOMBIE", barrelDef);
 
-        // ۱۶. مشعل‌دار
         ZombieVisualDef explorerDef = new ZombieVisualDef(
             List.of(PamSpec.fixed("768/INITIAL/ZOMBIE/ZOMBIE_EXPLORER/ZOMBIE_EXPLORER.PAM")),
             Collections.emptyList()
@@ -391,7 +322,6 @@ public class ZombieVisualRegistry {
         register("EXPLORER_ZOMBIE", explorerDef);
         register("TORCHLIGHT", explorerDef);
 
-        // ۱۷. قبرساز
         ZombieVisualDef tombraiserDef = new ZombieVisualDef(
             List.of(new PamSpec("768/INITIAL/ZOMBIE/ZOMBIE_{CH}_TOMBRAISER/ZOMBIE_{CH}_TOMBRAISER.PAM")),
             Collections.emptyList()
@@ -400,7 +330,6 @@ public class ZombieVisualRegistry {
         register("TOMB_RAISER", tombraiserDef);
         register("TOMBRAISER_ZOMBIE", tombraiserDef);
 
-        // ۱۸. دودو رایدر
         ZombieVisualDef dodoDef = new ZombieVisualDef(
             List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_ICEAGE_DODORIDER/ZOMBIE_ICEAGE_DODORIDER.PAM")),
             Collections.emptyList()
@@ -409,7 +338,6 @@ public class ZombieVisualRegistry {
         register("DODO_RIDER", dodoDef);
         register("DODORIDER_ZOMBIE", dodoDef);
 
-        // ۱۹. شکارچی
         ZombieVisualDef hunterDef = new ZombieVisualDef(
             List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_ICEAGE_HUNTER/ZOMBIE_ICEAGE_HUNTER.PAM")),
             Collections.emptyList()
@@ -417,7 +345,6 @@ public class ZombieVisualRegistry {
         register("HUNTER", hunterDef);
         register("HUNTER_ZOMBIE", hunterDef);
 
-        // ۲۰. غواص
         ZombieVisualDef snorkelerDef = new ZombieVisualDef(
             List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_BEACH_SNORKELER/ZOMBIE_BEACH_SNORKELER.PAM")),
             Collections.emptyList()
@@ -426,7 +353,6 @@ public class ZombieVisualRegistry {
         register("SNORKEL_ZOMBIE", snorkelerDef);
         register("DIVER", snorkelerDef);
 
-        // ۲۱. اختاپوس
         ZombieVisualDef octopusDef = new ZombieVisualDef(
             List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_BEACH_OCTOPUS/ZOMBIE_BEACH_OCTOPUS.PAM")),
             Collections.emptyList()
@@ -434,7 +360,6 @@ public class ZombieVisualRegistry {
         register("OCTOPUS", octopusDef);
         register("OCTOPUS_ZOMBIE", octopusDef);
 
-        // ۲۲. ایمپ اژدها
         ZombieVisualDef impDragonDef = new ZombieVisualDef(
             List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_DARK_IMP_DRAGON/ZOMBIE_DARK_IMP_DRAGON.PAM")),
             Collections.emptyList()
@@ -442,7 +367,6 @@ public class ZombieVisualRegistry {
         register("IMP_DRAGON", impDragonDef);
         register("IMP_DRAGON_ZOMBIE", impDragonDef);
 
-        // ۲۳. ماهیگیر
         ZombieVisualDef fishermanDef = new ZombieVisualDef(
             List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_BEACH_FISHERMAN/ZOMBIE_BEACH_FISHERMAN.PAM")),
             Collections.emptyList()
@@ -450,12 +374,10 @@ public class ZombieVisualRegistry {
         register("FISHERMAN", fishermanDef);
         register("FISHERMAN_ZOMBIE", fishermanDef);
 
-        // ۲۴. انیمیشن خاکستر (برای مرگ با مواد منفجره)
         ZombieVisualDef explosiveDeathDef = new ZombieVisualDef(
             List.of(new PamSpec("768/INITIAL/EFFECTS/ZOMBIE_ASH/ZOMBIE_ASH.PAM") {
                 @Override
                 public String getResolvedPath() {
-                    // 👈 این اورراید باعث می‌شه سیستم، مسیر INITIAL رو الکی به FULL تبدیل نکنه
                     return this.pathTemplate;
                 }
             }),
@@ -464,21 +386,6 @@ public class ZombieVisualRegistry {
         register("EXPLOSIVE_DEATH", explosiveDeathDef);
         register("ASH_EFFECT", explosiveDeathDef);
 
-        // ==========================================================
-        // ⚠️ موارد زیر (۲۵-۲۹) قبلا اصلا در این رجیستری تعریف نشده بودن - همین
-        // باعث می‌شد ZombieVisualRegistry.get(...) براشون null برگردونه و
-        // GameScreen.drawSingleZombie() کاملا رد بشون کنه (نه کرش می‌کرد نه رندر
-        // می‌کرد؛ فقط لاگ DEF_MISSING می‌زد) با اینکه WaveManager طبق چپترشون
-        // (ZombieType.chapter) داشت درست اسپاونشون می‌کرد. یعنی "زامبی اسپاون شده
-        // ولی رندر نشده" دقیقا همینجا اتفاق می‌افتاد.
-        // 🚨 توجه: چون پوشه‌ی pvz-assets داخل پروژه‌ای که برام فرستاده شده وجود
-        // نداشت، نتونستم این مسیرها رو مثل بقیه روی دیسک واقعی تایید کنم - قبل
-        // از اعتماد کامل، اسم واقعی پوشه‌ها رو زیر pvz-assets/IMAGES/768/FULL/ZOMBIE/
-        // چک/اصلاح کن. تا وقتی مسیر درست نشه، existsOnDisk() خودش false برمی‌گردونه
-        // و باز هم امن (بدون کرش، فقط رد/لاگ) می‌مونه.
-        // ==========================================================
-
-        // ۲۵. دلقک (Jester) - قرون وسطی
         ZombieVisualDef jesterDef = new ZombieVisualDef(
             List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_DARK_JESTER/ZOMBIE_DARK_JESTER.PAM")),
             Collections.emptyList()
@@ -486,7 +393,6 @@ public class ZombieVisualRegistry {
         register("JESTER", jesterDef);
         register("JESTER_ZOMBIE", jesterDef);
 
-        // ۲۶. جادوگر (Wizard) - قرون وسطی
         ZombieVisualDef wizardDef = new ZombieVisualDef(
             List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_DARK_WIZARD/ZOMBIE_DARK_WIZARD.PAM")),
             Collections.emptyList()
@@ -494,7 +400,6 @@ public class ZombieVisualRegistry {
         register("WIZARD", wizardDef);
         register("WIZARD_ZOMBIE", wizardDef);
 
-        // ۲۷. پادشاه (King) - قرون وسطی
         ZombieVisualDef kingDef = new ZombieVisualDef(
             List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_DARK_KING/ZOMBIE_DARK_KING.PAM")),
             Collections.emptyList()
@@ -502,7 +407,6 @@ public class ZombieVisualRegistry {
         register("KING", kingDef);
         register("KING_ZOMBIE", kingDef);
 
-        // ۲۸. تروگلوبایت - غارهای یخی
         ZombieVisualDef troglobiteDef = new ZombieVisualDef(
             List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_ICEAGE_TROGLOBITE/ZOMBIE_ICEAGE_TROGLOBITE.PAM")),
             Collections.emptyList()
@@ -510,12 +414,24 @@ public class ZombieVisualRegistry {
         register("TROGLOBITE", troglobiteDef);
         register("TROGLOBITE_ZOMBIE", troglobiteDef);
 
-        // ۲۹. آرکید (مینی‌گیم/مدرن، بدون چپتر خاص)
         ZombieVisualDef arcadeDef = new ZombieVisualDef(
             List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_MODERN_ARCADE/ZOMBIE_MODERN_ARCADE.PAM")),
             Collections.emptyList()
         );
         register("ARCADE", arcadeDef);
         register("ARCADE_ZOMBIE", arcadeDef);
+
+        ZombieVisualDef zombossDef = new ZombieVisualDef(
+            List.of(PamSpec.fixed("768/INITIAL/ZOMBIE/ZOMBIE_EGYPT_ZOMBOSS/ZOMBIE_EGYPT_ZOMBOSS.PAM")),
+            Collections.emptyList()
+        );
+        register("ZOMBOSS_IN_EGYPT", zombossDef);
+        register("ZOMBOSS", zombossDef);
+
+        ZombieVisualDef darkZombossDef = new ZombieVisualDef(
+            List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_DARK_ZOMBOSS/ZOMBIE_DARK_ZOMBOSS.PAM")),
+            Collections.emptyList()
+        );
+        register("ZOMBOSS_IN_DARK", darkZombossDef);
     }
 }

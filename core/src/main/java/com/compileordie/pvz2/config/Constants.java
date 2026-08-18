@@ -42,7 +42,7 @@ public final class Constants {
         public static final int BOARD_COLS = 9;
         public static final float TILE_SIZE = 1f;
         public static final float GRAVITY_COEFFICIENT = 1f;
-        public static final float TIME_COEFFICIENT = 0.1f;
+        public static final float TIME_COEFFICIENT = 0.05f;
         public static final float TILE_WIDTH = 1.047f;
         public static final float TILE_HEIGHT = 1.253f;
 

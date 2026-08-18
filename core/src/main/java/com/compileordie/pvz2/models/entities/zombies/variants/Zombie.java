@@ -28,6 +28,7 @@ public abstract class Zombie extends GameEntity {
     private double replacedSpeed = 0;
     public boolean isCombatingWithHypnotized;
     protected double health;
+    public boolean shouldRemooove = false;
     // 💀 جون اولیه‌ی زامبی (بدون احتساب زره که جدا در StandardZombie.armorHealth
     // نگه‌داری می‌شه) - هیچ‌وقت بعد از سازنده تغییر نمی‌کنه؛ صرفا برای اینکه View
     // بتونه لحظه‌ی «جون به نصف رسید» رو تشخیص بده (health <= maxHealth/2) نگه‌داری می‌شه.
@@ -53,6 +54,46 @@ public abstract class Zombie extends GameEntity {
     private double throwOriginY = Double.NaN;
     private double flyInTotalDuration = 0;
     private double flyInRemaining = 0;
+
+    // --- برای افکت اسپاون از وسط زمین (SANDSTORM_TOP) ---
+    // وقتی یک زامبی از وسط زمین اسپاون می‌شه (نه از لبه‌ی چپ به‌صورت عادی، مثلا
+    // زامبی‌ای که Tombraiser از قبر بیرون می‌کشه)، اول باید SANDSTORM_DURATION
+    // ثانیه فقط افکت طوفان شنی (به‌صورت loop) پخش بشه، بعدش خودِ زامبی ظاهر
+    // بشه. دقیقا مثل مکانیزم flyIn بالا: تا وقتی sandstormRemaining>0 هست،
+    // stopZombieNow=true نگه داشته می‌شه (پس تکون نمی‌خوره)، و View (GameScreen)
+    // باید در این مدت به‌جای خودِ زامبی، افکت رو نشون بده.
+    public static final double SANDSTORM_DURATION = 1.5;
+    private double sandstormRemaining = 0;
+    private boolean isMidLawnSpawn = false;
+
+    // 🔎 ابزار تشخیصی موقت: برای اینکه واقعا با مدرک بفهمیم بعد از تموم شدن
+    // گردباد، زامبی حرکت می‌کنه یا نه (به‌جای حدس زدن). با startSandstormSpawn
+    // فعال می‌شه، دقیقا ۳ ثانیه بعد از پایان گردباد یک‌بار وضعیت واقعی زامبی
+    // (x، canMove، stopZombieNow، isEating) رو لاگ می‌کنه.
+    private double midLawnWatchdogTimer = -1;
+    private boolean midLawnWatchdogLogged = false;
+    private double midLawnSpawnStartX = Double.NaN;
+
+    public void startSandstormSpawn() {
+        this.isMidLawnSpawn = true;
+        this.sandstormRemaining = SANDSTORM_DURATION;
+        this.stopZombieNow = true;
+
+        this.midLawnWatchdogTimer = 0;
+        this.midLawnWatchdogLogged = false;
+        this.midLawnSpawnStartX = getX();
+        com.badlogic.gdx.Gdx.app.log("PVZ-SANDSTORM-DEBUG",
+            "🌪️ [" + type + "] گردباد شروع شد @ x=" + getX() + ", y=" + getY()
+                + " (تا " + SANDSTORM_DURATION + " ثانیه‌ی دیگه فریزه)");
+    }
+
+    public boolean isSandstormSpawning() {
+        return sandstormRemaining > 0;
+    }
+
+    public boolean isMidLawnSpawn() {
+        return isMidLawnSpawn;
+    }
 
     public Zombie(double health,
                   double speed,
@@ -111,7 +152,7 @@ public abstract class Zombie extends GameEntity {
 
     // تیک ما در کلاس والد زامبی صرفا برای هندل کردن مرگ و افکت ها هست
     public void tick() {
-        if (isDead() || this.health <= 0) {
+        if ((isDead() || this.health <= 0) && shouldRemooove) {
             if (AppModel.gameSession.elapsedTimeFromFirstWave <= 30){
                 QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_QUICKLY, 1, null);
             }
@@ -135,6 +176,33 @@ public abstract class Zombie extends GameEntity {
             }
         }
 
+        // ⏳ همون منطق بالا ولی برای افکت سندستورمِ اسپاون از وسط زمین.
+        if (sandstormRemaining > 0) {
+            sandstormRemaining -= Constants.Game.TIME_COEFFICIENT;
+            if (sandstormRemaining <= 0) {
+                sandstormRemaining = 0;
+                stopZombieNow = false; // پایان سندستورم؛ زامبی آزاد می‌شه و طبق روال عادی ادامه می‌ده
+                com.badlogic.gdx.Gdx.app.log("PVZ-SANDSTORM-DEBUG",
+                    "✅ [" + type + "] گردباد تموم شد @ x=" + getX() + " - از این تیک به بعد باید حرکت کنه.");
+            }
+        }
+
+        // 🔎 واچ‌داگ تشخیصی: دقیقا ۳ ثانیه بعد از پایان گردباد، یک‌بار وضعیت
+        // واقعی زامبی رو لاگ می‌کنه تا با مدرک مشخص بشه واقعا حرکت کرده یا نه.
+        if (midLawnWatchdogTimer >= 0 && !midLawnWatchdogLogged) {
+            midLawnWatchdogTimer += Constants.Game.TIME_COEFFICIENT;
+            if (midLawnWatchdogTimer >= SANDSTORM_DURATION + 3.0) {
+                midLawnWatchdogLogged = true;
+                double moved = midLawnSpawnStartX - getX();
+                com.badlogic.gdx.Gdx.app.log("PVZ-SANDSTORM-DEBUG",
+                    "🔎 [" + type + "] ۳ ثانیه بعد از پایان گردباد -> x=" + getX()
+                        + " | جابه‌جایی از لحظه‌ی اسپاون=" + moved + " متر"
+                        + " | canMove()=" + canMove() + " | stopZombieNow=" + stopZombieNow
+                        + " | isEating=" + isEating + " | isDead=" + isDead()
+                        + " | sandstormRemaining=" + sandstormRemaining);
+            }
+        }
+
         // برای رسیدن به خانه
         if (getX()<=Constants.Game.EAT_HOME_X){
             isEating = true;
@@ -145,7 +213,7 @@ public abstract class Zombie extends GameEntity {
         }
 
         // بررسی اینکه وارد زمین شده یا ن
-        if (!fromGarg) {
+        if (!fromGarg && !isMidLawnSpawn) {
             if (getX() >= Constants.Game.TILE_WIDTH * 9 + Constants.Game.PADDING_X + 1) {
                 if (replacedSpeed == 0) replacedSpeed = getXSpeed();
                 setXSpeed(replacedSpeed * 3);

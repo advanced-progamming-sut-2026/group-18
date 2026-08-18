@@ -83,12 +83,12 @@ public class Tomb extends Obstacle {
 
     public void spawnZombie(GameBoard gameBoard, ZombieType zombieType) {
         Zombie zombie = ZombieBuilder.create(zombieType, getX(), getY(), getRow());
+        if (zombie == null) {
+            return; // اگه ساخته نشد (مثلا asset نداره)، ZombieBuilder خودش لاگ لازم رو زده
+        }
+        // 🌪️ این زامبی از وسط زمین اسپاون می‌شه (نه از لبه‌ی چپ عادی)، پس باید
+        // اول ۱.۵ ثانیه افکت SANDSTORM_TOP پخش بشه، بعد خودش ظاهر بشه.
+        zombie.startSandstormSpawn();
         gameBoard.getLane(getRow()).zombies.add(zombie);
     }
 }
-
-
-
-
-
-

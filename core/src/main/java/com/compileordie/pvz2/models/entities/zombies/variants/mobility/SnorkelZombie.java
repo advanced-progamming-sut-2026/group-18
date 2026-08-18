@@ -39,6 +39,12 @@ public class SnorkelZombie extends Zombie {
     public void walk() {
         this.state = MovementState.WALKING;
     }
+
+    /** برای این‌که View (GameScreen) بتونه حالت فعلی رو بخونه، مثلا برای افکت
+     * بصری زیر آب - قبلا هیچ getter‌ای نبود. */
+    public MovementState getState() {
+        return this.state;
+    }
     // =================================================================================================================
 
 

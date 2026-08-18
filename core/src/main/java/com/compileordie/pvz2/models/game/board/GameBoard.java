@@ -21,7 +21,9 @@ import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 import com.compileordie.pvz2.models.user.Player; // Arsam
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class GameBoard {
@@ -142,12 +144,18 @@ public class GameBoard {
         }
     }
 
-
     public ArrayList<Zombie> getAllZombies() {
+        Set<Zombie> seenZombies = new HashSet<>();
         return lanes.stream()
             .flatMap(lane -> lane.zombies.stream())
+            .filter(seenZombies::add) // اگر زامبی تکراری باشد، اضافه نمی‌شود و رد می‌شود
             .collect(Collectors.toCollection(ArrayList::new));
     }
+//    public ArrayList<Zombie> getAllZombies() {
+//        return lanes.stream()
+//            .flatMap(lane -> lane.zombies.stream())
+//            .collect(Collectors.toCollection(ArrayList::new));
+//    }
 
     public ArrayList<Plant> getAllPlants() {
         return lanes.stream()

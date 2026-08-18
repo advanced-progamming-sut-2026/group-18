@@ -1,9 +1,12 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.capable;
 
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
+import com.compileordie.pvz2.models.game.economy.Sun;
+import com.compileordie.pvz2.models.game.economy.SunType;
 import com.compileordie.pvz2.models.missions.quests.QuestEvent;
 import com.compileordie.pvz2.models.missions.quests.QuestManager;
 
@@ -85,7 +88,10 @@ public class TurquoiseZombie extends CapableZombie {
 
     @Override
     public void handleDeath() {
-        shouldBackSun = true;
+        for (int i = 0; i < totalStolenSuns / 50; i++) {
+            AppModel.gameSession.gameBoard.economyManager.suns.add(new Sun(getX(), getY(), SunType.NORMAL, false, (float) getY()));
+        }
+//        shouldBackSun = true;
     }
 
     public void addStolen(int amount) {

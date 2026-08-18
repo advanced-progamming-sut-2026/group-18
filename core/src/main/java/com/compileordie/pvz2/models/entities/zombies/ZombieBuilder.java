@@ -1,6 +1,8 @@
 package com.compileordie.pvz2.models.entities.zombies;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
+import com.compileordie.pvz2.models.entities.zombies.variants.ZomBoss.EgyptZomboss;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.boss.GargantuarZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.capable.*;
@@ -19,11 +21,21 @@ public class ZombieBuilder {
     private double x;
     private double y;
     private int row;
+    public static boolean gargi = false;
 
     public ZombieBuilder() {
     }
 
     public static Zombie create(ZombieType type, double x, double y, int row) {
+        return new ZombieBuilder()
+            .type(type)
+            .at(x, y)
+            .row(row)
+            .build();
+    }
+
+    public static Zombie create(ZombieType type, double x, double y, int row, boolean gargii) {
+        gargi = gargii;
         return new ZombieBuilder()
             .type(type)
             .at(x, y)
@@ -48,6 +60,31 @@ public class ZombieBuilder {
     }
 
     public Zombie build() {
+        Zombie zombie = construct();
+
+        // =========================================================
+        // 🌪️ خودکار، بدون نیاز به این‌که هیچ caller ای صریحا صداش بزنه:
+        // اگه این زامبی همون لحظه‌ی ساخته‌شدن، داخل محدوده‌ی دیدنیِ زمین باشه
+        // (نه تو ناحیه‌ی اسپاونِ بیرون از صفحه که موج‌های عادی ازش می‌آن، مثلا
+        // x=18 که WaveType.placeZombiesRandomly استفاده می‌کنه)، یعنی این
+        // زامبی "وسط زمین" ظاهر شده - چه از قبرِ Tombraiser، چه از تست‌اسپاونر،
+        // چه از کنسول دیباگ، چه از شکستن یه گلدون تو vasebreaker. تو همه‌ی این
+        // حالت‌ها، بدون این‌که هیچ‌کدوم از اون call site ها لازم باشه چیزی صدا
+        // بزنن، همینجا ۱.۵ ثانیه گردباد (SANDSTORM_TOP) خودکار شروع می‌شه.
+        //
+        // ایمپ (IMP) عمدا از این قانون مستثناست: پرتاب ایمپ (توسط غول یا بشکه)
+        // یه مکانیزم جدا و از قبل تعریف‌شده تو ZombieManager داره (fly-in +
+        // پرچم تستی isImpProved) که نباید این‌جا بی‌سروصدا override بشه.
+        // =========================================================
+        boolean isWithinLawn = x < Constants.Game.TILE_WIDTH * 9 + Constants.Game.PADDING_X - 1;
+        if (isWithinLawn && !gargi) {
+            zombie.startSandstormSpawn();
+        }
+
+        return zombie;
+    }
+
+    private Zombie construct() {
         if (type == null) {
             throw new IllegalStateException("ZombieType cannot be null");
         }
@@ -144,6 +181,9 @@ public class ZombieBuilder {
 
             case IMP_DRAGON:
                 return new ImpDragon(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+
+            case ZOMBOSS_IN_EGYPT:
+                return new EgyptZomboss();
 
             default:
                 ZombieStatsConfig defaultStats = ConfigManager.zombies().get(ZombieType.STANDARD);
