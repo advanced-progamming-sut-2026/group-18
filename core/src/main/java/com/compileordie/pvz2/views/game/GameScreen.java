@@ -29,6 +29,7 @@ import java.util.Set;
  * منطق رندر به کلاس‌های کمکی تقسیم شده؛ رفتار همان GameScreen قبلی است.
  */
 public class GameScreen implements Screen {
+    boolean testOn = false;
     boolean testZombossOn = false;
     private final ZombieTestSpawner testSpawner =
         new ZombieTestSpawner();
@@ -131,7 +132,7 @@ public class GameScreen implements Screen {
         updateTextureBank();
         handleInput();
         advanceSimulation(delta);
-        if (!ui.isPaused) testSpawner.update(delta);
+        if (!ui.isPaused && testOn) testSpawner.update(delta);
         cameraEffects.checkGiantZombieFootsteps(delta, ui.isPaused);
         cameraEffects.updateCameraShake(delta);
         viewport.getCamera().update();
