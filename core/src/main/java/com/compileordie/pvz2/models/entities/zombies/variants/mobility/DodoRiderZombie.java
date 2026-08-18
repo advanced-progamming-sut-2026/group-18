@@ -96,14 +96,16 @@ public class DodoRiderZombie extends Zombie {
             this.removeFrozen();
         }
         if (isDead()) return;
+        takedDamage = true;
         this.health -= amount;
         if (health <= 0){
             health = 0;
+            if (damageType==DamageType.EXPLOSIVE) killByExplosive = true;
             if (damageType==DamageType.LawnMower){
                 QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_BY_PLANT, 1, "MOWER");
             }
             else{
-                QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_BY_PLANT, 1, plantType.name());
+                if (plantType!=null) QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_BY_PLANT, 1, plantType.name());
             }
         }
     }

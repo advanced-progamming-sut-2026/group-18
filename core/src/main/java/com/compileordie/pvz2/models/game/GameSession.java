@@ -9,8 +9,10 @@ import com.compileordie.pvz2.models.game.judges.GameFlow;
 import com.compileordie.pvz2.models.game.judges.GameJudge;
 import com.compileordie.pvz2.models.game.judges.LossCondition;
 import com.compileordie.pvz2.models.game.judges.WinCondition;
+import com.compileordie.pvz2.models.game.levels.ChapterType;
 import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.models.game.waves.WaveType;
+import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.models.user.Player;
 
 import java.util.Map;
@@ -67,12 +69,22 @@ public class GameSession {
         switch (gameResult) {
             case WIN -> {
                 AppModel.addAfterPrompt("You won!");
+                AppModel.wonLastGame = true;
+
+                LevelID nextLevelID = levelID.next();
+                if (nextLevelID.chapterType != ChapterType.MINIGAME && !player.unlockedLevelIDs.contains(nextLevelID)) {
+                    player.unlockedLevelIDs.add(nextLevelID);
+                }
+
+                player.playedGames++;
+                new UserDatabase().save(player);
             }
             case LOSS -> {
                 AppModel.addAfterPrompt("You lost!");
+                AppModel.wonLastGame = false;
             }
         }
-        AppModel.clearSessionData();
+//        AppModel.clearSessionData();
         // TODO: Expand and add quest event callback here
     }
 }

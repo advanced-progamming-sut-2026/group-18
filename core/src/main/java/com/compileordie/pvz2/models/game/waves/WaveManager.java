@@ -113,6 +113,11 @@ public class WaveManager {
         List<ZombieType> validTypes = new ArrayList<>();
 
         for (ZombieType zombieType : ZombieType.values()) {
+
+            if (zombieType.name().contains("ZOMBOSS")) {
+                continue;
+            }
+
             // Generic zombies are always added
             if (zombieType.chapter == null) {
                 validTypes.add(zombieType);

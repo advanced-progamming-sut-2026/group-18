@@ -22,7 +22,7 @@ public class AppModel {
     public static LevelID currentLevel = null;
     public static GameSession gameSession = null;
     public static Map<PlantType, Boolean> selectionDeck = new EnumMap<>(PlantType.class);
-
+    public static Boolean wonLastGame = null;
 
 
     private AppModel() {

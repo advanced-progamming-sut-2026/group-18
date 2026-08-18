@@ -3,6 +3,7 @@ package com.compileordie.pvz2.models.entities;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.variants.ZomBoss.EgyptZomboss;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.boss.GargantuarZombie;
 import com.compileordie.pvz2.models.game.board.Lane;
@@ -12,26 +13,27 @@ import com.compileordie.pvz2.models.missions.quests.QuestManager;
 import java.util.ArrayList;
 
 public class LawnMower extends GameEntity {
-    private static final double MOWER_SPEED = 1f;
+    private static final double MOWER_SPEED = 1.5f;
     public Lane lane;
     public boolean isTriggered;
 
     public LawnMower(Lane lane) {
         // Correctly sets up position with respect to the continuous tracking system
-        super(-Constants.Game.TILE_SIZE / 2f, Constants.Game.TILE_SIZE / 2f + lane.row, 0, 0);
+        super(Constants.Game.X_OF_MOWER, Constants.Game.TILE_HEIGHT * (lane.row + 0.7f) + Constants.Game.PADDING_Y, 0, 0);
         this.lane = lane;
         this.isTriggered = false;
     }
 
     public void tick(int ticks) {
+        if (!isAlive()) return;
         if (isTriggered) {
             ArrayList<Zombie> casualties = new ArrayList<>();
             for (int i = lane.zombies.size() - 1; i >= 0; i--) {
                 Zombie zombie = lane.zombies.get(i);
-                if (zombie.getX() <= this.getX()) {
-                    if (!(zombie instanceof GargantuarZombie) && zombie.isAlive()) {
+                if (zombie.getX() <= this.getX()+0.6 && Math.abs(zombie.getX()-this.getX())<=0.6) {
+                    if (!(zombie instanceof GargantuarZombie) && !(zombie.getType().toString().toLowerCase().contains("zomboss")) && zombie.isAlive()) {
                         casualties.add(zombie);
-                        zombie.takeDamage(Double.POSITIVE_INFINITY, DamageType.LawnMower);
+                        zombie.takeDamage(99999, DamageType.LawnMower);
                         lane.zombies.remove(i);
                     }
                 }
@@ -50,7 +52,7 @@ public class LawnMower extends GameEntity {
                 AppModel.addAfterPrompt(sb.toString());
             }
 
-            if (this.getX() >= lane.getLength()) {
+            if (this.getX() >= Constants.Game.LANE_LENGHT) {
                 this.isTriggered = false;
                 this.die();
             }
@@ -58,7 +60,7 @@ public class LawnMower extends GameEntity {
             move(ticks);
         } else {
             for (Zombie zombie : lane.zombies) {
-                if (zombie.getX() <= 0) {
+                if (zombie.getX() <= this.getX()+Constants.Game.PADDING_FOR_MOWER) {
                     this.isTriggered = true;
                     this.setXSpeed(MOWER_SPEED);
                     break;

@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.game.board;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
@@ -17,6 +18,9 @@ public class Tile {
     public Obstacle obstacle;
     public Tomb tomb; // Redundant
     public boolean hasLilyPad;
+    public boolean isOnFire;
+    public double fireTime = 4;
+    public double fireTimer = 0;
 
     public Tile(GameBoard gameBoard, int row, int column, TileType type, Plant plant, Obstacle obstacle) {
         this.gameBoard = gameBoard;
@@ -27,12 +31,30 @@ public class Tile {
         this.obstacle = obstacle;
         this.tomb = null;
         this.hasLilyPad = false;
+        this.isOnFire = false;
     }
 
     public void tick(int ticks) {
         type.tick(ticks, this, gameBoard);
         if (plant != null) plant.tick(gameBoard, ticks);
         if (obstacle != null) obstacle.tick(ticks, gameBoard);
+
+        if (isOnFire){
+            this.plant = null;
+            fireTimer += ticks* Constants.Game.TIME_COEFFICIENT;
+            if (fireTimer >= fireTime){
+                fireTimer = 0;
+                isOnFire = false;
+            }
+        }
+    }
+
+    public void setOnFire() {
+        if (plant != null) {
+            plant.die();
+            this.plant = null;
+        }
+        this.isOnFire = true;
     }
 
     public boolean isEmpty() {
@@ -40,7 +62,7 @@ public class Tile {
     }
 
     public boolean isPlantable() {
-        return type.isPlantable && plant == null && obstacle == null
+        return type.isPlantable && plant == null && obstacle == null && !isOnFire
             && (!isUnderWater() || (isUnderWater() && hasLilyPad));
     }
 
@@ -54,5 +76,9 @@ public class Tile {
             if (gameBoard.getTile((float) zombie.getX(), (float) zombie.getY()) == this) zombies.add(zombie);
         }
         return zombies;
+    }
+
+    public boolean isHasLilyPad() {
+        return hasLilyPad;
     }
 }

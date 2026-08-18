@@ -30,6 +30,7 @@ public enum LevelID {
     public final ChapterType chapterType;
     public final LevelType levelType;
     public final int waveNumber;
+    private static final LevelID[] VALUES = values();
 
     LevelID(ChapterType chapterType, LevelType levelType, int waveNumber) {
         this.chapterType = chapterType;
@@ -45,6 +46,10 @@ public enum LevelID {
 
     public boolean needsPlantSelection() {
         return !Set.of(CONVEYOR_BELT, VASE_BREAKER, I_ZOMBIE, BEGHOULED).contains(this);
+    }
+
+    public LevelID next() {
+        return VALUES[(this.ordinal() + 1) % VALUES.length];
     }
 
     public static LevelID getByName(String name) {

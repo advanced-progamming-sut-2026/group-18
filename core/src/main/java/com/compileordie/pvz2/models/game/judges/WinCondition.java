@@ -25,7 +25,7 @@ public enum WinCondition {
     I_ZOMBIE {
         @Override
         public boolean evaluate(GameBoard gameBoard) {
-            return gameBoard.lanes.stream().map(lane -> lane.isLost).reduce(true, Boolean::logicalAnd);
+            return gameBoard.lanes.stream().allMatch(lane -> lane.isLost);
         }
     },
     BEGHOULED {
@@ -34,8 +34,6 @@ public enum WinCondition {
             return gameBoard.registeredShapes >= ConfigManager.gameplay().beghouledScore;
         }
     };
-
-
 
     abstract public boolean evaluate(GameBoard gameBoard);
 }
