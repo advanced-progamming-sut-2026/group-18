@@ -98,6 +98,16 @@ public class PlantAssetManager {
         player.draw(batch, clip, stateTime, drawX, drawY, loop, visibility);
     }
 
+    public ClipRef loadMarigoldClip() {
+        String pamPath = "768/INITIAL/PLANT/MARIGOLD/MARIGOLD.PAM";
+        player.loadSync(pamPath);
+        return player.getClip(pamPath, "idle");
+    }
+
+    public Rectangle getMarigoldBounds() {
+        return player.bounds("768/INITIAL/PLANT/MARIGOLD/MARIGOLD.PAM", "idle");
+    }
+
     /**
      * Formats a simple plantType into the expected PAM file structure.
      */

@@ -194,6 +194,13 @@ public class GameMenuScreen extends MenuScreen {
             }
         });
 
+        greenhouseBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                ScreenManager.setMenuScreen(ScreenType.GREENHOUSE);
+            }
+        });
+
         hudTable.add(currencyHud).pad(25).left();
         hudTable.add().expandX();
         hudTable.add(leaderboardBtn).size(80, 80).pad(20);

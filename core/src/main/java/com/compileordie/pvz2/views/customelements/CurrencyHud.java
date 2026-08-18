@@ -64,8 +64,10 @@ public class CurrencyHud extends Table {
         plusBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                CheatModal modal = new CheatModal(skin, textureBank);
-                modal.show(stage);
+                if (AppModel.player != null && AppModel.player.debugMode) {
+                    CheatModal modal = new CheatModal(skin, textureBank);
+                    modal.show(stage);
+                }
             }
         });
     }
@@ -77,6 +79,9 @@ public class CurrencyHud extends Table {
         if (AppModel.player != null) {
             diamondLabel.setText(String.valueOf(AppModel.player.diamonds));
             coinLabel.setText(String.valueOf(AppModel.player.coins));
+
+            // Darken the button if debug mode is off
+            plusBtn.getImage().setColor(AppModel.player.debugMode ? Color.WHITE : Color.GRAY);
         }
     }
 }
