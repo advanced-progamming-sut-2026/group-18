@@ -13,11 +13,12 @@ public class StreakQuest extends Quest {
                        String title,
                        String description,
                        QuestCategory category,
+                       int priority,
                        int targetAmount,
                        String rewardType,
                        int rewardAmount,
                        String requiredContext) {
-        super(id, title, description, category, targetAmount, rewardType, rewardAmount);
+        super(id, title, description, category, priority, targetAmount, rewardType, rewardAmount);
         this.requiredContext = requiredContext;
     }
 

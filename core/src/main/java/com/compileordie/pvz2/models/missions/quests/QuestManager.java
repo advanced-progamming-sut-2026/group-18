@@ -17,8 +17,8 @@ public class QuestManager {
     public static void checkDailyReset(Player player) {
         String today = DAILY_FORMATTER.format(new Date(TimeUtils.millis()));
 
-        // If it's a new day, wipe only the progress of DAILY quests.
-        if (player.dailyOffer == null || !today.equals(player.dailyOffer.offerDate)) {
+        // Decoupled from dailyOffer: now uses its own dedicated tracking field
+        if (!today.equals(player.lastQuestResetDate)) {
             boolean changed = false;
             for (Quest quest : QUESTS) {
                 if (quest.category == QuestCategory.DAILY) {
@@ -29,12 +29,18 @@ public class QuestManager {
                     }
                 }
             }
-            if (changed) new UserDatabase(player.username).save(player);
+
+            // Update the reset tracker to today
+            player.lastQuestResetDate = today;
+
+            // Always save if the date was updated, even if no quests were actively cleared,
+            // to prevent it from re-running this loop pointlessly every frame
+            new UserDatabase(player.username).save(player);
         }
     }
 
     // THIS IS THE OBSERVER ENDPOINT. Call this from anywhere in the game
-    // (e.g., zombie.die() -> QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED, 1); )
+    // (e.g., zombie.die() -> QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED, 1, "CONEHEAD"); )
     public static void dispatch(QuestEvent event, int amount, String context) {
         Player player = AppModel.player;
         if (player == null) return;

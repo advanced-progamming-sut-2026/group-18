@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.controllers.menus.progression;
 
 import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.models.components.Result;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.missions.quests.Quest;
 import com.compileordie.pvz2.models.missions.quests.QuestCategory;
@@ -16,72 +17,56 @@ public class TravelLogMenuController {
     private TravelLogMenuController() {
     }
 
-    public static String showPage(String name) {
-        QuestCategory category = QuestCategory.getByName(name);
-        if (category == null) {
-            String availablePages = Arrays.stream(QuestCategory.values())
-                .map(QuestCategory::toString)
-                .collect(Collectors.joining(", "));
-
-            return "[ERROR] Invalid page. Available pages are: " + availablePages + ".";
+    /**
+     * Retrieves a list of quests filtered by category and sorted by priority.
+     */
+    public static Result<List<Quest>> getQuestsByCategory(QuestCategory category) {
+        Player player = AppModel.player;
+        if (player == null) {
+            return Result.failure("User is not logged in.");
         }
 
-        Player player = AppModel.player;
         QuestManager.checkDailyReset(player);
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("=== ").append(category).append(" QUESTS ===").append(System.lineSeparator());
+        List<Quest> filteredQuests = QuestManager.QUESTS.stream()
+            .filter(q -> q.category == category)
+            // Sorts descending: Higher integer value = higher priority at the top
+            .sorted(Comparator.comparingInt((Quest q) -> q.priority).reversed())
+            .collect(Collectors.toList());
 
-        boolean found = false;
-        for (Quest quest : QuestManager.QUESTS) {
-            if (quest.category == category) {
-                found = true;
-                int current = player.questProgress.getOrDefault(quest.id, 0);
-                String status;
-
-                if (player.claimedQuests.contains(quest.id)) {
-                    status = "[CLAIMED]";
-                } else if (current >= quest.targetAmount) {
-                    status = "[COMPLETED - Ready to Claim!]";
-                } else {
-                    status = "[IN PROGRESS: " + current + "/" + quest.targetAmount + "]";
-                }
-
-                sb.append("ID: ").append(quest.id).append(" | ").append(quest.title).append(System.lineSeparator())
-                    .append("  > ").append(quest.description).append(System.lineSeparator())
-                    .append("  > Reward: ").append(quest.rewardAmount).append("x ")
-                    .append(quest.rewardType).append(System.lineSeparator())
-                    .append("  > Status: ").append(status).append(System.lineSeparator())
-                    .append(System.lineSeparator());
-            }
-        }
-
-        if (!found) return "No quests available in the " + category + " category.";
-        return sb.toString().trim();
+        return Result.success(filteredQuests);
     }
 
-    public static String claimReward(String questId) {
+    /**
+     * Validates and claims the reward for a completed quest.
+     */
+    public static Result<String> claimReward(String questId) {
         Player player = AppModel.player;
+        if (player == null) return Result.failure("User is not logged in.");
+
         QuestManager.checkDailyReset(player);
 
         Quest quest = QuestManager.getQuestById(questId);
-        if (quest == null) return "[ERROR] Quest ID not found.";
+        if (quest == null) return Result.failure("Quest ID not found.");
 
         if (player.claimedQuests.contains(quest.id)) {
-            return "[ERROR] You have already claimed the reward for this quest.";
+            return Result.failure("You have already claimed the reward for this quest.");
         }
 
         int current = player.questProgress.getOrDefault(quest.id, 0);
         if (current < quest.targetAmount) {
-            return "[ERROR] Quest is not completed yet. Progress: " + current + "/" + quest.targetAmount;
+            return Result.failure("Quest is not completed yet. Progress: " + current + "/" + quest.targetAmount);
         }
 
         String rewardMessage = grantReward(player, quest);
-        if (rewardMessage.startsWith("[ERROR]")) return rewardMessage;
+        if (rewardMessage.startsWith("[ERROR]")) {
+            return Result.failure(rewardMessage.replace("[ERROR] ", ""));
+        }
 
         updateQuestStats(player, quest);
         new UserDatabase(player.username).save(player);
-        return "Reward claimed successfully! You received " + rewardMessage + ".";
+
+        return Result.success("Reward claimed successfully! You received " + rewardMessage + ".");
     }
 
     private static String grantReward(Player player, Quest quest) {
