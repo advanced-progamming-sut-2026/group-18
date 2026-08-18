@@ -29,9 +29,9 @@ import java.util.Set;
  * منطق رندر به کلاس‌های کمکی تقسیم شده؛ رفتار همان GameScreen قبلی است.
  */
 public class GameScreen implements Screen {
-    boolean testOn = false;
+    boolean testZombossOn = false;
     private final ZombieTestSpawner testSpawner =
-        new ZombieTestSpawner(ZombieTestSpawner.TestMode.DARK_ZOMBOSS);
+        new ZombieTestSpawner();
 
     private SpriteBatch batch;
     private ScreenViewport viewport;
@@ -58,7 +58,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
-        if (!testOn) AppModel.gameSession.gameBoard.waveManager.type = WaveType.NO_WAVES;
+        if (testZombossOn) AppModel.gameSession.gameBoard.waveManager.type = WaveType.NO_WAVES;
 
         batch = new SpriteBatch();
         viewport = new ScreenViewport();
