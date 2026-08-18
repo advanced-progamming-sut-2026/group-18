@@ -187,6 +187,13 @@ public class GameMenuScreen extends MenuScreen {
         ImageButton travelLogBtn = new ImageButton(skin, "hud_quests");
         ImageButton greenhouseBtn = new ImageButton(skin, "hud_zg");
 
+        travelLogBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                ScreenManager.setMenuScreen(ScreenType.TRAVEL_LOG);
+            }
+        });
+
         hudTable.add(currencyHud).pad(25).left();
         hudTable.add().expandX();
         hudTable.add(leaderboardBtn).size(80, 80).pad(20);

@@ -13,11 +13,12 @@ public class BasicEventQuest extends Quest {
                            String title,
                            String description,
                            QuestCategory category,
+                           int priority,
                            int targetAmount,
                            String rewardType,
                            int rewardAmount,
                            QuestEvent targetEvent) {
-        super(id, title, description, category, targetAmount, rewardType, rewardAmount);
+        super(id, title, description, category, priority, targetAmount, rewardType, rewardAmount);
         this.targetEvent = targetEvent;
     }
 
