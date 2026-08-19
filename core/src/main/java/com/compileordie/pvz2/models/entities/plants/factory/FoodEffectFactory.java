@@ -39,9 +39,8 @@ public class FoodEffectFactory {
             case PROJECTILE_ENHANCE:
                 return new ProjectileEnhanceEffect(effectValue);
             case HEAL_AND_ATTRACT:
-                return new HealAndRedirectEffect(true, effectValue);
-            case HOMING_BURST:
-                return new HomingBurstEffect(projectileClass, effectValue);
+                return new HealAndAttract();
+
             case GOO_PUDDLE:
                 return new GooPuddleEffect();
             case FLATTEN:

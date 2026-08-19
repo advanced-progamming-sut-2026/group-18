@@ -11,6 +11,9 @@ import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.user.Player;
 
+import java.util.List;
+import java.util.Random;
+
 public class RapidFireEffect implements PlantFoodEffectStrategy {
 
     private final Class<? extends Projectile> projectileType;
@@ -90,6 +93,11 @@ public class RapidFireEffect implements PlantFoodEffectStrategy {
                 spawnStream(board, x, y, 1.0, -0.5, 15, baseDamage, plant);  // Up-Forward
                 spawnStream(board, x, y, 1.0, 0.5, 15, baseDamage, plant);   // Down-Forward
             }
+            // --- NEW: CAT-TAIL LOGIC ---
+            else if (name.equals("Cat-tail")) {
+                // Unleash 30 homing spikes directly at random zombies!
+                spawnHomingStream(board, x, y, 30, baseDamage, plant);
+            }
             else if (name.equals("Fire Peashooter") || name.equals("Peashooter")) {
                 spawnStream(board, x, y, 1.0, 0.0, 60, baseDamage, plant);
             }
@@ -143,5 +151,31 @@ public class RapidFireEffect implements PlantFoodEffectStrategy {
         giantProj.setXSpeed(6.0 * xDir);
         giantProj.setYSpeed(6.0 * yDir);
         board.getActiveProjectiles().add(giantProj);
+    }
+    // --- NEW: The Homing Spawner ---
+    private void spawnHomingStream(GameBoard board, double startX, double startY, int count, int damage, Plant plant) throws Exception {
+        List<Zombie> activeZombies = board.getAllZombies().stream()
+            .filter(z -> !z.isDead())
+            .toList();
+
+        Random rand = new Random();
+
+        for (int i = 0; i < count; i++) {
+            // Give them a slight spread so they don't overlap completely before homing
+            double spawnX = startX + (rand.nextDouble() * 0.5 - 0.25);
+            double spawnY = startY + (rand.nextDouble() * 0.5 - 0.25);
+
+            Zombie target = null;
+            if (!activeZombies.isEmpty()) {
+                target = activeZombies.get(rand.nextInt(activeZombies.size()));
+            }
+
+            // Using the 5-parameter HomingProjectile constructor
+            Projectile proj = projectileType.getDeclaredConstructor(double.class, double.class, double.class, int.class, Zombie.class)
+                .newInstance(spawnX, spawnY, 6.0, damage, target);
+
+            proj.setSourcePlantType(PlantType.getByName(plant.getName()));
+            board.getActiveProjectiles().add(proj);
+        }
     }
 }

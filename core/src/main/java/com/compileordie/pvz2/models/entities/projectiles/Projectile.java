@@ -27,6 +27,9 @@ public abstract class Projectile {
     protected boolean isDead = false;
     protected boolean isReversed = false;
 
+    // Torchwood Hook ---
+    protected boolean isIgnited = false;
+
     public Projectile(double x, double y, double xSpeed, int damage, DamageType type) {
         this.x = x;
         this.y = y;
@@ -41,7 +44,7 @@ public abstract class Projectile {
         this.x += this.xSpeed * delta;
         this.y += this.ySpeed * delta;
 
-        // --- NEW: The Static Obstacle Radar ---
+        // --- The Static Obstacle Radar ---
         if (!this.ignoreObstacles) {
             Tile currentTile = board.getTile((float) this.x, (float) this.y);
 
@@ -51,7 +54,7 @@ public abstract class Projectile {
         }
     }
 
-    // NEW: The universal obstacle impact payload
+    // The universal obstacle impact payload
     public void onObstacleHit(Obstacle obstacle) {
         if (obstacle instanceof Tomb) {
             ((Tomb) obstacle).takeDamage(this.damage, this.enumType);
@@ -82,10 +85,16 @@ public abstract class Projectile {
     public double getY() { return y; }
     public int getRow() { return (int) (y / Constants.Game.TILE_SIZE); }
     public int getDamage() { return damage; }
+    public void setDamage(int damage) { this.damage = damage; } //  For Torchwood damage scaling
     public DamageType getType() { return type; }
+    public void setType(DamageType type) { this.type = type; } //  Allows changing to FIRE damage
     public boolean isDead() { return isDead; }
     public void setXSpeed(double xSpeed) { this.xSpeed = xSpeed; }
     public void setYSpeed(double ySpeed) { this.ySpeed = ySpeed; }
     public void setSourcePlantType(PlantType sourcePlantType) { this.sourcePlantType = sourcePlantType; }
     public boolean getIgnoreObstacles() { return ignoreObstacles; }
+
+    // Ignition Getters & Setters ---
+    public boolean isIgnited() { return isIgnited; }
+    public void setIgnited(boolean ignited) { this.isIgnited = ignited; }
 }

@@ -22,11 +22,10 @@ public class SpawnClonesEffect implements PlantFoodEffectStrategy {
 
     @Override
     public void applyEffect(Plant plant, GameBoard board, Player player) {
-
-        // 1. Instantly arm the mine that just received the Plant Food!
+        // 1. Instantly arm the mine/plant that just received the Plant Food!
         plant.forceArm();
 
-        // 2. Fetch random empty tiles using your teammate's GameBoard method!
+        // 2. Fetch random empty tiles
         List<Tile> emptyTiles = board.getEmptyTiles();
         Collections.shuffle(emptyTiles);
 
@@ -35,6 +34,15 @@ public class SpawnClonesEffect implements PlantFoodEffectStrategy {
         // 3. Spawn the clones
         for (Tile tile : emptyTiles) {
             if (spawned >= cloneCount) break;
+
+            // --- LILY PAD SPECIFIC LOGIC ---
+            if (plant.getName().equals("Lily Pad")) {
+                // If the plant is Lily Pad, ONLY spawn on water!
+                if (!tile.isUnderWater()) continue;
+            } else {
+                // If it's Potato Mine, ONLY spawn on land!
+                if (tile.isUnderWater()) continue;
+            }
 
             double spawnX = tile.column * Constants.Game.TILE_SIZE;
             double spawnY = tile.row * Constants.Game.TILE_SIZE;

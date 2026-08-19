@@ -11,9 +11,6 @@ public class SunProduceStrategy implements AttackStrategy {
     // Safely isolated for your Daily Quest system!
     private int totalSunsProduced = 0;
 
-    // NEW: Dedicated flag specifically for the Plant Food override
-    private boolean isMaxStageForced = false;
-
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
         String name = plant.getName();
@@ -33,26 +30,17 @@ public class SunProduceStrategy implements AttackStrategy {
                 board.economyManager.suns.add(new Sun(spawnX, spawnY, SunType.LARGE, false, ground));
             }
             // 3. Sun-shroom (True Time-Based Dynamic Growth)
+// 3. Sun-shroom (True Time-Based Dynamic Growth)
             else if (name.equals("Sun-shroom")) {
                 SunType shroomType;
+                int stage = plant.getGrowthStage(); // The Plant does the math now!
 
-                double age = plant.getAgeTicks();
-                double stg2Threshold = Math.max(0, 240.0 - plant.getGrowTimeReductionTicks());
-                double stg3Threshold = Math.max(0, 720.0 - plant.getGrowTimeReductionTicks());
-
-                // Checked first: If fed Plant Food, it is locked at Stage 3 permanently
-                if (isMaxStageForced) {
+                if (stage >= 3) {
                     shroomType = SunType.LARGE;  // Stage 3 (75 suns)
-                }
-                // Checks true age against the thresholds
-                else if (age >= stg3Threshold) {
-                    shroomType = SunType.LARGE;  // Stage 3 (75 suns)
-                }
-                else if (age >= stg2Threshold) {
-                    shroomType = SunType.MEDIUM; // Stage 2 (50 suns) - Happens at exactly 24s!
-                }
-                else {
-                    shroomType = SunType.NORMAL; // Stage 1 (25 suns) - Happens on immediate spawn!
+                } else if (stage == 2) {
+                    shroomType = SunType.MEDIUM; // Stage 2 (50 suns)
+                } else {
+                    shroomType = SunType.NORMAL; // Stage 1 (25 suns)
                 }
 
                 board.economyManager.suns.add(new Sun(spawnX, spawnY, shroomType, false, ground));
@@ -87,11 +75,6 @@ public class SunProduceStrategy implements AttackStrategy {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    // Called by BurstSunEffect to flip the dedicated switch!
-    public void forceMaxStage() {
-        this.isMaxStageForced = true;
     }
 
     // For your quest engine to check how many suns this specific plant yielded

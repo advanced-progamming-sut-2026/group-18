@@ -8,7 +8,12 @@ import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.user.Player;
 
+import java.util.Random;
+
 public class LaneClearEffect implements PlantFoodEffectStrategy {
+
+    private final Random random = new Random();
+
     @Override
     public void applyEffect(Plant plant, GameBoard board, Player player) {
         int plantRow = (int) (plant.getY() / Constants.Game.TILE_SIZE);
@@ -19,8 +24,26 @@ public class LaneClearEffect implements PlantFoodEffectStrategy {
 
             if (zombie.getCurrentRow() == plantRow) {
 
+                // --- GARLIC LOGIC (Lane Shifting, NO Damage) ---
+                if (plant.getName().equals("Garlic")) {
+                    int targetRow = plantRow;
+
+                    // Determine safe adjacent lane
+                    if (plantRow == 0) {
+                        targetRow = 1; // Top lane can only go down
+                    } else if (plantRow == board.totalRows - 1) {
+                        targetRow = plantRow - 1; // Bottom lane can only go up
+                    } else {
+                        // Middle lanes randomly choose up or down!
+                        targetRow = random.nextBoolean() ? plantRow - 1 : plantRow + 1;
+                    }
+
+                    // Force the zombie's Y coordinate to the new lane!
+                    double newY = targetRow * Constants.Game.TILE_SIZE + (Constants.Game.TILE_SIZE / 2.0);
+                    zombie.setY(newY);
+                }
                 // --- FUME-SHROOM LOGIC ---
-                if (plant.getName().equals("Fume-shroom")) {
+                else if (plant.getName().equals("Fume-shroom")) {
                     // Only hit zombies in front of the Fume-shroom
                     if (zombie.getX() >= plant.getX()) {
                         zombie.takeDamage(1500, DamageType.NORMAL, PlantType.FUME_SHROOM);

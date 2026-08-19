@@ -19,7 +19,7 @@ public class ProjectileEnhanceEffect implements PlantFoodEffectStrategy {
     public void applyEffect(Plant plant, GameBoard board, Player player) {
 
         if (plant.getName().equals("Cactus")) {
-            // Spawn 3 high-damage thorns with UNLIMITED penetration
+            // ... (keep your existing Cactus logic exactly as is) ...
             for (int i = 0; i < 3; i++) {
                 try {
                     Projectile thorn = new PiercingProjectile(
@@ -36,7 +36,14 @@ public class ProjectileEnhanceEffect implements PlantFoodEffectStrategy {
                     e.printStackTrace();
                 }
             }
-        } else {
+        }
+        // --- NEW: TORCHWOOD LOGIC ---
+        else if (plant.getName().equals("Torchwood")) {
+            plant.setBlueFlame(true);
+            plant.setCurrentHp(plant.getBaseHp()); // Heal back to full!
+        }
+        // --- FALLBACK ---
+        else {
             // Failsafe for other plants using this effect
             plant.setBaseDamage(plant.getBaseDamage() * damageMultiplier);
             plant.setCurrentHp(plant.getBaseHp() * 2);

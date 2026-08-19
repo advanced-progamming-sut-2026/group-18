@@ -92,9 +92,7 @@ public class PlantConfigRepository {
         // Safely parse Base Damage to handle complex text formats
         String damageStr = parts[6].trim().toLowerCase();
         if (damageStr.equals("insta-kill")) {
-            template.setBaseDamage(9999);
             template.setInstantKill(true);
-        } else if (damageStr.equals("-")) {
             template.setBaseDamage(0);
         } else if (damageStr.contains("x")) {
             template.setBaseDamage(Integer.parseInt(damageStr.split("x")[0].trim()));
@@ -102,6 +100,7 @@ public class PlantConfigRepository {
             template.setBaseDamage(Integer.parseInt(damageStr.split("/")[0].trim()));
         } else {
             template.setBaseDamage(Integer.parseInt(damageStr));
+            template.setInstantKill(false); // Just to be safe!
         }
 
         // Safely parse Action Interval Ticks to handle "-"
@@ -182,15 +181,25 @@ public class PlantConfigRepository {
         double armTimeReductionTicks = 0.0;
         int extraCrushes = 0;
         int extraBounces = 0;
+        int extraTargets = 0;
+        double freezeTimeBonusTicks = 0.0;
+        int maxSizeBonus = 0;
+        boolean explodesOnDeath = false;
+        boolean zombieHpBuff = false;
+        boolean zombieDmgBuff = false;
+        boolean plantFoodOnSpawn = false;
+        boolean meltArea3x3 = false;
+        double mintDurationBonusTicks = 0.0;
+        boolean resetFamilyCooldowns = false;
         upgradeStr = upgradeStr.toLowerCase();
 
         // Standard Stats
-        if (upgradeStr.contains("dmg +")) damageBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
+        if (upgradeStr.contains("dmg +") || upgradeStr.contains("explode dmg +")) damageBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
         if (upgradeStr.contains("target priority up")) targetPriorityUp = true;
         if (upgradeStr.contains("hp +")) hpBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
         if (upgradeStr.contains("cost -")) costReduction = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
         if (upgradeStr.contains("double sun")) doubleSun = true;
-        if (upgradeStr.contains("sun +")) extraSunYield = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
+        if (upgradeStr.contains("sun +") || upgradeStr.contains("sun drop +")) extraSunYield = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
         if (upgradeStr.contains("dmg/tick +")) poisonDmgTickBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
         if (upgradeStr.contains("atk speed +")) atkSpeedBonusPercentage = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", ""));
         if (upgradeStr.contains("pierce +")) pierceBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
@@ -199,7 +208,7 @@ public class PlantConfigRepository {
         if (upgradeStr.contains("lifespan +")) lifespanBonusTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
         if (upgradeStr.contains("butter +")) butterChanceBonus = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", ""));
         if (upgradeStr.contains("cooldown -")) rechargeReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
-        if (upgradeStr.contains("prod. time -") || upgradeStr.contains("charge time -") || upgradeStr.contains("regen -")) actionIntervalReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
+        if (upgradeStr.contains("eat time -") || upgradeStr.contains("prod. time -") || upgradeStr.contains("charge time -") || upgradeStr.contains("regen -") || upgradeStr.contains("digest -")) actionIntervalReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
         if (upgradeStr.contains("grow time -")) growTimeReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
         if (upgradeStr.contains("chill time +")) chillTimeBonusTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
         if (upgradeStr.contains("aoe dmg +")) aoeDamageBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
@@ -207,7 +216,24 @@ public class PlantConfigRepository {
         if (upgradeStr.contains("arm time -")) armTimeReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
         if (upgradeStr.contains("crush 2x")) extraCrushes = 1;
         if (upgradeStr.contains("bounces +")) extraBounces = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
-        return new UpgradeLevel(hpBonus, damageBonus, costReduction, actionIntervalReductionTicks, rechargeReductionTicks, doubleSun, growTimeReductionTicks, extraSunYield, chillTimeBonusTicks, targetPriorityUp, pierceBonus, atkSpeedBonusPercentage, poisonDmgTickBonus, plantFoodChanceBonus, rangeBonus, lifespanBonusTicks, butterChanceBonus, aoeDamageBonus, warmthRadiusBonus, armTimeReductionTicks,extraCrushes, extraBounces);
+        if (upgradeStr.contains("targets +")) extraTargets = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
+        if (upgradeStr.contains("freeze time +")) freezeTimeBonusTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
+        if (upgradeStr.contains("max size +")) maxSizeBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
+        if (upgradeStr.contains("aoe on death") || upgradeStr.contains("explode on finish")) explodesOnDeath = true;
+        if (upgradeStr.contains("zombie hp buff")) zombieHpBuff = true;
+        if (upgradeStr.contains("zombie dmg buff")) zombieDmgBuff = true;
+        if (upgradeStr.contains("plant food on enter")) plantFoodOnSpawn = true;
+        if (upgradeStr.contains("melt area")) meltArea3x3 = true;
+        if (upgradeStr.contains("duration +")) mintDurationBonusTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 60.0;
+        if (upgradeStr.contains("reset family")) resetFamilyCooldowns = true;
+
+        return new UpgradeLevel(hpBonus, damageBonus, costReduction, actionIntervalReductionTicks,
+            rechargeReductionTicks, doubleSun, growTimeReductionTicks, extraSunYield, chillTimeBonusTicks,
+            targetPriorityUp, pierceBonus, atkSpeedBonusPercentage, poisonDmgTickBonus, plantFoodChanceBonus,
+            rangeBonus, lifespanBonusTicks, butterChanceBonus, aoeDamageBonus, warmthRadiusBonus,
+            armTimeReductionTicks,extraCrushes, extraBounces, extraTargets, freezeTimeBonusTicks,
+            maxSizeBonus, explodesOnDeath, zombieHpBuff, zombieDmgBuff, plantFoodOnSpawn,
+            meltArea3x3, mintDurationBonusTicks, resetFamilyCooldowns);
     }
 
     private void assignSpecificParameters(PlantTemplate t) {
@@ -228,18 +254,22 @@ public class PlantConfigRepository {
             } else {
                 t.setProjectileType(LobbedProjectile.class);
             }
-            t.setProjectileType(LobbedProjectile.class);
             // 2. Melon-pults get 1.5 tiles of splash damage. The others get 0.0 (single target).
             t.setRangeTiles(name.equals("Melon-pult") || name.equals("Winter Melon")  || name.equals("Pepper-pult") ? 1.5 : 0.0);
         }
-        else if (name.equals("Potato Mine") || name.equals("Primal Potato Mine")) {
-            // Primal has a 3x3 AoE (1.5 radius). Standard only hits its own tile (0.0).
+        else if (name.equals("Potato Mine") || name.equals("Primal Potato Mine") || name.equals("Iceberg Lettuce")) {
             t.setRangeTiles(name.equals("Primal Potato Mine") ? 1.5 : 0.0);
-            t.setFoodEffectValue(2);
+
+            if (!name.equals("Iceberg Lettuce")) {
+                t.setFoodEffectValue(2); // Clones for Potatoes
+            } else {
+                t.setFoodEffectValue(150); // freezing the whole map for 15 seconds.
+            }
         }
-        else if (name.equals("Cherry Bomb") || name.equals("Grapeshot")) {
-            t.setRangeTiles(1.5); // 3x3 Splash Damage
-        }
+        else if (name.equals("Cherry Bomb") || name.equals("Grapeshot")) {t.setRangeTiles(1.5);} // 3x3 Splash Damage
+        if (name.equals("Doom-shroom")) { t.setRangeTiles(2.5); } // Massive 5x5 area
+        else if (name.equals("Jalapeno")) { t.setRangeTiles(0.0); } // Lane-wide math
+
         else if (name.equals("Cactus")) {
             t.setProjectileType(PiercingProjectile.class);
         } else if (name.equals("Fume-shroom")) {
@@ -247,7 +277,7 @@ public class PlantConfigRepository {
             t.setRangeTiles(5.0);
         } else if (name.equals("Bowling Bulb")) {
             t.setProjectileType(BouncingProjectile.class);
-        } else if (name.equals("Caulipower") || name.equals("Electric Blueberry")) {
+        } else if (name.equals("Caulipower") || name.equals("Electric Blueberry") || name.equals("Electric Redberry") || name.equals("Cat-tail")) {
             t.setProjectileType(HomingProjectile.class);
         }
         if (name.equals("Puff-shroom") || name.equals("Sea-shroom")) {
@@ -289,16 +319,15 @@ public class PlantConfigRepository {
         }
 
 
-        /*
- 3. Special Values /////////////////----> check this matter bro <---- ////////////////////////
-        if (name.equals("Sunflower") || name.equals("Sun Bean")) t.setFoodEffectValue(50);
-        if (name.equals("Primal Sunflower")) t.setFoodEffectValue(75);
-        if (name.equals("Twin Sunflower")) t.setFoodEffectValue(100);
-        if (name.equals("Gold Bloom")) t.setFoodEffectValue(375);
-        if (name.equals("Iceberg Lettuce")) t.setFoodEffectValue(50);
+
+// 3. Special Values /////////////////----> check this matter bro <---- ////////////////////////
+        if (name.equals("Bonk Choy") || name.equals("Phat Beet") || name.equals("Wasabi Whip") || name.equals("Kiwibeast")) t.setRangeTiles(1.5); // Reaches 1 tile ahead and 1 behind
+        if (name.equals("Chomper")) {
+            t.setRangeTiles(0.7);
+            t.setFoodEffectValue(3); // Devours exactly 3 random zombies across the map!
+        }
         if (name.equals("Wall-nut") || name.equals("Explode-o-nut") || name.equals("Pumpkin")) t.setFoodEffectValue(4000);
-        if (name.equals("Endurian") || name.equals("Sweet Potato")) t.setFoodEffectValue(3000);
         if (name.equals("Tall-nut")) t.setFoodEffectValue(8000);
-*/
+        if (name.equals("Endurian") || name.equals("Sweet Potato")) t.setFoodEffectValue(3000);
     }
 }

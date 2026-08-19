@@ -24,7 +24,7 @@ public class BurstSunEffect implements PlantFoodEffectStrategy {
 
         try {
             if (name.equals("Sun-shroom") && plant.getAttackStrategy() instanceof SunProduceStrategy) {
-                ((SunProduceStrategy) plant.getAttackStrategy()).forceMaxStage();
+                plant.forceMaxGrowth();
             }
 
             // 2. Spawn the correct burst of suns based on the exact plant

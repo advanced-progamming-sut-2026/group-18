@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.entities.plants;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.entities.plants.enums.PlantCategory;
@@ -8,8 +9,13 @@ import com.compileordie.pvz2.models.entities.plants.factory.FoodEffectFactory;
 import com.compileordie.pvz2.models.entities.plants.strategies.attack.AttackStrategy;
 import com.compileordie.pvz2.models.entities.plants.strategies.attack.SunProduceStrategy;
 import com.compileordie.pvz2.models.entities.plants.strategies.food.PlantFoodEffectStrategy;
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
+import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Tile;
+import com.compileordie.pvz2.models.game.economy.Sun;
+import com.compileordie.pvz2.models.game.economy.SunType;
 import com.compileordie.pvz2.models.user.Player;
 
 import java.util.List;
@@ -76,7 +82,19 @@ public class Plant extends GameEntity {
     private double currentArmTimer = 0;
     private boolean isArmed = true; // True by default for non-traps!
     private int extraBounces = 0;
-
+    private int extraTargets = 0;
+    private double freezeTimeBonusTicks = 0;
+    private int maxSizeBonus = 0;
+    private boolean isMaxStageForced = false;
+    private boolean isBlueFlame = false;
+    private boolean explodesOnDeath = false;
+    // NEW: Hypno-shroom Buff Flags
+    private boolean zombieHpBuff = false;
+    private boolean zombieDmgBuff = false;
+    private boolean plantFoodOnSpawn = false;
+    private boolean meltArea3x3 = false;
+    private double mintDurationBonusTicks = 0.0;
+    private boolean resetFamilyCooldowns = false;
     public Plant(String name, PlantCategory category, List<PlantTag> tags,
                  double x, double y, int hp, int damage, int cost, double actionIntervalTicks,
                  AttackStrategy attackStrategy, PlantFoodEffectStrategy foodStrategy,
@@ -276,9 +294,27 @@ public class Plant extends GameEntity {
     }
 
     public void takeDamage(int amount) {
-        if (this.isDead()) return; // Prevent double-triggering death
+        if (this.isDead()) return;
 
-        // If the plant has an Ice Block or Octopus, the cover takes the damage!
+        // --- SUN BEAN MECHANIC ---
+        // Triggers on every single bite!
+        if (this.name.equals("Sun Bean")) {
+            if (AppModel.gameSession != null && AppModel.gameSession.gameBoard != null) {
+                // Base 5 + Upgrade 5 = 10 Sun at level 2!
+                int sunAmount = 5 + this.getExtraSunYield();
+
+                if(sunAmount > 5) {
+                    AppModel.gameSession.gameBoard.economyManager.suns.add(
+                        new Sun(this.getX(), this.getY(), SunType.SMALL, false, (float)this.getY())
+                    );
+                }
+                AppModel.gameSession.gameBoard.economyManager.suns.add(
+                    new Sun(this.getX(), this.getY(), SunType.TINY, false, (float)this.getY())
+                );
+            }
+        }
+
+        // 1. Check Ice/Octopus covers first
         if (coverState != PlantCoverState.NONE) {
             this.coverHp -= amount;
             if (this.coverHp <= 0) {
@@ -288,13 +324,23 @@ public class Plant extends GameEntity {
             return;
         }
 
-        // Otherwise, the plant takes damage normally
+        // 2. Track if we currently have Plant Food Armor (currentHp > baseHp)
+        boolean hadArmor = (this.currentHp > this.baseHp);
+
         this.currentHp -= amount;
 
-        // GUARANTEED DEATH CHECK 2: If it died via combat damage
+        // 3. ARMOR BREAK CHECK:
+        // If it HAD armor, and now it DOESN'T (but isn't dead yet), the armor just broke!
+        if (hadArmor && this.currentHp <= this.baseHp && this.currentHp > 0) {
+            if (this.name.equals("Explode-o-nut")) {
+                this.triggerExplosion(); // BOOM! (Armor explosion)
+            }
+        }
+
+        // 4. GUARANTEED DEATH CHECK
         if (this.currentHp <= 0) {
             this.currentHp = 0;
-            this.die();
+            this.die(); // die() will now trigger the final explosion!
         }
     }
 
@@ -317,7 +363,7 @@ public class Plant extends GameEntity {
                 this.currentHp += stats.hpBonus;
                 this.baseDamage += stats.damageBonus;
                 this.cost = Math.max(0, this.cost - stats.costReduction);
-                this.actionIntervalTicks = Math.max(1.0, this.actionIntervalTicks - stats.actionIntervalReductionTicks);
+                this.actionIntervalTicks = Math.max(0.1, this.actionIntervalTicks - stats.actionIntervalReductionTicks);
                 this.growTimeReductionTicks += stats.growTimeReductionTicks;
                 this.extraSunYield += stats.extraSunYield;
                 this.chillTimeBonusTicks += stats.chillTimeBonusTicks;
@@ -333,6 +379,16 @@ public class Plant extends GameEntity {
                 this.maxArmTimeTicks = Math.max(0, this.maxArmTimeTicks - stats.armTimeReductionTicks);
                 this.extraCrushes += stats.extraCrushes;
                 this.extraBounces += stats.extraBounces;
+                this.extraTargets += stats.extraTargets;
+                this.freezeTimeBonusTicks += stats.freezeTimeBonusTicks;
+                this.maxSizeBonus += stats.maxSizeBonus;
+                if (stats.explodesOnDeath) this.explodesOnDeath = true;
+                if (stats.zombieHpBuff) this.zombieHpBuff = true;
+                if (stats.zombieDmgBuff) this.zombieDmgBuff = true;
+                if (stats.plantFoodOnSpawn) this.plantFoodOnSpawn = true;
+                if (stats.meltArea3x3) this.meltArea3x3 = true;
+                this.mintDurationBonusTicks += stats.mintDurationBonusTicks;
+                if (stats.resetFamilyCooldowns) this.resetFamilyCooldowns = true;
             }
         }
         if (this.atkSpeedBonusPercentage > 0) {
@@ -348,13 +404,14 @@ public class Plant extends GameEntity {
         if (isSpecial) {
             AppModel.gameSession.gameBoard.specialIsLost = true;
         }
-        // Explosive plants, Mints, and cleanup logic hook into this!
 
-        // Exact string format required by the project document
+// --- DEATH EXPLOSION HOOK ---
+        if (this.name.equals("Explode-o-nut") || (this.name.equals("Torchwood") && this.explodesOnDeath)) {
+            this.triggerExplosion(); // BOOM!
+        }
+
         int xInt = (int) this.getX();
         int yInt = (int) this.getY();
-
-        // Using teammate's custom message queue
         AppModel.addAfterPrompt("Plant " + this.name + " at (" + xInt + ", " + yInt + ") is destroyed.");
     }
 
@@ -396,7 +453,7 @@ public class Plant extends GameEntity {
     }
     public double getButterChance() { return butterChance; }
     public int getAoeDamage() { return (this.baseDamage / 2) + this.aoeDamageBonus; }
-    public int getWarmthRadius() { return (this.name.equals("Pepper-pult") ? 1 : 0) + this.warmthRadiusBonus; }
+    public int getWarmthRadius() { return (this.name.equals("Pepper-pult") || this.name.equals("Wasabi Whip") ? 1 : 0) + this.warmthRadiusBonus; }
     public boolean isArmed() { return isArmed; }
     public void forceArm() { this.isArmed = true; } // For the Plant Food effect!
     public boolean isHidden() { return isHidden; }
@@ -405,4 +462,71 @@ public class Plant extends GameEntity {
     public void setExhausted(boolean exhausted) { this.isExhausted = exhausted; }
     public int getExtraCrushes() { return extraCrushes; }
     public int getExtraBounces() { return extraBounces; }
+    public int getExtraTargets() { return extraTargets; }
+    public double getFreezeTimeBonusTicks() { return freezeTimeBonusTicks; }
+    public int getMaxSizeBonus() { return maxSizeBonus; }
+    public void setBlueFlame(boolean blueFlame) { this.isBlueFlame = blueFlame; }
+    public boolean isBlueFlame() { return isBlueFlame; }
+    public boolean hasZombieHpBuff() { return zombieHpBuff; }
+    public boolean hasZombieDmgBuff() { return zombieDmgBuff; }
+    public boolean hasPlantFoodOnSpawn() { return plantFoodOnSpawn; }
+    public boolean hasMeltArea3x3() { return meltArea3x3; }
+    public boolean isExplodesOnDeath() { return explodesOnDeath; }
+    public double getMintDurationBonusTicks() { return mintDurationBonusTicks; }
+    // TODO: you have to handle the cooldown reset in your plant deck :
+    //  if you have any plant which its category is similar with the which player just plant(not for all mints just the mint which is Lvl.4(i handled it already)
+    //  you must reset that card cooldown and the player can use that card again immediately no need to wait anymore seyyed
+    public boolean hasResetFamilyCooldowns() { return resetFamilyCooldowns; }
+    public double getActionIntervalTicks() { return actionIntervalTicks; }
+    public int getGrowthStage() {
+        if (isMaxStageForced) {
+            return 3 + maxSizeBonus; // Max out instantly! (Stage 3 for Sun-shroom, Stage 4 for upgraded Kiwibeast)
+        }
+
+        double age = this.getAgeTicks();
+        double stg2Threshold = Math.max(0, 240.0 - this.getGrowTimeReductionTicks());
+        double stg3Threshold = Math.max(0, 720.0 - this.getGrowTimeReductionTicks());
+        double stg4Threshold = Math.max(0, 1200.0 - this.getGrowTimeReductionTicks()); // 120 seconds
+
+        if (age >= stg4Threshold && this.maxSizeBonus > 0) return 4;
+        if (age >= stg3Threshold) return 3;
+        if (age >= stg2Threshold) return 2;
+
+        return 1; // Default stage
+    }
+    // NEW: Specifically checks if the plant is trapped in ice!
+    public boolean isFrozen() {
+        return this.coverState == PlantCoverState.ICE;
+    }
+    public void forceMaxGrowth() {
+        this.isMaxStageForced = true;
+    }
+    //Passive Reflect Damage logic for Endurian
+    public int getReflectDamage() {
+        if (!this.name.equals("Endurian")) return 0;
+        // Starts with 20 (plus any upgrades parsed into baseDamage)
+        int reflectDmg = this.baseDamage;
+        if (this.currentHp > this.baseHp) {
+            reflectDmg += 15;
+        }
+        return reflectDmg;
+    }
+    //Handles 3x3 explosions for Explode-o-nut
+    private void triggerExplosion() {
+        if (AppModel.gameSession == null || AppModel.gameSession.gameBoard == null) return;
+        GameBoard board = AppModel.gameSession.gameBoard;
+
+        // 1.5 tile radius = 3x3 grid
+        double radiusPixels = 1.5 * Constants.Game.TILE_SIZE;
+
+        for (Zombie z : board.getAllZombies()) {
+            if (z.isDead()) continue;
+
+            double dist = Math.hypot(z.getX() - this.getX(), z.getY() - this.getY());
+            if (dist <= radiusPixels) {
+                // Uses baseDamage (which will dynamically include the +200 upgrade!)
+                z.takeDamage(this.baseDamage, DamageType.NORMAL, PlantType.getByName(this.getName()));
+            }
+        }
+    }
 }

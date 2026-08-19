@@ -13,7 +13,6 @@ public class LobbedProjectile extends Projectile {
     protected final double targetX;
     protected final double totalDistance;
     protected final int aoeDamage;
-    // NEW: The calculated height of the cabbage in the air!
     public double altitude = 0;
 
     public LobbedProjectile(double x, double y, double targetX, double speed, int damage, int aoeDamage, double splashRadius) {
@@ -28,66 +27,64 @@ public class LobbedProjectile extends Projectile {
 
     @Override
     public void tick(GameBoard board, double delta) {
-        // 1. Move horizontally forward
         super.tick(board, delta);
 
-        // 2. Calculate progress (0.0 to 1.0)
         double distanceTraveled = Math.abs(this.x - this.startX);
         double p = distanceTraveled / this.totalDistance;
 
-        // 3. The Parabola Math! (Peak height is 150 pixels)
         double peakHeight = 150.0;
         this.altitude = 4 * peakHeight * p * (1 - p);
 
-        // 4. Force impact when it reaches the target X coordinate
         if (p >= 1.0) {
             this.altitude = 0;
 
-            // --- THE DETONATION ENGINE ---
             if (this.splashRadius > 0) {
                 double radiusPixels = this.splashRadius * TILE_SIZE;
 
                 for (Zombie z : board.getAllZombies()) {
                     if (z.isDead()) continue;
-
-                    // We use Math.hypot for 2D distance so the explosion hits zombies in adjacent lanes too!
                     double dist = Math.hypot(z.getX() - this.x, z.getY() - this.y);
 
                     if (dist <= radiusPixels) {
-                        // Direct hit gets massive base damage, collateral gets AoE splash damage!
                         if (dist <= 0.5 * TILE_SIZE) {
                             z.takeDamage(this.damage, this.type, this.sourcePlantType);
                         } else {
                             z.takeDamage(this.aoeDamage, this.type, this.sourcePlantType);
                         }
+                        // HOOK: Apply effects to anyone hit by the splash!
+                        applySpecialEffect(z);
                     }
                 }
             } else {
-                // Cabbage and Kernel Logic (Single Target Hit)
                 for (Zombie z : board.getAllZombies()) {
                     if (!z.isDead() && Math.abs(z.getX() - this.x) <= 0.5 * TILE_SIZE && z.getCurrentRow() == (int)(this.y / TILE_SIZE)) {
                         z.takeDamage(this.damage, this.type, this.sourcePlantType);
+                        // HOOK: Apply effects to the single target!
+                        applySpecialEffect(z);
                     }
                 }
             }
-
             this.isDead = true;
         }
     }
 
     @Override
     public void onHit(Zombie target, GameBoard board) {
-        // We override this to do NOTHING because standard Peashooter collisions shouldn't
-        // trigger while the cabbage is flying high in the air!
-        // Damage is calculated when it lands (p >= 1.0).
+        // Does nothing air!
     }
 
     @Override
     public void onObstacleHit(Obstacle obstacle) {
-        // Ignored! The cabbage flies right over tombs.
+        // Flies over tombs
     }
 
     public double getSplashRadius() {
         return splashRadius;
+    }
+
+    // --- NEW: THE SPECIAL EFFECT HOOK ---
+    // Subclasses like ButterProjectile or WinterMelon can override this to add stun/chill!
+    protected void applySpecialEffect(Zombie target) {
+        // Base cabbages and melons do nothing special.
     }
 }

@@ -9,6 +9,7 @@ import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
+import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.user.Player;
 
 import java.util.List;
@@ -98,6 +99,52 @@ public class AreaDamageEffect implements PlantFoodEffectStrategy {
                         target.removeStatusEffect(EffectType.CHILLED);
                         target.removeStatusEffect(EffectType.FROZEN);
                     }
+                }
+            }
+        }
+        // --- TANGLE KELP (Abyssal Pull) ---
+        else if (plant.getName().equals("Tangle Kelp")) {
+
+            // 1. Gather all zombies that are currently in the water!
+            java.util.List<Zombie> waterZombies = new java.util.ArrayList<>();
+
+            for (Zombie z : board.getAllZombies()) {
+                if (!z.isDead()) {
+                    Tile zTile = board.getTile((float) z.getX(), (float) z.getY());
+
+                    // Relies on the perfect isUnderWater() method you wrote earlier!
+                    if (zTile != null && zTile.isUnderWater()) {
+                        waterZombies.add(z);
+                    }
+                }
+            }
+
+            // 2. Shuffle to randomize targets
+            java.util.Collections.shuffle(waterZombies);
+
+            // 3. Pull down up to 4 zombies
+            int targetsToPull = Math.min(4, waterZombies.size());
+
+            for (int i = 0; i < targetsToPull; i++) {
+                waterZombies.get(i).takeDamage(99999, DamageType.NORMAL, PlantType.getByName(plant.getName()));
+            }
+        }
+        // --- BONK CHOY (Rapid 3x3 Punches) ---
+        else if (plant.getName().equals("Bonk Choy") || plant.getName().equals("Phat Beet")
+            || plant.getName().equals("Wasabi Whip") || plant.getName().equals("Kiwibeast")) {
+
+            // Kiwibeast instantly jumps to max size!
+            if (plant.getName().equals("Kiwibeast")) plant.forceMaxGrowth();
+
+            double radiusPixels = 1.5 * Constants.Game.TILE_SIZE;
+
+            for (Zombie z : board.getAllZombies()) {
+                if (z.isDead()) continue;
+
+                double dist = Math.hypot(z.getX() - plant.getX(), z.getY() - plant.getY());
+                if (dist <= radiusPixels) {
+                    // Deal massive flurry damage! (e.g., 60 rapid punches * 15 damage = 900 damage)
+                    z.takeDamage(900, DamageType.NORMAL, PlantType.getByName(plant.getName()));
                 }
             }
         }

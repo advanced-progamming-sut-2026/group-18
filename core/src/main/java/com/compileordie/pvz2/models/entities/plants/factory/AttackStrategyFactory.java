@@ -14,6 +14,7 @@ public class AttackStrategyFactory {
         List<Integer> laneOffsets,
         List<double[]> shootVectors,
         double rangeTiles,
+        int maxBounces,
         boolean isAoE,
         boolean isInstantKill) {
 
@@ -28,7 +29,7 @@ public class AttackStrategyFactory {
                 return new HomingStrategy(projectileClass, HomingStrategy.TargetingMode.RANDOM);
 
             case MELEE:
-                return new MeleeStrategy(rangeTiles, isAoE, isInstantKill);
+                return new MeleeStrategy(isAoE, isInstantKill);
 
             case MINE:
                 return new MineStrategy(rangeTiles);
@@ -38,11 +39,33 @@ public class AttackStrategyFactory {
 
             case SQUASH:
                 return new SquashStrategy();
+
             case SUN_PRODUCE:
                 return new SunProduceStrategy();
 
-            default:
+            case TANGLE:
+                return new TangleKelpStrategy();
+
+            case BOWLING:
+                return new BowlingStrategy(projectileClass, maxBounces);
+
+            case DIGEST:
+                return new DigestStrategy(rangeTiles);
+
+            case ATTRACT:
+                return new AttractStrategy();
+
+            case MAGNETIC:
+                return new MagneticStrategy();
+
+            case INSTANT_USE:
+                return new InstantUseStrategy();
+
+            case MINT_ACTIVATE:
+                return new MintActivateStrategy();
+            case NONE:
                 return null;
         }
+        return null;
     }
 }

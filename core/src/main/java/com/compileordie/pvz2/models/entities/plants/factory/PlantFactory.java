@@ -15,6 +15,7 @@ public class PlantFactory {
             template.getLaneOffsets(),
             template.getShootVectors(),
             template.getRangeTiles(),
+            3,
             template.isAoE(),
             template.isInstantKill()
         );

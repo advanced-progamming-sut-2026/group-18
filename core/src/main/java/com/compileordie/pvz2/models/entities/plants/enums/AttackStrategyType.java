@@ -7,15 +7,16 @@ public enum AttackStrategyType {
     LOB,           // Updated from LOBBER to match the CSV
     MELEE,
     HOMING,
-    PIERCE,
     MINE,
-    INSTANT_USE,
     SUN_PRODUCE,
     MODIFIER_PASSIVE,
+    MAGNETIC,
+    INSTANT_USE,
     MINT_ACTIVATE,
     BOWLING,
-    DIAGONAL,
-    STAR,
     SQUASH,
+    TANGLE,
+    DIGEST,
+    ATTRACT,
     NONE
 }
