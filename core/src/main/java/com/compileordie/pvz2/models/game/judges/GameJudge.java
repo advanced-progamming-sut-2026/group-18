@@ -6,7 +6,6 @@ import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Lane;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 
-// Clean imports for the Quest System
 import com.compileordie.pvz2.models.missions.quests.QuestEvent;
 import com.compileordie.pvz2.models.missions.quests.QuestManager;
 
@@ -34,33 +33,36 @@ public class GameJudge {
         if (winCondition.evaluate(gameBoard)) {
             AppModel.addAfterPrompt("Dear humanz, zis is not done yet; we will come back to eat your brainz, humanz.");
 
-            // --- QUEST INJECTION: LEVEL CLEARED & STREAKS ---
-            // Build the giant statistics string for the LevelConditionQuest and StreakQuest
+            // --- QUEST INJECTION: MATCHING QuestDatabaseSeeder EXACTLY ---
             StringBuilder stats = new StringBuilder();
 
+            // 1. Remaining Sun (e.g. REMAINING_SUN:0 for Defense Master)
             if (gameBoard.economyManager != null) {
                 stats.append("REMAINING_SUN:").append(gameBoard.economyManager.sunAmount).append(",");
             }
 
-            stats.append("PLANTS_LOST:").append(gameBoard.lostPlants).append(",");
+            // 2. Thrifty Herbivore (PLANTS_LOST<=n tags)
+            int lost = gameBoard.lostPlants;
+            for (int n = lost; n <= 5; n++) {
+                stats.append("PLANTS_LOST:<=").append(n).append(",");
+            }
 
+            // 3. Difficulty Streaks (DIFFICULTY:5)
             if (AppModel.player != null) {
-                // Assuming difficulty level is stored on the player object for streaks
                 stats.append("DIFFICULTY:").append(AppModel.player.difficultyLevel).append(",");
             }
 
-            // Dispatch the massive string to the Quest System cleanly!
+            // Dispatch to QuestManager
             QuestManager.dispatch(QuestEvent.LEVEL_CLEARED, 1, stats.toString());
-            // ------------------------------------------------
+            // -------------------------------------------------------------
 
             return GameFlow.WIN;
 
         } else if (lossCondition.evaluate(gameBoard)) {
             AppModel.addAfterPrompt("The zombie ate your brain; LOSER!!!");
 
-            // --- QUEST INJECTION: LEVEL FAILED (Resets Streaks) ---
+            // Resets streak quests
             QuestManager.dispatch(QuestEvent.LEVEL_FAILED, 1, null);
-            // ------------------------------------------------------
 
             return GameFlow.LOSS;
         } else {

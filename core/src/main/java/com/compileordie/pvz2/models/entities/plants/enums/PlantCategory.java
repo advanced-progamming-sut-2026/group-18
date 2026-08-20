@@ -3,16 +3,16 @@ package com.compileordie.pvz2.models.entities.plants.enums;
 import com.compileordie.pvz2.utils.Toolbox;
 
 public enum PlantCategory {
-    SUN_PRODUCERS,
-    SHOOTERS,
-    LOBBERS,
-    EXPLOSIVES,
-    MELEE_ATTACKERS,
-    WALL_NUTS,
-    MODIFIERS,
+    SUN_PRODUCER,
+    SHOOTER,
+    LOBBER,
+    EXPLOSIVE,
+    MELEE,        // Changed from MELEE_ATTACKERS
+    WALL_NUT,     // Changed from WALL_NUTS
+    MODIFIER,     // Changed from MODIFIERS
     STRIKE_THROUGH,
     HOMING,
-    MINTS;
+    MINT;          // Changed from MINTS
 
     public static PlantCategory getByName(String name) {
         for (PlantCategory plantCategory : PlantCategory.values()) {

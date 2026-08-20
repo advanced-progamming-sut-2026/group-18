@@ -13,6 +13,10 @@ public class StatusEffect {
     private double cSpeed;
     private int cAttack;
 
+    // NEW: The dynamic damage payload for Poison!
+    private int tickDamage = 0;
+
+    // Standard Constructor
     public StatusEffect(EffectType effectType, int durationTicks) {
         this.effectType = effectType;
         this.durationTicks = durationTicks;
@@ -20,63 +24,87 @@ public class StatusEffect {
         this.isApplied = false;
     }
 
-    public boolean isExpired() {
-        return (elapsedTicks >= durationTicks && isApplied);
+    // NEW: Overloaded Constructor specifically for DoT effects like Poison!
+    public StatusEffect(EffectType effectType, int durationTicks, int tickDamage) {
+        this.effectType = effectType;
+        this.durationTicks = durationTicks;
+        this.elapsedTicks = 0;
+        this.isApplied = false;
+        this.tickDamage = tickDamage;
     }
 
-    // NEW: Trigger the physical changes on the zombie
+    public boolean isExpired() {
+        return elapsedTicks >= durationTicks;
+    }
+
+    public void refreshDuration() {
+        this.elapsedTicks = 0;
+    }
+
     public void applyToZombie(Zombie zombie) {
         this.isApplied = true;
 
         switch (effectType) {
             case FROZEN:
-                zombie.setStopZombieNow(true); // Completely stops movement
+                zombie.setStopZombieNow(true);
                 break;
             case CHILLED:
-                // Cuts speed in half
                 this.cSpeed = zombie.getXSpeed();
                 zombie.setXSpeed(cSpeed * 0.5);
                 this.cAttack = zombie.getAttackPower();
                 zombie.setAttackPower((int)(cAttack * 0.5));
                 break;
+            case GOO_SLOW:
+                this.cSpeed = zombie.getXSpeed();
+                zombie.setXSpeed(cSpeed * 0.2); // 80% speed reduction!
+                break;
             case HYPNOTIZED:
                 zombie.setHypnotized(true);
                 break;
             case STUNNED:
-                this.elapsedTicks = 50; // 5 Seconds
                 zombie.setStopZombieNow(true);
+                break;
             case POISON:
-                this.elapsedTicks = 50; // 5 Seconds
-                zombie.takeDamage(6, DamageType.NORMAL);
+                // It now purely relies on the tick engine.
+                break;
         }
     }
 
     public void removeFromZombie(Zombie zombie) {
+        if(!isApplied) return;
+
         this.isApplied = false;
         this.elapsedTicks = 0;
 
         switch (effectType) {
-            case FROZEN:
+            case FROZEN, STUNNED:
                 zombie.setStopZombieNow(false);
                 break;
             case CHILLED:
                 zombie.setXSpeed(this.cSpeed);
                 zombie.setAttackPower(this.cAttack);
                 break;
+            case GOO_SLOW:
+                zombie.setXSpeed(this.cSpeed);
+                break;
             case HYPNOTIZED:
                 zombie.setHypnotized(false);
                 break;
-            case STUNNED:
-                zombie.setStopZombieNow(false);
             case POISON:
 
         }
     }
 
     public void updateZombieTick(Zombie zombie) {
-        // Apply the effect dynamically on its very first tick
         if (!isApplied) {
             applyToZombie(zombie);
+        }
+
+        // --- NEW: True Damage Over Time Engine ---
+        // this applies DamageType.POISON directly to the zombie's internal logic,
+        // completely ignoring buckets and cones!
+        if (effectType == EffectType.POISON) {
+            zombie.takeDamage(this.tickDamage, DamageType.POISON);
         }
 
         elapsedTicks++;

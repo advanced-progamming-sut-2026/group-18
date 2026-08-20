@@ -3,6 +3,7 @@ package com.compileordie.pvz2.models.entities.zombies.variants.capable;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.missions.quests.QuestEvent;
 import com.compileordie.pvz2.models.missions.quests.QuestManager;
@@ -29,7 +30,8 @@ public class ExplorerZombie extends CapableZombie {
         if (damageType == DamageType.ICE) {
             isTorchOn = false;
         } else if (damageType == DamageType.FIRE) {
-            this.removeFrozen();
+            this.removeStatusEffect(EffectType.FROZEN);
+            this.removeStatusEffect(EffectType.CHILLED);
             isTorchOn = true;
         }
         this.health -= amount;

@@ -1,12 +1,13 @@
 package com.compileordie.pvz2.models.entities.plants.strategies.food;
 
 import com.compileordie.pvz2.models.entities.plants.Plant;
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.user.Player;
 
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,17 +20,25 @@ public class InstantKillEffect implements PlantFoodEffectStrategy {
 
     @Override
     public void applyEffect(Plant plant, GameBoard board, Player player) {
-        List<Zombie> closestZombies = board.getAllZombies().stream()
+        // 1. Get all living zombies
+        List<Zombie> livingZombies = board.getAllZombies().stream()
             .filter(z -> !z.isDead())
-            .sorted(Comparator.comparingDouble(z -> Math.hypot(z.getX() - plant.getX(), z.getY() - plant.getY())))
+            .collect(Collectors.toList());
+
+        // 2. Shuffle them to make the selection completely RANDOM!
+        Collections.shuffle(livingZombies);
+
+        // 3. Pick the random zombies
+        List<Zombie> selectedZombies = livingZombies.stream()
             .limit(targetCount)
             .collect(Collectors.toList());
 
-        for (Zombie zombie : closestZombies) {
-            zombie.takeDamage(99999, DamageType.NORMAL);
+        // 4. Drop the lightning bolts!
+        for (Zombie zombie : selectedZombies) {
+            // Passed the PlantType for the quest tracker!
+            zombie.takeDamage(99999, DamageType.NORMAL, PlantType.getByName(plant.getName()));
         }
 
-        // Effect resolved! Reset the feed flag.
         plant.resetFeed();
     }
 }

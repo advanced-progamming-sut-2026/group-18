@@ -3,6 +3,7 @@ package com.compileordie.pvz2.models.entities.zombies.variants.boss;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.missions.quests.QuestEvent;
@@ -38,7 +39,8 @@ public class GargantuarZombie extends Zombie {
         takedDamage = true;
 
         if (damageType == DamageType.FIRE){
-            this.removeFrozen();
+            this.removeStatusEffect(EffectType.FROZEN);
+            this.removeStatusEffect(EffectType.CHILLED);
         }
 
         this.health -= amount;

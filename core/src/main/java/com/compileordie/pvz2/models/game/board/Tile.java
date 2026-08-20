@@ -22,6 +22,10 @@ public class Tile {
     public double fireTime = 4;
     public double fireTimer = 0;
 
+    // NEW: Puddle memory
+    public double puddleTimer = 0;
+    public int puddleDamage = 0;
+
     public Tile(GameBoard gameBoard, int row, int column, TileType type, Plant plant, Obstacle obstacle) {
         this.gameBoard = gameBoard;
         this.row = row;
@@ -46,6 +50,8 @@ public class Tile {
                 fireTimer = 0;
                 isOnFire = false;
             }
+            // NEW: Process the puddle fading away!
+            tickPuddle(ticks);
         }
     }
 
@@ -55,6 +61,16 @@ public class Tile {
             this.plant = null;
         }
         this.isOnFire = true;
+
+
+    }
+
+    // NEW: The tick logic for the puddle
+    public void tickPuddle(double delta) {
+        if (puddleTimer > 0) {
+            puddleTimer -= delta;
+            if (puddleTimer < 0) puddleTimer = 0; // Clean up when the 10 seconds are over
+        }
     }
 
     public boolean isEmpty() {

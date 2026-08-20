@@ -94,6 +94,10 @@ public class GameBoard {
         for (int i = projectiles.size() - 1; i >= 0; i--) {
             Projectile projectile = projectiles.get(i);
             projectile.tick(this, ticks);
+
+            if (projectile.isDead()) {
+                projectiles.remove(i);
+            }
         }
 
         economyManager.tick(ticks);

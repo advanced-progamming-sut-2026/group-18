@@ -2,7 +2,8 @@ package com.compileordie.pvz2.models.entities.plants.strategies.attack;
 
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.Plant;
-import com.compileordie.pvz2.models.entities.projectiles.Projectile;
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
+import com.compileordie.pvz2.models.entities.projectiles.*;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 
 import java.util.List;
@@ -10,23 +11,32 @@ import java.util.List;
 public class DirectShootStrategy implements AttackStrategy {
 
     private final List<Integer> laneOffsets;
-    private final List<int[]> shootVectors; // NEW: [X, Y] direction arrays
+    private final List<double[]> shootVectors;
     private final Class<? extends Projectile> projectileType;
-    private final int projectileCount;
-
     public DirectShootStrategy(List<Integer> laneOffsets,
-                               List<int[]> shootVectors,
-                               Class<? extends Projectile> projectileType,
-                               int projectileCount) {
+                               List<double[]> shootVectors,
+                               Class<? extends Projectile> projectileType) {
         this.laneOffsets = laneOffsets;
-        // Default to forward [1, 0] if no special vectors are provided
-        this.shootVectors = (shootVectors != null && !shootVectors.isEmpty()) ? shootVectors : List.of(new int[]{1, 0});
+        this.shootVectors = (shootVectors != null && !shootVectors.isEmpty()) ? shootVectors : List.of(new double[]{1.0, 0.0, 0.0});
         this.projectileType = projectileType;
-        this.projectileCount = projectileCount;
     }
 
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
+        // --- Smart Range Radar ---
+        double rangeInPixels = plant.getRangeTiles() * Constants.Game.TILE_SIZE;
+        int plantRow = (int) (plant.getY() / Constants.Game.TILE_SIZE);
+
+        // Scan for any living zombie in the exact same lane that is within the plant's range
+        boolean targetExists = board.getAllZombies().stream()
+            .anyMatch(z -> !z.isDead() && z.getCurrentRow() == plantRow
+                && z.getX() > plant.getX() && z.getX() <= plant.getX() + rangeInPixels);
+
+        if (!targetExists) {
+            plant.holdAction = true;
+            return;
+        }
+        // ------------------------------
         double x = plant.getX();
         double y = plant.getY();
         int damage = plant.getBaseDamage();
@@ -34,25 +44,56 @@ public class DirectShootStrategy implements AttackStrategy {
         double tileSize = Constants.Game.TILE_SIZE;
         double maxY = board.totalRows * tileSize;
 
+        int stackMultiplier = plant.getName().equals("Pea Pod") ? plant.getStackCount() : 1;
+
         for (int offset : laneOffsets) {
             double spawnY = y + (offset * tileSize);
 
             if (spawnY >= 0 && spawnY < maxY) {
-                for (int i = 0; i < projectileCount; i++) {
-
-                    // NEW: Loop through all assigned shooting vectors
-                    for (int[] vector : shootVectors) {
+                for (double[] vector : shootVectors) {
+                    for (int s = 0; s < stackMultiplier; s++) {
                         try {
-                            double spawnX = x + (i * 0.2 * tileSize);
+                            int orderIndex = vector.length > 2 ? (int) (vector[2] + s) : s;
+                            double spawnX = x + (orderIndex * 0.2 * tileSize * vector[0]);
+                            double finalSpawnY = spawnY + (orderIndex * 0.2 * tileSize * vector[1]);
 
-                            Projectile proj = projectileType
-                                .getDeclaredConstructor(double.class, double.class, double.class, int.class)
-                                .newInstance(spawnX, spawnY, speed, damage);
+                            Projectile proj;
 
-                            // Tag the projectile with the plant's name for quest tracking!
-                            proj.setSourcePlantName(plant.getName());
+                            if (projectileType == IceProjectile.class) {
+                                double totalChillTime = 100.0 + plant.getChillTimeBonusTicks();
+                                proj = projectileType
+                                    .getDeclaredConstructor(double.class, double.class, double.class, int.class, double.class)
+                                    .newInstance(spawnX, finalSpawnY, speed, damage, totalChillTime);
 
-                            // NEW: Multiply base speed by vector direction
+                            } else if (projectileType == PiercingProjectile.class) {
+                                // NEW: Cactus piercing math! (3 base pierces + any upgrades)
+                                int totalPierces = 3 + plant.getPierceBonus();
+                                proj = projectileType
+                                    .getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
+                                    .newInstance(spawnX, finalSpawnY, speed, damage, totalPierces);
+
+                            } else if (projectileType == PoisonProjectile.class) {
+                                // Goo Peashooter DoT math (Base 6 + Upgrades)
+                                int totalPoisonDmg = 6 + plant.getPoisonDmgTickBonus();
+                                proj = projectileType
+                                    .getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
+                                    .newInstance(spawnX, finalSpawnY, speed, damage, totalPoisonDmg);
+
+                            } else if (projectileType == FumeProjectile.class) {
+                                double maxRangePixels = plant.getRangeTiles() * Constants.Game.TILE_SIZE;
+
+                                proj = projectileType
+                                    .getDeclaredConstructor(double.class, double.class, double.class, int.class, double.class)
+                                    .newInstance(spawnX, finalSpawnY, speed, damage, maxRangePixels);
+                            } else {
+                                proj = projectileType
+                                    .getDeclaredConstructor(double.class, double.class, double.class, int.class)
+                                    .newInstance(spawnX, finalSpawnY, speed, damage);
+                            }
+
+
+                            proj.setSourcePlantType(PlantType.getByName(plant.getName()));
+
                             proj.setXSpeed(speed * vector[0]);
                             proj.setYSpeed(speed * vector[1]);
 

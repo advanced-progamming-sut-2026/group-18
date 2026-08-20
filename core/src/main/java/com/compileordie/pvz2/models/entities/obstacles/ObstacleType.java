@@ -7,6 +7,7 @@ public enum ObstacleType {
     BARREL,
     ICE_BLOCK,
     TOMB,
+    CRATER,
     ARCADE_MACHINE;
 
     public void tick(int ticks, Obstacle self, GameBoard gameBoard) {

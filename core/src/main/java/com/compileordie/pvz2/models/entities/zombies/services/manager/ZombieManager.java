@@ -6,7 +6,9 @@ import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
 import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
 import com.compileordie.pvz2.models.entities.plants.Plant;
+import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
 import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
+import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.ZomBoss.DarkZomboss;
 import com.compileordie.pvz2.models.entities.zombies.variants.ZomBoss.EgyptZomboss;
@@ -60,6 +62,15 @@ public class ZombieManager {
             Zombie z = myZombies.get(i);
             z.move(1);
             z.tick();
+            // --- NEW: Floor Radar for Goo Peashooter Puddles! ---
+            Tile currentTile = myMap.getTile((float) z.getX(), (float) z.getY());
+
+            if (currentTile != null && currentTile.puddleTimer > 0) {
+                // The secondary poison effect (using the dynamically upgraded damage!)
+                z.addEffect(new StatusEffect(EffectType.POISON, 20, currentTile.puddleDamage));
+                // The heavy speed reduction
+                z.addEffect(new StatusEffect(EffectType.GOO_SLOW, 20));
+            }
             if (z.getHealth() <= 0) {
                 if (z.shouldRemooove) myZombies.remove(i);
                 else z.shouldRemooove = true;
@@ -139,20 +150,20 @@ public class ZombieManager {
                     double dt = Constants.Game.TIME_COEFFICIENT; zombie.spawnTimer += dt;
                     if (zombie.spawnTimer >= 3){zombie.spawnZombies = false;zombie.spawnTimer = 0;}}
                 if (zombie.boom){if (zombie.boomTimer == 0){
-                        Random rand = new Random();
-                        int r1 = rand.nextInt(5); // بازه 0 تا 4
-                        int c1 = rand.nextInt(3); // بازه 0 تا 2
-                        int r2, c2;
-                        do {r2 = rand.nextInt(5);
-                            c2 = rand.nextInt(7);} while (r1 == r2 && c1 == c2);
-                        gb.lanes.get(r1).tiles.get(c1).isOnFire = true;
-                        gb.lanes.get(r2).tiles.get(c2).isOnFire = true;
-                        zombie.r1 = r1;
-                        zombie.r2 = r2;
-                        zombie.c1 = c1;
-                        zombie.c2 = c2;
-                        spawnImpDrag(r1, c1, gb);
-                        spawnImpDrag(r2, c2, gb);}
+                    Random rand = new Random();
+                    int r1 = rand.nextInt(5); // بازه 0 تا 4
+                    int c1 = rand.nextInt(3); // بازه 0 تا 2
+                    int r2, c2;
+                    do {r2 = rand.nextInt(5);
+                        c2 = rand.nextInt(7);} while (r1 == r2 && c1 == c2);
+                    gb.lanes.get(r1).tiles.get(c1).isOnFire = true;
+                    gb.lanes.get(r2).tiles.get(c2).isOnFire = true;
+                    zombie.r1 = r1;
+                    zombie.r2 = r2;
+                    zombie.c1 = c1;
+                    zombie.c2 = c2;
+                    spawnImpDrag(r1, c1, gb);
+                    spawnImpDrag(r2, c2, gb);}
                     double dt = Constants.Game.TIME_COEFFICIENT;
                     zombie.boomTimer += dt;
                     if (zombie.boomTimer >= 0.5){zombie.boom = false;zombie.boomTimer = 0;}}

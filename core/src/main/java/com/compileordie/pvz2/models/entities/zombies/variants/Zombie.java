@@ -264,35 +264,35 @@ public abstract class Zombie extends GameEntity {
         return this.isEating;
     }
 
-    public void addEffect(StatusEffect effect) {
-        activeEffects.add(effect);
-    }
+    public void addEffect(StatusEffect newEffect) {
+        // 1. The Interception Check
+        for (StatusEffect existingEffect : activeEffects) {
+            if (existingEffect.getEffectType() == newEffect.getEffectType()) {
+                // Effect already exists! Just refresh the timer.
+                existingEffect.refreshDuration();
 
-    public void removeFrozen(){
-        for (StatusEffect s: activeEffects){
-            if (!s.isExpired() && s.getEffectType()==EffectType.FROZEN){
-                s.isApplied = false;
+                // CRITICAL: Return immediately so the duplicate is NEVER added to the list!
+                return;
             }
         }
+        // 2. If we reach this line, the effect is brand new. Add it normally.
+        activeEffects.add(newEffect);
     }
 
-    public boolean hasEffect(EffectType effect){
-        for (StatusEffect s: activeEffects){
-            if (!s.isExpired() && s.getEffectType()==effect){
-                return true;
-            }
-        }
-        return false;
-    }
+    public void removeStatusEffect(EffectType targetType){
+        if (activeEffects == null) return;
 
-    public void removeStatusEffect(EffectType type) {
-        activeEffects.removeIf(effect -> {
-            if (effect.getEffectType() == type) {
+        Iterator<StatusEffect> iterator = activeEffects.iterator();
+
+        while (iterator.hasNext()) {
+            StatusEffect effect = iterator.next();
+
+            // It only targets the EXACT effect you pass into the parameter!
+            if (effect.getEffectType() == targetType) {
                 effect.removeFromZombie(this);
-                return true;
+                iterator.remove();
             }
-            return false;
-        });
+        }
     }
 
     public boolean canMove() {
@@ -305,13 +305,13 @@ public abstract class Zombie extends GameEntity {
         return this.health <= 0;
     }
 
-//    public boolean hasEffect(EffectType type) {
-//        if (activeEffects == null || activeEffects.isEmpty()) return false;
-//        for (StatusEffect effect : activeEffects) {
-//            if (effect.getEffectType() == type && effect.isApplied()) return true;
-//        }
-//        return false;
-//    }
+    public boolean hasEffect(EffectType type) {
+        if (activeEffects == null || activeEffects.isEmpty()) return false;
+        for (StatusEffect effect : activeEffects) {
+            if (effect.getEffectType() == type && effect.isApplied()) return true;
+        }
+        return false;
+    }
 
     public void setSkip(boolean s) {
         this.skipThisTick = s;

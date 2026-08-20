@@ -12,55 +12,60 @@ public class AttackStrategyFactory {
         AttackStrategyType type,
         Class<? extends Projectile> projectileClass,
         List<Integer> laneOffsets,
-        int projectileCount,
+        List<double[]> shootVectors,
         double rangeTiles,
+        int maxBounces,
         boolean isAoE,
-        boolean isInstaKill) {
+        boolean isInstantKill) {
 
         switch (type) {
             case DIRECT_SHOOT:
-            case MULTI_SHOOT:
-                // Peashooter, Repeater, Threepeater
-                return new DirectShootStrategy(laneOffsets, null, projectileClass, projectileCount);
+                return new DirectShootStrategy(laneOffsets, shootVectors, projectileClass);
 
-            case DIAGONAL:
-                // Rotobaga: 4 vectors mapping to your bottom-left coordinate system
-                List<int[]> diagonalVectors = List.of(
-                    new int[]{-1, 1},  // Backward-Up
-                    new int[]{-1, -1}, // Backward-Down
-                    new int[]{1, 1},   // Forward-Up
-                    new int[]{1, -1}   // Forward-Down
-                );
-                return new DirectShootStrategy(List.of(0), diagonalVectors, projectileClass, projectileCount);
-
-            case STAR:
-                // Starfruit: 5 vectors
-                List<int[]> starVectors = List.of(
-                    new int[]{-1, 0},  // Backward
-                    new int[]{0, 1},   // Up
-                    new int[]{0, -1},  // Down
-                    new int[]{1, 1},   // Forward-Up
-                    new int[]{1, -1}   // Forward-Down
-                );
-                return new DirectShootStrategy(List.of(0), starVectors, projectileClass, projectileCount);
+            case CHARGE_SHOOT:
+                return new ChargeShootStrategy(projectileClass);
 
             case HOMING:
                 return new HomingStrategy(projectileClass, HomingStrategy.TargetingMode.RANDOM);
 
             case MELEE:
-                return new MeleeStrategy(rangeTiles, isAoE, isInstaKill);
+                return new MeleeStrategy(isAoE, isInstantKill);
 
             case MINE:
                 return new MineStrategy(rangeTiles);
 
-            case LOBBER:
+            case LOB:
                 return new LobberStrategy(projectileClass, rangeTiles);
+
+            case SQUASH:
+                return new SquashStrategy();
 
             case SUN_PRODUCE:
                 return new SunProduceStrategy();
 
-            default:
+            case TANGLE:
+                return new TangleKelpStrategy();
+
+            case BOWLING:
+                return new BowlingStrategy(projectileClass, maxBounces);
+
+            case DIGEST:
+                return new DigestStrategy(rangeTiles);
+
+            case ATTRACT:
+                return new AttractStrategy();
+
+            case MAGNETIC:
+                return new MagneticStrategy();
+
+            case INSTANT_USE:
+                return new InstantUseStrategy();
+
+            case MINT_ACTIVATE:
+                return new MintActivateStrategy();
+            case NONE:
                 return null;
         }
+        return null;
     }
 }

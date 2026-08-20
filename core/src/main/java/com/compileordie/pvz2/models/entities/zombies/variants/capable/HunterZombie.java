@@ -3,6 +3,7 @@ package com.compileordie.pvz2.models.entities.zombies.variants.capable;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.missions.quests.QuestEvent;
 import com.compileordie.pvz2.models.missions.quests.QuestManager;
@@ -67,7 +68,8 @@ public class HunterZombie extends CapableZombie {
         takedDamage = true;
         this.health -= amount;
         if (damageType == DamageType.FIRE){
-            this.removeFrozen();
+            this.removeStatusEffect(EffectType.FROZEN);
+            this.removeStatusEffect(EffectType.CHILLED);
         }
         if (health <= 0){
             health = 0;

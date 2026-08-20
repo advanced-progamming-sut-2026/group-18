@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.models.entities.plants.strategies.attack;
 
 import com.compileordie.pvz2.models.entities.plants.Plant;
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
@@ -55,8 +56,7 @@ public class HomingStrategy implements AttackStrategy {
                     .getDeclaredConstructor(double.class, double.class, double.class, int.class, Zombie.class)
                     .newInstance(plant.getX(), plant.getY(), 4.0, plant.getBaseDamage(), target);
 
-                // Tag the projectile for quests
-                proj.setSourcePlantName(plant.getName());
+                proj.setSourcePlantType(PlantType.getByName(plant.getName()));
 
                 board.getActiveProjectiles().add(proj);
             } catch (Exception e) {

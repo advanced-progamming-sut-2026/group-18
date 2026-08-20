@@ -8,22 +8,25 @@ import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.user.Player;
 
 public class ScreenFreezeEffect implements PlantFoodEffectStrategy {
-    private final int freezeDurationTicks;
+    private final int baseFreezeDurationTicks;
 
-    public ScreenFreezeEffect(int freezeDurationTicks) {
-        this.freezeDurationTicks = freezeDurationTicks;
+    public ScreenFreezeEffect(int baseFreezeDurationTicks) {
+        this.baseFreezeDurationTicks = baseFreezeDurationTicks;
     }
 
     @Override
     public void applyEffect(Plant plant, GameBoard board, Player player) {
+        // Add the plant's upgrade bonus to the base duration!
+        int totalFreezeTicks = baseFreezeDurationTicks + (int) plant.getFreezeTimeBonusTicks();
+
         for (Zombie zombie : board.getAllZombies()) {
             if (zombie.isDead()) continue;
-            // FIXED: Uses EffectType.FROZEN and addEffect()
-            zombie.addEffect(new StatusEffect(EffectType.FROZEN, freezeDurationTicks));
+
+            // Apply the freeze to every zombie on the board
+            zombie.addEffect(new StatusEffect(EffectType.FROZEN, totalFreezeTicks));
         }
 
         // Effect resolved! Reset the feed flag.
         plant.resetFeed();
     }
-
 }

@@ -5,6 +5,14 @@ import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 
 public enum SunType {
+    TINY(5) { // Added for base Sun Bean
+        @Override
+        public void tick(int ticks, Sun self, GameBoard gameBoard) {}
+    },
+    SMALL(10) { // Added for upgraded Sun Bean
+        @Override
+        public void tick(int ticks, Sun self, GameBoard gameBoard) {}
+    },
     NORMAL(ConfigManager.economy().normalSunValue) { // 25 Suns
         @Override
         public void tick(int ticks, Sun self, GameBoard gameBoard) {}

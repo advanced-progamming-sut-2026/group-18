@@ -17,7 +17,7 @@ public class FoodEffectFactory {
 
         switch (type) {
             case RAPID_FIRE:
-                return new RapidFireEffect(projectileClass, effectValue);
+                return new RapidFireEffect(projectileClass);
             case BURST_SUN:
                 return new BurstSunEffect(effectValue);
             case AREA_DAMAGE:
@@ -39,11 +39,14 @@ public class FoodEffectFactory {
             case PROJECTILE_ENHANCE:
                 return new ProjectileEnhanceEffect(effectValue);
             case HEAL_AND_ATTRACT:
-                // true = pulls inward (Sweet Potato)
-                return new HealAndRedirectEffect(true, effectValue);
-            case HOMING_BURST:
-                return new HomingBurstEffect(projectileClass, effectValue);
-            default:
+                return new HealAndAttract();
+
+            case GOO_PUDDLE:
+                return new GooPuddleEffect();
+            case FLATTEN:
+                return new FlattenEffect();
+
+                default:
                 return null;
         }
     }
