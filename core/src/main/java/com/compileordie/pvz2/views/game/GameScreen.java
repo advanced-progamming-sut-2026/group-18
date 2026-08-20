@@ -9,147 +9,275 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
+import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
-import com.compileordie.pvz2.models.entities.zombies.variants.mobility.ProspectorZombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.capable.HunterZombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.capable.OctopusZombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
+import com.compileordie.pvz2.models.game.waves.WaveType;
 import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.textures.TextureBank;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * View لایه‌ی اصلی گیم‌پلی (MVC - View).
- *
- * این کلاس هیچ منطق بازی‌ای تولید نمی‌کند؛ فقط:
- * 1) هر فریم، گیم‌سشن مدل (AppModel.gameSession) را با گام زمانی ثابت tick می‌زند.
- * 2) وضعیت فعلی مدل (لیست زامبی‌های GameBoard) را می‌خواند و رسم می‌کند.
- * 3) پس‌زمینه و ظاهر زامبی‌ها را بر اساس AppModel.currentChapter انتخاب می‌کند.
- *
- * تمام مسیرهای asset و ثابت‌های رندر در {@link GameScreenConstants} و
- * {@link ZombieVisualRegistry} نگه‌داری می‌شوند تا این کلاس تمیز و خوانا بماند.
+ * منطق رندر به کلاس‌های کمکی تقسیم شده؛ رفتار همان GameScreen قبلی است.
  */
 public class GameScreen implements Screen {
-    private final ZombieTestSpawner testSpawner = new ZombieTestSpawner();
+    boolean testOn = false;
+    boolean testZombossOn = false;
+    private final ZombieTestSpawner testSpawner =
+        new ZombieTestSpawner();
 
     private SpriteBatch batch;
     private ScreenViewport viewport;
     private TextureBank textureBank;
     private PamPlayer player;
 
-    private TextureRegion bgLeftRegion;
-    private TextureRegion bgMainRegion;
-    private TextureRegion bgRightRegion;
+    public boolean hasWeTestForClickForDamaging = true;
+    private static final float CLICK_DAMAGE_TEST_RADIUS_PX = 50f;
 
-    // متغیر برای دریافت مختصات کلیک بدون ساختن شیء جدید در هر فریم
+    private float effectPulseTime = 0f;
+    private boolean hasGameEnded = false;
+    private final Set<String> brokenAssets = new HashSet<>();
     private final Vector3 touchPoint = new Vector3();
-
-    // انباشتگر زمان برای پیشبرد شبیه‌سازی مدل با گام ثابت (fixed timestep)،
-    // مستقل از نوسانات فریم‌ریت رندر.
     private float simulationAccumulator = 0f;
+    private boolean resourcesReleased = false;
 
-    /**
-     * وضعیت رندر مخصوص هر زامبی (تایمر انیمیشن و آخرین حالت eating/walking).
-     * عمدا این اطلاعات داخل مدل (Zombie.java) نگه‌داری نمی‌شود، چون این‌ها صرفا
-     * جزئیات نمایشی (View) هستند و مدل نباید چیزی درباره‌ی رندر بداند (MVC).
-     */
-    private static final class ZombieRenderState {
-        float animTime = 0f;
-        boolean wasEating = false;
-        // آخرین جهت معتبر (بر اساس علامت xSpeed) - وقتی xSpeed دقیقا صفره (مثلا لحظه‌ی
-        // توقف کامل)، جهت قبلی حفظ می‌شود تا زامبی یهو نچرخد.
-        boolean flip = true;
-    }
-
-    private final Map<Zombie, ZombieRenderState> zombieRenderStates = new HashMap<>();
+    private final GameRenderStates states = new GameRenderStates();
+    private final GameCameraEffects cameraEffects = new GameCameraEffects();
+    private GameScreenUI ui;
+    private DebrisDrawer debrisDrawer;
+    private ZombieDrawer zombieDrawer;
+    private BoardEntityDrawer boardDrawer;
+    private ZombossDrawer zombossDrawer;
 
     @Override
     public void show() {
+        if (testZombossOn) AppModel.gameSession.gameBoard.waveManager.type = WaveType.NO_WAVES;
+
         batch = new SpriteBatch();
         viewport = new ScreenViewport();
         simulationAccumulator = 0f;
-        zombieRenderStates.clear();
+        resourcesReleased = false;
+        states.clearAll();
+        brokenAssets.clear();
+        ZombieVisualRegistry.clearAvailabilityCache();
+        hasGameEnded = false;
+        AppModel.wonLastGame = null;
 
+        initHelpers();
         loadAssets();
+        ui.setupPauseUI();
+        ui.buildPauseMenuPanelWithFog(textureBank);
+        ui.setupGameUI(textureBank);
+        Gdx.input.setInputProcessor(ui.uiStage);
+    }
+
+    private void initHelpers() {
+        ui = new GameScreenUI(
+            () -> ui.setPaused(false),
+            () -> { hasGameEnded = false; },
+            () -> {}
+        );
+        debrisDrawer = new DebrisDrawer(states, brokenAssets);
+        zombieDrawer = new ZombieDrawer(states, brokenAssets, debrisDrawer);
+        boardDrawer = new BoardEntityDrawer(states, brokenAssets);
+        zombossDrawer = new ZombossDrawer(states, brokenAssets, color -> ui.createSolidTexture(color));
+        ui.isPaused = false;
     }
 
     private void loadAssets() {
         try {
-            textureBank = new TextureBank(GameScreenConstants.ASSET_RESOLUTION, Gdx.files.internal("pvz-assets"));
+            textureBank = new TextureBank(GameScreenConstants.ASSET_RESOLUTION,
+                Gdx.files.internal("pvz-assets"));
             player = new PamPlayer(textureBank, Gdx.files.internal("pvz-assets"));
-
             String chapterFolder = GameScreenConstants.chapterFolder(AppModel.currentChapter);
-
-            bgLeftRegion = textureBank.region(GameScreenConstants.BG_REGION_PREFIX + chapterFolder + GameScreenConstants.BG_TEXTURE_LEFT_SUFFIX);
-            bgMainRegion = textureBank.region(GameScreenConstants.BG_REGION_PREFIX + chapterFolder + GameScreenConstants.BG_TEXTURE_SUFFIX);
-            bgRightRegion = textureBank.region(GameScreenConstants.BG_REGION_PREFIX + chapterFolder + GameScreenConstants.BG_TEXTURE_RIGHT_SUFFIX);
-
-            if (bgMainRegion == null) {
-                Gdx.app.error("PVZ-DEBUG", "❌ تصویر پس‌زمینه اصلی برای چپتر '" + chapterFolder + "' پیدا نشد!");
+            TextureRegion bgLeft = textureBank.region(
+                GameScreenConstants.BG_REGION_PREFIX + chapterFolder
+                    + GameScreenConstants.BG_TEXTURE_LEFT_SUFFIX);
+            TextureRegion bgMain = textureBank.region(
+                GameScreenConstants.BG_REGION_PREFIX + chapterFolder
+                    + GameScreenConstants.BG_TEXTURE_SUFFIX);
+            TextureRegion bgRight = textureBank.region(
+                GameScreenConstants.BG_REGION_PREFIX + chapterFolder
+                    + GameScreenConstants.BG_TEXTURE_RIGHT_SUFFIX);
+            boardDrawer.setBackgroundRegions(bgLeft, bgMain, bgRight);
+            if (bgMain == null) {
+                Gdx.app.error("PVZ-DEBUG",
+                    "❌ تصویر پس‌زمینه اصلی برای چپتر '" + chapterFolder + "' پیدا نشد!");
             } else {
-                Gdx.app.log("PVZ-DEBUG", "✅ پس‌زمینه چپتر '" + chapterFolder + "' با موفقیت لود شد.");
+                Gdx.app.log("PVZ-DEBUG",
+                    "✅ پس‌زمینه چپتر '" + chapterFolder + "' با موفقیت لود شد.");
             }
-        } catch (Exception e) {
-            Gdx.app.error("PVZ-DEBUG", "❌ خطا در بارگذاری asset های گیم‌اسکرین: " + e.getMessage());
-            e.printStackTrace();
+        } catch (Throwable e) {
+            Gdx.app.error("PVZ-DEBUG",
+                "❌ خطا در بارگذاری اولیه asset های گیم‌اسکرین: " + e.toString(), e);
         }
+    }
+
+    public void triggerCameraShake(float duration, float intensity) {
+        cameraEffects.triggerCameraShake(duration, intensity);
     }
 
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
-
-        if (textureBank != null) {
-            textureBank.update();
-        }
-
-        // ===============================================
-        // لاگ گرفتن مختصات کلیک ماوس / لمس صفحه
-        // ===============================================
-        if (Gdx.input.justTouched()) {
-            touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-            viewport.unproject(touchPoint); // تبدیل به مختصات دوربین/دنیای بازی
-
-            // تبدیل پیکسل به متر برای هماهنگی با مدل
-            float meterX = touchPoint.x / Constants.UI.MeterToPix;
-            float meterY = touchPoint.y / Constants.UI.MeterToPix;
-
-            Gdx.app.log("PVZ-CLICK", String.format(
-                "🖱️ مختصات کلیک -> پیکسل: (X: %.1f, Y: %.1f) | متر-مدل: (X: %.2f, Y: %.2f)",
-                touchPoint.x, touchPoint.y, meterX, meterY
-            ));
-        }
-
+        effectPulseTime += delta;
+        updateTextureBank();
+        handleInput();
         advanceSimulation(delta);
-
-        // خط زیر رو هر وقت خواستی زامبی‌ها اسپاون بشن از کامنت دربیار:
-        // (قبلا این خط با وجود کامنت بالا، به‌اشتباه فعال بود و همیشه در حال اسپاون تستی بود)
-        testSpawner.update(delta);
-
+        if (!ui.isPaused && testOn) testSpawner.update(delta);
+        cameraEffects.checkGiantZombieFootsteps(delta, ui.isPaused);
+        cameraEffects.updateCameraShake(delta);
         viewport.getCamera().update();
         batch.setProjectionMatrix(viewport.getCamera().combined);
+        updateSunHud();
+        drawWorld(delta);
+        if (ui != null) ui.actAndDraw(delta);
+    }
+
+    private void updateTextureBank() {
+        if (textureBank == null) return;
+        try {
+            textureBank.update();
+        } catch (Throwable t) {
+            if (!brokenAssets.contains("TEXTURE_BANK_ASYNC")) {
+                Gdx.app.error("PVZ-ASSET-ASYNC",
+                    "❌ خطا در بارگذاری پس‌زمینه است‌ها (TextureBank): " + t.toString(), t);
+                brokenAssets.add("TEXTURE_BANK_ASYNC");
+            }
+        }
+    }
+
+    private void handleInput() {
+        if (!Gdx.input.justTouched()) return;
+        touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+        viewport.unproject(touchPoint);
+        float meterX = touchPoint.x / Constants.UI.METER_TO_PIX;
+        float meterY = touchPoint.y / Constants.UI.METER_TO_PIX;
+        Gdx.app.log("&&&&--------PVZ-CLICK", String.format(
+            "🖱️ مختصات کلیک -> پیکسل: (X: %.1f, Y: %.1f) | متر-مدل: (X: %.2f, Y: %.2f)",
+            touchPoint.x, touchPoint.y, meterX, meterY));
+        if (hasWeTestForClickForDamaging) {
+            handleClickDamageTest(touchPoint.x, touchPoint.y);
+        }
+    }
+
+    private void updateSunHud() {
+        if (ui != null && AppModel.gameSession != null) {
+            int amount = AppModel.gameSession.gameBoard.economyManager.sunAmount;
+            ui.updateSunLabel(amount);
+        }
+    }
+
+    private void drawWorld(float delta) {
+        boolean paused = ui != null && ui.isPaused;
+        zombieDrawer.setPaused(paused);
+        zombieDrawer.setEffectPulseTime(effectPulseTime);
+        boardDrawer.setPaused(paused);
 
         batch.begin();
-        drawBackground();
-        drawZombies(delta);
+        com.badlogic.gdx.math.Matrix4 originalMatrix = batch.getTransformMatrix().cpy();
+        if (cameraEffects.shakeOffsetX != 0 || cameraEffects.shakeOffsetY != 0) {
+            batch.getTransformMatrix().translate(
+                cameraEffects.shakeOffsetX, cameraEffects.shakeOffsetY, 0);
+            batch.setTransformMatrix(batch.getTransformMatrix());
+        }
+        boardDrawer.drawBackground(batch);
+        boardDrawer.drawMowers(batch, player, delta);
+        boardDrawer.drawTombs(batch, player, delta);
+        boardDrawer.drawFireTiles(batch, player, delta);
+        debrisDrawer.drawDeadZombies(batch, player, delta);
+        zombieDrawer.drawZombies(batch, player, delta);
+        zombossDrawer.drawZombossExplosion(batch, player, delta);
+        zombossDrawer.drawDarkZombossLaserSquare(batch, player, delta);
+        debrisDrawer.drawFallingDebris(batch, player, delta);
+
+        Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+        viewport.unproject(mousePos);
+        boardDrawer.drawSuns(batch, player, delta, mousePos);
+
+        batch.setTransformMatrix(originalMatrix);
+        zombossDrawer.drawZombossHealthBar(batch, player, viewport, delta);
         batch.end();
     }
 
-    /**
-     * گیم‌سشن را با گام زمانی ثابت جلو می‌برد (طبق Constants.Game.TIME_COEFFICIENT).
-     * این‌طوری فیزیک/سرعت زامبی‌ها مستقل از فریم‌ریت واقعی دستگاه یکسان می‌ماند،
-     * چون خود مدل (مثلا Zombie.move) از «تعداد تیک × TIME_COEFFICIENT» به عنوان دلتای
-     * زمانی استفاده می‌کند.
-     */
-    private void advanceSimulation(float delta) {
-        if (AppModel.gameSession == null) {
-            return;
+    private void handleClickDamageTest(float clickX, float clickY) {
+        Zombie closest = null;
+        float closestDistSq = Float.MAX_VALUE;
+        float radiusSq = CLICK_DAMAGE_TEST_RADIUS_PX * CLICK_DAMAGE_TEST_RADIUS_PX;
+
+        for (Map.Entry<Zombie, GameRenderStates.ZombieRenderState> entry
+            : states.zombieRenderStates.entrySet()) {
+            GameRenderStates.ZombieRenderState state = entry.getValue();
+            if (Float.isNaN(state.lastDrawX) || Float.isNaN(state.lastDrawY)) continue;
+            float dx = state.lastDrawX - clickX;
+            float dy = state.lastDrawY - clickY;
+            float distSq = dx * dx + dy * dy;
+            if (distSq <= radiusSq && distSq < closestDistSq) {
+                closestDistSq = distSq;
+                closest = entry.getKey();
+            }
         }
 
+        Tomb closestTomb = null;
+        float closestTombDistSq = Float.MAX_VALUE;
+        for (Map.Entry<Tomb, GameRenderStates.TombRenderState> entry
+            : states.tombRenderStates.entrySet()) {
+            GameRenderStates.TombRenderState state = entry.getValue();
+            if (Float.isNaN(state.lastDrawX) || Float.isNaN(state.lastDrawY)) continue;
+            float dx = state.lastDrawX - clickX;
+            float dy = state.lastDrawY - clickY;
+            float distSq = dx * dx + dy * dy;
+            if (distSq <= radiusSq && distSq < closestTombDistSq) {
+                closestTombDistSq = distSq;
+                closestTomb = entry.getKey();
+            }
+        }
+        if (closestTomb != null) {
+            closestTomb.takeDamage(100, ProjectileType.NORMAL);
+            Gdx.app.log("PVZ-CLICK-DAMAGE-TEST",
+                "🎯 [تست] قبر با کلیک روی نقطه‌ی رندرش، ۱۰۰ دمیج خورد.");
+        }
+        applyZombieClickDamage(closest);
+    }
+
+    private void applyZombieClickDamage(Zombie closest) {
+        if (closest == null) return;
+        try {
+            closest.takeDamage(100, DamageType.NORMAL, null);
+            Gdx.app.log("PVZ-CLICK-DAMAGE-TEST",
+                "🎯 [تست] زامبی '" + closest.getType()
+                    + "' با کلیک روی نقطه‌ی رندرش، ۱۰۰ دمیج خورد.");
+            if (closest.getType() == ZombieType.HUNTER_ZOMBIE) {
+                ((HunterZombie) closest).startThrowAnimation();
+            } else if (closest.getType() == ZombieType.OCTOPUS_ZOMBIE) {
+                ((OctopusZombie) closest).startTossAnimation();
+            }
+        } catch (Throwable e) {
+            Gdx.app.error("PVZ-CLICK-DAMAGE-TEST",
+                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+                    + "❌ takeDamage روی زامبی '" + closest.getType()
+                    + "' خطا داد (احتمالا باگ null-check\n"
+                    + "توی takeDamage خودِ مدل، نه اینجا): " + e + "\n"
+                    + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", e);
+        }
+    }
+
+    private void advanceSimulation(float delta) {
+        if (AppModel.wonLastGame != null && !hasGameEnded) {
+            hasGameEnded = true;
+            ui.setPaused(true);
+            ui.showGameEndPanel(AppModel.wonLastGame);
+            return;
+        }
+        if (AppModel.gameSession == null || ui.isPaused) return;
         simulationAccumulator += delta;
         while (simulationAccumulator >= GameScreenConstants.SIMULATION_STEP_SECONDS) {
             AppModel.gameSession.tick(1);
@@ -157,214 +285,32 @@ public class GameScreen implements Screen {
         }
     }
 
-    private void drawBackground() {
-        float screenW = Gdx.graphics.getWidth();
-        float screenH = Gdx.graphics.getHeight();
-
-        if (bgLeftRegion != null && bgMainRegion != null && bgRightRegion != null) {
-            float leftAspect = (float) bgLeftRegion.getRegionWidth() / bgLeftRegion.getRegionHeight();
-            float leftWidth = (screenH * leftAspect) * GameScreenConstants.BG_SIDE_SCALE;
-            batch.draw(bgLeftRegion, 0, 0, leftWidth, screenH);
-
-            float rightAspect = (float) bgRightRegion.getRegionWidth() / bgRightRegion.getRegionHeight();
-            float rightWidth = (screenH * rightAspect) * GameScreenConstants.BG_SIDE_SCALE;
-            float visibleRightWidth = rightWidth * 0.25f;
-            float rightX = screenW - visibleRightWidth;
-            batch.draw(bgRightRegion, rightX, 0, rightWidth, screenH);
-
-            float mainWidth = rightX - leftWidth;
-            batch.draw(bgMainRegion, leftWidth, 0, mainWidth, screenH);
-        } else if (bgMainRegion != null) {
-            batch.draw(bgMainRegion, 0, 0, screenW, screenH);
-        }
-    }
-
-    /**
-     * رندر تمام زامبی‌های فعلی موجود در مدل (GameBoard.getAllZombies()).
-     * این متد صرفا از مدل می‌خواند و چیزی در آن تغییر نمی‌دهد (View خالص).
-     */
-    private void drawZombies(float delta) {
-        if (AppModel.gameSession == null || player == null) {
-            return;
-        }
-
-        List<Zombie> currentZombies = new ArrayList<>(AppModel.gameSession.gameBoard.getAllZombies());
-
-        // پاکسازی وضعیت رندر زامبی‌هایی که دیگر روی نقشه نیستند (مرده/حذف‌شده) تا نشتی حافظه نداشته باشیم
-        Set<Zombie> aliveSet = new HashSet<>(currentZombies);
-        zombieRenderStates.keySet().removeIf(z -> !aliveSet.contains(z));
-
-        // مرتب‌سازی بر اساس مختصات Y (یا شماره ردیف):
-        // چون در سیستم مختصات بازی، معمولاً خطوط پایین‌تر مقدار Y کمتری دارند (یا برعکس، بسته به پیاده‌سازی مدل شما)،
-        // برای اینکه زامبی‌های پایین‌تر روی زامبی‌های بالاتر قرار بگیرند، لیست را بر اساس مقادیر Y صعودی یا نزولی مرتب می‌کنیم.
-        currentZombies.sort((z1, z2) -> Double.compare(z2.getY(), z1.getY()));
-
-        for (Zombie zombie : currentZombies) {
-            ZombieRenderState state = zombieRenderStates.computeIfAbsent(zombie, z -> new ZombieRenderState());
-
-            boolean isEatingNow = zombie.isEating();
-            if (isEatingNow != state.wasEating) {
-                state.animTime = 0f; // تغییر حالت راه‌رفتن/خوردن -> ریست تایمر انیمیشن برای پخش روان
-                state.wasEating = isEatingNow;
-            }
-
-            drawSingleZombie(zombie, state, delta);
-        }
-    }
-
-    private void drawSingleZombie(Zombie zombie, ZombieRenderState state, float delta) {
-        String typeKey = zombie.getType().name();
-
-        ZombieVisualRegistry.ZombieVisualDef def = ZombieVisualRegistry.get(typeKey);
-
-        if (def == null) {
-            Gdx.app.error("PVZ-ASSET-MISSING",
-                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-                    + "❌ [هیچ تعریف بصری‌ای ثبت نشده] برای نوع زامبی: '" + typeKey + "'\n"
-                    + "این زامبی رندر نخواهد شد. ZombieVisualRegistry را بررسی کنید.\n"
-                    + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            return;
-        }
-
-        // =========================================================
-        // تنظیم دینامیک سرعت انیمیشن برای جلوگیری از لیز خوردن پاها
-        // =========================================================
-        float animSpeedMultiplier;
-        if (zombie.isEating()) {
-            animSpeedMultiplier = 1.0f; // انیمیشن eat مستقل از سرعت حرکت است
-        } else if (!zombie.canMove()) {
-            animSpeedMultiplier = 0f; // زامبی گیر کرده/متوقف شده؛ نباید پا بزند
-        } else {
-            double normalSpeed = zombie.getStableSpeed();
-            double currentSpeed = Math.abs(zombie.getXSpeed());
-            animSpeedMultiplier = normalSpeed > 0 ? (float) (currentSpeed / normalSpeed) : 1f;
-        }
-
-        state.animTime += delta * animSpeedMultiplier;
-        // =========================================================
-
-        float baseX = (float) zombie.getX() * Constants.UI.MeterToPix;
-        float baseY = (float) zombie.getY() * Constants.UI.MeterToPix;
-
-        // تعیین نام انیمیشن بر اساس نوع زامبی و وضعیت آن
-        String animName;
-        if (zombie.isEating()) {
-            animName = "eat";
-        } else if ("PIANIST_ZOMBIE".equals(typeKey)) {
-            // پیانیست کلید walk ندارد، از play استفاده می‌کنیم
-            animName = "play";
-        } else {
-            animName = "walk";
-        }
-
-        // جهت صورت زامبی بر اساس علامت واقعی سرعت افقی (xSpeed)
-        double xSpeed = zombie.getXSpeed();
-        if (xSpeed > 0) {
-            state.flip = true;  // حرکت به چپ (حالت عادی) -> پیش‌فرض آرت رو به راسته پس flip=true
-        } else if (xSpeed < 0) {
-            state.flip = false; // حرکت به راست (مثلا هیپنوتایز)
-        }
-        boolean flip = state.flip;
-
-        // -----------------------------------------------------------------
-        // نکته‌ی اصلی این اصلاح:
-        // libPVZ متدی به اسم setState(String, String, boolean) روی PamPlayer
-        // ندارد. فعال‌سازی state های ظاهری (زره‌ها: Conehead/Buckethead/
-        // Blockhead/Knight و ...) باید با ساخت یک Map<String, Boolean>
-        // "visibility map" انجام شود.
-        //
-        // اما با نگاه به سورس واقعی PamPlayer، هیچ overloadی از draw(...)
-        // وجود ندارد که هم‌زمان scaleX/scaleY و هم partsVisibility بگیرد:
-        //   draw(batch, pam, clip, time, x, y, loop, partsVisibility)      -> بدون scale
-        //   draw(batch, pam, clip, time, x, y, scaleX, scaleY, loop)       -> بدون visibility
-        // پس وقتی زامبی زره دارد (visibilityMap != null)، به‌جای پارامتر
-        // scale (که این overload اصلا نمی‌گیرد)، مقیاس را با transform
-        // matrix خودِ Batch، دقیقا حول نقطه‌ی (drawX, drawY)، اعمال می‌کنیم.
-        // این کار همان اثر بصری root.set(scaleX, ...) داخل drawInternal را
-        // تولید می‌کند (از جمله فلیپ افقی با علامت منفی scaleX).
-        // -----------------------------------------------------------------
-        List<String> stateFilters = def.getResolvedStateFilters();
-        Map<String, Boolean> visibilityMap = null;
-        if (!stateFilters.isEmpty()) {
-            visibilityMap = new HashMap<>();
-            for (String state2 : stateFilters) {
-                visibilityMap.put(state2, true);
-            }
-        }
-
-        for (ZombieVisualRegistry.PamSpec part : def.pams) {
-            String resolvedPath = part.getResolvedPath();
-
-            try {
-                float drawX = baseX + part.offsetX * Constants.UI.MeterToPix;
-                float drawY = baseY + part.offsetY * Constants.UI.MeterToPix;
-                int flag = 1;
-                if (zombie.getType() == ZombieType.PROSPECTOR_ZOMBIE) {
-                    if (((ProspectorZombie) (zombie)).isReversedDirection) flag = -1;
-                }
-                if (zombie.isHypnotized()) flag = -1;
-
-                float scaleX = flag * GameScreenConstants.ZOMBIE_SCALE;
-                float scaleY = GameScreenConstants.ZOMBIE_SCALE;
-
-                if (visibilityMap != null) {
-                    // مقیاس‌دهی دستی از طریق transform matrix چون overload
-                    // مربوطه پارامتر scale ندارد.
-                    com.badlogic.gdx.math.Matrix4 originalTransform = batch.getTransformMatrix().cpy();
-                    com.badlogic.gdx.math.Matrix4 scaledTransform = originalTransform.cpy()
-                        .translate(drawX, drawY, 0f)
-                        .scale(scaleX, scaleY, 1f)
-                        .translate(-drawX, -drawY, 0f);
-
-                    batch.setTransformMatrix(scaledTransform);
-                    player.draw(
-                        batch,
-                        resolvedPath,
-                        animName,
-                        state.animTime,
-                        drawX,
-                        drawY,
-                        flip,
-                        visibilityMap
-                    );
-                    batch.setTransformMatrix(originalTransform);
-                } else {
-                    player.draw(
-                        batch,
-                        resolvedPath,
-                        animName,
-                        state.animTime,
-                        drawX,
-                        drawY,
-                        scaleX,
-                        scaleY,
-                        flip
-                    );
-                }
-            } catch (Exception e) {
-                Gdx.app.error("PVZ-ASSET-MISSING",
-                    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-                        + "❌ عدم موفقیت در رندر زامبی '" + typeKey + "'\n"
-                        + "مسیر تلاش‌شده: " + resolvedPath + "\n"
-                        + "علت: " + e.getMessage() + "\n"
-                        + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            }
-        }
-    }
-
     @Override
     public void resize(int width, int height) {
         if (width <= 0 || height <= 0) return;
         viewport.update(width, height, true);
+        if (ui != null) ui.resize(width, height);
     }
 
     @Override public void pause() {}
     @Override public void resume() {}
-    @Override public void hide() {}
+
+    @Override
+    public void hide() {
+        releaseGraphicsResources();
+    }
 
     @Override
     public void dispose() {
+        releaseGraphicsResources();
+    }
+
+    private void releaseGraphicsResources() {
+        if (resourcesReleased) return;
+        resourcesReleased = true;
         if (batch != null) batch.dispose();
-        zombieRenderStates.clear();
+        if (ui != null) ui.dispose();
+        if (zombossDrawer != null) zombossDrawer.dispose();
+        states.clearAll();
     }
 }

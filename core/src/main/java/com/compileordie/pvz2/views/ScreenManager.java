@@ -7,8 +7,6 @@ import com.compileordie.pvz2.views.screens.*;
 
 public class ScreenManager {
     private static Main main;
-    @SuppressWarnings("GDXJavaStaticResource")
-    private static GameScreen currentGameScreen;
 
     private ScreenManager() {
     }
@@ -24,12 +22,10 @@ public class ScreenManager {
             case MAIN -> new MainMenuScreen();
             case GAME -> new GameMenuScreen();
             case NETWORK -> new NetworkMenuScreen();
-            case NEWS -> new NewsMenuScreen();
             case PROFILE -> new ProfileMenuScreen();
             case COLLECTION -> new CollectionMenuScreen();
             case GREENHOUSE -> new GreenhouseMenuScreen();
             case TRAVEL_LOG -> new TravelLogMenuScreen();
-            case LEADERBOARD -> new LeaderboardMenuScreen();
             case SHOP -> new ShopMenuScreen();
             case GAME_SESSION -> new GameScreen();
         };

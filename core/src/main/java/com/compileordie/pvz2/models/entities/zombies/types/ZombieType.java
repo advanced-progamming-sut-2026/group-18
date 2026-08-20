@@ -13,13 +13,14 @@ public enum ZombieType {
     GARGANTUAR(150, null),
     IMP(150, null),
     ALL_STAR(150, null),
-    ARCADE_ZOMBIE(150, null),
+//    ARCADE_ZOMBIE(150, null),
     PARASOL_ZOMBIE(150, null),
     TURQUOISE_ZOMBIE(150, null),
     PROSPECTOR_ZOMBIE(150, null),
     PIANIST_ZOMBIE(150, null),
     NEWSPAPER_ZOMBIE(150, null),
     BARREL_ROLLER(150, null),
+
 
     // === مصر باستان ===
     RA_ZOMBIE(150, ChapterType.ANCIENT_EGYPT),
@@ -29,18 +30,24 @@ public enum ZombieType {
     // === غارهای یخی ===
     DODO_RIDER(150, ChapterType.FROSTBITE_CAVES),
     HUNTER_ZOMBIE(150, ChapterType.FROSTBITE_CAVES),
-    TROGLOBITE(150, ChapterType.FROSTBITE_CAVES),
+//    TROGLOBITE(150, ChapterType.FROSTBITE_CAVES),
 
     // === ساحل ===
-    FISHERMAN_ZOMBIE(150, ChapterType.BIG_WAVE_BEACH),
+//    FISHERMAN_ZOMBIE(150, ChapterType.BIG_WAVE_BEACH),
     SNORKEL_ZOMBIE(150, ChapterType.BIG_WAVE_BEACH),
     OCTOPUS_ZOMBIE(150, ChapterType.BIG_WAVE_BEACH),
 
     // === قرون وسطی ===
-    JESTER_ZOMBIE(150, ChapterType.DARK_AGES),
-    WIZARD_ZOMBIE(150, ChapterType.DARK_AGES),
-    KING_ZOMBIE(150, ChapterType.DARK_AGES),
-    IMP_DRAGON(150, ChapterType.DARK_AGES);
+//    JESTER_ZOMBIE(150, ChapterType.DARK_AGES),
+//    WIZARD_ZOMBIE(150, ChapterType.DARK_AGES),
+//    KING_ZOMBIE(150, ChapterType.DARK_AGES),
+    IMP_DRAGON(150, ChapterType.DARK_AGES),
+
+
+
+    ZOMBOSS_IN_EGYPT(150, null),
+    ZOMBOSS_IN_DARK(150, null),
+    ;
 
     public final int waveCost;
     public final ChapterType chapter;

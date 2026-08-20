@@ -17,6 +17,10 @@ public class HunterZombie extends CapableZombie {
     private double timer = 0;
     private int shutCounter = 0;
 
+    // --- برای انیمیشن "throw" موقع پرتاب یخ (۲ ثانیه، سپس خودکار به حالت عادی) ---
+    public static final double THROW_ANIM_DURATION = 2.0;
+    private double throwAnimRemaining = 0;
+
     public HunterZombie(double health, double speed, int attackPower, int row, double startX,
                         double x, double y,
                         double xSpeed, double ySpeed) {
@@ -35,6 +39,10 @@ public class HunterZombie extends CapableZombie {
         if (isDead()) return;
         //---
         float dt = 1 * Constants.Game.TIME_COEFFICIENT;
+        if (throwAnimRemaining > 0) {
+            throwAnimRemaining -= dt;
+            if (throwAnimRemaining < 0) throwAnimRemaining = 0;
+        }
         if (shouldAttack) {
             timer += dt;
             //---
@@ -57,6 +65,7 @@ public class HunterZombie extends CapableZombie {
     @Override
     public void takeDamage(double amount, DamageType damageType, PlantType plantType) {
         if (isDead()) return;
+        takedDamage = true;
         this.health -= amount;
         if (damageType == DamageType.FIRE){
             this.removeStatusEffect(EffectType.FROZEN);
@@ -64,11 +73,12 @@ public class HunterZombie extends CapableZombie {
         }
         if (health <= 0){
             health = 0;
+            if (damageType==DamageType.EXPLOSIVE) killByExplosive = true;
             if (damageType==DamageType.LawnMower){
                 QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_BY_PLANT, 1, "MOWER");
             }
             else{
-                QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_BY_PLANT, 1, plantType.name());
+                if (plantType!=null) QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_BY_PLANT, 1, plantType.name());
             }
         }
     }
@@ -87,5 +97,24 @@ public class HunterZombie extends CapableZombie {
 
     public void setShouldShut(boolean a) {
         shouldShut = a;
+    }
+
+    /**
+     * منطق واقعیه: دقیقا لحظه‌ای صدا زده می‌شه که هانتر واقعا یخ پرتاب می‌کنه
+     * (نگاه کن به ZombieManager.processSpecialCombatAbilities، جایی که
+     * getShouldShut() true می‌شه و p.addChill() صدا زده می‌شه).
+     */
+    public void startThrowAnimation() {
+        throwAnimRemaining = THROW_ANIM_DURATION;
+    }
+
+    /** آیا الان باید انیمیشن "throw" پخش بشه (به‌جای walk عادی)؟ */
+    public boolean isThrowing() {
+        return throwAnimRemaining > 0;
+    }
+
+    /** چند ثانیه از شروع انیمیشن throw گذشته (۰ = همین الان شروع شده). */
+    public double getThrowAnimElapsed() {
+        return THROW_ANIM_DURATION - throwAnimRemaining;
     }
 }

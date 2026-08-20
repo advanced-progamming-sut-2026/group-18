@@ -7,6 +7,7 @@ public abstract class Quest {
     public String title;
     public String description;
     public QuestCategory category;
+    public int priority;
     public int targetAmount;
     public String rewardType;
     public int rewardAmount;
@@ -18,6 +19,7 @@ public abstract class Quest {
                     String title,
                     String description,
                     QuestCategory category,
+                    int priority,
                     int targetAmount,
                     String rewardType,
                     int rewardAmount) {
@@ -25,6 +27,7 @@ public abstract class Quest {
         this.title = title;
         this.description = description;
         this.category = category;
+        this.priority = priority;
         this.targetAmount = targetAmount;
         this.rewardType = rewardType;
         this.rewardAmount = rewardAmount;

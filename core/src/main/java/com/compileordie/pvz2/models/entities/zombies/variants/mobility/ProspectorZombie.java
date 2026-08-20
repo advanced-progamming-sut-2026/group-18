@@ -11,7 +11,7 @@ import com.compileordie.pvz2.models.missions.quests.QuestManager;
 
 public class ProspectorZombie extends Zombie {
     public static final int WAVE_COST = 200;
-    private final double timeToExplode = 10.0;
+    private final double timeToExplode = 20.0;
     private boolean dynamiteActive;
     private double dynamiteTimer;
     public boolean isReversedDirection;
@@ -22,7 +22,7 @@ public class ProspectorZombie extends Zombie {
         // فراخوانی دقیق سازنده ۱۲ پارامتری کلاس MobilityZombie شما
         super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, ZombieType.PROSPECTOR_ZOMBIE);
 
-        this.homeColumnX = Constants.Game.TILE_WIDTH / 1.7;
+        this.homeColumnX = Constants.Game.PROSPECTOR_BOOM_X;
         this.dynamiteActive = true;
         this.dynamiteTimer = 0.0;
         this.isReversedDirection = false;
@@ -56,6 +56,7 @@ public class ProspectorZombie extends Zombie {
     @Override
     public void takeDamage(double amount, DamageType damageType, PlantType plantType) {
         if (isDead()) return;
+        takedDamage = true;
         if (damageType == DamageType.FIRE){
             this.removeStatusEffect(EffectType.FROZEN);
             this.removeStatusEffect(EffectType.CHILLED);
@@ -67,11 +68,12 @@ public class ProspectorZombie extends Zombie {
         }
         if (health <= 0){
             health = 0;
+            if (damageType==DamageType.EXPLOSIVE) killByExplosive = true;
             if (damageType==DamageType.LawnMower){
                 QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_BY_PLANT, 1, "MOWER");
             }
             else{
-                QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_BY_PLANT, 1, plantType.name());
+                if (plantType!=null) QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_BY_PLANT, 1, plantType.name());
             }
         }
     }

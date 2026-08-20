@@ -6,12 +6,10 @@ public enum ScreenType {
     MAIN,
     GAME,
     NETWORK,
-    NEWS,
     PROFILE,
     COLLECTION,
     GREENHOUSE,
     TRAVEL_LOG,
-    LEADERBOARD,
     SHOP,
     GAME_SESSION;
 }

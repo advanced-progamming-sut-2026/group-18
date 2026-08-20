@@ -12,30 +12,68 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Scaling;
 import com.compileordie.pvz2.controllers.menus.home.MainMenuController;
 import com.compileordie.pvz2.models.AppModel;
-import com.compileordie.pvz2.models.entities.plants.types.PlantType;
-import com.compileordie.pvz2.models.game.SessionBuilder;
-import com.compileordie.pvz2.models.game.levels.ChapterType;
-import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.views.ScreenManager;
 import com.compileordie.pvz2.views.ScreenType;
 import com.compileordie.pvz2.views.customelements.BadgeWrapper;
+import com.compileordie.pvz2.views.customelements.CurrencyHud;
+import com.compileordie.pvz2.views.customelements.NewsModal;
 import com.compileordie.pvz2.views.customelements.SettingsModal;
 import com.compileordie.pvz2.views.helpers.ToastManager;
 
 public class MainMenuScreen extends MenuScreen {
+    private Stack stack;
+    private Table hudTable;
+    private Table centerTable;
+    private Table subButtons;
+    private CurrencyHud currencyHud;
+    private ImageButton settingsBtn;
+    private ImageButton newsBtn;
+    private BadgeWrapper badgedNewsBtn;
+    private ImageButton closeBtn;
+    private Label teamName;
+    private TextButton playBtn;
+    private TextButton profileBtn;
+    private TextButton logoutBtn;
 
     @Override
     public void showCore() {
-        Stack stack = new Stack();
-        stack.setFillParent(true);
-        stage.addActor(stack);
-
-        setupBackground(stack);
-        setupHud(stack);
-        setupCenterTable(stack);
+        initComponents();
+        buildLayout();
+        attachListeners();
     }
 
-    private void setupBackground(Stack stack) {
+    private void initComponents() {
+        stack = new Stack();
+        stack.setFillParent(true);
+        stage.addActor(stack);
+        hudTable = new Table();
+        hudTable.setFillParent(true);
+        centerTable = new Table();
+        centerTable.setFillParent(true);
+        subButtons = new Table();
+        // HUD Initialization
+        currencyHud = new CurrencyHud(skin, stage, textureBank);
+        settingsBtn = new ImageButton(skin, "default");
+        newsBtn = new ImageButton(skin, "almanac");
+        badgedNewsBtn = new BadgeWrapper(newsBtn, skin);
+        badgedNewsBtn.setBadgeCount(AppModel.player.getUnreadNewsCount());
+
+        teamName = new Label("Welcome " + AppModel.player.nickname, skin, "medium_outline");
+        closeBtn = new ImageButton(skin, "generic_close");
+
+        // Center Initialization
+        playBtn = new TextButton("PLAY", skin, "green");
+        profileBtn = new TextButton("Profile", skin, "default");
+        logoutBtn = new TextButton("Logout", skin, "brown");
+    }
+
+    private void buildLayout() {
+        setupBackground();
+        setupHud();
+        setupCenterTable();
+    }
+
+    private void setupBackground() {
         String[] backgrounds = {
             "IMAGE_UI_THYMED_EVENTS_LAWNBOWL_EVENT_BG", "IMAGE_UI_THYMED_EVENTS_GEM_SPREE_EVENT_BG",
             "IMAGE_UI_THYMED_EVENTS_FEASTIVUS_EVENT_BG", "IMAGE_UI_THYMED_EVENTS_BIRTHDAYZ_EVENT_BG",
@@ -84,59 +122,23 @@ public class MainMenuScreen extends MenuScreen {
         };
     }
 
-    private void setupHud(Stack stack) {
-        Table hudTable = new Table();
-        hudTable.setFillParent(true);
+    private void setupHud() {
         stack.add(hudTable);
-
-        ImageButton settingsBtn = new ImageButton(skin, "default");
-        ImageButton newsBtn = new ImageButton(skin, "almanac");
-        BadgeWrapper badgedNewsBtn = new BadgeWrapper(newsBtn, skin);
-        badgedNewsBtn.setBadgeCount(AppModel.player.getUnreadNewsCount());
-
         hudTable.top();
-        hudTable.add(settingsBtn).pad(25).left();
+
+        hudTable.add(currencyHud).pad(25).left();
         hudTable.add().expandX();
-        hudTable.add(badgedNewsBtn).pad(25).right();
+        hudTable.add(badgedNewsBtn);
+        hudTable.add(settingsBtn).pad(30).right();
 
         hudTable.row().expandY().bottom();
-        Label teamName = new Label("Compile or Die!", skin, "medium_outline");
         hudTable.add(teamName).pad(25).padBottom(20).left();
         hudTable.add().expandX();
 
-        ImageButton closeBtn = new ImageButton(skin, "generic_close");
-        hudTable.add(closeBtn).size(64, 64).padRight(35).padBottom(-3).right().bottom();
-
-        attachHudListeners(settingsBtn, newsBtn, closeBtn);
+        hudTable.add(closeBtn).colspan(2).size(64, 64).padRight(35).padBottom(-3).right().bottom();
     }
 
-    private void attachHudListeners(ImageButton settingsBtn, ImageButton newsBtn, ImageButton closeBtn) {
-        settingsBtn.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                SettingsModal settingsModal = new SettingsModal(skin);
-                settingsModal.show(stage);
-            }
-        });
-        newsBtn.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                ScreenManager.setMenuScreen(ScreenType.NEWS);
-            }
-
-        });
-        closeBtn.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                Gdx.app.exit();
-            }
-
-        });
-    }
-
-    private void setupCenterTable(Stack stack) {
-        Table centerTable = new Table();
-        centerTable.setFillParent(true);
+    private void setupCenterTable() {
         stack.add(centerTable);
 
         TextureRegion logoRegion = textureBank.region("IMAGE_UI_MAINMENU_PVZ2_LOGO_HORIZONTAL");
@@ -146,47 +148,52 @@ public class MainMenuScreen extends MenuScreen {
             centerTable.add(logo).width(450).padBottom(40).row();
         }
 
-        TextButton playBtn = new TextButton("PLAY", skin, "green");
-        Table subButtons = new Table();
-        TextButton profileBtn = new TextButton("Profile", skin, "default");
-        TextButton logoutBtn = new TextButton("Logout", skin, "brown");
-
         subButtons.add(profileBtn).size(140, 50).padRight(20);
         subButtons.add(logoutBtn).size(140, 50);
 
         centerTable.add(playBtn).size(300, 70).padBottom(10).row();
         centerTable.add(subButtons);
-
-        attachCenterListeners(playBtn, profileBtn, logoutBtn);
     }
 
-    private void attachCenterListeners(TextButton playBtn, TextButton profileBtn, TextButton logoutBtn) {
+    private void attachListeners() {
+        settingsBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                SettingsModal settingsModal = new SettingsModal(skin);
+                settingsModal.show(stage);
+            }
+        });
+
+        newsBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                NewsModal newsModal = new NewsModal(skin);
+                newsModal.show(stage);
+                badgedNewsBtn.setBadgeCount(0);
+            }
+        });
+
+        closeBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                Gdx.app.exit();
+            }
+        });
+
         playBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // TODO: Temporary, implement later
-                /*ScreenManager.setMenuScreen(ScreenType.GAME);*/
-
-                AppModel.currentChapter = ChapterType.ANCIENT_EGYPT;
-                AppModel.currentLevel = LevelID.STANDARD_ANCIENT_EGYPT;
-                AppModel.selectionDeck.clear();
-                if (AppModel.player.unlockedPlants != null) {
-                    for (PlantType type : AppModel.player.unlockedPlants) {
-                        AppModel.selectionDeck.put(type, false);
-                    }
-                }
-                AppModel.gameSession = SessionBuilder.create(AppModel.currentLevel, AppModel.selectionDeck);
-                ScreenManager.setMenuScreen(ScreenType.GAME_SESSION);
+                ScreenManager.setMenuScreen(ScreenType.GAME);
             }
-
         });
+
         profileBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 ScreenManager.setMenuScreen(ScreenType.PROFILE);
             }
-
         });
+
         logoutBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {

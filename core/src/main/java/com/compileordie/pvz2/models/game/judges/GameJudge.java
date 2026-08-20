@@ -21,12 +21,9 @@ public class GameJudge {
     }
 
     public GameFlow judge() {
-        float deadline = lossCondition == LossCondition.DEAD_LINE ?
-            ConfigManager.gameplay().deadlineShift - 0.1f : -0.1f;
-
         for (Lane lane : gameBoard.lanes) {
             for (Zombie zombie : lane.zombies) {
-                if (zombie.getX() < deadline) {
+                if (zombie.succeeded) {
                     lane.isLost = true;
                     break;
                 }

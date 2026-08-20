@@ -42,20 +42,34 @@ public final class Constants {
         public static final int BOARD_COLS = 9;
         public static final float TILE_SIZE = 1f;
         public static final float GRAVITY_COEFFICIENT = 1f;
-        public static final float TIME_COEFFICIENT = 0.1f;
-        public static final float TILE_WIDTH = 1f;
-        public static final float TILE_HEIGHT = 1.285f;
+        public static final float TIME_COEFFICIENT = 0.05f;
+        public static final float TILE_WIDTH = 1.047f;
+        public static final float TILE_HEIGHT = 1.253f;
+
+        public static final float LANE_LENGHT = 18f;
+        public static final float PROSPECTOR_BOOM_X = 6.5f;
+        public static final float EAT_HOME_X = 4.8f;
+        public static final float X_OF_MOWER = 5f;
+        public static final float PADDING_X = 6.47f;
+        public static final float PADDING_Y = 1.05f;
+        public static final float PADDING_X_REALITY = 6.47f;
+        public static final float PADDING_Y_REALITY = 1.6f;
+        public static final float PADDING_FOR_MOWER = 1f;
+
     }
 
     public static final class UI {
         public static final int DEFAULT_WIDTH = 1920;
         public static final int DEFAULT_HEIGHT = 1080;
         // Note: UPP value is an early guess and subject to change
-        public static final float UPP = 2f; // Units Per Pixel UI scaling
+        public static final float UPP = 1.5f; // Units Per Pixel UI scaling
         public static final float MeterToPix = 105f;
+        public static final float METER_TO_PIX = 105f;
 
         public static final float bottomLinePix = 190f;
         public static final float bottomLineMeter = 1.8f;
+
+        public static final float BOTTOM_LINE_METER = 1.8f;
     }
 
     public static final class QuestCallbacks {

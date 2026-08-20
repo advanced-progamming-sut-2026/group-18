@@ -14,12 +14,13 @@ public class SpecificEventQuest extends Quest {
                               String title,
                               String description,
                               QuestCategory category,
+                              int priority,
                               int targetAmount,
                               String rewardType,
                               int rewardAmount,
                               QuestEvent targetEvent,
                               String targetContext) {
-        super(id, title, description, category, targetAmount, rewardType, rewardAmount);
+        super(id, title, description, category, priority, targetAmount, rewardType, rewardAmount);
         this.targetEvent = targetEvent;
         this.targetContext = targetContext.toUpperCase();
     }

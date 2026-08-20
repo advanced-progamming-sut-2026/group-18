@@ -10,6 +10,10 @@ import com.compileordie.pvz2.models.missions.quests.QuestManager;
 
 public abstract class StandardZombie extends Zombie {
     protected double armorHealth;
+    // 🛡️ ماکزیمم HP اولیه‌ی زره (ثابت، هیچ‌وقت کم نمی‌شه) - صرفا برای محاسبه‌ی
+    // درصد سلامت زره (armorHealth / maxArmorHealth) استفاده می‌شه تا View بتونه
+    // مرحله‌ی صدمه‌دیدگی بصری زره (norm/damage_01/damage_02) رو تعیین کنه.
+    protected double maxArmorHealth;
 
     public StandardZombie(double health,
                           double speed,
@@ -24,6 +28,7 @@ public abstract class StandardZombie extends Zombie {
                           ZombieType type) {
         super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, type);
         this.armorHealth = initialArmor;
+        this.maxArmorHealth = initialArmor;
     }
 
     public double takeArmorDamage(double amount) {
@@ -58,9 +63,14 @@ public abstract class StandardZombie extends Zombie {
         this.armorHealth = a;
     }
 
+    public double getMaxArmorHealth() {
+        return maxArmorHealth;
+    }
+
     @Override
     public void takeDamage(double amount, DamageType damageType, PlantType plantType) {
         if (isDead()) return;
+        takedDamage = true;
         double newAmount = amount;
 
         if (damageType == DamageType.FIRE){
@@ -76,11 +86,12 @@ public abstract class StandardZombie extends Zombie {
         this.health -= newAmount;
         if (health <= 0){
             health = 0;
+            if (damageType==DamageType.EXPLOSIVE) killByExplosive = true;
             if (damageType==DamageType.LawnMower){
                 QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_BY_PLANT, 1, "MOWER");
             }
             else{
-                QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_BY_PLANT, 1, plantType.name());
+                if (plantType!=null) QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_BY_PLANT, 1, plantType.name());
             }
         }
     }
