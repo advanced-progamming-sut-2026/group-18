@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.game.SessionBuilder;
+import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.views.ScreenManager;
 import com.compileordie.pvz2.views.ScreenType;
 import pvz.libpvz.textures.TextureBank;
@@ -142,7 +143,9 @@ final class GameScreenUI {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 AppModel.wonLastGame = null;
-                ScreenManager.setMenuScreen(ScreenType.MAIN);
+                AppModel.clearSessionData();
+                new UserDatabase().save(AppModel.player);
+                ScreenManager.setMenuScreen(ScreenType.GAME);
             }
         });
         panel.add(resumeButton)

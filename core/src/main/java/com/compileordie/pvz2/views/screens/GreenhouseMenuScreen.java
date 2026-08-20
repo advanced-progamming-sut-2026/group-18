@@ -22,6 +22,7 @@ import com.compileordie.pvz2.views.ScreenType;
 import com.compileordie.pvz2.views.customelements.CurrencyHud;
 import com.compileordie.pvz2.views.customelements.DebugGrowthModal;
 import com.compileordie.pvz2.views.game.PlantAssetManager;
+import com.compileordie.pvz2.views.helpers.PamActor;
 import com.compileordie.pvz2.views.helpers.ToastManager;
 import pvz.libpvz.pam.ClipRef;
 

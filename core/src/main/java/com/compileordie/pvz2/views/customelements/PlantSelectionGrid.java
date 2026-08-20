@@ -8,7 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.views.game.PlantAssetManager;
-import com.compileordie.pvz2.views.screens.PamActor;
+import com.compileordie.pvz2.views.helpers.PamActor;
 import pvz.libpvz.pam.ClipRef;
 
 import java.util.ArrayList;

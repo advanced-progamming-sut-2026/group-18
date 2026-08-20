@@ -21,6 +21,7 @@ import com.compileordie.pvz2.views.customelements.CurrencyHud;
 import com.compileordie.pvz2.views.customelements.PlantSelectionModal;
 import com.compileordie.pvz2.views.customelements.ShopConfirmationModal;
 import com.compileordie.pvz2.views.game.PlantAssetManager;
+import com.compileordie.pvz2.views.helpers.PamActor;
 import com.compileordie.pvz2.views.helpers.ToastManager;
 import pvz.libpvz.pam.ClipRef;
 import pvz.skin.BorderedTable;
