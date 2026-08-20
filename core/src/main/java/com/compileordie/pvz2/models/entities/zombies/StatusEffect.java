@@ -118,6 +118,7 @@ public class StatusEffect {
         return (durationTicks - elapsedTicks) * Constants.Game.TIME_COEFFICIENT;
     }
 
+    // Getters
     public EffectType getEffectType() { return effectType; }
     public int getDurationTicks() { return durationTicks; }
     public int getElapsedTicks() { return elapsedTicks; }

@@ -5,6 +5,7 @@ import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
+import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
@@ -22,8 +23,16 @@ import java.util.Random;
 
 public abstract class Zombie extends GameEntity {
     public boolean isEating;
+    public boolean succeeded;
+    public double timerForHomeEating = 0;
+    private double replacedSpeed = 0;
     public boolean isCombatingWithHypnotized;
     protected double health;
+    public boolean shouldRemooove = false;
+    // 💀 جون اولیه‌ی زامبی (بدون احتساب زره که جدا در StandardZombie.armorHealth
+    // نگه‌داری می‌شه) - هیچ‌وقت بعد از سازنده تغییر نمی‌کنه؛ صرفا برای اینکه View
+    // بتونه لحظه‌ی «جون به نصف رسید» رو تشخیص بده (health <= maxHealth/2) نگه‌داری می‌شه.
+    protected final double maxHealth;
     protected double stableSpeed;
     protected int attackPower;
     protected int currentRow;
@@ -34,6 +43,57 @@ public abstract class Zombie extends GameEntity {
     protected ZombieType type;
     protected boolean hasMetalArmor = false; // Tracks if armor was removed by Magnet-shroom
     protected boolean isGlowing;
+    public boolean killByExplosive = false;
+    public boolean takedDamage = false;
+    public boolean fromGarg = false;
+
+    // --- برای انیمیشن پرتاب ایمپ توسط غول (Gargantuar) ---
+    // مبدا پرتاب (نقطه‌ای که انیمیشن fly ازش شروع می‌شه)، به همون واحد متر که
+    // getX()/getY() هستن. NaN یعنی این زامبی اصلا در حال پرتاب نیست/نبوده.
+    private double throwOriginX = Double.NaN;
+    private double throwOriginY = Double.NaN;
+    private double flyInTotalDuration = 0;
+    private double flyInRemaining = 0;
+
+    // --- برای افکت اسپاون از وسط زمین (SANDSTORM_TOP) ---
+    // وقتی یک زامبی از وسط زمین اسپاون می‌شه (نه از لبه‌ی چپ به‌صورت عادی، مثلا
+    // زامبی‌ای که Tombraiser از قبر بیرون می‌کشه)، اول باید SANDSTORM_DURATION
+    // ثانیه فقط افکت طوفان شنی (به‌صورت loop) پخش بشه، بعدش خودِ زامبی ظاهر
+    // بشه. دقیقا مثل مکانیزم flyIn بالا: تا وقتی sandstormRemaining>0 هست،
+    // stopZombieNow=true نگه داشته می‌شه (پس تکون نمی‌خوره)، و View (GameScreen)
+    // باید در این مدت به‌جای خودِ زامبی، افکت رو نشون بده.
+    public static final double SANDSTORM_DURATION = 1.5;
+    private double sandstormRemaining = 0;
+    private boolean isMidLawnSpawn = false;
+
+    // 🔎 ابزار تشخیصی موقت: برای اینکه واقعا با مدرک بفهمیم بعد از تموم شدن
+    // گردباد، زامبی حرکت می‌کنه یا نه (به‌جای حدس زدن). با startSandstormSpawn
+    // فعال می‌شه، دقیقا ۳ ثانیه بعد از پایان گردباد یک‌بار وضعیت واقعی زامبی
+    // (x، canMove، stopZombieNow، isEating) رو لاگ می‌کنه.
+    private double midLawnWatchdogTimer = -1;
+    private boolean midLawnWatchdogLogged = false;
+    private double midLawnSpawnStartX = Double.NaN;
+
+    public void startSandstormSpawn() {
+        this.isMidLawnSpawn = true;
+        this.sandstormRemaining = SANDSTORM_DURATION;
+        this.stopZombieNow = true;
+
+        this.midLawnWatchdogTimer = 0;
+        this.midLawnWatchdogLogged = false;
+        this.midLawnSpawnStartX = getX();
+        com.badlogic.gdx.Gdx.app.log("PVZ-SANDSTORM-DEBUG",
+            "🌪️ [" + type + "] گردباد شروع شد @ x=" + getX() + ", y=" + getY()
+                + " (تا " + SANDSTORM_DURATION + " ثانیه‌ی دیگه فریزه)");
+    }
+
+    public boolean isSandstormSpawning() {
+        return sandstormRemaining > 0;
+    }
+
+    public boolean isMidLawnSpawn() {
+        return isMidLawnSpawn;
+    }
 
     public Zombie(double health,
                   double speed,
@@ -47,6 +107,7 @@ public abstract class Zombie extends GameEntity {
                   ZombieType type) {
         super(startX, y, xSpeed, ySpeed);
         this.health = health;
+        this.maxHealth = health;
         this.stableSpeed = getXSpeed();
         this.attackPower = base_damage;
         this.currentRow = row;
@@ -55,6 +116,8 @@ public abstract class Zombie extends GameEntity {
         this.isEating = false;
         this.isCombatingWithHypnotized = false;
         this.type = type;
+        this.succeeded = false;
+//        this.replacedSpeed = getXSpeed();
 
         // Check if this zombie variant starts with metal armor
         if (type == ZombieType.BUCKETHEAD || type == ZombieType.KNIGHT) {
@@ -89,7 +152,7 @@ public abstract class Zombie extends GameEntity {
 
     // تیک ما در کلاس والد زامبی صرفا برای هندل کردن مرگ و افکت ها هست
     public void tick() {
-        if (isDead() || this.health <= 0) {
+        if ((isDead() || this.health <= 0) && shouldRemooove) {
             if (AppModel.gameSession.elapsedTimeFromFirstWave <= 30){
                 QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED_QUICKLY, 1, null);
             }
@@ -97,7 +160,68 @@ public abstract class Zombie extends GameEntity {
             handleDeath();
             return;
         }
+//        if (takedDamage) takedDamage = false;
         if (skipThisTick) return;
+
+        // ⏳ اگه در حال پخش انیمیشن پرتاب (fly-in) هستیم (مثلا ایمپی که تازه از
+        // غول پرتاب شده)، شمارش معکوس می‌کنیم و در پایان خودکار آزادش می‌کنیم.
+        // تا وقتی flyInRemaining > 0 هست، stopZombieNow=true نگه داشته می‌شه
+        // (توسط startFlyInFreeze ست شده)، پس canMove()/move() این زامبی رو جابه‌جا
+        // نمی‌کنن و دقیقا سرجای فرودش (target) می‌مونه.
+        if (flyInRemaining > 0) {
+            flyInRemaining -= Constants.Game.TIME_COEFFICIENT;
+            if (flyInRemaining <= 0) {
+                flyInRemaining = 0;
+                stopZombieNow = false; // آزاد شدن؛ از این لحظه حرکت عادی زامبی شروع می‌شه
+            }
+        }
+
+        // ⏳ همون منطق بالا ولی برای افکت سندستورمِ اسپاون از وسط زمین.
+        if (sandstormRemaining > 0) {
+            sandstormRemaining -= Constants.Game.TIME_COEFFICIENT;
+            if (sandstormRemaining <= 0) {
+                sandstormRemaining = 0;
+                stopZombieNow = false; // پایان سندستورم؛ زامبی آزاد می‌شه و طبق روال عادی ادامه می‌ده
+                com.badlogic.gdx.Gdx.app.log("PVZ-SANDSTORM-DEBUG",
+                    "✅ [" + type + "] گردباد تموم شد @ x=" + getX() + " - از این تیک به بعد باید حرکت کنه.");
+            }
+        }
+
+        // 🔎 واچ‌داگ تشخیصی: دقیقا ۳ ثانیه بعد از پایان گردباد، یک‌بار وضعیت
+        // واقعی زامبی رو لاگ می‌کنه تا با مدرک مشخص بشه واقعا حرکت کرده یا نه.
+        if (midLawnWatchdogTimer >= 0 && !midLawnWatchdogLogged) {
+            midLawnWatchdogTimer += Constants.Game.TIME_COEFFICIENT;
+            if (midLawnWatchdogTimer >= SANDSTORM_DURATION + 3.0) {
+                midLawnWatchdogLogged = true;
+                double moved = midLawnSpawnStartX - getX();
+                com.badlogic.gdx.Gdx.app.log("PVZ-SANDSTORM-DEBUG",
+                    "🔎 [" + type + "] ۳ ثانیه بعد از پایان گردباد -> x=" + getX()
+                        + " | جابه‌جایی از لحظه‌ی اسپاون=" + moved + " متر"
+                        + " | canMove()=" + canMove() + " | stopZombieNow=" + stopZombieNow
+                        + " | isEating=" + isEating + " | isDead=" + isDead()
+                        + " | sandstormRemaining=" + sandstormRemaining);
+            }
+        }
+
+        // برای رسیدن به خانه
+        if (getX()<=Constants.Game.EAT_HOME_X){
+            isEating = true;
+            timerForHomeEating += Constants.Game.TIME_COEFFICIENT;
+            if (timerForHomeEating >= 4){
+                succeeded = true;
+            }
+        }
+
+        // بررسی اینکه وارد زمین شده یا ن
+        if (!fromGarg && !isMidLawnSpawn) {
+            if (getX() >= Constants.Game.TILE_WIDTH * 9 + Constants.Game.PADDING_X + 1) {
+                if (replacedSpeed == 0) replacedSpeed = getXSpeed();
+                setXSpeed(replacedSpeed * 3);
+            } else {
+                setXSpeed(replacedSpeed);
+            }
+        }
+
 
         // آپدیت و مدیریت افکت‌ها
         Iterator<StatusEffect> iterator = activeEffects.iterator();
@@ -209,6 +333,10 @@ public abstract class Zombie extends GameEntity {
         this.health = hp;
     }
 
+    public double getMaxHealth() {
+        return maxHealth;
+    }
+
     public List<StatusEffect> getActiveEffects() {
         return activeEffects;
     }
@@ -223,6 +351,20 @@ public abstract class Zombie extends GameEntity {
 
     public double getStableSpeed() {
         return stableSpeed;
+    }
+
+    /**
+     * 🚨 فیکس باگ «سرعت enrage اعمال نمی‌شه»: صرفا setXSpeed() صدا زدن کافی
+     * نیست، چون tick() بالاتر هر فریم (وقتی از ناحیه‌ی داش خارج شده) سرعت رو
+     * دوباره از replacedSpeed (سرعت اولیه‌ی ذخیره‌شده در همون تیک اول) بازیابی
+     * می‌کنه - یعنی هر تغییر دستی سرعت (مثل NewspaperZombie.enterEnrageMode)
+     * همون فریم بعد بی‌صدا پاک می‌شد. این متد هم سرعت فعلی و هم مقداری که
+     * tick() هر فریم بهش برمی‌گرده رو با هم آپدیت می‌کنه تا تغییر سرعت واقعا
+     * دائمی بمونه.
+     */
+    protected void setPermanentXSpeed(double newSpeed) {
+        this.replacedSpeed = newSpeed;
+        setXSpeed(newSpeed);
     }
 
     public int getCurrentRow() {
@@ -249,6 +391,39 @@ public abstract class Zombie extends GameEntity {
 
     public void setType(ZombieType type) {
         this.type = type;
+    }
+
+    // --- برای انیمیشن پرتاب ایمپ توسط غول (Gargantuar) ---
+    /**
+     * این زامبی رو برای {@code seconds} ثانیه از نظر فیزیکی فریز می‌کنه (دقیقا
+     * سرجای فعلی‌اش که همون مقصد/فرود نهایی‌ست می‌مونه) و مبدا پرتاب رو ثبت
+     * می‌کنه تا View بتونه مسیر سهمی رو از مبدا تا همین نقطه رسم کنه.
+     */
+    public void startFlyInFreeze(double seconds, double originX, double originY) {
+        this.flyInTotalDuration = seconds;
+        this.flyInRemaining = seconds;
+        this.throwOriginX = originX;
+        this.throwOriginY = originY;
+        this.stopZombieNow = true;
+    }
+
+    public boolean isFlyingIn() {
+        return flyInRemaining > 0;
+    }
+
+    /** پیشرفت پرتاب: ۰ در لحظه‌ی شروع، ۱ درست وقتی که باید سرجای نهایی (target) باشه. */
+    public float getFlyInProgress() {
+        if (flyInTotalDuration <= 0) return 1f;
+        float raw = 1f - (float) (flyInRemaining / flyInTotalDuration);
+        return Math.max(0f, Math.min(1f, raw));
+    }
+
+    public double getThrowOriginX() {
+        return throwOriginX;
+    }
+
+    public double getThrowOriginY() {
+        return throwOriginY;
     }
 
     public boolean isHypnotized() {
@@ -282,7 +457,15 @@ public abstract class Zombie extends GameEntity {
 
     public void mushroomAbsorption() {
         if (!hasMetalArmor) return;
-        if (this.type==ZombieType.KNIGHT) ((KnightZombie)this).setArmorHealth(0);
+        if (this.type==ZombieType.KNIGHT) {
+            KnightZombie knight = (KnightZombie) this;
+            knight.setArmorHealth(0);
+            // 🛡️ فیکس: setArmorHealth(0) فقط armorHealth کلی رو صفر می‌کرد؛ اگه
+            // helmetArmorHealth/shoulderArmorHealth جدا صفر نشن، View هنوز طبق اون
+            // دو مقدار جدا فکر می‌کنه هلمت/شولدر سالمن و آرمور رو نمایش می‌ده.
+            knight.helmetArmorHealth = 0;
+            knight.shoulderArmorHealth = 0;
+        }
         if (this.type==ZombieType.BUCKETHEAD) ((BucketHeadZombie)this).setArmorHealth(0);
         // اینجا باید گیاه به محض رویت زامبی در نزدیکی اش این متد را فراخوانی کند
     }
