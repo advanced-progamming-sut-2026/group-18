@@ -50,6 +50,8 @@ public class Tile {
                 fireTimer = 0;
                 isOnFire = false;
             }
+            // NEW: Process the puddle fading away!
+            tickPuddle(ticks);
         }
     }
 
@@ -60,8 +62,7 @@ public class Tile {
         }
         this.isOnFire = true;
 
-        // NEW: Process the puddle fading away!
-        tickPuddle(ticks);
+
     }
 
     // NEW: The tick logic for the puddle
