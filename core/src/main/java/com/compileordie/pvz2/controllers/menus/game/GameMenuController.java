@@ -1,102 +1,44 @@
 package com.compileordie.pvz2.controllers.menus.game;
 
-import com.compileordie.pvz2.models.AppModel;
-import com.compileordie.pvz2.models.game.SessionBuilder;
-import com.compileordie.pvz2.models.game.levels.ChapterType;
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.game.levels.LevelID;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class GameMenuController {
     private GameMenuController() {
     }
 
-    public static String enterChapter(String name) {
-        ChapterType chapter = ChapterType.getByName(name);
-        if (chapter == null) {
-            return "[ERROR] Wrong chapter name.";
-        }
-        if (!AppModel.player.getUnlockedChapters().contains(chapter)) {
-            return "[ERROR] You have not unlocked this chapter yet.";
-        }
-
-        AppModel.currentChapter = chapter;
-        return "Successfully entered chapter " + chapter + ".";
-    }
-
-    public static String enterLevel(String name) {
-        LevelID level = LevelID.getByName(name);
-        if (level == null) {
-            return "[ERROR] Wrong level name.";
-        }
-        if (level.chapterType != ChapterType.MINIGAME) {
-            if (AppModel.currentChapter == null) {
-                return "[ERROR] You must select a chapter first.";
-            }
-            if (level.chapterType != AppModel.currentChapter) {
-                return "[ERROR] The level selected doesn't belong to this chapter and is not a minigame."
-                    + System.lineSeparator() + "Current chapter: " + level.chapterType;
-            }
-            if (!AppModel.player.getUnlockedLevels().contains(level)) {
-                return "[ERROR] You have not unlocked this level yet.";
-            }
-        }
-
-        AppModel.currentLevel = level;
-        if (level.needsPlantSelection()) {
-            // GUI migration in progress
-            return "Starting level: "
-                + level + System.lineSeparator()/* + AppController.changeMenu(Menu.PLANT_SELECTION)*/;
+    public static ArrayList<PlantType> getPlants(LevelID levelID) {
+        if (levelID == LevelID.LOCKED_PLANTS) {
+            return new ArrayList<>(Arrays.asList(
+                PlantType.GOLD_BLOOM,
+                PlantType.PRIMAL_SUNFLOWER,
+                PlantType.PRIMAL_POTATO_MINE,
+                PlantType.GRAVE_BUSTER,
+                PlantType.MEGA_GATLING_PEA,
+                PlantType.TORCHWOOD,
+                PlantType.EXPLODE_O_NUT,
+                PlantType.APPEASE_MINT
+            ));
+        } else if (levelID == LevelID.PLANT_WHAT_YOU_GET) {
+            ArrayList<PlantType> plants = new ArrayList<>(Arrays.asList(PlantType.values()));
+            plants.removeAll(Arrays.asList(
+                PlantType.SUNFLOWER,
+                PlantType.TWIN_SUNFLOWER,
+                PlantType.SUN_SHROOM,
+                PlantType.PRIMAL_SUNFLOWER,
+                PlantType.GOLD_BLOOM,
+                PlantType.SUN_BEAN,
+                PlantType.ENLIGHTEN_MINT
+            ));
+            return plants;
+        } else if (levelID == LevelID.WALNUT_BOWLING) {
+            // TODO: Add Bowling Walnut and Giant Bowling Walnut
+            return new ArrayList<>(Arrays.asList(PlantType.EXPLODE_O_NUT));
         } else {
-            AppModel.gameSession = SessionBuilder.create(level);
-            // GUI migration in progress
-            return "Starting level: "
-                + level + System.lineSeparator()/* + AppController.changeMenu(Menu.GAME_SESSION)*/;
-        }
-    }
-
-    // GUI migration in progress
-    /*public static String enterGreenhouse() {
-        return AppController.changeMenu(Menu.GREENHOUSE);
-    }*/
-
-    // GUI migration in progress
-    /*public static String enterTravelLog() {
-        return AppController.changeMenu(Menu.TRAVEL_LOG);
-    }*/
-
-    // GUI migration in progress
-    /*public static String enterLeaderboard() {
-        return AppController.changeMenu(Menu.LEADERBOARD);
-    }*/
-
-    public static String showCoinWallet() {
-        int coins = AppModel.player.coins;
-        return "You have " + coins + " coin" + (coins == 1 ? "." : "s.");
-    }
-
-    public static String showGemWallet() {
-        int diamonds = AppModel.player.diamonds;
-        return "You have " + diamonds + " diamond" + (diamonds == 1 ? "." : "s.");
-    }
-
-    public static String cheatAdd(String count, String type) {
-        int number;
-        try {
-            number = Integer.parseInt(count);
-        } catch (NumberFormatException e) {
-            return "[ERROR] You must enter a whole number.";
-        }
-        if (number <= 0) {
-            return "[ERROR] You must enter a positive number.";
-        }
-
-        if (type.equalsIgnoreCase("coin")) {
-            AppModel.player.coins += number;
-            return "Successfully Added " + number + " coin" + (number == 1 ? "." : "s.");
-        } else if (type.equalsIgnoreCase("diamond")) {
-            AppModel.player.diamonds += number;
-            return "Successfully Added " + number + " diamond" + (number == 1 ? "." : "s.");
-        } else {
-            return "[ERROR] You can either add 'coin's or 'diamond's";
+            return new ArrayList<>(Arrays.asList(PlantType.values()));
         }
     }
 }
