@@ -17,19 +17,13 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
-import com.compileordie.pvz2.controllers.menus.game.GameMenuController;
 import com.compileordie.pvz2.models.AppModel;
-import com.compileordie.pvz2.models.entities.plants.types.PlantType;
-import com.compileordie.pvz2.models.game.SessionBuilder;
 import com.compileordie.pvz2.models.game.levels.ChapterType;
 import com.compileordie.pvz2.views.ScreenManager;
 import com.compileordie.pvz2.views.ScreenType;
 import com.compileordie.pvz2.views.customelements.CurrencyHud;
-import com.compileordie.pvz2.views.customelements.GamePlantSelectionModal;
 import com.compileordie.pvz2.views.customelements.LeaderboardModal;
 import com.compileordie.pvz2.views.customelements.LevelSelectionModal;
-
-import java.util.ArrayList;
 
 public class GameMenuScreen extends MenuScreen {
     private Image backgroundImage;
@@ -145,27 +139,7 @@ public class GameMenuScreen extends MenuScreen {
 
     private void startLevel(ChapterType chapterType) {
         AppModel.currentChapter = chapterType;
-        LevelSelectionModal levelSelectionModal = new LevelSelectionModal(skin,
-            chapterType,
-            levelID -> {
-                AppModel.currentLevel = levelID;
-                AppModel.selectionDeck.clear();
-                ArrayList<PlantType> plants = GameMenuController.getPlants(levelID);
-                if (levelID.needsPlantSelection()) {
-                    GamePlantSelectionModal plantSelectionModal = new GamePlantSelectionModal(
-                        skin,
-                        textureBank,
-                        plants
-                    );
-                    plantSelectionModal.show(stage);
-                } else {
-                    for (PlantType plantType : plants) {
-                        AppModel.selectionDeck.put(plantType, MathUtils.randomBoolean(0.2f));
-                    }
-                    AppModel.gameSession = SessionBuilder.create(AppModel.currentLevel, AppModel.selectionDeck);
-                    ScreenManager.setMenuScreen(ScreenType.GAME_SESSION);
-                }
-            });
+        LevelSelectionModal levelSelectionModal = new LevelSelectionModal(skin, chapterType, textureBank, stage);
         levelSelectionModal.show(stage);
     }
 

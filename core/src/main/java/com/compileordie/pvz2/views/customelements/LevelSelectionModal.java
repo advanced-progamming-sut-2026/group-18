@@ -1,30 +1,39 @@
 package com.compileordie.pvz2.views.customelements;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
+import com.compileordie.pvz2.controllers.menus.game.GameMenuController;
 import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
+import com.compileordie.pvz2.models.game.SessionBuilder;
 import com.compileordie.pvz2.models.game.levels.ChapterType;
 import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.models.game.levels.LevelType;
+import com.compileordie.pvz2.views.ScreenManager;
+import com.compileordie.pvz2.views.ScreenType;
 import com.compileordie.pvz2.views.helpers.ToastManager;
+import pvz.libpvz.textures.TextureBank;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class LevelSelectionModal extends BaseModal {
     private final Skin skin;
     private final ChapterType chapterType;
-    private final Consumer<LevelID> onLevelSelected;
+    private final TextureBank textureBank;
+    private final Stage menuStage;
 
-    public LevelSelectionModal(Skin skin, ChapterType chapterType, Consumer<LevelID> onLevelSelected) {
+    public LevelSelectionModal(Skin skin, ChapterType chapterType, TextureBank textureBank, Stage stage) {
         super(chapterType.toString() + " Levels", skin);
         this.skin = skin;
         this.chapterType = chapterType;
-        this.onLevelSelected = onLevelSelected;
+        this.textureBank = textureBank;
+        this.menuStage = stage;
 
         getCell(contentWindow).minWidth(650).minHeight(420);
 
@@ -81,8 +90,22 @@ public class LevelSelectionModal extends BaseModal {
                     return;
                 }
                 hide();
-                if (onLevelSelected != null) {
-                    onLevelSelected.accept(level);
+                AppModel.currentLevel = level;
+                AppModel.selectionDeck.clear();
+                ArrayList<PlantType> plants = GameMenuController.getPlants(level);
+                if (level.needsPlantSelection()) {
+                    GamePlantSelectionModal plantSelectionModal = new GamePlantSelectionModal(
+                        skin,
+                        textureBank,
+                        plants
+                    );
+                    plantSelectionModal.show(menuStage);
+                } else {
+                    for (PlantType plantType : plants) {
+                        AppModel.selectionDeck.put(plantType, MathUtils.randomBoolean(0.2f));
+                    }
+                    AppModel.gameSession = SessionBuilder.create(AppModel.currentLevel, AppModel.selectionDeck);
+                    ScreenManager.setMenuScreen(ScreenType.GAME_SESSION);
                 }
             }
         });
