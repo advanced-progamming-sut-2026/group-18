@@ -3,6 +3,8 @@ package com.compileordie.pvz2.models.game;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
+import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.economy.EconomyType;
 import com.compileordie.pvz2.models.game.judges.GameFlow;
@@ -47,6 +49,13 @@ public class GameSession {
     }
 
     public void tick(int ticks) {
+        for (Zombie zombie : gameBoard.getAllZombies()) {
+            ZombieType zombieType = zombie.getType();
+            if (!player.unlockedZombies.contains(zombieType)) {
+                player.unlockedZombies.add(zombieType);
+            }
+        }
+
         //---
         if (AppModel.gameSession.flagForFirstWave){
             if (Math.abs(elapsedTimeFromFirstWave-99999)<=0.01){
@@ -84,7 +93,7 @@ public class GameSession {
                 AppModel.wonLastGame = false;
             }
         }
-//        AppModel.clearSessionData();
+        AppModel.gameSession = null;
         // TODO: Expand and add quest event callback here
     }
 }

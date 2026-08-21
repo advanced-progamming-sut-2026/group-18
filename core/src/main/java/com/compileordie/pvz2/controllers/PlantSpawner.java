@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.controllers;
 
 import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.factory.PlantFactory;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
@@ -11,11 +12,11 @@ public class PlantSpawner {
     // Don't load the CSV every time you spawn a plant! It causes lag.
     // Load this once when the game starts and store it as a static variable.
     private static PlantConfigRepository repository;
-
+    // TODO: Fix and use boosted and special.
     public static void initRepository() {
         if (repository == null) {
             repository = new PlantConfigRepository();
-            repository.loadFromCSV("assets/configs/main_plantscsv.csv");
+            repository.loadFromCSV(Constants.Paths.Configs.PLANTS);
         }
     }
 
@@ -23,7 +24,7 @@ public class PlantSpawner {
         initRepository(); // Ensures CSV is loaded
 
         // 1. Build the fresh Level 1 blueprint
-        Plant newPlant = PlantFactory.createPlant(repository.getTemplate(plantType.getCommercialName()), x, y);
+        Plant newPlant = PlantFactory.createPlant(repository.getTemplate(plantType), x, y);
 
         // 2. Fetch the player's persistent plant level from memory!
         int targetLevel = 1; // Default
@@ -38,7 +39,11 @@ public class PlantSpawner {
 
         // 4. (Optional) TODO: Apply isBoosted logic here if the player bought a boost!
         if (isBoosted) {
-            // newPlant.applyBoost();
+             newPlant.applyBoost();
+        }
+
+        if (isSpecial) {
+            newPlant.setSpecial();
         }
 
         return newPlant;

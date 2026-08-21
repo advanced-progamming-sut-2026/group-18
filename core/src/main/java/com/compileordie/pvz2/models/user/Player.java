@@ -31,6 +31,7 @@ public class Player implements Json.Serializable {
     public ArrayList<News> news = new ArrayList<>();
     public HashMap<PlantType, Integer> seedPackets = new HashMap<>();
     public HashMap<PlantType, Integer> plantLevels = new HashMap<>();
+    // TODO: Use it:
     public HashMap<PlantType, Boolean> plantBoosts = new HashMap<>();
     public HashMap<String, Integer> questProgress = new HashMap<>();
     public HashSet<String> claimedQuests = new HashSet<>();
@@ -162,9 +163,35 @@ public class Player implements Json.Serializable {
 
     @Override
     public void read(Json json, JsonValue jsonData) {
-        // Step A: Load the user's actual save data and overwrite the defaults
+        // Step A: Load the user's actual save data
         json.readFields(this, jsonData);
+
+        // Step A.5: Fix the LibGDX type-erasure bug by converting String keys back to Enums
+        fixPlantMap(seedPackets);
+        fixPlantMap(plantLevels);
+        fixPlantMap(plantBoosts);
+
         // Step B: Patch missing data!
         initializeMissingData();
+    }
+
+    @SuppressWarnings("SuspiciousMethodCalls")
+    private <V> void fixPlantMap(HashMap<PlantType, V> map) {
+        if (map == null || map.isEmpty()) return;
+
+        HashMap<PlantType, V> temp = new HashMap<>();
+        for (Object key : map.keySet()) {
+            if (key instanceof String) {
+                try {
+                    temp.put(PlantType.valueOf((String) key), map.get(key));
+                } catch (IllegalArgumentException e) {
+                    // Ignores old/removed plants in the save file
+                }
+            } else if (key instanceof PlantType) {
+                temp.put((PlantType) key, map.get(key));
+            }
+        }
+        map.clear();
+        map.putAll(temp);
     }
 }

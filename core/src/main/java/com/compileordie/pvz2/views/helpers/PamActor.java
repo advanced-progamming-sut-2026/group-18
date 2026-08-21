@@ -1,4 +1,4 @@
-package com.compileordie.pvz2.views.screens;
+package com.compileordie.pvz2.views.helpers;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Rectangle;

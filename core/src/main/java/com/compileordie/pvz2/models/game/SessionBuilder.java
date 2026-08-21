@@ -174,16 +174,4 @@ public class SessionBuilder {
         addObjects(levelID, gameSession);
         return gameSession;
     }
-
-    public static GameSession create(LevelID levelID) {
-        if (Set.of(LevelID.CONVEYOR_BELT,
-            LevelID.VASE_BREAKER,
-            LevelID.WALNUT_BOWLING,
-            LevelID.I_ZOMBIE,
-            LevelID.BEGHOULED).contains(levelID)) {
-            return create(levelID, new EnumMap<>(PlantType.class));
-        } else {
-            throw new IllegalArgumentException(levelID + " level ID needs an explicit plant selection deck.");
-        }
-    }
 }

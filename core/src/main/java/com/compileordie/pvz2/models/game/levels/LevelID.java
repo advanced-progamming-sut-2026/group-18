@@ -45,7 +45,7 @@ public enum LevelID {
     }
 
     public boolean needsPlantSelection() {
-        return !Set.of(CONVEYOR_BELT, VASE_BREAKER, I_ZOMBIE, BEGHOULED).contains(this);
+        return !Set.of(CONVEYOR_BELT, VASE_BREAKER, I_ZOMBIE, WALNUT_BOWLING, BEGHOULED).contains(this);
     }
 
     public LevelID next() {

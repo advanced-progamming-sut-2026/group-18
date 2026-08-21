@@ -71,7 +71,7 @@ public enum PlantType {
     REINFORCE_MINT("Reinforce-mint"),
     ENCHANT_MINT("Enchant-mint"),
     PIERCE_MINT("Pierce-mint"),
-    CATTAIL_MINT("catTail-mint"); //[cite: 1]
+    CATTAIL_MINT("catTail-mint");
 
     private final String commercialName;
 
