@@ -26,7 +26,7 @@ public class PiercingProjectile extends Projectile {
         super.tick(board, delta);
 
         // CLEANUP: Destroy unlimited thorns when they fly off the right edge of the screen!
-        if (this.x > board.totalCols * Constants.Game.TILE_SIZE + 200) {
+        if (this.x > board.totalCols * Constants.Game.TILE_WIDTH + 200) {
             this.isDead = true;
         }
     }

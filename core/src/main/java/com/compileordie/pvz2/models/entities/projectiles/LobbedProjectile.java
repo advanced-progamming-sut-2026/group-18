@@ -1,11 +1,11 @@
 package com.compileordie.pvz2.models.entities.projectiles;
 
+import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
 import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
-import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
-import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
-import static com.compileordie.pvz2.config.Constants.Game.TILE_SIZE;
+import com.compileordie.pvz2.models.game.board.GameBoard;
 
 public class LobbedProjectile extends Projectile {
     protected final double splashRadius;
@@ -39,14 +39,14 @@ public class LobbedProjectile extends Projectile {
             this.altitude = 0;
 
             if (this.splashRadius > 0) {
-                double radiusPixels = this.splashRadius * TILE_SIZE;
+                double radiusPixels = this.splashRadius * Constants.Game.TILE_HEIGHT;
 
                 for (Zombie z : board.getAllZombies()) {
                     if (z.isDead()) continue;
                     double dist = Math.hypot(z.getX() - this.x, z.getY() - this.y);
 
                     if (dist <= radiusPixels) {
-                        if (dist <= 0.5 * TILE_SIZE) {
+                        if (dist <= 0.5 * Constants.Game.TILE_HEIGHT) {
                             z.takeDamage(this.damage, this.type, this.sourcePlantType);
                         } else {
                             z.takeDamage(this.aoeDamage, this.type, this.sourcePlantType);
@@ -57,7 +57,8 @@ public class LobbedProjectile extends Projectile {
                 }
             } else {
                 for (Zombie z : board.getAllZombies()) {
-                    if (!z.isDead() && Math.abs(z.getX() - this.x) <= 0.5 * TILE_SIZE && z.getCurrentRow() == (int)(this.y / TILE_SIZE)) {
+                    if (!z.isDead() && Math.abs(z.getX() - this.x) <= 0.5 * Constants.Game.TILE_WIDTH
+                        && z.getCurrentRow() == (int) (this.y / Constants.Game.TILE_HEIGHT)) {
                         z.takeDamage(this.damage, this.type, this.sourcePlantType);
                         // HOOK: Apply effects to the single target!
                         applySpecialEffect(z);

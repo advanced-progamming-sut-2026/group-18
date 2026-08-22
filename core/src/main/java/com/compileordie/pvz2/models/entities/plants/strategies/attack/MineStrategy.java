@@ -7,11 +7,10 @@ import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.projectiles.GrapeProjectile;
 import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Tile;
-import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
-import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
 
 public class MineStrategy implements AttackStrategy {
 
@@ -25,8 +24,8 @@ public class MineStrategy implements AttackStrategy {
     public void attack(Plant plant, GameBoard board, int tickDelta) {
         if (!plant.isArmed()) return;
 
-        int plantRow = (int) (plant.getY() / Constants.Game.TILE_SIZE);
-        int plantCol = (int) (plant.getX() / Constants.Game.TILE_SIZE);
+        int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
+        int plantCol = (int) (plant.getX() / Constants.Game.TILE_WIDTH);
 
         boolean triggered = false;
 
@@ -40,7 +39,7 @@ public class MineStrategy implements AttackStrategy {
                 if (z.isDead()) continue;
 
                 if (z.getCurrentRow() == plantRow) {
-                    int zCol = (int) (z.getX() / Constants.Game.TILE_SIZE);
+                    int zCol = (int) (z.getX() / Constants.Game.TILE_WIDTH);
                     if (zCol == plantCol) {
                         triggered = true;
                         break;
@@ -81,7 +80,7 @@ public class MineStrategy implements AttackStrategy {
             else {
                 if (splashRadiusTiles > 0) {
                     // --- Primal Potato Mine, Cherry Bomb, Grapeshot (3x3 Splash Damage) ---
-                    double radiusPixels = splashRadiusTiles * Constants.Game.TILE_SIZE;
+                    double radiusPixels = splashRadiusTiles * Constants.Game.TILE_HEIGHT;
                     for (Zombie z : board.getAllZombies()) {
                         if (z.isDead()) continue;
 
@@ -94,7 +93,7 @@ public class MineStrategy implements AttackStrategy {
                     // --- Normal Potato Mine (Single Tile Damage) ---
                     for (Zombie z : board.getAllZombies()) {
                         if (!z.isDead() && z.getCurrentRow() == plantRow) {
-                            int zCol = (int) (z.getX() / Constants.Game.TILE_SIZE);
+                            int zCol = (int) (z.getX() / Constants.Game.TILE_WIDTH);
                             if (zCol == plantCol) {
                                 z.takeDamage(plant.getBaseDamage(), DamageType.EXPLOSIVE, PlantType.getByName(plant.getName()));
                             }
@@ -125,7 +124,7 @@ public class MineStrategy implements AttackStrategy {
 
                 for (Zombie z : board.getAllZombies()) {
                     if (!z.isDead() && z.getCurrentRow() == plantRow) {
-                        int zCol = (int) (z.getX() / Constants.Game.TILE_SIZE);
+                        int zCol = (int) (z.getX() / Constants.Game.TILE_WIDTH);
                         if (zCol == plantCol) {
 
                             // Freeze the zombie!

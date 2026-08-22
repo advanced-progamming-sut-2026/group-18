@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.entities.plants.strategies.attack;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
@@ -21,7 +22,7 @@ public class ChargeShootStrategy implements AttackStrategy {
     public void attack(Plant plant, GameBoard board, int tickDelta) {
 
         // Step 1: Ensure there is a target in this row before wasting the heavy charge
-        int plantRow = (int) (plant.getY() / com.compileordie.pvz2.config.Constants.Game.TILE_SIZE);
+        int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
         List<Zombie> zombies = board.getAllZombies();
 
         boolean targetExists = zombies.stream()

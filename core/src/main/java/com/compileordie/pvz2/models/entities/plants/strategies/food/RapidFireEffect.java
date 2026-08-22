@@ -57,7 +57,7 @@ public class RapidFireEffect implements PlantFoodEffectStrategy {
                 spawnStream(board, x, y, -1.0, -1.0, 15, baseDamage, plant);
             }
             else if (name.equals("Snow Pea")) {
-                int plantRow = (int) (y / Constants.Game.TILE_SIZE);
+                int plantRow = (int) (y / Constants.Game.TILE_HEIGHT);
                 for (Zombie z : board.getAllZombies()) {
                     if (!z.isDead() && z.getCurrentRow() == plantRow) {
                         StatusEffect freezeEffect = new StatusEffect(EffectType.FROZEN, 35);

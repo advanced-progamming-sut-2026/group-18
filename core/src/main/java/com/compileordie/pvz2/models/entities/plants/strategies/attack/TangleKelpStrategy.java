@@ -13,8 +13,8 @@ public class TangleKelpStrategy implements AttackStrategy {
     public void attack(Plant plant, GameBoard board, int tickDelta) {
         if (!plant.isArmed()) return;
 
-        int plantRow = (int) (plant.getY() / Constants.Game.TILE_SIZE);
-        int plantCol = (int) (plant.getX() / Constants.Game.TILE_SIZE);
+        int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
+        int plantCol = (int) (plant.getX() / Constants.Game.TILE_WIDTH);
 
         // Base targets = 1. Plus upgrades!
         int maxTargets = 1 + plant.getExtraTargets();
@@ -24,7 +24,7 @@ public class TangleKelpStrategy implements AttackStrategy {
             if (z.isDead()) continue;
 
             if (z.getCurrentRow() == plantRow) {
-                int zCol = (int) (z.getX() / Constants.Game.TILE_SIZE);
+                int zCol = (int) (z.getX() / Constants.Game.TILE_WIDTH);
                 if (zCol == plantCol) {
 
                     // Instantly kills normal zombies, severely damages Gargantuars!

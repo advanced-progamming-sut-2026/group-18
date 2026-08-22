@@ -17,7 +17,10 @@ import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
 import com.compileordie.pvz2.models.game.waves.WaveType;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 public class SessionBuilder {
     private static EconomyType getEconomyType(LevelID levelID) {
@@ -85,8 +88,8 @@ public class SessionBuilder {
                 if (tile.column >= 3 && new Random().nextInt(100) < 10) tile.obstacle = new Tomb(700,
                     tile.row,
                     tile.column,
-                    (tile.row + 0.5f) * Constants.Game.TILE_SIZE,
-                    (tile.column + 0.5f) * Constants.Game.TILE_SIZE);
+                    (tile.row + 0.5f) * Constants.Game.TILE_HEIGHT,
+                    (tile.column + 0.5f) * Constants.Game.TILE_WIDTH);
             }
         } else if (levelID.chapterType == ChapterType.FROSTBITE_CAVES) {
             for (Tile tile : tiles) {
@@ -106,8 +109,8 @@ public class SessionBuilder {
                 if (tile.column >= 3 && new Random().nextInt(100) < 10) tile.obstacle = new Tomb(700,
                     tile.row,
                     tile.column,
-                    (tile.row + 0.5f) * Constants.Game.TILE_SIZE,
-                    (tile.column + 0.5f) * Constants.Game.TILE_SIZE);
+                    (tile.row + 0.5f) * Constants.Game.TILE_HEIGHT,
+                    (tile.column + 0.5f) * Constants.Game.TILE_WIDTH);
             }
         } else {
             for (Tile tile : tiles) {

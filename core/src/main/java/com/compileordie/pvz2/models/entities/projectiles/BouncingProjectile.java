@@ -21,7 +21,7 @@ public class BouncingProjectile extends Projectile {
         super.tick(board, delta);
 
         // --- NEW: Lawn Boundary Wall-Bouncing Physics ---
-        double maxY = board.totalRows * Constants.Game.TILE_SIZE;
+        double maxY = board.totalRows * Constants.Game.TILE_HEIGHT;
 
         if (this.y <= 0) {
             this.y = 0;
@@ -41,7 +41,7 @@ public class BouncingProjectile extends Projectile {
         // 2. Evaluate the Payload (Plasma Splash vs. Normal Bounce)
         if (this.type == DamageType.EXPLOSIVE) {
             // Plasma Bulb: 1-Tile Splash Damage
-            double radius = Constants.Game.TILE_SIZE;
+            double radius = Constants.Game.TILE_HEIGHT;
             for (Zombie z : board.getAllZombies()) {
                 if (z.isDead()) continue;
 
@@ -65,7 +65,7 @@ public class BouncingProjectile extends Projectile {
             bouncesRemaining--;
 
             // Deflect diagonally up or down at half a tile speed
-            double deflectSpeed = (Math.random() > 0.5 ? 1.0 : -1.0) * (Constants.Game.TILE_SIZE * 0.5);
+            double deflectSpeed = (Math.random() > 0.5 ? 1.0 : -1.0) * (Constants.Game.TILE_HEIGHT * 0.5);
             this.ySpeed = deflectSpeed;
 
         } else {

@@ -26,12 +26,12 @@ public class GooBoulderProjectile extends Projectile {
         // 2. Knockback: Push all zombies in this lane back 1 full tile
         for (Zombie z : board.getLane(laneIndex).zombies) {
             if (!z.isDead()) {
-                z.setX(z.getX() + Constants.Game.TILE_SIZE);
+                z.setX(z.getX() + Constants.Game.TILE_WIDTH);
             }
         }
 
         // 3. Stain the Tiles: Leave a puddle from the impact point to the right edge
-        int impactCol = (int) (this.x / Constants.Game.TILE_SIZE);
+        int impactCol = (int) (this.x / Constants.Game.TILE_WIDTH);
         for (Tile t : board.getLane(laneIndex).tiles) {
             if (t.column >= impactCol - 1) { // -1 to cover the exact spot of impact nicely
                 t.puddleTimer = 100.0; // 10 seconds
