@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.entities.projectiles;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
@@ -80,7 +81,8 @@ public class SquashProjectile extends LobbedProjectile {
             if (isPlantFood) return z;
 
             double dist = Math.abs(z.getX() - owner.getX());
-            if (dist <= 1.5 * com.compileordie.pvz2.config.Constants.Game.TILE_SIZE && z.getCurrentRow() == (int)(owner.getY() / com.compileordie.pvz2.config.Constants.Game.TILE_SIZE)) {
+            if (dist <= 1.5 * Constants.Game.TILE_WIDTH
+                && z.getCurrentRow() == (int) (owner.getY() / Constants.Game.TILE_HEIGHT)) {
                 return z;
             }
         }

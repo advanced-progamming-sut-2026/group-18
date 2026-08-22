@@ -11,8 +11,8 @@ public class AttractStrategy implements AttackStrategy {
     public void attack(Plant plant, GameBoard board, int tickDelta) {
         if (!plant.isArmed()) return;
 
-        int plantRow = (int) (plant.getY() / Constants.Game.TILE_SIZE);
-        double pullRadius = plant.getRangeTiles() * Constants.Game.TILE_SIZE;
+        int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
+        double pullRadius = plant.getRangeTiles() * Constants.Game.TILE_HEIGHT;
 
         for (Zombie z : board.getAllZombies()) {
             if (z.isDead()) continue;
@@ -24,7 +24,7 @@ public class AttractStrategy implements AttackStrategy {
 
                 // If they step into the 3x3 gravity field, pull them in!
                 if (dist <= pullRadius) {
-                    double targetY = plantRow * Constants.Game.TILE_SIZE + (Constants.Game.TILE_SIZE / 2.0);
+                    double targetY = plantRow * Constants.Game.TILE_HEIGHT + (Constants.Game.TILE_HEIGHT / 2.0);
                     z.setY(targetY);
                 }
             }

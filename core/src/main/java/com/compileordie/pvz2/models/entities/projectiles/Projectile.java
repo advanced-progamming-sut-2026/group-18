@@ -1,15 +1,15 @@
 package com.compileordie.pvz2.models.entities.projectiles;
 
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
 import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
-import com.compileordie.pvz2.models.game.board.GameBoard;
-import com.compileordie.pvz2.models.game.board.Tile;
-import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.Barrel;
+import com.compileordie.pvz2.models.game.board.GameBoard;
+import com.compileordie.pvz2.models.game.board.Tile;
 
 public abstract class Projectile {
     protected double x;
@@ -83,7 +83,10 @@ public abstract class Projectile {
     // --- Standard Getters & Setters ---
     public double getX() { return x; }
     public double getY() { return y; }
-    public int getRow() { return (int) (y / Constants.Game.TILE_SIZE); }
+
+    public int getRow() {
+        return (int) (y / Constants.Game.TILE_HEIGHT);
+    }
     public int getDamage() { return damage; }
     public void setDamage(int damage) { this.damage = damage; } //  For Torchwood damage scaling
     public DamageType getType() { return type; }

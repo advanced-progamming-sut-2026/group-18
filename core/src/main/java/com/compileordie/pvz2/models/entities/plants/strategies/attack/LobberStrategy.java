@@ -20,7 +20,7 @@ public class LobberStrategy implements AttackStrategy {
 
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
-        int plantRow = (int) (plant.getY() / Constants.Game.TILE_SIZE);
+        int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
 
         // --- 1. Lock onto the first available zombie in the lane ---
         java.util.Optional<Zombie> targetZombie = board.getAllZombies().stream()

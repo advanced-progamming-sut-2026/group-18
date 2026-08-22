@@ -69,6 +69,6 @@ public class Lane {
     }
 
     public float getLength() {
-        return tileCount * Constants.Game.TILE_SIZE;
+        return tileCount * Constants.Game.TILE_WIDTH;
     }
 }

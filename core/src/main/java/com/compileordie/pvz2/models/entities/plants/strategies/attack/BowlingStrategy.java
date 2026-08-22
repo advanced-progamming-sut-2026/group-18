@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.entities.plants.strategies.attack;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
@@ -18,7 +19,7 @@ public class BowlingStrategy implements AttackStrategy {
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
         // Step 1: Wait for a target! (Smart Targeting)
-        int plantRow = (int) (plant.getY() / com.compileordie.pvz2.config.Constants.Game.TILE_SIZE);
+        int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
         boolean targetExists = board.getAllZombies().stream()
             .anyMatch(z -> !z.isDead() && z.getCurrentRow() == plantRow && z.getX() > plant.getX());
 

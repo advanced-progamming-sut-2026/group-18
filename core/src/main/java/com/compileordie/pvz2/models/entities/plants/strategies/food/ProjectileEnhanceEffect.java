@@ -23,7 +23,7 @@ public class ProjectileEnhanceEffect implements PlantFoodEffectStrategy {
             for (int i = 0; i < 3; i++) {
                 try {
                     Projectile thorn = new PiercingProjectile(
-                        plant.getX() + (i * 0.5 * Constants.Game.TILE_SIZE),
+                            plant.getX() + (i * 0.5 * Constants.Game.TILE_WIDTH),
                         plant.getY(),
                         6.0,
                         200,

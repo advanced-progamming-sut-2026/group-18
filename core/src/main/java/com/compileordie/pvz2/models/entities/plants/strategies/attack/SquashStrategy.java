@@ -13,7 +13,7 @@ public class SquashStrategy implements AttackStrategy {
         // If it's already jumping, or if it's exhausted as a meat shield, do nothing!
         if (plant.isHidden() || plant.isExhausted() || !plant.isArmed()) return;
 
-        int plantRow = (int) (plant.getY() / Constants.Game.TILE_SIZE);
+        int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
         Zombie closestTarget = null;
         double closestDist = Double.MAX_VALUE;
 
@@ -22,7 +22,7 @@ public class SquashStrategy implements AttackStrategy {
             if (z.isDead() || z.getCurrentRow() != plantRow) continue;
 
             double dist = Math.abs(z.getX() - plant.getX());
-            if (dist <= 1.5 * Constants.Game.TILE_SIZE && dist < closestDist) {
+            if (dist <= 1.5 * Constants.Game.TILE_HEIGHT && dist < closestDist) {
                 closestDist = dist;
                 closestTarget = z;
             }

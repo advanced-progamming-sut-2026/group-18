@@ -24,8 +24,8 @@ public class DirectShootStrategy implements AttackStrategy {
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
         // --- Smart Range Radar ---
-        double rangeInPixels = plant.getRangeTiles() * Constants.Game.TILE_SIZE;
-        int plantRow = (int) (plant.getY() / Constants.Game.TILE_SIZE);
+        double rangeInPixels = plant.getRangeTiles() * Constants.Game.TILE_HEIGHT;
+        int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
 
         // Scan for any living zombie in the exact same lane that is within the plant's range
         boolean targetExists = board.getAllZombies().stream()
@@ -41,21 +41,20 @@ public class DirectShootStrategy implements AttackStrategy {
         double y = plant.getY();
         int damage = plant.getBaseDamage();
         double speed = 4.0;
-        double tileSize = Constants.Game.TILE_SIZE;
-        double maxY = board.totalRows * tileSize;
+        double maxY = board.totalRows * Constants.Game.TILE_HEIGHT;
 
         int stackMultiplier = plant.getName().equals("Pea Pod") ? plant.getStackCount() : 1;
 
         for (int offset : laneOffsets) {
-            double spawnY = y + (offset * tileSize);
+            double spawnY = y + (offset * Constants.Game.TILE_HEIGHT);
 
             if (spawnY >= 0 && spawnY < maxY) {
                 for (double[] vector : shootVectors) {
                     for (int s = 0; s < stackMultiplier; s++) {
                         try {
                             int orderIndex = vector.length > 2 ? (int) (vector[2] + s) : s;
-                            double spawnX = x + (orderIndex * 0.2 * tileSize * vector[0]);
-                            double finalSpawnY = spawnY + (orderIndex * 0.2 * tileSize * vector[1]);
+                            double spawnX = x + (orderIndex * 0.2 * Constants.Game.TILE_WIDTH * vector[0]);
+                            double finalSpawnY = spawnY + (orderIndex * 0.2 * Constants.Game.TILE_HEIGHT * vector[1]);
 
                             Projectile proj;
 
@@ -80,7 +79,7 @@ public class DirectShootStrategy implements AttackStrategy {
                                     .newInstance(spawnX, finalSpawnY, speed, damage, totalPoisonDmg);
 
                             } else if (projectileType == FumeProjectile.class) {
-                                double maxRangePixels = plant.getRangeTiles() * Constants.Game.TILE_SIZE;
+                                double maxRangePixels = plant.getRangeTiles() * Constants.Game.TILE_HEIGHT;
 
                                 proj = projectileType
                                     .getDeclaredConstructor(double.class, double.class, double.class, int.class, double.class)

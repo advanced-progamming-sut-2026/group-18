@@ -55,10 +55,6 @@ public class CollectionMenuScreen extends MenuScreen {
 
     @Override
     public void showCore() {
-        for (ZombieType zombieType : ZombieType.values()) {
-            if (!AppModel.player.unlockedZombies.contains(zombieType)) AppModel.player.unlockedZombies.add(zombieType);
-        }
-
         plantAssetManager = new PlantAssetManager();
         if (plantConfigRepository == null) {
             plantConfigRepository = new PlantConfigRepository();

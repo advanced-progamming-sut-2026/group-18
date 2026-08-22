@@ -16,8 +16,8 @@ public class LaneClearEffect implements PlantFoodEffectStrategy {
 
     @Override
     public void applyEffect(Plant plant, GameBoard board, Player player) {
-        int plantRow = (int) (plant.getY() / Constants.Game.TILE_SIZE);
-        double maxX = board.totalCols * Constants.Game.TILE_SIZE;
+        int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
+        double maxX = board.totalCols * Constants.Game.TILE_WIDTH;
 
         for (Zombie zombie : board.getAllZombies()) {
             if (zombie.isDead()) continue;
@@ -39,7 +39,7 @@ public class LaneClearEffect implements PlantFoodEffectStrategy {
                     }
 
                     // Force the zombie's Y coordinate to the new lane!
-                    double newY = targetRow * Constants.Game.TILE_SIZE + (Constants.Game.TILE_SIZE / 2.0);
+                    double newY = targetRow * Constants.Game.TILE_HEIGHT + (Constants.Game.TILE_HEIGHT / 2.0);
                     zombie.setY(newY);
                 }
                 // --- FUME-SHROOM LOGIC ---
@@ -50,7 +50,7 @@ public class LaneClearEffect implements PlantFoodEffectStrategy {
 
                         // Heavy Knockback (3 Tiles)
                         if (!zombie.isDead()) {
-                            double newX = Math.min(zombie.getX() + (3 * Constants.Game.TILE_SIZE), maxX);
+                            double newX = Math.min(zombie.getX() + (3 * Constants.Game.TILE_WIDTH), maxX);
                             zombie.setX(newX);
                         }
                     }

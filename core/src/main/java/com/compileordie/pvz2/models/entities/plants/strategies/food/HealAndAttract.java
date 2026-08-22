@@ -14,8 +14,8 @@ public class HealAndAttract implements PlantFoodEffectStrategy {
         plant.setCurrentHp(plant.getBaseHp());
 
         // 2. Attract all zombies in the 3x3 area
-        int plantRow = (int) (plant.getY() / Constants.Game.TILE_SIZE);
-        double pullRadius = 1.5 * Constants.Game.TILE_SIZE;
+        int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
+        double pullRadius = 1.5 * Constants.Game.TILE_HEIGHT;
 
         for (Zombie zombie : board.getAllZombies()) {
             if (zombie.isDead()) continue;
@@ -26,7 +26,7 @@ public class HealAndAttract implements PlantFoodEffectStrategy {
 
                 if (dist <= pullRadius) {
                     // Yank them forcefully into the Sweet Potato's lane!
-                    double targetY = plantRow * Constants.Game.TILE_SIZE + (Constants.Game.TILE_SIZE / 2.0);
+                    double targetY = plantRow * Constants.Game.TILE_HEIGHT + (Constants.Game.TILE_HEIGHT / 2.0);
                     zombie.setY(targetY);
                 }
             }

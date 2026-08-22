@@ -37,8 +37,8 @@ public class InstantUseStrategy implements AttackStrategy {
         }
 // --- HOT POTATO LOGIC ---
         else if (name.equals("Hot Potato")) {
-            int plantRow = (int) (plant.getY() / Constants.Game.TILE_SIZE);
-            int plantCol = (int) (plant.getX() / Constants.Game.TILE_SIZE);
+            int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
+            int plantCol = (int) (plant.getX() / Constants.Game.TILE_WIDTH);
 
             // Check if we have the Level 3 upgrade!
             boolean is3x3 = plant.hasMeltArea3x3();
@@ -80,8 +80,8 @@ public class InstantUseStrategy implements AttackStrategy {
 
         // --- GRAVE BUSTER LOGIC ---
         else if (name.equals("Grave Buster")) {
-            int plantRow = (int) (plant.getY() / Constants.Game.TILE_SIZE);
-            int plantCol = (int) (plant.getX() / Constants.Game.TILE_SIZE);
+            int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
+            int plantCol = (int) (plant.getX() / Constants.Game.TILE_WIDTH);
 
             Tile t = board.getTile(plantRow, plantCol);
 

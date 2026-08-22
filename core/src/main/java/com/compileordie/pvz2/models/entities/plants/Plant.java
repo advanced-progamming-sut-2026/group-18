@@ -525,7 +525,7 @@ public class Plant extends GameEntity {
         GameBoard board = AppModel.gameSession.gameBoard;
 
         // 1.5 tile radius = 3x3 grid
-        double radiusPixels = 1.5 * Constants.Game.TILE_SIZE;
+        double radiusPixels = 1.5 * Constants.Game.TILE_HEIGHT;
 
         for (Zombie z : board.getAllZombies()) {
             if (z.isDead()) continue;
