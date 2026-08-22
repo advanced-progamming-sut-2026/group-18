@@ -38,12 +38,15 @@ public class HomingProjectile extends Projectile {
     @Override
     public void onHit(Zombie target, GameBoard board) {
         if (this.sourcePlantType == PlantType.CAULIPOWER) {
-            // 1. Charm the zombie permanently
+            // Charm the zombie permanently
             target.addEffect(new StatusEffect(EffectType.HYPNOTIZED, 99999));
-            // 2. Destroy the projectile WITHOUT calling super.onHit() so it takes 0 damage!
+            this.destroy();
+        } else if (this.sourcePlantType == PlantType.ELECTRIC_BLUEBERRY) {
+            // ELECTRIC BLUEBERRY FIX: Deliver massive instant-kill damage!
+            target.takeDamage(5000, DamageType.NORMAL, this.sourcePlantType);
             this.destroy();
         } else {
-            // For future homing plants (like Homing Thistle) that actually do physical damage
+            // For future homing plants that actually do physical damage
             super.onHit(target, board);
         }
     }

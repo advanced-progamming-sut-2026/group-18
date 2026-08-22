@@ -55,8 +55,9 @@ final class BoardEntityDrawer {
     }
 
     void drawBackground(SpriteBatch batch) {
-        float screenW = Gdx.graphics.getWidth();
-        float screenH = Gdx.graphics.getHeight();
+// FIX: Use the constant 1920x1080 width instead of the raw window size!
+        float screenW = Constants.UI.DEFAULT_WIDTH;
+        float screenH = Constants.UI.DEFAULT_HEIGHT;
         if (bgLeftRegion != null && bgMainRegion != null && bgRightRegion != null) {
             float leftAspect = (float) bgLeftRegion.getRegionWidth() / bgLeftRegion.getRegionHeight();
             float leftWidth = (screenH * leftAspect) * GameScreenConstants.BG_SIDE_SCALE;
@@ -204,8 +205,14 @@ final class BoardEntityDrawer {
             GameRenderStates.SunRenderState state =
                 states.sunRenderStates.computeIfAbsent(sun, s -> new GameRenderStates.SunRenderState());
             state.animTime += delta;
-            float baseX = (float) sun.getX() * Constants.UI.METER_TO_PIX;
-            float baseY = (float) sun.getY() * Constants.UI.METER_TO_PIX;
+//            float baseX = (float) sun.getX() * Constants.UI.METER_TO_PIX;
+//            float baseY = (float) sun.getY() * Constants.UI.METER_TO_PIX;
+            // TODO:
+// PADDING removed! sun.getX() and sun.getY() now natively hold the world coordinates!
+            float baseX = (float) ((sun.getX() + Constants.Game.PADDING_X_REALITY + (Constants.Game.TILE_WIDTH / 2.0f)) * Constants.UI.METER_TO_PIX);
+            float baseY = (float) ((sun.getY() + Constants.Game.PADDING_Y_REALITY) * Constants.UI.METER_TO_PIX);
+//            float baseX = (float) ((sun.getX() + (Constants.Game.TILE_WIDTH / 2.0f)) * Constants.UI.METER_TO_PIX);
+//            float baseY = (float) (sun.getY() * Constants.UI.METER_TO_PIX);
 
             if (!state.isFading) {
                 float dx = baseX - mousePos.x;

@@ -57,6 +57,8 @@ public class Plant extends GameEntity {
     private boolean isHidden = false; // True when Squash is jumping!
     private boolean isExhausted = false; // True when Squash is done attacking and becomes a meat shield
     private int extraCrushes = 0; // For the "Can crush 2x" upgrade!
+    public boolean isShootingForward = false;  // NEW: Tells the view we are shooting right
+    public boolean isShootingBackward = false; // NEW: Tells the view we are shooting left
     // life cycle tracking ...
     private double ageTicks = 0;
     private double growTimeReductionTicks = 0;
@@ -478,6 +480,7 @@ public class Plant extends GameEntity {
     //  you must reset that card cooldown and the player can use that card again immediately no need to wait anymore seyyed
     public boolean hasResetFamilyCooldowns() { return resetFamilyCooldowns; }
     public double getActionIntervalTicks() { return actionIntervalTicks; }
+    public double getCurrentActionTimer() { return currentActionTimer; }
     public int getGrowthStage() {
         if (isMaxStageForced) {
             return 3 + maxSizeBonus; // Max out instantly! (Stage 3 for Sun-shroom, Stage 4 for upgraded Kiwibeast)

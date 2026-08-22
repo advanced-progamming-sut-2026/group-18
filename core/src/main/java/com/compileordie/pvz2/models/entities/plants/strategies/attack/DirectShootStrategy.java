@@ -13,6 +13,7 @@ public class DirectShootStrategy implements AttackStrategy {
     private final List<Integer> laneOffsets;
     private final List<double[]> shootVectors;
     private final Class<? extends Projectile> projectileType;
+
     public DirectShootStrategy(List<Integer> laneOffsets,
                                List<double[]> shootVectors,
                                Class<? extends Projectile> projectileType) {
@@ -23,39 +24,69 @@ public class DirectShootStrategy implements AttackStrategy {
 
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
-        // --- Smart Range Radar ---
+
+        boolean isRotobaga = plant.getName().equals("Rotobaga");
+        boolean isPeaPod = plant.getName().equals("Pea Pod");
+
+        // --- Smart Bi-Directional Radar ---
         double rangeInPixels = plant.getRangeTiles() * Constants.Game.TILE_SIZE;
-        int plantRow = (int) (plant.getY() / Constants.Game.TILE_SIZE);
+        int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
+        double plantWorldX = plant.getX() + Constants.Game.PADDING_X_REALITY;
 
-        // Scan for any living zombie in the exact same lane that is within the plant's range
-        boolean targetExists = board.getAllZombies().stream()
+        // Check Forward (Peashooter, Split Pea front)
+        boolean forwardTargetExists = board.getAllZombies().stream()
             .anyMatch(z -> !z.isDead() && z.getCurrentRow() == plantRow
-                && z.getX() > plant.getX() && z.getX() <= plant.getX() + rangeInPixels);
+                && z.getX() > plantWorldX && z.getX() <= plantWorldX + rangeInPixels);
 
-        if (!targetExists) {
+        // Check Backward (Split Pea back)
+        boolean backwardTargetExists = board.getAllZombies().stream()
+            .anyMatch(z -> !z.isDead() && z.getCurrentRow() == plantRow
+                && z.getX() < plantWorldX && z.getX() >= plantWorldX - rangeInPixels);
+
+        plant.isShootingForward = forwardTargetExists;
+        plant.isShootingBackward = backwardTargetExists;
+
+        if (!forwardTargetExists && !backwardTargetExists && !isRotobaga) {
             plant.holdAction = true;
             return;
         }
-        // ------------------------------
+
         double x = plant.getX();
         double y = plant.getY();
         int damage = plant.getBaseDamage();
         double speed = 4.0;
-        double tileSize = Constants.Game.TILE_SIZE;
-        double maxY = board.totalRows * tileSize;
+        double tileHeight = Constants.Game.TILE_HEIGHT;
+        double maxY = board.totalRows * tileHeight;
+        int stackMultiplier = isPeaPod ? plant.getStackCount() : 1;
 
-        int stackMultiplier = plant.getName().equals("Pea Pod") ? plant.getStackCount() : 1;
+        // Dynamic Gap: Repeater = 0.6, Rotobaga = 0.37, Pea Pod = 0.2 (Tight!)
+        double gapMultiplier = isRotobaga ? 0.37 : (isPeaPod ? 0.4 : 0.6);
+
+        double baseX = x;
+        double baseY = y;
+        if (isRotobaga) {
+            baseX -= (Constants.Game.TILE_WIDTH * 0.2);
+            baseY += (Constants.Game.TILE_HEIGHT * 0.045);
+        }
 
         for (int offset : laneOffsets) {
-            double spawnY = y + (offset * tileSize);
+            double spawnY = baseY + (offset * tileHeight);
 
             if (spawnY >= 0 && spawnY < maxY) {
                 for (double[] vector : shootVectors) {
+
+                    // SPLIT PEA LOGIC: Only fire the backward vector if there is a zombie behind!
+                    if (!isRotobaga) {
+                        if (vector[0] > 0 && !forwardTargetExists) continue;
+                        if (vector[0] < 0 && !backwardTargetExists) continue;
+                    }
+
                     for (int s = 0; s < stackMultiplier; s++) {
                         try {
                             int orderIndex = vector.length > 2 ? (int) (vector[2] + s) : s;
-                            double spawnX = x + (orderIndex * 0.2 * tileSize * vector[0]);
-                            double finalSpawnY = spawnY + (orderIndex * 0.2 * tileSize * vector[1]);
+
+                            double spawnX = baseX + (orderIndex * gapMultiplier * Constants.Game.TILE_WIDTH * vector[0]);
+                            double finalSpawnY = spawnY + (orderIndex * gapMultiplier * tileHeight * vector[1]);
 
                             Projectile proj;
 
@@ -66,14 +97,12 @@ public class DirectShootStrategy implements AttackStrategy {
                                     .newInstance(spawnX, finalSpawnY, speed, damage, totalChillTime);
 
                             } else if (projectileType == PiercingProjectile.class) {
-                                // NEW: Cactus piercing math! (3 base pierces + any upgrades)
                                 int totalPierces = 3 + plant.getPierceBonus();
                                 proj = projectileType
                                     .getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
                                     .newInstance(spawnX, finalSpawnY, speed, damage, totalPierces);
 
                             } else if (projectileType == PoisonProjectile.class) {
-                                // Goo Peashooter DoT math (Base 6 + Upgrades)
                                 int totalPoisonDmg = 6 + plant.getPoisonDmgTickBonus();
                                 proj = projectileType
                                     .getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
@@ -81,7 +110,6 @@ public class DirectShootStrategy implements AttackStrategy {
 
                             } else if (projectileType == FumeProjectile.class) {
                                 double maxRangePixels = plant.getRangeTiles() * Constants.Game.TILE_SIZE;
-
                                 proj = projectileType
                                     .getDeclaredConstructor(double.class, double.class, double.class, int.class, double.class)
                                     .newInstance(spawnX, finalSpawnY, speed, damage, maxRangePixels);
@@ -91,9 +119,7 @@ public class DirectShootStrategy implements AttackStrategy {
                                     .newInstance(spawnX, finalSpawnY, speed, damage);
                             }
 
-
                             proj.setSourcePlantType(PlantType.getByName(plant.getName()));
-
                             proj.setXSpeed(speed * vector[0]);
                             proj.setYSpeed(speed * vector[1]);
 

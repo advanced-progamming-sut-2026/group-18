@@ -15,7 +15,8 @@ public class PlantSpawner {
     public static void initRepository() {
         if (repository == null) {
             repository = new PlantConfigRepository();
-            repository.loadFromCSV("assets/configs/main_plantscsv.csv");
+            //TODO: i don't know why but i had to change the file patch, because i got errors.
+            repository.loadFromCSV("configs/main_plantscsv.csv");
         }
     }
 

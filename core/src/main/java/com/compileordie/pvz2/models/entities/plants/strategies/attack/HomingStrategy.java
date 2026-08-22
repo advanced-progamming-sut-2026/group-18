@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.entities.plants.strategies.attack;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
@@ -16,6 +17,7 @@ public class HomingStrategy implements AttackStrategy {
     private final Class<? extends Projectile> projectileType;
     private final TargetingMode baseTargetingMode;
     private final Random random = new Random();
+
     public HomingStrategy(Class<? extends Projectile> projectileType, TargetingMode baseTargetingMode) {
         this.projectileType = projectileType;
         this.baseTargetingMode = baseTargetingMode;
@@ -29,15 +31,18 @@ public class HomingStrategy implements AttackStrategy {
 
         if (activeZombies.isEmpty()) return;
 
-        // Check if the plant has a level upgrade that forces it to target high HP
         TargetingMode currentMode = plant.targetsHighestHp() ? TargetingMode.HIGHEST_HP : baseTargetingMode;
         Zombie target = null;
+
+        // FIX: Use World Coordinates to accurately find distance!
+        double pWorldX = plant.getX() + Constants.Game.PADDING_X_REALITY;
+        double pWorldY = plant.getY() + Constants.Game.PADDING_Y_REALITY + 0.2;
 
         switch (currentMode) {
             case CLOSEST:
                 target = activeZombies.stream()
                     .min(Comparator.comparingDouble(z ->
-                        Math.hypot(z.getX() - plant.getX(), z.getY() - plant.getY())))
+                        Math.hypot(z.getX() - pWorldX, z.getY() - pWorldY)))
                     .orElse(null);
                 break;
             case RANDOM:
@@ -52,6 +57,7 @@ public class HomingStrategy implements AttackStrategy {
 
         if (target != null) {
             try {
+                // We still pass plant.getX() because Projectiles operate in logical space!
                 Projectile proj = projectileType
                     .getDeclaredConstructor(double.class, double.class, double.class, int.class, Zombie.class)
                     .newInstance(plant.getX(), plant.getY(), 4.0, plant.getBaseDamage(), target);

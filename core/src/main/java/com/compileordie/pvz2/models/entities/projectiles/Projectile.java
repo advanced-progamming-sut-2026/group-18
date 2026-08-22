@@ -41,8 +41,9 @@ public abstract class Projectile {
     public void tick(GameBoard board, double delta) {
         if (isDead) return;
 
-        this.x += this.xSpeed * delta;
-        this.y += this.ySpeed * delta;
+        // THE FIX: Multiply by TIME_COEFFICIENT to convert ticks to actual seconds!
+        this.x += this.xSpeed * delta * Constants.Game.TIME_COEFFICIENT;
+        this.y += this.ySpeed * delta * Constants.Game.TIME_COEFFICIENT;
 
         // --- The Static Obstacle Radar ---
         if (!this.ignoreObstacles) {
@@ -83,7 +84,8 @@ public abstract class Projectile {
     // --- Standard Getters & Setters ---
     public double getX() { return x; }
     public double getY() { return y; }
-    public int getRow() { return (int) (y / Constants.Game.TILE_SIZE); }
+    public int getRow() { return (int) (y / Constants.Game.TILE_HEIGHT); }
+//    public int getRow() { return (int) (y / Constants.Game.TILE_SIZE); }
     public int getDamage() { return damage; }
     public void setDamage(int damage) { this.damage = damage; } //  For Torchwood damage scaling
     public DamageType getType() { return type; }
@@ -92,6 +94,7 @@ public abstract class Projectile {
     public void setXSpeed(double xSpeed) { this.xSpeed = xSpeed; }
     public void setYSpeed(double ySpeed) { this.ySpeed = ySpeed; }
     public void setSourcePlantType(PlantType sourcePlantType) { this.sourcePlantType = sourcePlantType; }
+    public PlantType getSourcePlantType() { return sourcePlantType; }
     public boolean getIgnoreObstacles() { return ignoreObstacles; }
 
     // Ignition Getters & Setters ---
