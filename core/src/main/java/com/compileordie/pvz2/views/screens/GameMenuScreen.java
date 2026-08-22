@@ -18,14 +18,12 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.compileordie.pvz2.models.AppModel;
-import com.compileordie.pvz2.models.entities.plants.types.PlantType;
-import com.compileordie.pvz2.models.game.SessionBuilder;
 import com.compileordie.pvz2.models.game.levels.ChapterType;
-import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.views.ScreenManager;
 import com.compileordie.pvz2.views.ScreenType;
 import com.compileordie.pvz2.views.customelements.CurrencyHud;
 import com.compileordie.pvz2.views.customelements.LeaderboardModal;
+import com.compileordie.pvz2.views.customelements.LevelSelectionModal;
 
 public class GameMenuScreen extends MenuScreen {
     private Image backgroundImage;
@@ -81,7 +79,7 @@ public class GameMenuScreen extends MenuScreen {
             islandBtn.getImage().setColor(new Color(0.1f, 0.1f, 0.1f, 1));
         }
 
-        addIslandListeners(islandBtn, isUnlocked);
+        addIslandListeners(islandBtn, chapterType, isUnlocked);
 
         Label nameLabel = new Label(chapterType.toString().replace("_", " "), skin, "medium_outline");
         nameLabel.setColor(isUnlocked ? Color.WHITE : new Color(0.3f, 0.3f, 0.3f, 1f));
@@ -92,7 +90,7 @@ public class GameMenuScreen extends MenuScreen {
         return islandWrapper;
     }
 
-    private void addIslandListeners(ImageButton islandBtn, boolean isUnlocked) {
+    private void addIslandListeners(ImageButton islandBtn, ChapterType chapterType, boolean isUnlocked) {
         islandBtn.addListener(new ClickListener() {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
@@ -133,23 +131,16 @@ public class GameMenuScreen extends MenuScreen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if (isUnlocked) {
-                    startLevel();
+                    startLevel(chapterType);
                 }
             }
         });
     }
 
-    private void startLevel() {
-        AppModel.currentChapter = ChapterType.ANCIENT_EGYPT;
-        AppModel.currentLevel = LevelID.STANDARD_ANCIENT_EGYPT;
-        AppModel.selectionDeck.clear();
-        if (AppModel.player.unlockedPlants != null) {
-            for (PlantType type : AppModel.player.unlockedPlants) {
-                AppModel.selectionDeck.put(type, false);
-            }
-        }
-        AppModel.gameSession = SessionBuilder.create(AppModel.currentLevel, AppModel.selectionDeck);
-        ScreenManager.setMenuScreen(ScreenType.GAME_SESSION);
+    private void startLevel(ChapterType chapterType) {
+        AppModel.currentChapter = chapterType;
+        LevelSelectionModal levelSelectionModal = new LevelSelectionModal(skin, chapterType, textureBank, stage);
+        levelSelectionModal.show(stage);
     }
 
     private Image buildBackgroundLayer(float screenW, float screenH) {

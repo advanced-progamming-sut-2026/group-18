@@ -30,7 +30,7 @@ public class AreaDamageEffect implements PlantFoodEffectStrategy {
                 for (int i = 0; i < 3; i++) {
                     Projectile plasma = plant.template.getProjectileType()
                         .getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
-                        .newInstance(plant.getX() + (i * 0.5 * Constants.Game.TILE_SIZE), plant.getY(), 6.0, 600, 5);
+                            .newInstance(plant.getX() + (i * 0.5 * Constants.Game.TILE_WIDTH), plant.getY(), 6.0, 600, 5);
 
                     plasma.setSourcePlantType(PlantType.BOWLING_BULB);
                     board.getActiveProjectiles().add(plasma);
@@ -136,7 +136,7 @@ public class AreaDamageEffect implements PlantFoodEffectStrategy {
             // Kiwibeast instantly jumps to max size!
             if (plant.getName().equals("Kiwibeast")) plant.forceMaxGrowth();
 
-            double radiusPixels = 1.5 * Constants.Game.TILE_SIZE;
+            double radiusPixels = 1.5 * Constants.Game.TILE_HEIGHT;
 
             for (Zombie z : board.getAllZombies()) {
                 if (z.isDead()) continue;
@@ -150,7 +150,7 @@ public class AreaDamageEffect implements PlantFoodEffectStrategy {
         }
         // --- Standard Static Explosion (Cherry Bomb) ---
         else {
-            double radius = 3.0 * Constants.Game.TILE_SIZE;
+            double radius = 3.0 * Constants.Game.TILE_HEIGHT;
             for (Zombie zombie : board.getAllZombies()) {
                 if (zombie.isDead()) continue;
 

@@ -68,7 +68,6 @@ public class TravelLogMenuScreen extends MenuScreen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 ScreenManager.setMenuScreen(ScreenType.GAME);
-                // TODO: Open the minigame selection modal here later
             }
         });
         tabsTable.add(minigamesBtn).padRight(10);
@@ -154,45 +153,31 @@ public class TravelLogMenuScreen extends MenuScreen {
         Table card = new Table();
         card.setBackground(skin.newDrawable("image_ui_dialog_asset_inner_bkgd_10", new Color(0.89f, 0.79f, 0.61f, 1f)));
         card.pad(15);
-
-        // A. Reward Icon
         Image icon = new Image(textureBank.region(getRewardIcon(quest.rewardType)));
         icon.setScaling(Scaling.fit);
         card.add(icon).size(64, 64).padRight(20);
-
-        // B. Quest Details
         Table details = new Table();
         details.top().left();
-
         Label titleLbl = new Label(quest.title, skin, "medium_outline");
         titleLbl.setColor(Color.GOLD);
         details.add(titleLbl).left().padBottom(5).row();
-
         Label descLbl = new Label(quest.description, skin, "default");
         descLbl.setWrap(true);
         details.add(descLbl).width(450).left().padBottom(10).row();
-
         Label rewardLbl = new Label("Rewards: " + quest.rewardAmount + " " + quest.rewardType, skin, "default");
         rewardLbl.setColor(Color.LIME);
         details.add(rewardLbl).left().padBottom(10).row();
-
-        // Progress Bar
         int current = AppModel.player.questProgress.getOrDefault(quest.id, 0);
         ProgressBar progress = new ProgressBar(0, quest.targetAmount, 1, false, skin, "xp_green");
         progress.setValue(Math.min(current, quest.targetAmount));
-
         Table progressTable = new Table();
         progressTable.add(progress).width(300).padRight(10);
         Label progressLbl = new Label(current + " / " + quest.targetAmount, skin, "default");
         progressTable.add(progressLbl);
-
         details.add(progressTable).left();
         card.add(details).expandX().fillX();
-
-        // C. Action Button
         boolean isCompleted = current >= quest.targetAmount;
         TextButton actionBtn = new TextButton(isCompleted ? "CLAIM" : "PLAY", skin, isCompleted ? "green" : "default");
-
         actionBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {

@@ -180,7 +180,7 @@ public class PlantAssetManager {
             case ENFORCE_MINT -> "768/INITIAL/EMPOWERMINTS/PLANT/ENFORCEMINT/ENFORCEMINT.PAM";
             case REINFORCE_MINT -> "768/INITIAL/EMPOWERMINTS/PLANT/REINFORCEMINT/REINFORCEMINT.PAM";
             case ENCHANT_MINT -> "768/INITIAL/EMPOWERMINTS/PLANT/ENCHANTMINT/ENCHANTMINT.PAM";
-            case PIERCE_MINT -> "768/INITIAL/EMPOWERMINTS/PLANT/PEPPERMINT/PEPPERMINT.PAM"; // Didn't have piercemint!
+            case PIERCE_MINT -> "768/INITIAL/EMPOWERMINTS/PLANT/SPEARMINT/SPEARMINT.PAM"; // Didn't have piercemint!
             case CATTAIL_MINT -> "768/INITIAL/EMPOWERMINTS/PLANT/WINTERMINT/WINTERMINT.PAM"; // Didn't have cattailmint!
         };
     }
@@ -206,6 +206,19 @@ public class PlantAssetManager {
                  REINFORCE_MINT -> "loop";
             default -> "idle";
         };
+    }
+
+    public ClipRef loadRawClip(String pamPath, String clipName) {
+        player.loadSync(pamPath);
+        return player.getClip(pamPath, clipName);
+    }
+
+    public Rectangle getRawBounds(String pamPath, String clipName) {
+        return player.bounds(pamPath, clipName);
+    }
+
+    public PamPlayer getRawPlayer() {
+        return player;
     }
 
     /**

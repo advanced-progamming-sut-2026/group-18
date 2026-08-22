@@ -3,7 +3,6 @@ package com.compileordie.pvz2.models.entities;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
-import com.compileordie.pvz2.models.entities.zombies.variants.ZomBoss.EgyptZomboss;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.boss.GargantuarZombie;
 import com.compileordie.pvz2.models.game.board.Lane;
@@ -19,7 +18,10 @@ public class LawnMower extends GameEntity {
 
     public LawnMower(Lane lane) {
         // Correctly sets up position with respect to the continuous tracking system
-        super(Constants.Game.X_OF_MOWER, Constants.Game.TILE_HEIGHT * (lane.row + 0.7f) + Constants.Game.PADDING_Y, 0, 0);
+        super(Constants.Game.X_OF_MOWER,
+                Constants.Game.TILE_HEIGHT * (lane.row + 0.7f) + Constants.Game.PADDING_Y,
+                0,
+                0);
         this.lane = lane;
         this.isTriggered = false;
     }
@@ -31,7 +33,9 @@ public class LawnMower extends GameEntity {
             for (int i = lane.zombies.size() - 1; i >= 0; i--) {
                 Zombie zombie = lane.zombies.get(i);
                 if (zombie.getX() <= this.getX()+0.6 && Math.abs(zombie.getX()-this.getX())<=0.6) {
-                    if (!(zombie instanceof GargantuarZombie) && !(zombie.getType().toString().toLowerCase().contains("zomboss")) && zombie.isAlive()) {
+                    if (!(zombie instanceof GargantuarZombie)
+                        && !(zombie.getType().toString().toLowerCase().contains("zomboss"))
+                        && zombie.isAlive()) {
                         casualties.add(zombie);
                         zombie.takeDamage(99999, DamageType.LawnMower);
                         lane.zombies.remove(i);
@@ -52,7 +56,7 @@ public class LawnMower extends GameEntity {
                 AppModel.addAfterPrompt(sb.toString());
             }
 
-            if (this.getX() >= Constants.Game.LANE_LENGHT) {
+            if (this.getX() >= Constants.Game.LANE_LENGTH) {
                 this.isTriggered = false;
                 this.die();
             }

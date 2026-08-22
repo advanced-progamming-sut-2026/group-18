@@ -14,7 +14,7 @@ public class ModifierPassiveStrategy implements AttackStrategy {
 
         // Define Torchwood's hitbox
         double leftBound = plant.getX() - 10;
-        double rightBound = plant.getX() + Constants.Game.TILE_SIZE;
+        double rightBound = plant.getX() + Constants.Game.TILE_WIDTH;
 
         for (Projectile p : board.getActiveProjectiles()) {
 

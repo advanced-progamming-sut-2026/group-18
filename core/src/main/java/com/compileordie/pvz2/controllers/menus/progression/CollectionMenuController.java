@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.controllers.menus.progression;
 
 import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.models.components.Result;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
@@ -8,128 +9,173 @@ import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.models.user.Player;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 public class CollectionMenuController {
     private CollectionMenuController() {
     }
 
-    public static String showPlants() {
+    public static Result<String> upgradePlant(PlantType plantType) {
+        if (plantType == null) return Result.failure("Invalid plant");
         Player player = AppModel.player;
-        if (player.unlockedPlants == null || player.unlockedPlants.isEmpty()) {
-            return "No plants unlocked yet.";
-        }
-        return "Unlocked Plants:" + System.lineSeparator() + player.unlockedPlants.stream()
-            .map(Enum::toString)
-            .collect(Collectors.joining(System.lineSeparator()));
-    }
 
-    public static String showAllPlants() {
-        if (PlantType.values().length == 0) {
-            return "[DEBUG] No plants defined in the game yet.";
-        }
-        return "All Game Plants:" + System.lineSeparator() + Arrays.stream(PlantType.values())
-            .map(Enum::toString)
-            .collect(Collectors.joining(System.lineSeparator()));
-    }
-
-    public static String showZombies() {
-        Player player = AppModel.player;
-        if (player.unlockedZombies == null || player.unlockedZombies.isEmpty()) {
-            return "No zombies discovered yet.";
-        }
-        return "Discovered Zombies:" + System.lineSeparator() + player.unlockedZombies.stream()
-            .map(Enum::toString)
-            .collect(Collectors.joining(System.lineSeparator()));
-    }
-
-    public static String showAllZombies() {
-        if (ZombieType.values().length == 0) {
-            return "[DEBUG] No zombies defined in the game yet.";
-        }
-        return "All Game Zombies:" + System.lineSeparator() + Arrays.stream(ZombieType.values())
-            .map(Enum::toString)
-            .collect(Collectors.joining(System.lineSeparator()));
-    }
-
-    public static String showPlant(String name) {
-        PlantType plantType = PlantType.getByName(name);
-        if (plantType == null) {
-            return "[ERROR] Invalid plant name.";
-        }
-
-        Player player = AppModel.player;
-        boolean isUnlocked = player.unlockedPlants != null && player.unlockedPlants.contains(plantType);
-        return "--- " + plantType + " ---" + System.lineSeparator() +
-            "Status: " + (isUnlocked ? "Unlocked" : "Locked");
-    }
-
-    public static String showZombie(String name) {
-        ZombieType zombieType = ZombieType.getByName(name);
-        if (zombieType == null) {
-            return "[ERROR] Invalid zombie name.";
-        }
-
-        Player player = AppModel.player;
-        boolean isUnlocked = player.unlockedZombies != null && player.unlockedZombies.contains(zombieType);
-        return "--- " + zombieType + " ---" + System.lineSeparator() +
-            "Status: " + (isUnlocked ? "Unlocked" : "Locked");
-    }
-
-    public static String upgradePlant(String name) {
-        PlantType plantType = PlantType.getByName(name);
-        if (plantType == null) {
-            return "[ERROR] Invalid plant name.";
-        }
-        Player player = AppModel.player;
         if (player.unlockedPlants == null || !player.unlockedPlants.contains(plantType)) {
-            return "[ERROR] You must unlock this plant before upgrading it.";
+            return Result.failure("You must unlock this plant before upgrading it");
         }
 
-        int currentLevel = player.plantLevels.getOrDefault(plantType, 1);
+        int currentLevel = player.plantLevels.get(plantType);
+        if (currentLevel >= 4) {
+            return Result.failure("Plant is already at maximum level (Level 4)");
+        }
         int coinCost = currentLevel * ConfigManager.economy().plantUpgradeCoinsPerLevel;
         int packetCost = currentLevel * ConfigManager.economy().plantUpgradeSeedsPerLevel;
-        int currentPackets = player.seedPackets.getOrDefault(plantType, 0);
+        int currentPackets = player.seedPackets.get(plantType);
 
         if (player.coins < coinCost || currentPackets < packetCost) {
-            return "[ERROR] Insufficient resources. You need " + (coinCost - player.coins) +
-                " more coins and " + (packetCost - currentPackets) + " more seed packets to upgrade.";
+            return Result.failure("Insufficient resources. You need " + Math.max(0, coinCost - player.coins) +
+                " more coins and " + Math.max(0, packetCost - currentPackets) + " more seed packets");
         }
 
         player.coins -= coinCost;
         player.seedPackets.put(plantType, currentPackets - packetCost);
         player.plantLevels.put(plantType, currentLevel + 1);
 
-        new UserDatabase(player.username).save(player);
-
-        return plantType + " upgraded successfully to level " + (currentLevel + 1) + "!";
+        new UserDatabase().save(player);
+        return Result.success(plantType.name() + " upgraded successfully to level " + (currentLevel + 1) + "!");
     }
 
-    public static String purchasePlant(String name) {
+    public static Result<String> purchasePlant(PlantType plantType) {
+        if (plantType == null) return Result.failure("Invalid plant");
         int price = ConfigManager.economy().plantPurchaseCoins;
-
-        PlantType plantType = PlantType.getByName(name);
-        if (plantType == null) {
-            return "[ERROR] Invalid plant name.";
-        }
         Player player = AppModel.player;
+
         if (player.unlockedPlants != null && player.unlockedPlants.contains(plantType)) {
-            return "[ERROR] Plant is already unlocked.";
+            return Result.failure("Plant is already unlocked");
         }
         if (player.coins < price) {
-            return "[ERROR] Insufficient coins. You need " + (price - player.coins)
-                + " more coins to purchase a new plant.";
+            return Result.failure("Insufficient coins. You need " + (price - player.coins) + " more coins");
         }
 
         player.coins -= price;
-        if (player.unlockedPlants == null) {
-            player.unlockedPlants = new ArrayList<>();
-        }
+        if (player.unlockedPlants == null) player.unlockedPlants = new ArrayList<>();
         player.unlockedPlants.add(plantType);
 
-        new UserDatabase(player.username).save(player);
+        new UserDatabase().save(player);
+        return Result.success(plantType.name() + " purchased successfully!");
+    }
 
-        return plantType + " purchased successfully!";
+    public static boolean canUpgrade(PlantType plantType) {
+        Player player = AppModel.player;
+        if (player.unlockedPlants == null || !player.unlockedPlants.contains(plantType)) return false;
+
+        int currentLevel = player.plantLevels.getOrDefault(plantType, 1);
+        if (currentLevel >= 4) return false;
+        int coinCost = currentLevel * ConfigManager.economy().plantUpgradeCoinsPerLevel;
+        int packetCost = currentLevel * ConfigManager.economy().plantUpgradeSeedsPerLevel;
+        int currentPackets = player.seedPackets.getOrDefault(plantType, 0);
+
+        return player.coins >= coinCost && currentPackets >= packetCost;
+    }
+
+    public static String getPlantCardAssetPath(PlantType plantType) {
+        return switch (plantType) {
+            case SUNFLOWER -> "IMAGE_UI_PACKETS_SUNFLOWER";
+            case TWIN_SUNFLOWER -> "IMAGE_UI_PACKETS_TWINSUNFLOWER";
+            case SUN_SHROOM -> "IMAGE_UI_PACKETS_SUNSHROOM";
+            case PRIMAL_SUNFLOWER -> "IMAGE_UI_PACKETS_PRIMALSUNFLOWER";
+            case GOLD_BLOOM -> "IMAGE_UI_PACKETS_GOLDBLOOM";
+            case PEASHOOTER -> "IMAGE_UI_PACKETS_PEASHOOTER";
+            case REPEATER -> "IMAGE_UI_PACKETS_REPEATER";
+            case THREEPEATER -> "IMAGE_UI_PACKETS_THREEPEATER";
+            case SNOW_PEA -> "IMAGE_UI_PACKETS_SNOWPEA";
+            case ROTOBAGA -> "IMAGE_UI_PACKETS_XSHOT";
+            case PEA_POD -> "IMAGE_UI_PACKETS_PEAPOD";
+            case SPLIT_PEA -> "IMAGE_UI_PACKETS_SPLITPEA";
+            case CITRON -> "IMAGE_UI_PACKETS_CITRON";
+            case CAULIPOWER -> "IMAGE_UI_PACKETS_CAULIPOWER";
+            case ELECTRIC_BLUEBERRY -> "IMAGE_UI_PACKETS_ELECTRICBLUEBERRY";
+            case BOWLING_BULB -> "IMAGE_UI_PACKETS_BOWLINGBULB";
+            case CACTUS -> "IMAGE_UI_PACKETS_CACTUS";
+            case FIRE_PEASHOOTER -> "IMAGE_UI_PACKETS_FIREPEASHOOTER";
+            case STARFRUIT -> "IMAGE_UI_PACKETS_STARFRUIT";
+            case GOO_PEASHOOTER -> "IMAGE_UI_PACKETS_POISONPEASHOOTER";
+            case MEGA_GATLING_PEA -> "IMAGE_UI_PACKETS_MEGAGATLING";
+            case SEA_SHROOM -> "IMAGE_UI_PACKETS_SEASHROOM";
+            case PUFF_SHROOM -> "IMAGE_UI_PACKETS_PUFFSHROOM";
+            case FUME_SHROOM -> "IMAGE_UI_PACKETS_FUMESHROOM";
+            case CABBAGE_PULT -> "IMAGE_UI_PACKETS_CABBAGEPULT";
+            case KERNEL_PULT -> "IMAGE_UI_PACKETS_KERNELPULT";
+            case MELON_PULT -> "IMAGE_UI_PACKETS_MELONPULT";
+            case WINTER_MELON -> "IMAGE_UI_PACKETS_WINTERMELON";
+            case PEPPER_PULT -> "IMAGE_UI_PACKETS_PEPPERPULT";
+            case POTATO_MINE -> "IMAGE_UI_PACKETS_POTATOMINE";
+            case PRIMAL_POTATO_MINE -> "IMAGE_UI_PACKETS_PRIMALPOTATOMINE";
+            case CHERRY_BOMB -> "IMAGE_UI_PACKETS_CHERRY_BOMB";
+            case SQUASH -> "IMAGE_UI_PACKETS_SQUASH";
+            case GRAPESHOT -> "IMAGE_UI_PACKETS_GRAPESHOT";
+            case JALAPENO -> "IMAGE_UI_PACKETS_JALAPENO";
+            case DOOM_SHROOM -> "IMAGE_UI_PACKETS_DOOMSHROOM";
+            case TANGLE_KELP -> "IMAGE_UI_PACKETS_TANGLEKELP";
+            case ICEBERG_LETTUCE -> "IMAGE_UI_PACKETS_ICEBURG";
+            case BONK_CHOY -> "IMAGE_UI_PACKETS_BONKCHOY";
+            case PHAT_BEET -> "IMAGE_UI_PACKETS_PHATBEET";
+            case CHOMPER -> "IMAGE_UI_PACKETS_CHOMPER";
+            case WASABI_WHIP -> "IMAGE_UI_PACKETS_WASABIWHIP";
+            case KIWIBEAST -> "IMAGE_UI_PACKETS_KIWIBEAST";
+            case WALL_NUT -> "IMAGE_UI_PACKETS_WALLNUT";
+            case TALL_NUT -> "IMAGE_UI_PACKETS_TALLNUT";
+            case ENDURIAN -> "IMAGE_UI_PACKETS_ENDURIAN";
+            case GARLIC -> "IMAGE_UI_PACKETS_GARLIC";
+            case SWEET_POTATO -> "IMAGE_UI_PACKETS_SWEETPOTATO";
+            case EXPLODE_O_NUT -> "IMAGE_UI_PACKETS_EXPLODEONUT";
+            case PUMPKIN -> "IMAGE_UI_PACKETS_PUMPKIN";
+            case SUN_BEAN -> "IMAGE_UI_PACKETS_SUNBEAN";
+            case TORCHWOOD -> "IMAGE_UI_PACKETS_TORCHWOOD";
+            case MAGNET_SHROOM -> "IMAGE_UI_PACKETS_MAGNETSHROOM";
+            case HYPNO_SHROOM -> "IMAGE_UI_PACKETS_HYPNOSHROOM";
+            case CAT_TAIL -> "IMAGE_UI_PACKETS_ELECTRICPEASHOOTER";
+            case IMITATER -> "IMAGE_UI_PACKETS_IMITATER";
+            case ICE_SHROOM -> "IMAGE_UI_PACKETS_ICESHROOM";
+            case LILY_PAD -> "IMAGE_UI_PACKETS_LILYPAD";
+            case HOT_POTATO -> "IMAGE_UI_PACKETS_HOTPOTATO";
+            case GRAVE_BUSTER -> "IMAGE_UI_PACKETS_GRAVEBUSTER";
+            case ENLIGHTEN_MINT -> "IMAGE_UI_PACKETS_ENLIGHTENMINT";
+            case APPEASE_MINT -> "IMAGE_UI_PACKETS_APPEASEMINT";
+            case ARMA_MINT -> "IMAGE_UI_PACKETS_ARMAMINT";
+            case BOMBARD_MINT -> "IMAGE_UI_PACKETS_BOMBARDMINT";
+            case ENFORCE_MINT -> "IMAGE_UI_PACKETS_ENFORCEMINT";
+            case REINFORCE_MINT -> "IMAGE_UI_PACKETS_REINFORCEMINT";
+            case ENCHANT_MINT -> "IMAGE_UI_PACKETS_ENCHANTMINT";
+            case PIERCE_MINT -> "IMAGE_UI_PACKETS_SPEARMINT";
+            case CATTAIL_MINT -> "IMAGE_UI_PACKETS_WINTERMINT";
+        };
+    }
+
+    public static String getZombieCardAssetPath(ZombieType zombieType) {
+        return switch (zombieType) {
+            case STANDARD -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_TUTORIAL";
+            case CONEHEAD -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_TUTORIAL_ARMOR1";
+            case BUCKETHEAD -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_TUTORIAL_ARMOR2";
+            case KNIGHT -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_DARK_ARMOR3";
+            case BLOCKHEAD -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_TUTORIAL_ARMOR4";
+            case GARGANTUAR -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_TUTORIAL_GARGANTUAR";
+            case IMP -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_TUTORIAL_IMP";
+            case ALL_STAR -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_MODERN_ALLSTAR";
+            case PARASOL_ZOMBIE -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_LOSTCITY_JANE";
+            case TURQUOISE_ZOMBIE -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_LOSTCITY_CRYSTALSKULL";
+            case PROSPECTOR_ZOMBIE -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_PROSPECTOR";
+            case PIANIST_ZOMBIE -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_PIANO";
+            case NEWSPAPER_ZOMBIE -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_MODERN_NEWSPAPER";
+            case BARREL_ROLLER -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_BARRELROLLER";
+            case RA_ZOMBIE -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_RA";
+            case EXPLORER_ZOMBIE -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_EXPLORER";
+            case TOMBRAISER -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_TOMB_RAISER";
+            case DODO_RIDER -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_ICEAGE_DODO";
+            case HUNTER_ZOMBIE -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_ICEAGE_HUNTER";
+            case SNORKEL_ZOMBIE -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_BEACH_SNORKEL";
+            case OCTOPUS_ZOMBIE -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_BEACH_OCTOPUS";
+            case IMP_DRAGON -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_DARK_IMP_DRAGON";
+            case ZOMBOSS_IN_EGYPT -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_ZOMBOSSMECH_EGYPT";
+            case ZOMBOSS_IN_DARK -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_ZOMBOSSMECH_DARK";
+        };
     }
 }

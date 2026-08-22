@@ -10,7 +10,7 @@ public class Crater extends Obstacle {
     private final int col;
 
     public Crater(int row, int col, double durationTicks) {
-        super((col + 0.5f) * Constants.Game.TILE_SIZE, (row + 0.5f) * Constants.Game.TILE_SIZE, ObstacleType.CRATER);
+        super((col + 0.5f) * Constants.Game.TILE_WIDTH, (row + 0.5f) * Constants.Game.TILE_HEIGHT, ObstacleType.CRATER);
 
         this.row = row;
         this.col = col;

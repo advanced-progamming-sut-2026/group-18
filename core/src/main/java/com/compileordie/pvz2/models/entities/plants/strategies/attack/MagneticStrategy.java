@@ -11,7 +11,7 @@ public class MagneticStrategy implements AttackStrategy {
     public void attack(Plant plant, GameBoard board, int tickDelta) {
         if (!plant.isArmed()) return;
 
-        double rangePixels = plant.getRangeTiles() * Constants.Game.TILE_SIZE;
+        double rangePixels = plant.getRangeTiles() * Constants.Game.TILE_HEIGHT;
         boolean stoleArmor = false;
 
         for (Zombie z : board.getAllZombies()) {

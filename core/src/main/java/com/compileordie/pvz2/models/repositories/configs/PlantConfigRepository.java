@@ -1,16 +1,16 @@
 package com.compileordie.pvz2.models.repositories.configs;
 
+import com.badlogic.gdx.Gdx;
 import com.compileordie.pvz2.models.entities.plants.PlantTemplate;
 import com.compileordie.pvz2.models.entities.plants.UpgradeLevel;
 import com.compileordie.pvz2.models.entities.plants.enums.AttackStrategyType;
 import com.compileordie.pvz2.models.entities.plants.enums.PlantCategory;
 import com.compileordie.pvz2.models.entities.plants.enums.PlantFoodEffectType;
 import com.compileordie.pvz2.models.entities.plants.enums.PlantTag;
-import com.compileordie.pvz2.models.entities.plants.strategies.attack.LobberStrategy;
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.projectiles.*;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
@@ -19,7 +19,7 @@ public class PlantConfigRepository {
     private final Map<String, PlantTemplate> plantDatabase = new HashMap<>();
 
     public void loadFromCSV(String filePath) {
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+        try (BufferedReader br = new BufferedReader(Gdx.files.internal(filePath).reader())) {
             String line;
             boolean isHeader = true;
 
@@ -156,6 +156,10 @@ public class PlantConfigRepository {
 
     public PlantTemplate getTemplate(String plantName) {
         return plantDatabase.get(plantName);
+    }
+
+    public PlantTemplate getTemplate(PlantType plantType) {
+        return plantDatabase.get(plantType.getCommercialName());
     }
 
     private UpgradeLevel parseUpgradeString(String upgradeStr) {

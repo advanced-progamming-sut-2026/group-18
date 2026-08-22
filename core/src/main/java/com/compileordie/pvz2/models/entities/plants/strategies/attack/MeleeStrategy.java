@@ -22,10 +22,10 @@ public class MeleeStrategy implements AttackStrategy {
     public void attack(Plant plant, GameBoard board, int tickDelta) {
         if (!plant.isArmed()) return;
 
-        int plantRow = (int) (plant.getY() / Constants.Game.TILE_SIZE);
+        int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
         double plantX = plant.getX();
 
-        double attackRadiusPixels = plant.getRangeTiles() * Constants.Game.TILE_SIZE;
+        double attackRadiusPixels = plant.getRangeTiles() * Constants.Game.TILE_HEIGHT;
 
         boolean attacked = false;
 

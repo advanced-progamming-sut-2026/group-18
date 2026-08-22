@@ -48,8 +48,8 @@ public class GrapeProjectile extends Projectile {
 
         // 3. Screen Edge Bouncing Logic
         boolean bounced = false;
-        double rightEdge = board.totalCols * Constants.Game.TILE_SIZE;
-        double topEdge = board.totalRows * Constants.Game.TILE_SIZE;
+        double rightEdge = board.totalCols * Constants.Game.TILE_WIDTH;
+        double topEdge = board.totalRows * Constants.Game.TILE_HEIGHT;
 
         // Bounce off Left/Right walls
         if (this.x <= 0 || this.x >= rightEdge) {
@@ -76,7 +76,7 @@ public class GrapeProjectile extends Projectile {
             if (z.isDead() || alreadyHitZombies.contains(z)) continue;
 
             double dist = Math.hypot(z.getX() - this.x, z.getY() - this.y);
-            if (dist <= 0.5 * Constants.Game.TILE_SIZE) {
+            if (dist <= 0.5 * Constants.Game.TILE_HEIGHT) {
                 z.takeDamage(this.damage, this.type, this.sourcePlantType);
                 alreadyHitZombies.add(z); // Add to blacklist
             }

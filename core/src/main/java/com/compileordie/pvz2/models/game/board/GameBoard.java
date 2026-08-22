@@ -124,7 +124,7 @@ public class GameBoard {
         // exception رو catch و null برمی‌گردونه، این null بی‌سروصدا به بالادست
         // (مثلا ZombieManager.processMiniTickMovement) می‌رسید و چون اونجا چک null
         // نمی‌شد، باعث NullPointerException و کرش کل بازی می‌شد.
-        return getTile((int) (y / Constants.Game.TILE_HEIGHT), (int) (x / Constants.Game.TILE_SIZE));
+        return getTile((int) (y / Constants.Game.TILE_HEIGHT), (int) (x / Constants.Game.TILE_WIDTH));
     }
 
     public ArrayList<Tile> getAllTiles() {

@@ -97,6 +97,8 @@ public class Plant extends GameEntity {
     private boolean meltArea3x3 = false;
     private double mintDurationBonusTicks = 0.0;
     private boolean resetFamilyCooldowns = false;
+    private boolean isBoosted;
+
     public Plant(String name, PlantCategory category, List<PlantTag> tags,
                  double x, double y, int hp, int damage, int cost, double actionIntervalTicks,
                  AttackStrategy attackStrategy, PlantFoodEffectStrategy foodStrategy,
@@ -150,6 +152,12 @@ public class Plant extends GameEntity {
             }
             return; // Skip attacking while covered!
         }
+
+        if (isBoosted) {
+            feed(board, AppModel.player);
+            isBoosted = false;
+        }
+
         // NEW: The plant gets older every single frame!
         this.ageTicks += tickDelta;
         if (this.maxLifespanTicks > 0) {
@@ -520,7 +528,7 @@ public class Plant extends GameEntity {
         GameBoard board = AppModel.gameSession.gameBoard;
 
         // 1.5 tile radius = 3x3 grid
-        double radiusPixels = 1.5 * Constants.Game.TILE_SIZE;
+        double radiusPixels = 1.5 * Constants.Game.TILE_HEIGHT;
 
         for (Zombie z : board.getAllZombies()) {
             if (z.isDead()) continue;
@@ -531,5 +539,9 @@ public class Plant extends GameEntity {
                 z.takeDamage(this.baseDamage, DamageType.NORMAL, PlantType.getByName(this.getName()));
             }
         }
+    }
+
+    public void applyBoost() {
+        this.isBoosted = true;
     }
 }

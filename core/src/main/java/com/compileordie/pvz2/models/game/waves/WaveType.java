@@ -181,8 +181,8 @@ public enum WaveType {
             targetTile.obstacle = new Tomb(700,
                 targetTile.row,
                 targetTile.column,
-                (targetTile.row + 0.5f) * Constants.Game.TILE_SIZE,
-                (targetTile.column + 0.5f) * Constants.Game.TILE_SIZE);
+                (targetTile.row + 0.5f) * Constants.Game.TILE_HEIGHT,
+                (targetTile.column + 0.5f) * Constants.Game.TILE_WIDTH);
         }
     }
 }

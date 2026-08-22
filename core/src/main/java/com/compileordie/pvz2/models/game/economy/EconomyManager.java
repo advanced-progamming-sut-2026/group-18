@@ -79,12 +79,15 @@ public class EconomyManager {
 
     public void spawnNaturalSun() {
         // Choose a completely randomized horizontal grid column location
-        float y = MathUtils.random(Constants.Game.PADDING_Y_REALITY + 3*Constants.Game.TILE_HEIGHT + 2, Constants.Game.PADDING_Y_REALITY + 5*Constants.Game.TILE_HEIGHT + 2);
-        float x = MathUtils.random(Constants.Game.PADDING_X_REALITY + 2*Constants.Game.TILE_WIDTH, Constants.Game.PADDING_X_REALITY + 8*Constants.Game.TILE_WIDTH);
-        float ground = MathUtils.random(Constants.Game.PADDING_Y_REALITY + 1, Math.max(Constants.Game.PADDING_Y_REALITY + 4, y-3));
-//        float x = MathUtils.random(Constants.Game.BOARD_COLS / 3f, Constants.Game.BOARD_COLS);
-//        float y = MathUtils.random(Constants.Game.BOARD_ROWS, Constants.Game.BOARD_ROWS + 1);
-//        float ground = MathUtils.random(Constants.Game.BOARD_ROWS / 4f);
+        float y = MathUtils.random(Constants.Game.PADDING_Y_REALITY + 3 * Constants.Game.TILE_HEIGHT + 2,
+            Constants.Game.PADDING_Y_REALITY + 5 * Constants.Game.TILE_HEIGHT + 2);
+        float x = MathUtils.random(Constants.Game.PADDING_X_REALITY + 2 * Constants.Game.TILE_WIDTH,
+            Constants.Game.PADDING_X_REALITY + 8 * Constants.Game.TILE_WIDTH);
+        float ground = MathUtils.random(Constants.Game.PADDING_Y_REALITY + 1,
+            Math.max(Constants.Game.PADDING_Y_REALITY + 4, y - 3));
+        /*float x = MathUtils.random(Constants.Game.BOARD_COLS / 3f, Constants.Game.BOARD_COLS);
+        float y = MathUtils.random(Constants.Game.BOARD_ROWS, Constants.Game.BOARD_ROWS + 1);
+        float ground = MathUtils.random(Constants.Game.BOARD_ROWS / 4f);*/
 
         // Generate probability parameters
         int rollout = MathUtils.random(100);
@@ -142,7 +145,7 @@ public class EconomyManager {
     }
 
     public boolean collect(float x, float y) {
-        float reach = Constants.Game.TILE_SIZE / 2f;
+        float reach = Constants.Game.TILE_HEIGHT / 2f;
 
         for (int i = suns.size() - 1; i >= 0; i--) {
             Sun sun = suns.get(i);
