@@ -105,8 +105,8 @@ public class PlantMatchManager {
 
         ClipRef currentClipRef = assetManager.loadPlantClip(pType, state.currentClip);
         if (currentClipRef != null) {
-            float drawX = (float) ((plant.getX() + Constants.Game.PADDING_X_REALITY + (Constants.Game.TILE_WIDTH / 2.0f)) * Constants.UI.METER_TO_PIX);
-            float drawY = (float) ((plant.getY() + Constants.Game.PADDING_Y_REALITY) * Constants.UI.METER_TO_PIX);
+            float drawX = (float) (plant.getX() * Constants.UI.METER_TO_PIX);
+            float drawY = (float) (plant.getY() * Constants.UI.METER_TO_PIX);
 
             Matrix4 original = batch.getTransformMatrix().cpy();
             Matrix4 scaled = original.cpy()
@@ -286,8 +286,8 @@ public class PlantMatchManager {
             String clipName = getProjectileClipName(proj, tracker);
             if (pamPath == null) continue;
 
-            float drawX = (float) ((proj.getX() + Constants.Game.PADDING_X_REALITY + (Constants.Game.TILE_WIDTH / 2.0f)) * Constants.UI.METER_TO_PIX);
-            float drawY = (float) ((proj.getY() + Constants.Game.PADDING_Y_REALITY + (Constants.Game.TILE_HEIGHT * 0.20f)) * Constants.UI.METER_TO_PIX);
+            float drawX = (float) ((proj.getX() + Constants.Game.PADDING_X + (Constants.Game.TILE_WIDTH / 2.0f)) * Constants.UI.METER_TO_PIX);
+            float drawY = (float) ((proj.getY() + Constants.Game.PADDING_Y + (Constants.Game.TILE_HEIGHT * 0.20f)) * Constants.UI.METER_TO_PIX);
 
             tracker.lastDrawX = drawX;
             tracker.lastDrawY = drawY;

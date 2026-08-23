@@ -8,13 +8,10 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-//import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.controllers.menus.game.GameScreenController;
 import com.compileordie.pvz2.models.AppModel;
-import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
-import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
@@ -43,7 +40,7 @@ public class GameScreen implements Screen {
 
     private SpriteBatch batch;
     private FitViewport viewport;
-//    private ScreenViewport viewport;
+    /*private ScreenViewport viewport;*/
     private TextureBank textureBank;
     private PamPlayer player;
 
@@ -72,7 +69,7 @@ public class GameScreen implements Screen {
         if (testZombossOn) AppModel.gameSession.gameBoard.waveManager.type = WaveType.NO_WAVES;
 
         batch = new SpriteBatch();
-// This locks your world to exactly 1920x1080, scaling the grid and mouse perfectly!
+        // This locks your world to exactly 1920x1080, scaling the grid and mouse perfectly!
         viewport = new FitViewport(Constants.UI.DEFAULT_WIDTH, Constants.UI.DEFAULT_HEIGHT);
         simulationAccumulator = 0f;
         resourcesReleased = false;
@@ -191,37 +188,37 @@ public class GameScreen implements Screen {
             handleClickDamageTest(touchPoint.x, touchPoint.y);
         }
 
-        int col = (int) ((meterX - Constants.Game.PADDING_X_REALITY) / Constants.Game.TILE_WIDTH);
+        /*int col = (int) ((meterX - Constants.Game.PADDING_X_REALITY) / Constants.Game.TILE_WIDTH);
         int row = (int) ((meterY - Constants.Game.PADDING_Y_REALITY) / Constants.Game.TILE_HEIGHT);
 
         // 2. Only spawn if we are hovering over a valid tile
         if (row >= 0 && row < 5 && col >= 0 && col < 9) {
 
-            com.compileordie.pvz2.models.entities.plants.types.PlantType typeToSpawn = null;
+            PlantType typeToSpawn = null;
 
-//            // 3. The "Point and Press" Keyboard Hooks
-//            if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.A)) typeToSpawn = PlantType.SUNFLOWER;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.S)) typeToSpawn = PlantType.TWIN_SUNFLOWER;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.D)) typeToSpawn = PlantType.SUN_SHROOM;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.F)) typeToSpawn = PlantType.PRIMAL_SUNFLOWER;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.G)) typeToSpawn = PlantType.GOLD_BLOOM;
-//                // --- NEW SHOOTERS ---
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Q)) typeToSpawn = PlantType.PEASHOOTER;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.W)) typeToSpawn = PlantType.REPEATER;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.E)) typeToSpawn = PlantType.THREEPEATER;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.R)) typeToSpawn = PlantType.SNOW_PEA;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.T)) typeToSpawn = PlantType.ROTOBAGA;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Y)) typeToSpawn = PlantType.PEA_POD;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.U)) typeToSpawn = PlantType.SPLIT_PEA;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.I)) typeToSpawn = PlantType.CITRON;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.O)) typeToSpawn = PlantType.CAULIPOWER;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.P)) typeToSpawn = PlantType.ELECTRIC_BLUEBERRY;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.H)) typeToSpawn = PlantType.BOWLING_BULB;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.J)) typeToSpawn = PlantType.CACTUS;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.K)) typeToSpawn = PlantType.FIRE_PEASHOOTER;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.L)) typeToSpawn = PlantType.STARFRUIT;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Z)) typeToSpawn = PlantType.GOO_PEASHOOTER;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.X)) typeToSpawn = PlantType.MEGA_GATLING_PEA;
+            // 3. The "Point and Press" Keyboard Hooks
+            if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.A)) typeToSpawn = PlantType.SUNFLOWER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.S)) typeToSpawn = PlantType.TWIN_SUNFLOWER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.D)) typeToSpawn = PlantType.SUN_SHROOM;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.F)) typeToSpawn = PlantType.PRIMAL_SUNFLOWER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.G)) typeToSpawn = PlantType.GOLD_BLOOM;
+                // --- NEW SHOOTERS ---
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Q)) typeToSpawn = PlantType.PEASHOOTER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.W)) typeToSpawn = PlantType.REPEATER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.E)) typeToSpawn = PlantType.THREEPEATER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.R)) typeToSpawn = PlantType.SNOW_PEA;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.T)) typeToSpawn = PlantType.ROTOBAGA;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Y)) typeToSpawn = PlantType.PEA_POD;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.U)) typeToSpawn = PlantType.SPLIT_PEA;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.I)) typeToSpawn = PlantType.CITRON;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.O)) typeToSpawn = PlantType.CAULIPOWER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.P)) typeToSpawn = PlantType.ELECTRIC_BLUEBERRY;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.H)) typeToSpawn = PlantType.BOWLING_BULB;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.J)) typeToSpawn = PlantType.CACTUS;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.K)) typeToSpawn = PlantType.FIRE_PEASHOOTER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.L)) typeToSpawn = PlantType.STARFRUIT;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Z)) typeToSpawn = PlantType.GOO_PEASHOOTER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.X)) typeToSpawn = PlantType.MEGA_GATLING_PEA;
             if (typeToSpawn != null) {
                 double spawnX = col * Constants.Game.TILE_WIDTH;
                 double spawnY = row * Constants.Game.TILE_HEIGHT;
@@ -229,13 +226,14 @@ public class GameScreen implements Screen {
                 Tile targetTile = AppModel.gameSession.gameBoard.getTile(row, col);
 
                 // --- HACK CODE FOR PEA POD STACKING ---
-                if (typeToSpawn == com.compileordie.pvz2.models.entities.plants.types.PlantType.PEA_POD
+                if (typeToSpawn == PlantType.PEA_POD
                     && targetTile.plant != null
                     && targetTile.plant.getName().equals("Pea Pod")) {
 
                     int currentHeads = targetTile.plant.getStackCount();
                     if (currentHeads < 5) {
-                        // NOTE: If your setter is named differently (like addHead() or increaseStackCount()), change it here!
+                        // NOTE: If your setter is named differently (like addHead() or increaseStackCount())
+                        //  change it here!
                         targetTile.plant.addStack();
                         Gdx.app.log("TEST-SPAWN", "⬆️ Upgraded Pea Pod to " + (currentHeads + 1) + " heads!");
                     } else {
@@ -244,24 +242,24 @@ public class GameScreen implements Screen {
                 }
                 // --- NORMAL SPAWNING FOR EVERYTHING ELSE ---
                 else {
-                    Plant testPlant = com.compileordie.pvz2.controllers.PlantSpawner.spawn(typeToSpawn, spawnX, spawnY, false, false);
+                    Plant testPlant = PlantSpawner.spawn(typeToSpawn, spawnX, spawnY, false, false);
                     targetTile.plant = testPlant;
                     AppModel.gameSession.gameBoard.addPlant(testPlant);
                     Gdx.app.log("TEST-SPAWN", "✅ Planted " + typeToSpawn.name() + " at Row: " + row + ", Col: " + col);
                 }
             }
         }
-//        if (!Gdx.input.justTouched()) return;
-//        touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-//        viewport.unproject(touchPoint);
-//        float meterX = touchPoint.x / Constants.UI.METER_TO_PIX;
-//        float meterY = touchPoint.y / Constants.UI.METER_TO_PIX;
-//        Gdx.app.log("&&&&--------PVZ-CLICK", String.format(
-//            "🖱️ مختصات کلیک -> پیکسل: (X: %.1f, Y: %.1f) | متر-مدل: (X: %.2f, Y: %.2f)",
-//            touchPoint.x, touchPoint.y, meterX, meterY));
-//        if (hasWeTestForClickForDamaging) {
-//            handleClickDamageTest(touchPoint.x, touchPoint.y);
-//        }
+        if (!Gdx.input.justTouched()) return;
+        touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+        viewport.unproject(touchPoint);
+        float meterX = touchPoint.x / Constants.UI.METER_TO_PIX;
+        float meterY = touchPoint.y / Constants.UI.METER_TO_PIX;
+        Gdx.app.log("&&&&--------PVZ-CLICK", String.format(
+            "🖱️ مختصات کلیک -> پیکسل: (X: %.1f, Y: %.1f) | متر-مدل: (X: %.2f, Y: %.2f)",
+            touchPoint.x, touchPoint.y, meterX, meterY));
+        if (hasWeTestForClickForDamaging) {
+            handleClickDamageTest(touchPoint.x, touchPoint.y);
+        }*/
     }
 
     private void updateSunHud() {

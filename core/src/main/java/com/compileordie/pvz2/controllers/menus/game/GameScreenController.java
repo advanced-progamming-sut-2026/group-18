@@ -2,6 +2,7 @@ package com.compileordie.pvz2.controllers.menus.game;
 
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.controllers.PlantSpawner;
 import com.compileordie.pvz2.models.AppModel;
@@ -32,7 +33,7 @@ public class GameScreenController {
         return configRepo;
     }
 
-    public static Tile getTileAt(float screenX, float screenY, ScreenViewport viewport) {
+    public static Tile getTileAt(float screenX, float screenY, Viewport viewport) {
         if (AppModel.gameSession == null || AppModel.gameSession.gameBoard == null) return null;
         Vector3 worldPoint = new Vector3(screenX, screenY, 0);
         viewport.unproject(worldPoint);
