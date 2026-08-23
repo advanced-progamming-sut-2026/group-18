@@ -102,7 +102,7 @@ public class LevelSelectionModal extends BaseModal {
                     plantSelectionModal.show(menuStage);
                 } else {
                     for (PlantType plantType : plants) {
-                        AppModel.selectionDeck.put(plantType, MathUtils.randomBoolean(0.2f));
+                        AppModel.selectionDeck.put(plantType, MathUtils.randomBoolean(0.1f));
                     }
                     AppModel.gameSession = SessionBuilder.create(AppModel.currentLevel, AppModel.selectionDeck);
                     ScreenManager.setMenuScreen(ScreenType.GAME_SESSION);
