@@ -65,7 +65,7 @@ public class BouncingProjectile extends Projectile {
             bouncesRemaining--;
 
             // Deflect diagonally up or down at half a tile speed
-            double deflectSpeed = (Math.random() > 0.5 ? 1.0 : -1.0) * (Constants.Game.TILE_HEIGHT * 0.5);
+            double deflectSpeed = (Math.random() > 0.5 ? 1.0 : -1.0) * (Constants.Game.TILE_HEIGHT * 1.1);
             this.ySpeed = deflectSpeed;
 
         } else {

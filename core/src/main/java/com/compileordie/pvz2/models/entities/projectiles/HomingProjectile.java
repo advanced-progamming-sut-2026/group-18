@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.entities.projectiles;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
@@ -21,15 +22,36 @@ public class HomingProjectile extends Projectile {
     public void tick(GameBoard board, double delta) {
         if (isDead) return;
 
-        if (target != null && !target.isDead()) {
-            double dirX = target.getX() - this.x;
-            double dirY = target.getY() - this.y;
+        if (target != null) {
+            // FIX 1: If the zombie dies from something else while the cloud is moving, destroy the cloud!
+            if (target.isDead()) {
+                this.destroy();
+                return;
+            }
+
+            // FIX 2: Convert projectile's logical coordinates to world coordinates to track the world zombie!
+            double projWorldX = this.x + Constants.Game.PADDING_X_REALITY;
+            double projWorldY = this.y + Constants.Game.PADDING_Y_REALITY + 0.2;
+
+            double dirX = target.getX() - projWorldX;
+            double dirY = target.getY() - projWorldY;
             double distance = Math.hypot(dirX, dirY);
+
+            // FIX 3: Self-contained 2D collision detection!
+            // If the cloud is within 0.5 meters of the zombie, it triggers the hit directly!
+            if (distance <= 0.5) {
+                this.onHit(target, board);
+                return;
+            }
 
             if (distance > 0.1) {
                 this.xSpeed = (dirX / distance) * maxSpeed;
                 this.ySpeed = (dirY / distance) * maxSpeed;
             }
+        } else {
+            // If it never had a target, just die
+            this.destroy();
+            return;
         }
 
         super.tick(board, delta);

@@ -79,8 +79,6 @@ public class ZombieCombatManager {
     }
 
     private void processPlantEating(Zombie z, Plant p) {
-        // FIX: Translate Plant Logical coordinates to perfectly align with World Zombies!
-        // We add +0.2 here to match the exact mathematical offset the Zombie spawn uses.
         double pWorldX = p.getX() + Constants.Game.PADDING_X_REALITY;
         double pWorldY = p.getY() + Constants.Game.PADDING_Y_REALITY + 0.2;
 

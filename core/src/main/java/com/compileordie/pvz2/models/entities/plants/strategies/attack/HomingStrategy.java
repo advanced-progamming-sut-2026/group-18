@@ -25,8 +25,9 @@ public class HomingStrategy implements AttackStrategy {
 
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
+// FIX: Explicitly filter out dead AND hypnotized zombies so they are never targeted!
         List<Zombie> activeZombies = board.getAllZombies().stream()
-            .filter(z -> !z.isDead())
+            .filter(z -> !z.isDead() && !z.isHypnotized())
             .collect(Collectors.toList());
 
         if (activeZombies.isEmpty()) return;

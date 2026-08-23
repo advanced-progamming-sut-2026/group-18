@@ -18,47 +18,48 @@ public class BowlingStrategy implements AttackStrategy {
 
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
-        // Step 1: Wait for a target! (Smart Targeting)
         int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
-        boolean targetExists = board.getAllZombies().stream()
-            .anyMatch(z -> !z.isDead() && z.getCurrentRow() == plantRow && z.getX() > plant.getX());
 
-        // Hold fire if the lane is empty or if we are out of bulbs!
-        if (!targetExists || (plant.getName().equals("Bowling Bulb") && plant.getBulbCount() == 0)) {
+        // STEP 1: If we aren't winding up yet, scan for targets!
+        if (!plant.isWindingUp) {
+            boolean targetExists = board.getAllZombies().stream()
+                .anyMatch(z -> !z.isDead() && !z.isHypnotized() && z.getCurrentRow() == plantRow && z.getX() > plant.getX());
+
+            if (!targetExists || plant.bulbs.isEmpty()) {
+                plant.holdAction = true;
+                return;
+            }
+
+            // START WINDUP! Lock in the bulb and freeze the plant's action timer!
+            plant.isWindingUp = true;
+            plant.windupTimer = 0;
             plant.holdAction = true;
+            plant.currentlyFiringBulb = plant.bulbs.remove(0); // Pop the front bulb (Cyan -> Blue -> Orange!)
             return;
         }
 
-// Step 2: Determine Damage based on Bulb size
-        int currentDamage = plant.getBaseDamage(); // Defaults to 40 (Cyan)
+        // STEP 2: WE ARE WINDING UP! Wait for the animation!
+        plant.windupTimer += tickDelta;
+        plant.holdAction = true; // Keep holding the engine hostage
 
-        if (plant.getName().equals("Bowling Bulb")) {
-            // If count is 3, it skips these if-statements and safely shoots Cyan (40)
+        // Wait exactly 0.4 seconds (24 ticks) for the 'special' animation to physically throw the bulb!
+        if (plant.windupTimer >= 11) {
+            plant.isWindingUp = false;
+            plant.holdAction = false; // RELEASE! This tells Plant.java to reset the timer to 0!
 
-            if (plant.getBulbCount() == 1) {
-                // Only 1 bulb left? That's the big Orange one!
-                currentDamage = (int)(currentDamage * 4.5); // 40 * 4.5 = 180
-            } else if (plant.getBulbCount() == 2) {
-                // 2 bulbs left? That's the medium Blue one!
-                currentDamage = currentDamage * 3;          // 40 * 3 = 120
+            int damage = (plant.currentlyFiringBulb == 3) ? 180 : (plant.currentlyFiringBulb == 2 ? 120 : 40);
+
+            try {
+                // Spawn EXACTLY on the plant since the animation timing is perfectly synced now!
+                Projectile proj = projectileType
+                    .getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
+                    .newInstance(plant.getX(), plant.getY(), 4.0, damage, maxBounces);
+
+                proj.setSourcePlantType(PlantType.getByName(plant.getName()));
+                board.getActiveProjectiles().add(proj);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
-            // Consume the bulb AFTER determining the damage
-            plant.consumeBulb();
-        }
-
-        // Step 3: Fire the Bouncing Bulb
-        try {
-            Projectile proj = projectileType
-                .getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
-                .newInstance(plant.getX(), plant.getY(), 4.0, currentDamage, maxBounces);
-
-            // Clean Enum injection
-            proj.setSourcePlantType(PlantType.getByName(plant.getName()));
-
-            board.getActiveProjectiles().add(proj);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }

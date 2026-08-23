@@ -21,6 +21,11 @@ public class PiercingProjectile extends Projectile {
         this.pierceRemaining = maxPierces;
     }
 
+    // --- NEW: Expose the remaining pierces to the graphics engine! ---
+    public int getPierceRemaining() {
+        return pierceRemaining;
+    }
+
     @Override
     public void tick(GameBoard board, double delta) {
         super.tick(board, delta);

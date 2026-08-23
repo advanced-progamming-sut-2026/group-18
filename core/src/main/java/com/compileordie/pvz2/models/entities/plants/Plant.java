@@ -50,6 +50,7 @@ public class Plant extends GameEntity {
     private double maxLifespanTicks = -1; // -1 means infinite lifespan (like Peashooter)
     private double currentLifespanTicks = -1;
     private double rangeBonus = 0.0;
+
     // Special flags for specific AI behaviors
     private boolean doubleSunChance = false;
     private boolean targetsHighestHp = false;
@@ -57,22 +58,31 @@ public class Plant extends GameEntity {
     private boolean isHidden = false; // True when Squash is jumping!
     private boolean isExhausted = false; // True when Squash is done attacking and becomes a meat shield
     private int extraCrushes = 0; // For the "Can crush 2x" upgrade!
-    public boolean isShootingForward = false;  // NEW: Tells the view we are shooting right
-    public boolean isShootingBackward = false; // NEW: Tells the view we are shooting left
+    public boolean isShootingForward = false;  // Tells the view we are shooting right
+    public boolean isShootingBackward = false; // Tells the view we are shooting left
+
     // life cycle tracking ...
     private double ageTicks = 0;
     private double growTimeReductionTicks = 0;
     public double getAgeTicks() { return ageTicks; }
     public double getGrowTimeReductionTicks() { return growTimeReductionTicks; }
-    // life cycle tracking ...
+
+    // logic strategies
     private AttackStrategy attackStrategy;
     private PlantFoodEffectStrategy foodStrategy;
     private Map<Integer, UpgradeLevel> upgradeMap;
-    // NEW: engine variables for our advanced shooters : 1-Pea Pod 2- Snow Pea 3- bowling bulb
+
+    // NEW: engine variables for our advanced shooters
     private int stackCount = 1;
     private double chillTimeBonusTicks = 0;
-    private int bulbCount = 3;
-    private double bulbRegenTimer = 0;
+
+    // --- NEW: BOWLING BULB QUEUE & WINDUP ENGINE ---
+    public java.util.LinkedList<Integer> bulbs = new java.util.LinkedList<>(java.util.Arrays.asList(1, 2, 3));
+    public double bulbRegenTimer = 0;
+    public boolean isWindingUp = false;
+    public double windupTimer = 0;
+    public int currentlyFiringBulb = 0;
+
     private double actionIntervalReductionTicks = 0.0;
     private int pierceBonus = 0;
     private int poisonDmgTickBonus = 0;
@@ -90,6 +100,7 @@ public class Plant extends GameEntity {
     private boolean isMaxStageForced = false;
     private boolean isBlueFlame = false;
     private boolean explodesOnDeath = false;
+
     // NEW: Hypno-shroom Buff Flags
     private boolean zombieHpBuff = false;
     private boolean zombieDmgBuff = false;
@@ -112,14 +123,17 @@ public class Plant extends GameEntity {
         this.baseDamage = damage;
         this.cost = cost;
         this.actionIntervalTicks = actionIntervalTicks;
-        // FIX: Sun producers must WAIT first. Everyone else starts fully charged!
+
+        // Sun producers must WAIT first. Everyone else starts fully charged!
         if (attackStrategy instanceof SunProduceStrategy) { this.currentActionTimer = 0; }
         else { this.currentActionTimer = actionIntervalTicks; }
+
         this.attackStrategy = attackStrategy;
         this.foodStrategy = foodStrategy;
         this.upgradeMap = upgradeMap;
+
         if (this.name.equals("Mega Gatling Pea")) {
-            this.plantFoodChance = 5.0; // Base 5% chance!
+            this.plantFoodChance = 0.0; // Base 5% chance!
         }
         if (this.name.equals("Puff-shroom") || this.name.equals("Sea-shroom")) {
             this.maxLifespanTicks = 600.0; // 60 Seconds
@@ -158,7 +172,7 @@ public class Plant extends GameEntity {
             isBoosted = false;
         }
 
-        // NEW: The plant gets older every single frame!
+        // The plant gets older every single frame!
         this.ageTicks += tickDelta;
         if (this.maxLifespanTicks > 0) {
             this.currentLifespanTicks -= tickDelta;
@@ -167,18 +181,20 @@ public class Plant extends GameEntity {
                 return;
             }
         }
-        // NEW: Bowling Bulb Ammo Regeneration
-        if (this.name.equals("Bowling Bulb") && bulbCount < 3) {
+
+// --- NEW: Advanced Bowling Bulb Ammo Regeneration ---
+        if (this.name.equals("Bowling Bulb") && bulbs.size() < 3) {
             bulbRegenTimer += tickDelta;
 
-            // Base delays: Cyan (20 ticks), Blue (50 ticks), Orange (100 ticks)
-            double regenThreshold = (bulbCount == 2) ? 100.0 : (bulbCount == 1 ? 50.0 : 20.0);
+            if (bulbRegenTimer >= getRegenThreshold()) {
+                int growingBulb = 1;
+                if (!bulbs.contains(1)) growingBulb = 1;
+                else if (!bulbs.contains(2)) growingBulb = 2;
+                else if (!bulbs.contains(3)) growingBulb = 3;
 
-            // Apply the Regen -1s upgrade!
-            regenThreshold = Math.max(1.0, regenThreshold - this.actionIntervalReductionTicks);
-
-            if (bulbRegenTimer >= regenThreshold) {
-                bulbCount++;
+                bulbs.add(growingBulb);
+                // FIX: Keep the queue strictly sorted so it ALWAYS fires Cyan(1) -> Blue(2) -> Orange(3)!
+                java.util.Collections.sort(bulbs);
                 bulbRegenTimer = 0;
             }
         }
@@ -191,9 +207,10 @@ public class Plant extends GameEntity {
             if (this.currentArmTimer >= this.maxArmTimeTicks) {
                 this.isArmed = true;
             }
-            // An unarmed trap cannot trigger its attack strategy! (If a zombie reaches it now, the zombie will just eat it normally!)
+            // An unarmed trap cannot trigger its attack strategy!
             return;
         }
+
         // 2. Execute attack strategy
         if (currentActionTimer >= actionIntervalTicks) {
             this.holdAction = false; // reset the flag
@@ -202,7 +219,6 @@ public class Plant extends GameEntity {
                 // It won the dice roll! Trigger the ultimate for free!
                 this.feed(board, null);
             }
-
             else if (attackStrategy != null) {
                 attackStrategy.attack(this, board, tickDelta);
             }
@@ -259,7 +275,6 @@ public class Plant extends GameEntity {
                         if (checkingPlant.hasTag(PlantTag.FIRE)) {
                             int effectiveRadius = checkingPlant.getWarmthRadius() > 0 ? checkingPlant.getWarmthRadius() : 1;
 
-                            // Check if this frozen plant is actually inside that radius
                             if (Math.abs(r - row) <= effectiveRadius && Math.abs(c - col) <= effectiveRadius) {
                                 hasAdjacentFire = true;
                                 break;
@@ -307,7 +322,6 @@ public class Plant extends GameEntity {
         if (this.isDead()) return;
 
         // --- SUN BEAN MECHANIC ---
-        // Triggers on every single bite!
         if (this.name.equals("Sun Bean")) {
             if (AppModel.gameSession != null && AppModel.gameSession.gameBoard != null) {
                 // Base 5 + Upgrade 5 = 10 Sun at level 2!
@@ -339,8 +353,7 @@ public class Plant extends GameEntity {
 
         this.currentHp -= amount;
 
-        // 3. ARMOR BREAK CHECK:
-        // If it HAD armor, and now it DOESN'T (but isn't dead yet), the armor just broke!
+        // 3. ARMOR BREAK CHECK
         if (hadArmor && this.currentHp <= this.baseHp && this.currentHp > 0) {
             if (this.name.equals("Explode-o-nut")) {
                 this.triggerExplosion(); // BOOM! (Armor explosion)
@@ -355,19 +368,14 @@ public class Plant extends GameEntity {
     }
 
     public void applyLevelUpgrade(int targetLevel) {
-        // Loop from level 2 up to the player's current max level to stack everything!
         for (int i = 2; i <= targetLevel; i++) {
             if (upgradeMap != null && upgradeMap.containsKey(i)) {
                 UpgradeLevel stats = upgradeMap.get(i);
-                if (stats.doubleSunChance) {
-                    this.doubleSunChance = true;
-                }
-                if (stats.targetPriorityUp) {
-                    this.targetsHighestHp = true;
-                }
+                if (stats.doubleSunChance) this.doubleSunChance = true;
+                if (stats.targetPriorityUp) this.targetsHighestHp = true;
                 if (this.maxLifespanTicks > 0) {
                     this.maxLifespanTicks += stats.lifespanBonusTicks;
-                    this.currentLifespanTicks += stats.lifespanBonusTicks; // Instantly give the bonus time!
+                    this.currentLifespanTicks += stats.lifespanBonusTicks;
                 }
                 this.baseHp += stats.hpBonus;
                 this.currentHp += stats.hpBonus;
@@ -415,7 +423,7 @@ public class Plant extends GameEntity {
             AppModel.gameSession.gameBoard.specialIsLost = true;
         }
 
-// --- DEATH EXPLOSION HOOK ---
+        // --- DEATH EXPLOSION HOOK ---
         if (this.name.equals("Explode-o-nut") || (this.name.equals("Torchwood") && this.explodesOnDeath)) {
             this.triggerExplosion(); // BOOM!
         }
@@ -425,12 +433,18 @@ public class Plant extends GameEntity {
         AppModel.addAfterPrompt("Plant " + this.name + " at (" + xInt + ", " + yInt + ") is destroyed.");
     }
 
-    // NEW: Getters and modifiers for the advanced strategies
+    // --- Bowling Bulb Queue Helpers ---
+    public int getBulbCount() { return bulbs.size(); }
+    public void consumeBulb() {} // Disabled!
+    public void reloadAllBulbs() {
+        this.bulbs.clear();
+        this.bulbs.addAll(java.util.Arrays.asList(1, 2, 3));
+        this.bulbRegenTimer = 0;
+    }
+
     public int getStackCount() { return stackCount; }
     public void addStack() { if (this.stackCount < 5) this.stackCount++; }
     public double getChillTimeBonusTicks() { return chillTimeBonusTicks; }
-
-    // --- Standard Getters & Setters & helpers ---
     public PlantFoodEffectStrategy getFoodEffectStrategy() { return foodStrategy; }
     public AttackStrategy getAttackStrategy() { return attackStrategy; }
     public int getBaseHp() { return baseHp; }
@@ -453,9 +467,6 @@ public class Plant extends GameEntity {
     public boolean hasDoubleSunChance() { return this.doubleSunChance; }
     public int getExtraSunYield() { return extraSunYield; }
     public int getPierceBonus() { return pierceBonus; }
-    public int getBulbCount() { return bulbCount; }
-    public void consumeBulb() { if (this.bulbCount > 0) this.bulbCount--; }
-    public void reloadAllBulbs() { this.bulbCount = 3; this.bulbRegenTimer = 0; }
     public int getPoisonDmgTickBonus() { return poisonDmgTickBonus; }
     public double getRangeTiles() { return (template != null ? template.getRangeTiles() : 10.0) + rangeBonus; }
     public void resetLifespan() {
@@ -465,7 +476,7 @@ public class Plant extends GameEntity {
     public int getAoeDamage() { return (this.baseDamage / 2) + this.aoeDamageBonus; }
     public int getWarmthRadius() { return (this.name.equals("Pepper-pult") || this.name.equals("Wasabi Whip") ? 1 : 0) + this.warmthRadiusBonus; }
     public boolean isArmed() { return isArmed; }
-    public void forceArm() { this.isArmed = true; } // For the Plant Food effect!
+    public void forceArm() { this.isArmed = true; }
     public boolean isHidden() { return isHidden; }
     public void setHidden(boolean hidden) { this.isHidden = hidden; }
     public boolean isExhausted() { return isExhausted; }
@@ -483,51 +494,44 @@ public class Plant extends GameEntity {
     public boolean hasMeltArea3x3() { return meltArea3x3; }
     public boolean isExplodesOnDeath() { return explodesOnDeath; }
     public double getMintDurationBonusTicks() { return mintDurationBonusTicks; }
-    // TODO: you have to handle the cooldown reset in your plant deck :
-    //  if you have any plant which its category is similar with the which player just plant(not for all mints just the mint which is Lvl.4(i handled it already)
-    //  you must reset that card cooldown and the player can use that card again immediately no need to wait anymore seyyed
     public boolean hasResetFamilyCooldowns() { return resetFamilyCooldowns; }
     public double getActionIntervalTicks() { return actionIntervalTicks; }
     public double getCurrentActionTimer() { return currentActionTimer; }
     public int getGrowthStage() {
         if (isMaxStageForced) {
-            return 3 + maxSizeBonus; // Max out instantly! (Stage 3 for Sun-shroom, Stage 4 for upgraded Kiwibeast)
+            return 3 + maxSizeBonus;
         }
 
         double age = this.getAgeTicks();
         double stg2Threshold = Math.max(0, 240.0 - this.getGrowTimeReductionTicks());
         double stg3Threshold = Math.max(0, 720.0 - this.getGrowTimeReductionTicks());
-        double stg4Threshold = Math.max(0, 1200.0 - this.getGrowTimeReductionTicks()); // 120 seconds
+        double stg4Threshold = Math.max(0, 1200.0 - this.getGrowTimeReductionTicks());
 
         if (age >= stg4Threshold && this.maxSizeBonus > 0) return 4;
         if (age >= stg3Threshold) return 3;
         if (age >= stg2Threshold) return 2;
 
-        return 1; // Default stage
+        return 1;
     }
-    // NEW: Specifically checks if the plant is trapped in ice!
     public boolean isFrozen() {
         return this.coverState == PlantCoverState.ICE;
     }
     public void forceMaxGrowth() {
         this.isMaxStageForced = true;
     }
-    //Passive Reflect Damage logic for Endurian
     public int getReflectDamage() {
         if (!this.name.equals("Endurian")) return 0;
-        // Starts with 20 (plus any upgrades parsed into baseDamage)
         int reflectDmg = this.baseDamage;
         if (this.currentHp > this.baseHp) {
             reflectDmg += 15;
         }
         return reflectDmg;
     }
-    //Handles 3x3 explosions for Explode-o-nut
+
     private void triggerExplosion() {
         if (AppModel.gameSession == null || AppModel.gameSession.gameBoard == null) return;
         GameBoard board = AppModel.gameSession.gameBoard;
 
-        // 1.5 tile radius = 3x3 grid
         double radiusPixels = 1.5 * Constants.Game.TILE_HEIGHT;
 
         for (Zombie z : board.getAllZombies()) {
@@ -535,7 +539,6 @@ public class Plant extends GameEntity {
 
             double dist = Math.hypot(z.getX() - this.getX(), z.getY() - this.getY());
             if (dist <= radiusPixels) {
-                // Uses baseDamage (which will dynamically include the +200 upgrade!)
                 z.takeDamage(this.baseDamage, DamageType.NORMAL, PlantType.getByName(this.getName()));
             }
         }
@@ -543,5 +546,15 @@ public class Plant extends GameEntity {
 
     public void applyBoost() {
         this.isBoosted = true;
+    }
+
+    // --- HELPER FOR GRAPHICS ENGINE ---
+    public double getRegenThreshold() {
+        int growingBulb = 1;
+        if (!bulbs.contains(1)) growingBulb = 1;
+        else if (!bulbs.contains(2)) growingBulb = 2;
+        else if (!bulbs.contains(3)) growingBulb = 3;
+        double baseThreshold = (growingBulb == 3) ? 600.0 : (growingBulb == 2 ? 300.0 : 120.0);
+        return Math.max(1.0, baseThreshold - this.actionIntervalReductionTicks);
     }
 }

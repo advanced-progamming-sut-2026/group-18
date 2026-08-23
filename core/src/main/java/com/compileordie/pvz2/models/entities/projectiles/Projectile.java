@@ -41,13 +41,23 @@ public abstract class Projectile {
     public void tick(GameBoard board, double delta) {
         if (isDead) return;
 
-        // THE FIX: Multiply by TIME_COEFFICIENT to convert ticks to actual seconds!
+        // Multiply by TIME_COEFFICIENT to convert ticks to actual seconds!
         this.x += this.xSpeed * delta * Constants.Game.TIME_COEFFICIENT;
         this.y += this.ySpeed * delta * Constants.Game.TIME_COEFFICIENT;
 
+        // FIX 1: BOUNDARY LIMIT - Destroy if it flies off the 9x5 grid!
+        if (this.x > 10 * Constants.Game.TILE_WIDTH || this.x < -2 * Constants.Game.TILE_WIDTH) {
+            this.destroy();
+            return;
+        }
+
         // --- The Static Obstacle Radar ---
         if (!this.ignoreObstacles) {
-            Tile currentTile = board.getTile((float) this.x, (float) this.y);
+            // FIX 2: Translate Logical X/Y to World X/Y before asking the board for the Tile!
+            float worldX = (float) (this.x + Constants.Game.PADDING_X_REALITY);
+            float worldY = (float) (this.y + Constants.Game.PADDING_Y_REALITY + 0.2);
+
+            Tile currentTile = board.getTile(worldX, worldY);
 
             if (currentTile != null && currentTile.obstacle != null) {
                 this.onObstacleHit(currentTile.obstacle);
