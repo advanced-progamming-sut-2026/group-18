@@ -13,7 +13,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.compileordie.pvz2.controllers.menus.game.GameScreenController;
 import com.compileordie.pvz2.models.AppModel;
@@ -30,9 +29,8 @@ import pvz.skin.PvzSkin;
  * Pause menu, game-end panel, and sun HUD (extracted from GameScreen).
  */
 public final class GameScreenUI {
-
     public Stage uiStage;
-    public boolean isPaused = false;
+    public static boolean isPaused = false;
     public ImageButton pauseButton;
     public Table pauseOverlayContainer;
     public Texture pauseOverlayTexture;
@@ -49,6 +47,7 @@ public final class GameScreenUI {
         this.onExitToMain = onExitToMain;
     }
 
+    @SuppressWarnings("checkstyle:LineLength")
     public void setupPauseUI() {
         uiStage = new Stage(new ScreenViewport());
         skin = PvzSkin.get();
@@ -58,7 +57,20 @@ public final class GameScreenUI {
         root.top().right();
         uiStage.addActor(root);
 
-        pauseButton = new ImageButton(skin, "ingame_pause");
+        ImageButton.ImageButtonStyle pauseStyle = new ImageButton.ImageButtonStyle(
+            skin.get("ingame_pause", ImageButton.ImageButtonStyle.class)
+        );
+        if (pauseStyle.imageChecked != null) {
+            pauseStyle.imageDown = pauseStyle.imageChecked;
+        }
+        pauseStyle.checked = null;
+        pauseStyle.imageChecked = null;
+        pauseStyle.checkedOver = null;
+        pauseStyle.imageCheckedOver = null;
+        pauseStyle.checkedDown = null;
+        pauseStyle.imageCheckedDown = null;
+
+        pauseButton = new ImageButton(pauseStyle);
         root.add(pauseButton).pad(GameScreenConstants.PAUSE_BUTTON_PAD);
         pauseButton.addListener(new ClickListener() {
             @Override
@@ -173,25 +185,22 @@ public final class GameScreenUI {
         GameCurrencyHud currencyHud = new GameCurrencyHud(skin, uiStage, textureBank);
         leftUITable.add(currencyHud).pad(15).left().row();
 
+        Table toolsTable = new Table();
+        toolsTable.left();
+
         ImageButton shovelButton = new ImageButton(skin, "ingame_shovel");
-
-        shovelButton.setTransform(true);
-        shovelButton.setOrigin(Align.topLeft);
-
         shovelButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                // Toggle shovel activation / custom cursor logic
                 GameScreenController.toggleShovel();
-                if (GameScreenController.isShovelSelected) {
-                    shovelButton.setScale(1.25f);
-                    System.out.println("shovel selected");
-                } else {
-                    shovelButton.setScale(1f);
-                }
             }
         });
-        leftUITable.add(shovelButton).padLeft(15).left();
+        toolsTable.add(shovelButton).padRight(12);
+
+        PlantFoodBank plantFoodBank = new PlantFoodBank(textureBank);
+        toolsTable.add(plantFoodBank);
+
+        leftUITable.add(toolsTable).padLeft(15).left();
 
         uiStage.addActor(leftUITable);
 
@@ -275,7 +284,7 @@ public final class GameScreenUI {
     }
 
     public void setPaused(boolean paused) {
-        this.isPaused = paused;
+        isPaused = paused;
         if (pauseOverlayContainer != null) {
             pauseOverlayContainer.setVisible(paused);
             pauseOverlayContainer.setTouchable(paused ? Touchable.enabled : Touchable.disabled);

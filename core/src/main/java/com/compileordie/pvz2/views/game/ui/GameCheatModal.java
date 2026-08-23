@@ -22,7 +22,6 @@ public class GameCheatModal extends BaseModal {
     private TextureBank textureBank;
     private Skin skin;
     private TextField sunField;
-    private TextField plantFoodField;
     private TextField coinField;
     private TextField diamondField;
     private TextButton cancelBtn;
@@ -41,7 +40,6 @@ public class GameCheatModal extends BaseModal {
         this.textureBank = textureBank;
         this.skin = skin;
         sunField = createDigitsField(skin);
-        plantFoodField = createDigitsField(skin);
         coinField = createDigitsField(skin);
         diamondField = createDigitsField(skin);
 
@@ -98,8 +96,6 @@ public class GameCheatModal extends BaseModal {
     private void buildLayout() {
         bodyTable.add(createResourceRow("IMAGE_UI_SEASONS_UNCOMPRESSED_PVZ2_SEASONS_UIASSET_ICON_SUN",
             "Sun", sunField, 25, skin, textureBank)).padBottom(10).row();
-        bodyTable.add(createResourceRow("IMAGE_UI_DANGERROOM_PLANTFOOD_ICON",
-            "Plant Food", plantFoodField, 1, skin, textureBank)).padBottom(10).row();
         bodyTable.add(createResourceRow("IMAGE_UI_QUESTS_COIN_ICON",
             "Coins", coinField, 100, skin, textureBank)).padBottom(10).row();
         bodyTable.add(createResourceRow("IMAGE_UI_QUESTS_GEM_ICON",
@@ -122,15 +118,10 @@ public class GameCheatModal extends BaseModal {
             public void clicked(InputEvent event, float x, float y) {
                 try {
                     int newSun = Integer.parseInt(sunField.getText());
-                    int newPf = Integer.parseInt(plantFoodField.getText());
                     int newCoins = Integer.parseInt(coinField.getText());
                     int newDiamonds = Integer.parseInt(diamondField.getText());
 
-                    if (newSun < 0 || newPf < 0 || newCoins < 0 || newDiamonds < 0) {
-                        throw new NumberFormatException();
-                    }
-
-                    if (newPf > 3) {
+                    if (newSun < 0 || newCoins < 0 || newDiamonds < 0) {
                         throw new NumberFormatException();
                     }
 
@@ -141,7 +132,6 @@ public class GameCheatModal extends BaseModal {
                     if (AppModel.player != null) {
                         AppModel.player.coins = newCoins;
                         AppModel.player.diamonds = newDiamonds;
-                        AppModel.player.plantFoodCount = newPf;
                         new UserDatabase(AppModel.player.username).save(AppModel.player);
                     }
 
@@ -161,7 +151,6 @@ public class GameCheatModal extends BaseModal {
         if (AppModel.player != null) {
             coinField.setText(String.valueOf(AppModel.player.coins));
             diamondField.setText(String.valueOf(AppModel.player.diamonds));
-            plantFoodField.setText(String.valueOf(AppModel.player.plantFoodCount));
         }
     }
 

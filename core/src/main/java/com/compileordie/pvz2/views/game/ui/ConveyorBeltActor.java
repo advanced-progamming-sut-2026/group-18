@@ -44,6 +44,11 @@ public class ConveyorBeltActor extends Table {
 
     @Override
     public void act(float delta) {
+        if (GameScreenUI.isPaused) {
+            super.act(0f);
+            return;
+        }
+
         super.act(delta);
 
         // 1. Calculate belt texture segment width to loop scrolling

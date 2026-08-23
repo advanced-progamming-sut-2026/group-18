@@ -1,4 +1,4 @@
-package com.compileordie.pvz2.utils;
+package com.compileordie.pvz2.utils.dev;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -11,7 +11,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class QuestDatabaseSeeder {
-    @SuppressWarnings("SpellCheckingInspection")
     public static ArrayList<Quest> getQuests() {
         ArrayList<Quest> quests = new ArrayList<>();
 

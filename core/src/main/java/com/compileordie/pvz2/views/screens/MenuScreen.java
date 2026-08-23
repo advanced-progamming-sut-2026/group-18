@@ -11,7 +11,7 @@ import pvz.libpvz.textures.TextureBank;
 import pvz.skin.PvzSkin;
 
 abstract public class MenuScreen implements Screen {
-    protected final Stage stage;
+    public final Stage stage;
     protected final Skin skin;
     protected TextureBank textureBank;
 

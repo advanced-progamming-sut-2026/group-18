@@ -40,7 +40,7 @@ public final class Constants {
         public static final int BOARD_COLS = 9;
         public static final float GRAVITY_COEFFICIENT = 1f;
         public static final float TIME_COEFFICIENT = 0.05f;
-        public static final float TILE_WIDTH = 1.047f;
+        public static final float TILE_WIDTH = 1.045f;
         public static final float TILE_HEIGHT = 1.3f;
         public static final float LANE_LENGTH = 18f;
         public static final float PROSPECTOR_BOOM_X = 6.5f;
