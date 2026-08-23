@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.views.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -9,6 +10,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 //import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.controllers.menus.game.GameScreenController;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
@@ -21,6 +23,7 @@ import com.compileordie.pvz2.models.entities.zombies.variants.capable.OctopusZom
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.waves.WaveType;
+import com.compileordie.pvz2.views.game.ui.GameScreenUI;
 import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.textures.TextureBank;
 
@@ -167,9 +170,19 @@ public class GameScreen implements Screen {
     }
 
     private void handleInput() {
-// 1. Constantly track where the mouse is hovering
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
+            GameScreenController.cancelSelection();
+            return;
+        }
+
+        if (!Gdx.input.justTouched()) return;
         touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0);
         viewport.unproject(touchPoint);
+
+        Tile clickedTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
+        if (clickedTile != null) {
+            GameScreenController.handleTileClick(clickedTile);
+        }
 
         float meterX = touchPoint.x / Constants.UI.METER_TO_PIX;
         float meterY = touchPoint.y / Constants.UI.METER_TO_PIX;

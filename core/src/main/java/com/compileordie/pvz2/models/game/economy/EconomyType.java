@@ -5,6 +5,7 @@ import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
+import com.compileordie.pvz2.models.repositories.configs.PlantConfigRepository;
 
 import java.util.ArrayList;
 
@@ -67,9 +68,13 @@ public enum EconomyType {
     abstract public void tick(int ticks, EconomyManager self, GameBoard gameBoard);
 
     private static void loadSelectionDeckToPlantCards(EconomyManager self) {
+        PlantConfigRepository plantConfigRepository = new PlantConfigRepository();
+        plantConfigRepository.loadFromCSV(Constants.Paths.Configs.PLANTS);
         self.plantCards.clear();
         for (PlantType plantType : self.selectionDeck.keySet()) {
-            self.plantCards.add(new PlantCard(plantType, 120, self.selectionDeck.get(plantType)));
+            self.plantCards.add(new PlantCard(plantType,
+                plantConfigRepository.getTemplate(plantType).getRechargeTicks(),
+                self.selectionDeck.get(plantType)));
         }
     }
 }

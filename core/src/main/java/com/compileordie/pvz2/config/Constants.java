@@ -38,11 +38,10 @@ public final class Constants {
     public static final class Game {
         public static final int BOARD_ROWS = 5;
         public static final int BOARD_COLS = 9;
-        public static final float TILE_SIZE = 1f;
         public static final float GRAVITY_COEFFICIENT = 1f;
         public static final float TIME_COEFFICIENT = 0.05f;
         public static final float TILE_WIDTH = 1.047f;
-        public static final float TILE_HEIGHT = 1.253f;
+        public static final float TILE_HEIGHT = 1.3f;
         public static final float LANE_LENGTH = 18f;
         public static final float PROSPECTOR_BOOM_X = 6.5f;
         public static final float EAT_HOME_X = 4.8f;
@@ -59,7 +58,6 @@ public final class Constants {
     public static final class UI {
         public static final int DEFAULT_WIDTH = 1920;
         public static final int DEFAULT_HEIGHT = 1080;
-        // Note: UPP value is an early guess and subject to change
         public static final float UPP = 1.5f;
         public static final float METER_TO_PIX = 105f;
         public static final float BOTTOM_LINE_PIX = 190f;

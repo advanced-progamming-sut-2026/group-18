@@ -8,6 +8,7 @@ import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.entities.zombies.services.manager.ZombieManager;
 import com.compileordie.pvz2.models.entities.zombies.services.manager.ZombieTickContext;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.game.economy.EconomyManager;
@@ -18,6 +19,7 @@ import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
 import com.compileordie.pvz2.models.game.waves.WaveManager;
 import com.compileordie.pvz2.models.game.waves.WaveType;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
+import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.models.user.Player; // Arsam
 
 import java.util.ArrayList;
@@ -100,6 +102,16 @@ public class GameBoard {
             }
         }
 
+        for (Zombie zombie : getAllZombies()) {
+            ZombieType type = zombie.getType();
+            Player player = AppModel.player;
+
+            if (!player.unlockedZombies.contains(type)) {
+                player.unlockedZombies.add(type);
+                new UserDatabase().save(player);
+            }
+        }
+
         economyManager.tick(ticks);
         waveManager.tick(ticks);
         tickCounter += ticks;
@@ -114,17 +126,8 @@ public class GameBoard {
     }
 
     public Tile getTile(float x, float y) {
-        // نکته‌ی مهم (باگ پیدا شده): قبلاً اینجا y هم بر Constants.Game.TILE_SIZE (که
-        // عرض/اندازه‌ی ستونه، = 1f) تقسیم می‌شد. ولی جایگاه واقعی لاین‌ها (ردیف‌ها) روی
-        // محور Y بر اساس Constants.Game.TILE_HEIGHT (=1.285f) محاسبه می‌شه (مثلا در
-        // WaveType.placeZombiesRandomly: y = (row-1)*TILE_HEIGHT + bottomLineMeter).
-        // چون TILE_SIZE != TILE_HEIGHT، تقسیم y بر TILE_SIZE ایندکس ردیف اشتباهی
-        // می‌ساخت (مثلا برای زامبی‌های ردیف‌های بالاتر، ایندکس محاسبه‌شده از محدوده‌ی
-        // معتبر لاین‌ها (0..totalRows-1) خارج می‌شد)، getTile(row, column) هم چون
-        // exception رو catch و null برمی‌گردونه، این null بی‌سروصدا به بالادست
-        // (مثلا ZombieManager.processMiniTickMovement) می‌رسید و چون اونجا چک null
-        // نمی‌شد، باعث NullPointerException و کرش کل بازی می‌شد.
-        return getTile((int) (y / Constants.Game.TILE_HEIGHT), (int) (x / Constants.Game.TILE_WIDTH));
+        return getTile((int) Math.floor((y - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT),
+            (int) Math.floor((x - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH));
     }
 
     public ArrayList<Tile> getAllTiles() {
