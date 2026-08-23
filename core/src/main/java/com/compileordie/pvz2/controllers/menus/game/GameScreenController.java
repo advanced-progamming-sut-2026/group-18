@@ -1,7 +1,6 @@
 package com.compileordie.pvz2.controllers.menus.game;
 
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.controllers.PlantSpawner;
@@ -17,6 +16,7 @@ import com.compileordie.pvz2.views.helpers.ToastManager;
 public class GameScreenController {
     public static PlantCard selectedCard = null;
     public static boolean isShovelSelected = false;
+    public static boolean isPlantFoodSelected = false;
     private static PlantConfigRepository configRepo;
 
     private GameScreenController() {
@@ -46,8 +46,9 @@ public class GameScreenController {
 
     public static void selectCard(PlantCard card) {
         isShovelSelected = false;
+        isPlantFoodSelected = false;
         if (selectedCard == card) {
-            selectedCard = null; // Toggle off if clicked again
+            selectedCard = null;
         } else {
             selectedCard = card;
         }
@@ -57,12 +58,22 @@ public class GameScreenController {
         isShovelSelected = !isShovelSelected;
         if (isShovelSelected) {
             selectedCard = null;
+            isPlantFoodSelected = false;
+        }
+    }
+
+    public static void togglePlantFood() {
+        isPlantFoodSelected = !isPlantFoodSelected;
+        if (isPlantFoodSelected) {
+            selectedCard = null;
+            isShovelSelected = false;
         }
     }
 
     public static void cancelSelection() {
         selectedCard = null;
         isShovelSelected = false;
+        isPlantFoodSelected = false;
     }
 
     public static void reset() {
@@ -76,6 +87,11 @@ public class GameScreenController {
         }
         if (AppModel.gameSession == null || AppModel.gameSession.gameBoard == null) return;
 
+        if (isPlantFoodSelected) {
+            handlePlantFoodAction(tile);
+            return;
+        }
+
         if (isShovelSelected) {
             handleShovelAction(tile);
             return;
@@ -84,6 +100,22 @@ public class GameScreenController {
         if (selectedCard != null) {
             handlePlantAction(tile);
         }
+    }
+
+    private static void handlePlantFoodAction(Tile tile) {
+        if (tile.plant == null || !tile.plant.isAlive()) {
+            ToastManager.showError("No plant to feed!");
+            return;
+        }
+
+        if (AppModel.player == null || AppModel.player.plantFoodCount <= 0) {
+            ToastManager.showError("No Plant Food left!");
+            return;
+        }
+
+        AppModel.player.consumePlantFood();
+        tile.plant.feed(AppModel.gameSession.gameBoard, AppModel.player);
+        cancelSelection();
     }
 
     private static void handleShovelAction(Tile tile) {

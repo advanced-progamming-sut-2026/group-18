@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -119,6 +120,7 @@ public class GameScreen implements Screen {
                 GameScreenConstants.BG_REGION_PREFIX + chapterFolder
                     + GameScreenConstants.BG_TEXTURE_RIGHT_SUFFIX);
             boardDrawer.setBackgroundRegions(bgLeft, bgMain, bgRight);
+            boardDrawer.initSelectionAssets(textureBank);
             if (bgMain == null) {
                 Gdx.app.error("PVZ-DEBUG",
                     "❌ تصویر پس‌زمینه اصلی برای چپتر '" + chapterFolder + "' پیدا نشد!");
@@ -139,13 +141,18 @@ public class GameScreen implements Screen {
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
-        effectPulseTime += delta;
+        boolean paused = ui != null && ui.isPaused;
+
+        if (!paused) {
+            effectPulseTime += delta;
+        }
+
         updateTextureBank();
         handleInput();
         advanceSimulation(delta);
-        if (!ui.isPaused && testOn) testSpawner.update(delta);
-        cameraEffects.checkGiantZombieFootsteps(delta, ui.isPaused);
-        cameraEffects.updateCameraShake(delta);
+        if (!paused && testOn) testSpawner.update(delta);
+        cameraEffects.checkGiantZombieFootsteps(delta, paused);
+        cameraEffects.updateCameraShake(paused ? 0f : delta);
         viewport.getCamera().update();
         batch.setProjectionMatrix(viewport.getCamera().combined);
         updateSunHud();
@@ -167,6 +174,8 @@ public class GameScreen implements Screen {
     }
 
     private void handleInput() {
+        if (ui != null && ui.isPaused) return;
+
         if (Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
             GameScreenController.cancelSelection();
             return;
@@ -271,36 +280,46 @@ public class GameScreen implements Screen {
 
     private void drawWorld(float delta) {
         boolean paused = ui != null && ui.isPaused;
+        float worldDelta = paused ? 0f : delta;
+
         zombieDrawer.setPaused(paused);
         zombieDrawer.setEffectPulseTime(effectPulseTime);
         boardDrawer.setPaused(paused);
 
         batch.begin();
-        com.badlogic.gdx.math.Matrix4 originalMatrix = batch.getTransformMatrix().cpy();
+        Matrix4 originalMatrix = batch.getTransformMatrix().cpy();
         if (cameraEffects.shakeOffsetX != 0 || cameraEffects.shakeOffsetY != 0) {
             batch.getTransformMatrix().translate(
                 cameraEffects.shakeOffsetX, cameraEffects.shakeOffsetY, 0);
             batch.setTransformMatrix(batch.getTransformMatrix());
         }
         boardDrawer.drawBackground(batch);
-        boardDrawer.drawMowers(batch, player, delta);
-        boardDrawer.drawTombs(batch, player, delta);
-        boardDrawer.drawFireTiles(batch, player, delta);
-        //TODO:
+        boardDrawer.drawMowers(batch, player, worldDelta);
+        boardDrawer.drawTombs(batch, player, worldDelta);
+        boardDrawer.drawFireTiles(batch, player, worldDelta);
+
+        Tile hoveredTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
+        boardDrawer.drawTileHighlight(batch, hoveredTile);
+
         plantAssetManager.update();
         plantMatchManager.setPaused(paused);
-        plantMatchManager.draw(batch, player, delta);
-        debrisDrawer.drawDeadZombies(batch, player, delta);
+        plantMatchManager.draw(batch, player, worldDelta);
+        debrisDrawer.drawDeadZombies(batch, player, worldDelta);
+
+        // Zombies receive regular delta so their "idle" animation plays
         zombieDrawer.drawZombies(batch, player, delta);
-        zombossDrawer.drawZombossExplosion(batch, player, delta);
-        zombossDrawer.drawDarkZombossLaserSquare(batch, player, delta);
-        debrisDrawer.drawFallingDebris(batch, player, delta);
+
+        zombossDrawer.drawZombossExplosion(batch, player, worldDelta);
+        zombossDrawer.drawDarkZombossLaserSquare(batch, player, worldDelta);
+        debrisDrawer.drawFallingDebris(batch, player, worldDelta);
 
         Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
         viewport.unproject(mousePos);
-        boardDrawer.drawSuns(batch, player, delta, mousePos);
+        boardDrawer.drawSuns(batch, player, worldDelta, mousePos);
+        boardDrawer.drawCursorFollower(batch, plantAssetManager, mousePos, delta);
+
         batch.setTransformMatrix(originalMatrix);
-        zombossDrawer.drawZombossHealthBar(batch, player, viewport, delta);
+        zombossDrawer.drawZombossHealthBar(batch, player, viewport, worldDelta);
         batch.end();
     }
 

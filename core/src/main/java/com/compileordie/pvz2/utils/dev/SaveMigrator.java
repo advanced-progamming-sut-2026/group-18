@@ -1,4 +1,4 @@
-package com.compileordie.pvz2.utils;
+package com.compileordie.pvz2.utils.dev;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;

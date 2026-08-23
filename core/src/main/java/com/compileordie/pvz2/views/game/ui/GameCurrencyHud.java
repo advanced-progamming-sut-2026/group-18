@@ -21,8 +21,6 @@ public class GameCurrencyHud extends Table {
 
     private Image sunIcon;
     private Label sunLabel;
-    private Image plantFoodIcon;
-    private Label plantFoodLabel;
     private Image coinIcon;
     private Label coinLabel;
     private Image diamondIcon;
@@ -50,26 +48,19 @@ public class GameCurrencyHud extends Table {
         sunLabel.setColor(Color.BROWN);
         sunLabel.setAlignment(Align.left);
 
-        // 2. Plant Food
-        var pfRegion = textureBank.region("IMAGE_UI_DANGERROOM_PLANTFOOD_ICON");
-        plantFoodIcon = new Image(new TextureRegionDrawable(pfRegion != null ? pfRegion : sunRegion));
-        plantFoodLabel = new Label("0", skin, "medium");
-        plantFoodLabel.setColor(Color.BROWN);
-        plantFoodLabel.setAlignment(Align.left);
-
-        // 3. Coins
+        // 2. Coins
         coinIcon = new Image(new TextureRegionDrawable(textureBank.region("IMAGE_UI_QUESTS_COIN_ICON")));
         coinLabel = new Label("0", skin, "medium");
         coinLabel.setColor(Color.BROWN);
         coinLabel.setAlignment(Align.left);
 
-        // 4. Diamonds
+        // 3. Diamonds
         diamondIcon = new Image(new TextureRegionDrawable(textureBank.region("IMAGE_UI_QUESTS_GEM_ICON")));
         diamondLabel = new Label("0", skin, "medium");
         diamondLabel.setColor(Color.BROWN);
         diamondLabel.setAlignment(Align.left);
 
-        // 5. Plus Cheat Button
+        // 4. Plus Cheat Button
         plusBtn = new ImageButton(new TextureRegionDrawable(
             textureBank.region("IMAGE_UI_CURRENCY_LUCKOTHEZOMBIE_STACK_0")
         ));
@@ -77,16 +68,13 @@ public class GameCurrencyHud extends Table {
 
     private void buildLayout() {
         add(sunIcon).size(32, 32).padRight(4);
-        add(sunLabel).width(50).padRight(8);
-
-        add(plantFoodIcon).size(32, 32).padRight(4);
-        add(plantFoodLabel).width(30).padRight(8);
+        add(sunLabel).padRight(20);
 
         add(coinIcon).size(32, 32).padRight(4);
-        add(coinLabel).width(60).padRight(8);
+        add(coinLabel).padRight(20);
 
         add(diamondIcon).size(30, 30).padRight(4);
-        add(diamondLabel).width(45).padRight(8);
+        add(diamondLabel).padRight(20);
 
         add(plusBtn).size(28, 28);
     }
@@ -115,7 +103,6 @@ public class GameCurrencyHud extends Table {
             coinLabel.setText(String.valueOf(AppModel.player.coins));
             diamondLabel.setText(String.valueOf(AppModel.player.diamonds));
             plusBtn.getImage().setColor(AppModel.player.debugMode ? Color.WHITE : Color.GRAY);
-            plantFoodLabel.setText(String.valueOf(AppModel.player.plantFoodCount));
         }
     }
 }

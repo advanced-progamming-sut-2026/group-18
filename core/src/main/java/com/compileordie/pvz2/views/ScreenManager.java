@@ -30,6 +30,6 @@ public class ScreenManager {
             case GAME_SESSION -> new GameScreen();
         };
 
-        main.setScreen(screen);
+        main.setScreenWithTransition(screen);
     }
 }

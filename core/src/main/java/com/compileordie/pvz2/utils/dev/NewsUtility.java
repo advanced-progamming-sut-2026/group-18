@@ -1,4 +1,4 @@
-package com.compileordie.pvz2.utils;
+package com.compileordie.pvz2.utils.dev;
 
 import com.compileordie.pvz2.models.missions.News;
 import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
