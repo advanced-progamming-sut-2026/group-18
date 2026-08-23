@@ -89,7 +89,8 @@ public enum PlantType {
 
     public static PlantType getByName(String name) {
         for (PlantType plantType : PlantType.values()) {
-            if (plantType.toString().equalsIgnoreCase(name)) {
+            // FIXED: Compare against the exact CSV string you stored!
+            if (plantType.getCommercialName().equalsIgnoreCase(name)) {
                 return plantType;
             }
         }

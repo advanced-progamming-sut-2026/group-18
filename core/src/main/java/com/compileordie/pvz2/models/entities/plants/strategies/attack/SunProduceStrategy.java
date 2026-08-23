@@ -69,6 +69,7 @@ public class SunProduceStrategy implements AttackStrategy {
 
             // 7. Cleanup Gold Bloom
             if (name.equals("Gold Bloom")) {
+                plant.setCurrentHp(0);
                 plant.die();
             }
 

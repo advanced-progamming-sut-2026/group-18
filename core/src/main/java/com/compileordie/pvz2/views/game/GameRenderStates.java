@@ -2,6 +2,7 @@ package com.compileordie.pvz2.views.game;
 
 import com.badlogic.gdx.graphics.Color;
 import com.compileordie.pvz2.models.entities.LawnMower;
+import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.game.board.Tile;
@@ -17,6 +18,11 @@ import java.util.Map;
 final class GameRenderStates {
 
     GameRenderStates() {}
+
+    static final class PlantRenderState {
+        float animTime = 0f;
+        String currentClip = "idle";
+    }
 
     static final class ZombieRenderState {
         float animTime = 0f;
@@ -71,6 +77,7 @@ final class GameRenderStates {
         float fadeTimer = 0f;
     }
 
+    final Map<Plant, PlantRenderState> plantRenderStates = new HashMap<>();
     final Map<Zombie, ZombieRenderState> zombieRenderStates = new HashMap<>();
     final Map<LawnMower, MowerRenderState> mowerRenderStates = new HashMap<>();
     final Map<Tomb, TombRenderState> tombRenderStates = new HashMap<>();
@@ -87,5 +94,6 @@ final class GameRenderStates {
         fireTileAnimTimes.clear();
         deadZombies.clear();
         fallingDebris.clear();
+        plantRenderStates.clear();
     }
 }

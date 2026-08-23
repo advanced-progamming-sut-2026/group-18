@@ -3,7 +3,7 @@ ID,Name,Category,Tags,Cost,Base HP,Damage,Base Ability,Plant Food Effect,Lvl 2,L
 2,Twin Sunflower,Sun Producer,Day,125,300,0,تولید ۱۰۰ خورشید در هر دور.,تولید فوری ۲۵۰ خورشید.,Prod. Time -2s,HP +150,Cost -25,24,15,SUN_PRODUCE,BURST_SUN
 3,Sun-shroom,Sun Producer,"Shroom, wramp-up, night",25,300,0,رشد در ۳ مرحله و تولید خورشید بیشتر(۲۵/۵۰/۷۵). To Stg2: 24s | To Stg3: 72s,رشد آنی به سایز آخر و تولید ۲۲۵ خورشید.,Grow Time -5s,HP +150,Double Sun Chance,24,5,SUN_PRODUCE,BURST_SUN
 4,Primal Sunflower,Sun Producer,-,75,300,0,تولید خورشید بزرگ ۷۵ تایی از ابتدا.,تولید فوری ۲۲۵ خورشید.,Prod. Time -2s,HP +150,Cost -25,24,5,SUN_PRODUCE,BURST_SUN
-5,Gold Bloom,Sun Producer,-,0,300,0,تولید فوری و یک‌باره مقدار زیادی خورشید و سپس ناپدید شدن.(۳۷۵ خورشید),ندارد (مصرفی آنی),Cooldown -5s,Sun +50,Cost -25,0,75,SUN_PRODUCE,NONE
+5,Gold Bloom,Sun Producer,-,0,300,0,تولید فوری و یک‌باره مقدار زیادی خورشید و سپس ناپدید شدن.(۳۷۵ خورشید),ندارد (مصرفی آنی),Cooldown -5s,Sun +50,Cost -25,3,75,SUN_PRODUCE,NONE
 6,Peashooter,Shooter,Pea,100,300,20,شلیک تیر مستقیم.,شلیک رگباری سریع برای چند ثانیه.,Dmg +10,HP +150,Cost -25,1.5,5,DIRECT_SHOOT,RAPID_FIRE
 7,Repeater,Shooter,Pea,200,300,20,شلیک ۲ تیر مستقیم متوالی.,شلیک رگباری سنگین + ۱ نخود غول‌پیکر (دمیج 20 برابر).,Dmg +10,HP +200,Cost -25,1.5,5,DIRECT_SHOOT,RAPID_FIRE
 8,Threepeater,Shooter,Pea,300,300,20,شلیک همزمان تیر در ۳ لاین موازی.,شلیک رگباری بادبزنی در تمام لاین‌ها.,Cost -25,Dmg +10,HP +200,1.5,5,DIRECT_SHOOT,RAPID_FIRE

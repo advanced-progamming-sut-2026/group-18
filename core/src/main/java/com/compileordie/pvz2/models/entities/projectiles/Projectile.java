@@ -1,15 +1,15 @@
 package com.compileordie.pvz2.models.entities.projectiles;
 
 import com.compileordie.pvz2.config.Constants;
-import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
 import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
-import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
-import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.Barrel;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Tile;
+import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
+import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
+import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.Barrel;
 
 public abstract class Projectile {
     protected double x;
@@ -41,12 +41,23 @@ public abstract class Projectile {
     public void tick(GameBoard board, double delta) {
         if (isDead) return;
 
-        this.x += this.xSpeed * delta;
-        this.y += this.ySpeed * delta;
+        // Multiply by TIME_COEFFICIENT to convert ticks to actual seconds!
+        this.x += this.xSpeed * delta * Constants.Game.TIME_COEFFICIENT;
+        this.y += this.ySpeed * delta * Constants.Game.TIME_COEFFICIENT;
+
+        // FIX 1: BOUNDARY LIMIT - Destroy if it flies off the 9x5 grid!
+        if (this.x > 10 * Constants.Game.TILE_WIDTH || this.x < -2 * Constants.Game.TILE_WIDTH) {
+            this.destroy();
+            return;
+        }
 
         // --- The Static Obstacle Radar ---
         if (!this.ignoreObstacles) {
-            Tile currentTile = board.getTile((float) this.x, (float) this.y);
+            // FIX 2: Translate Logical X/Y to World X/Y before asking the board for the Tile!
+            float worldX = (float) (this.x + Constants.Game.PADDING_X_REALITY);
+            float worldY = (float) (this.y + Constants.Game.PADDING_Y_REALITY + 0.2);
+
+            Tile currentTile = board.getTile(worldX, worldY);
 
             if (currentTile != null && currentTile.obstacle != null) {
                 this.onObstacleHit(currentTile.obstacle);
@@ -83,10 +94,8 @@ public abstract class Projectile {
     // --- Standard Getters & Setters ---
     public double getX() { return x; }
     public double getY() { return y; }
-
-    public int getRow() {
-        return (int) (y / Constants.Game.TILE_HEIGHT);
-    }
+    public int getRow() { return (int) (y / Constants.Game.TILE_HEIGHT); }
+//    public int getRow() { return (int) (y / Constants.Game.TILE_SIZE); }
     public int getDamage() { return damage; }
     public void setDamage(int damage) { this.damage = damage; } //  For Torchwood damage scaling
     public DamageType getType() { return type; }
@@ -95,6 +104,7 @@ public abstract class Projectile {
     public void setXSpeed(double xSpeed) { this.xSpeed = xSpeed; }
     public void setYSpeed(double ySpeed) { this.ySpeed = ySpeed; }
     public void setSourcePlantType(PlantType sourcePlantType) { this.sourcePlantType = sourcePlantType; }
+    public PlantType getSourcePlantType() { return sourcePlantType; }
     public boolean getIgnoreObstacles() { return ignoreObstacles; }
 
     // Ignition Getters & Setters ---

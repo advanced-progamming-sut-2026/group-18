@@ -8,11 +8,7 @@ import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
-import com.compileordie.pvz2.models.entities.zombies.variants.capable.HunterZombie;
-import com.compileordie.pvz2.models.entities.zombies.variants.capable.OctopusZombie;
-import com.compileordie.pvz2.models.entities.zombies.variants.capable.PianistZombie;
-import com.compileordie.pvz2.models.entities.zombies.variants.capable.RaZombie;
-import com.compileordie.pvz2.models.entities.zombies.variants.capable.TurquoiseZombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.capable.*;
 import com.compileordie.pvz2.models.entities.zombies.variants.mobility.DodoRiderZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.mobility.MovementState;
 import com.compileordie.pvz2.models.game.board.GameBoard;
@@ -27,14 +23,9 @@ import static com.compileordie.pvz2.models.entities.zombies.services.manager.Pla
 
 public class ZombieCombatManager {
     private static final Set<ZombieType> PIANOABLE_ZOMBIES = EnumSet.of(
-        ZombieType.GARGANTUAR,
-        ZombieType.OCTOPUS_ZOMBIE,
-        ZombieType.PIANIST_ZOMBIE,
-        ZombieType.RA_ZOMBIE,
-        ZombieType.TURQUOISE_ZOMBIE,
-        ZombieType.DODO_RIDER,
-        ZombieType.SNORKEL_ZOMBIE,
-        ZombieType.BARREL_ROLLER
+        ZombieType.GARGANTUAR, ZombieType.OCTOPUS_ZOMBIE, ZombieType.PIANIST_ZOMBIE,
+        ZombieType.RA_ZOMBIE, ZombieType.TURQUOISE_ZOMBIE, ZombieType.DODO_RIDER,
+        ZombieType.SNORKEL_ZOMBIE, ZombieType.BARREL_ROLLER
     );
 
     float dt = Constants.Game.TIME_COEFFICIENT;
@@ -45,6 +36,14 @@ public class ZombieCombatManager {
     public void combatTick(List<Zombie> myZombies, List<Plant> myPlants) {
         List<Zombie> zombiesCopy = new ArrayList<>(myZombies);
         List<Plant> plantsCopy = new ArrayList<>(myPlants);
+
+        // FIX: Zombies must stop biting the air if the plant dies!
+        for (Zombie z : zombiesCopy) {
+            if (z.getX() > Constants.Game.EAT_HOME_X) {
+                z.isEating = false;
+            }
+        }
+
         for (Zombie z : zombiesCopy) {
             for (Plant p : plantsCopy) {
                 processPlantEating(z, p);
@@ -59,19 +58,70 @@ public class ZombieCombatManager {
         for (int p = projectiles.size() - 1; p >= 0; p--) {
             Projectile proj = projectiles.get(p);
             if (proj.isDead()) continue;
+
+            // FIX: Translate logical projectile X to World X!
+            double projWorldX = proj.getX() + Constants.Game.PADDING_X_REALITY;
+
             for (Zombie zombie : zombies) {
                 if (zombie.isDead()) continue;
                 if (proj.getRow() == zombie.getCurrentRow()) {
-                    double distance = Math.abs(proj.getX() - zombie.getX());
+                    double distance = Math.abs(projWorldX - zombie.getX());
                     if (distance <= tileWidth / 2.0) {
-                        zombie.takeDamage(proj.getDamage(), proj.getType());
-                        proj.destroy();
-                        if (proj.isDead()) {
-                            break;
-                        }
+
+                        // FIX: We MUST call onHit() so the Projectile can deploy its custom effects (like Hypnotize!)
+                        proj.onHit(zombie, myMap);
+
+                        if (proj.isDead()) break;
                     }
                 }
             }
+        }
+    }
+
+    private void processPlantEating(Zombie z, Plant p) {
+        double pWorldX = p.getX() + Constants.Game.PADDING_X_REALITY;
+        double pWorldY = p.getY() + Constants.Game.PADDING_Y_REALITY + 0.2;
+
+        if (Math.abs(z.getY() - pWorldY) <= tileHeight / 6) {
+            if (Math.abs(z.getX() - pWorldX) <= tileWidth / 6) {
+                if ((z.getType() == ZombieType.DODO_RIDER && ((DodoRiderZombie) z).getState() == MovementState.FLYING) || !isEatable(p)) {
+                } else {
+                    z.isEating = true;
+                    p.takeDamage((int) ((z.getType() == ZombieType.ALL_STAR ? smashDamage : z.getAttackPower() * dt)));
+                }
+            }
+        }
+    }
+
+    private void processSpecialCombatAbilities(Zombie z, Plant p) {
+        // Translate for special abilities too!
+        double pWorldX = p.getX() + Constants.Game.PADDING_X_REALITY;
+        double pWorldY = p.getY() + Constants.Game.PADDING_Y_REALITY + 0.2;
+
+        if (z.getType() == ZombieType.DODO_RIDER && (Math.abs(z.getY() - pWorldY) <= tileHeight / 6 && Math.abs(z.getX() - pWorldX) <= tileWidth / 1.7) && isVisible(p) && !p.hasActiveCover()) {
+            ((DodoRiderZombie) z).onPlantCollisionWithHalfOfTileWidth(PlantType.getByName(p.getName()));
+        }
+        if (z.getType() == ZombieType.TURQUOISE_ZOMBIE && (Math.abs(z.getY() - pWorldY) <= tileHeight / 6 && Math.abs(z.getX() - pWorldX) <= tileWidth * 3.7) && isVisible(p) && !p.hasActiveCover()) {
+            ((TurquoiseZombie) z).startStealing();
+            if (((TurquoiseZombie) z).shouldWeLaser()) {
+                p.takeDamage((int) smashDamage);
+                ((TurquoiseZombie) z).stopLaser();
+            }
+        }
+        if (z.getType() == ZombieType.EXPLORER_ZOMBIE && (Math.abs(z.getY() - pWorldY) <= tileHeight / 6 && Math.abs(z.getX() - pWorldX) <= tileWidth * 1) && isVisible(p)) {
+            p.takeDamage((int) smashDamage);
+        }
+        if (z.getType() == ZombieType.HUNTER_ZOMBIE && (Math.abs(z.getY() - pWorldY) <= tileHeight / 6 && Math.abs(z.getX() - pWorldX) <= HunterZombie.ABILITY_RANGE) && isVisible(p) && !p.hasActiveCover()) {
+            ((HunterZombie) z).setShouldAttack(true);
+            if (((HunterZombie) z).getShouldShut()) {
+                p.addChill();
+                ((HunterZombie) z).setShouldShut(false);
+                ((HunterZombie) z).startThrowAnimation();
+            }
+        }
+        if (z.getType() == ZombieType.OCTOPUS_ZOMBIE && (Math.abs(z.getY() - pWorldY) <= tileHeight / 6 && Math.abs(z.getX() - pWorldX) <= OctopusZombie.ABILITY_RANGE) && isVisible(p) && !p.hasActiveCover()) {
+            p.applyOctopus(400.0);
+            ((OctopusZombie) z).startTossAnimation();
         }
     }
 
@@ -164,46 +214,6 @@ public class ZombieCombatManager {
                 }
                 if (i>=6) break;
             }
-        }
-    }
-
-    private void processPlantEating(Zombie z, Plant p) {
-        if (Math.abs(z.getY() - p.getY()) <= tileHeight / 6) {
-            if (Math.abs(z.getX() - p.getX()) <= tileWidth / 6) {
-                if ((z.getType() == ZombieType.DODO_RIDER && ((DodoRiderZombie) z).getState() == MovementState.FLYING) || !isEatable(p)) {
-                } else {
-                    z.isEating = true;
-                    p.takeDamage((int) ((z.getType() == ZombieType.ALL_STAR ? smashDamage : z.getAttackPower() * dt)));
-                }
-            }
-        }
-    }
-
-    private void processSpecialCombatAbilities(Zombie z, Plant p) {
-        if (z.getType() == ZombieType.DODO_RIDER && (Math.abs(z.getY() - p.getY()) <= tileHeight / 6 && Math.abs(z.getX() - p.getX()) <= tileWidth / 1.7) && isVisible(p) && !p.hasActiveCover()) {
-            ((DodoRiderZombie) z).onPlantCollisionWithHalfOfTileWidth(PlantType.getByName(p.getName()));
-        }
-        if (z.getType() == ZombieType.TURQUOISE_ZOMBIE && (Math.abs(z.getY() - p.getY()) <= tileHeight / 6 && Math.abs(z.getX() - p.getX()) <= tileWidth * 3.7) && isVisible(p) && !p.hasActiveCover()) {
-            ((TurquoiseZombie) z).startStealing();
-            if (((TurquoiseZombie) z).shouldWeLaser()) {
-                p.takeDamage((int) smashDamage);
-                ((TurquoiseZombie) z).stopLaser();
-            }
-        }
-        if (z.getType() == ZombieType.EXPLORER_ZOMBIE && (Math.abs(z.getY() - p.getY()) <= tileHeight / 6 && Math.abs(z.getX() - p.getX()) <= tileWidth * 1) && isVisible(p)) {
-            p.takeDamage((int) smashDamage);
-        }
-        if (z.getType() == ZombieType.HUNTER_ZOMBIE && (Math.abs(z.getY() - p.getY()) <= tileHeight / 6 && Math.abs(z.getX() - p.getX()) <= HunterZombie.ABILITY_RANGE) && isVisible(p) && !p.hasActiveCover()) {
-            ((HunterZombie) z).setShouldAttack(true);
-            if (((HunterZombie) z).getShouldShut()) {
-                p.addChill();
-                ((HunterZombie) z).setShouldShut(false);
-                ((HunterZombie) z).startThrowAnimation();
-            }
-        }
-        if (z.getType() == ZombieType.OCTOPUS_ZOMBIE && (Math.abs(z.getY() - p.getY()) <= tileHeight / 6 && Math.abs(z.getX() - p.getX()) <= OctopusZombie.ABILITY_RANGE) && isVisible(p) && !p.hasActiveCover()) {
-            p.applyOctopus(400.0);
-            ((OctopusZombie) z).startTossAnimation();
         }
     }
 }

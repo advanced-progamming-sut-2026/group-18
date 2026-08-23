@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
@@ -140,7 +140,7 @@ final class ZombossDrawer {
         return zombie.getMaxHealth();
     }
 
-    void drawZombossHealthBar(SpriteBatch batch, PamPlayer player, ScreenViewport viewport, float delta) {
+    void drawZombossHealthBar(SpriteBatch batch, PamPlayer player, FitViewport viewport, float delta) {
         if (AppModel.gameSession == null || player == null) return;
 
         Zombie zomboss = null;
