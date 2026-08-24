@@ -23,6 +23,11 @@ public class LobbedProjectile extends Projectile {
         this.startX = x;
         this.targetX = targetX;
         this.totalDistance = Math.abs(targetX - startX);
+
+        // --- FIX 1: Faster Horizontal Speed! ---
+        // A speed of 5.5 makes it fly aggressively fast so it hits moving zombies
+        // before they have a chance to walk past the target zone!
+        this.xSpeed = 5.5;
     }
 
     @Override
@@ -30,9 +35,17 @@ public class LobbedProjectile extends Projectile {
         super.tick(board, delta);
 
         double distanceTraveled = Math.abs(this.x - this.startX);
-        double p = distanceTraveled / this.totalDistance;
+        double p = 0;
 
-        double peakHeight = 150.0;
+        // Prevent division by zero if it spawns directly on top of a zombie
+        if (this.totalDistance > 0) {
+            p = distanceTraveled / this.totalDistance;
+        }
+
+        // --- FIX 2: Shallow, Dynamic Arc (The Blue Path) ---
+        // The peak height is now strictly 15% of the total distance it needs to travel.
+        // It guarantees a beautiful, shallow arc that stays perfectly on the screen!
+        double peakHeight = Math.max(0.5, this.totalDistance * 0.15);
         this.altitude = 4 * peakHeight * p * (1 - p);
 
         if (p >= 1.0) {
@@ -71,20 +84,25 @@ public class LobbedProjectile extends Projectile {
 
     @Override
     public void onHit(Zombie target, GameBoard board) {
-        // Does nothing air!
+        // Does nothing in the air!
     }
 
     @Override
     public void onObstacleHit(Obstacle obstacle) {
-        // Flies over tombs
+        // Flies completely over tombs!
     }
 
     public double getSplashRadius() {
         return splashRadius;
     }
 
+    // --- NEW: Expose the arc progress to the Graphics Engine! ---
+    public double getProgress() {
+        if (this.totalDistance <= 0) return 1.0;
+        return Math.abs(this.x - this.startX) / this.totalDistance;
+    }
+
     // --- NEW: THE SPECIAL EFFECT HOOK ---
-    // Subclasses like ButterProjectile or WinterMelon can override this to add stun/chill!
     protected void applySpecialEffect(Zombie target) {
         // Base cabbages and melons do nothing special.
     }

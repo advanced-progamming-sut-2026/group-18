@@ -6,6 +6,8 @@ import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.enums.PlantCategory;
+import com.compileordie.pvz2.models.entities.projectiles.LobbedProjectile;
+import com.compileordie.pvz2.models.entities.projectiles.PiercingProjectile;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.game.board.GameBoard;
@@ -30,7 +32,7 @@ public class PlantMatchManager {
         double startX;            // FIX: Locks in the spawn position!
         double distanceTraveled;  // FIX: Pure distance, fixes reverse projectiles!
         PlantType type;
-        int lastPierceCount = -1; // FIX: Tracks Cactus mid-air hits!
+        int lastPierceCount = -1; // FIX: Tracks Cactus midair hits!
     }
 
     private static class HitAnim {
@@ -178,15 +180,24 @@ public class PlantMatchManager {
 
         switch (name) {
 
+            case "Fume-shroom" -> {
+                return isAttacking ? "special" : "idle2";
+            }
+
+            case "Puff-shroom" -> {
+                boolean isFumeAttacking = !plant.holdAction && plant.getCurrentActionTimer() < 40.0;
+                return isFumeAttacking ? "special_stage1" : "idle2_stage1";
+            }
+
             case "Mega Gatling Pea" -> {
                 return isAttacking ? "attack_stage2" : "idle_stage2";
             }
 
-            case "Goo Peashooter" -> {
+            case "Goo Peashooter", "Cactus" -> {
                 return isAttacking ? "attack" : "idle3";
             }
 
-            case "Starfruit", "Fire Peashooter", "Cactus" -> {
+            case "Starfruit", "Fire Peashooter" , "Sea-shroom" , "Cabbage-pult" -> {
                 return isAttacking ? "attack" : "idle2";
             }
             case "Bowling Bulb" -> {
@@ -287,14 +298,28 @@ public class PlantMatchManager {
             if (pamPath == null) continue;
 
             float drawX = (float) ((proj.getX() + Constants.Game.PADDING_X_REALITY + (Constants.Game.TILE_WIDTH / 2.0f)) * Constants.UI.METER_TO_PIX);
-            float drawY = (float) ((proj.getY() + Constants.Game.PADDING_Y_REALITY + (Constants.Game.TILE_HEIGHT * 0.20f)) * Constants.UI.METER_TO_PIX);
+
+            // Standard height offset for tall shooters (Peashooters, Cactus, etc.)
+            float heightOffset = 0.20f;
+
+            // --- FIX: Drop the visual height for tiny shrooms! ---
+            if (proj.getSourcePlantType() == PlantType.PUFF_SHROOM || proj.getSourcePlantType() == PlantType.SEA_SHROOM) {
+                heightOffset = 0.037f; // Pulls it perfectly down to mouth level!
+            }
+
+// --- FIX: Apply the Parabolic Altitude to Lobbed Projectiles! ---
+            float lobAltitude = (proj instanceof LobbedProjectile)
+                ? (float) ((LobbedProjectile) proj).altitude
+                : 0f;
+
+            float drawY = (float) ((proj.getY() + lobAltitude + Constants.Game.PADDING_Y_REALITY + (Constants.Game.TILE_HEIGHT * heightOffset)) * Constants.UI.METER_TO_PIX);
 
             tracker.lastDrawX = drawX;
             tracker.lastDrawY = drawY;
 
             // --- FIX: Cactus Piercing Mid-Air Hit Engine ---
-            if (proj instanceof com.compileordie.pvz2.models.entities.projectiles.PiercingProjectile) {
-                int currentPierce = ((com.compileordie.pvz2.models.entities.projectiles.PiercingProjectile) proj).getPierceRemaining();
+            if (proj instanceof PiercingProjectile) {
+                int currentPierce = ((PiercingProjectile) proj).getPierceRemaining();
 
                 // If the pierce count dropped, it must have hit something this frame!
                 if (tracker.lastPierceCount != -1 && currentPierce < tracker.lastPierceCount) {
@@ -345,6 +370,10 @@ public class PlantMatchManager {
             case STARFRUIT -> "768/INITIAL/EFFECTS/T_STARFRUIT_PROJECTILE/T_STARFRUIT_PROJECTILE.PAM";
             case GOO_PEASHOOTER -> "768/INITIAL/EFFECTS/GOOPEASHOOTER_PROJECTILES/GOOPEASHOOTER_PROJECTILES.PAM";
             case MEGA_GATLING_PEA -> "768/INITIAL/EFFECTS/MEGAGATLING_PROJECTILE/MEGAGATLING_PROJECTILE.PAM";
+            case SEA_SHROOM -> "768/FULL/EFFECTS/SEASHROOM_PROJECTILE/SEASHROOM_PROJECTILE.PAM";
+            case PUFF_SHROOM -> "768/INITIAL/EFFECTS/T_PUFFSHROOM_PROJECTILE/T_PUFFSHROOM_PROJECTILE.PAM";
+            case FUME_SHROOM -> "768/INITIAL/EFFECTS/FUMESHROOM_BUBBLES/FUMESHROOM_BUBBLES.PAM";
+            case CABBAGE_PULT -> "768/INITIAL/EFFECTS/T_CABBAGEPULT_PROJECTILE/T_CABBAGEPULT_PROJECTILE.PAM";
             case BOWLING_BULB -> {
                 int dmg = proj.getDamage();
                 if (dmg >= 180) yield "768/FULL/EFFECTS/BOWLINGBULB_PROJECTILE3/BOWLINGBULB_PROJECTILE3.PAM";
@@ -355,13 +384,37 @@ public class PlantMatchManager {
         };
     }
 
-    // --- UPGRADED: Reads Distance Traveled instead of absolute position! ---
     private String getProjectileClipName(Projectile proj, ProjectileHitTracker tracker) {
         PlantType source = proj.getSourcePlantType();
         if (source == null) return "animation";
 
-        // Read the pure distance magnitude!
-        double dist = tracker != null ? tracker.distanceTraveled : 0;
+        // --- FIX 1: Convert raw pixel distance into TILE distance! ---
+        double rawDist = tracker != null ? tracker.distanceTraveled : 0;
+        double dist = rawDist / Constants.Game.TILE_WIDTH;
+
+        // --- FIX 2: Bind Cabbage-pult animations purely to the physics arc! ---
+        if (source == PlantType.CABBAGE_PULT) {
+            double p = 0;
+            if (proj instanceof com.compileordie.pvz2.models.entities.projectiles.LobbedProjectile) {
+                p = ((com.compileordie.pvz2.models.entities.projectiles.LobbedProjectile) proj).getProgress();
+            }
+            if (p < 0.33) return "animation";   // Going UP
+            if (p < 0.66) return "animation2";  // Apex (FLAT)
+            return "animation3";                // Going DOWN
+        }
+
+        if (source == PlantType.FUME_SHROOM) return "special";
+
+        if (source == PlantType.PUFF_SHROOM) {
+            if (dist < 2.0) return "animation";  // Tiles 0 to 2
+            if (dist < 4.0) return "animation2"; // Tiles 2 to 4
+            return "animation3";                 // Tiles 4 to 6
+        }
+
+        if (source == PlantType.SEA_SHROOM) {
+            if (dist < 3.0) return "animation";
+            return "animation2"; // Middle and end of the path!
+        }
 
         if (source == PlantType.MEGA_GATLING_PEA) {
             if (dist < 6.0) return "animation";
@@ -387,11 +440,16 @@ public class PlantMatchManager {
         }
 
         if (source == PlantType.ELECTRIC_BLUEBERRY) return "idle2";
-        if (source == PlantType.CAULIPOWER) return "animation3";
+
+        if (source == PlantType.CAULIPOWER) {
+            if (dist < 3.5) return "animation";
+            if (dist < 6.5) return "animation2";
+            return "animation3";
+        }
 
         if (source == PlantType.PEASHOOTER || source == PlantType.REPEATER ||
             source == PlantType.THREEPEATER || source == PlantType.PEA_POD ||
-             source == PlantType.SNOW_PEA || source == PlantType.FIRE_PEASHOOTER || source == PlantType.STARFRUIT) {
+            source == PlantType.SNOW_PEA || source == PlantType.FIRE_PEASHOOTER || source == PlantType.STARFRUIT) {
             if (dist < 3.5) return "animation";
             if (dist < 6.5) return "animation2";
             return "animation3";
@@ -406,6 +464,8 @@ public class PlantMatchManager {
 
         return switch (source) {
             case BOWLING_BULB -> null; // FIX: Prevents fake pea splat for bouncy bulbs!
+            case PUFF_SHROOM -> "768/INITIAL/EFFECTS/T_PUFFSHROOM_HIT/T_PUFFSHROOM_HIT.PAM";
+            case SEA_SHROOM -> "768/FULL/EFFECTS/SEASHOOTER_FX/SEASHOOTER_FX.PAM";
             case SNOW_PEA -> "768/INITIAL/EFFECTS/T_SPLAT_SNOW_PEA/T_SPLAT_SNOW_PEA.PAM";
             case ROTOBAGA -> "768/FULL/EFFECTS/T_ROTORUTABAGA_PROJECTILE_HIT/T_ROTORUTABAGA_PROJECTILE_HIT.PAM";
             case CITRON -> "768/FULL/EFFECTS/T_CITRON_CITRUS_ORB_HIT/T_CITRON_CITRUS_ORB_HIT.PAM";
@@ -414,6 +474,8 @@ public class PlantMatchManager {
             case STARFRUIT -> "768/INITIAL/EFFECTS/T_STARFRUIT_PROJECTILE_HIT/T_STARFRUIT_PROJECTILE_HIT.PAM";
             case ELECTRIC_BLUEBERRY -> "768/INITIAL/EFFECTS/ELECTRICBLUEBERRY_CLOUD_PROJECTILE/ELECTRICBLUEBERRY_CLOUD_PROJECTILE.PAM";
             case GOO_PEASHOOTER -> "768/INITIAL/EFFECTS/GOOPEASHOOTER_PROJECTILES/GOOPEASHOOTER_PROJECTILES.PAM";
+            case FUME_SHROOM -> "768/INITIAL/EFFECTS/FUMESHROOM_BUBBLES_HIT/FUMESHROOM_BUBBLES_HIT.PAM";
+            case CABBAGE_PULT -> "768/INITIAL/EFFECTS/SPLAT_CABBAGEPULT/SPLAT_CABBAGEPULT.PAM";
             case PEASHOOTER, REPEATER, THREEPEATER, PEA_POD, SPLIT_PEA -> "768/INITIAL/EFFECTS/T_SPLAT_PEA/T_SPLAT_PEA.PAM";
             default -> "768/INITIAL/EFFECTS/T_SPLAT_PEA/T_SPLAT_PEA.PAM";
         };
@@ -426,9 +488,16 @@ public class PlantMatchManager {
         // Pull the exact distance traveled at the moment of impact!
         double dist = tracker.distanceTraveled;
 
+        if (source == PlantType.PUFF_SHROOM) {
+            if (dist < 2.0) return "animation";
+            if (dist < 4.0) return "animation2";
+            return "animation3";
+        }
+
         if (source == PlantType.ELECTRIC_BLUEBERRY) return "attack";
 
-        if (source == PlantType.ROTOBAGA || source == PlantType.SPLIT_PEA) return "animation";
+        if (source == PlantType.ROTOBAGA || source == PlantType.SPLIT_PEA
+            || source == PlantType.SEA_SHROOM || source == PlantType.FUME_SHROOM || source == PlantType.CABBAGE_PULT) return "animation";
 
         if (source == PlantType.STARFRUIT) {
             if (dist < 3.5) return "idle";

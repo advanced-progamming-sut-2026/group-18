@@ -187,28 +187,32 @@ public class GameScreen implements Screen {
             com.compileordie.pvz2.models.entities.plants.types.PlantType typeToSpawn = null;
 
 //            // 3. The "Point and Press" Keyboard Hooks
-//            if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.A)) typeToSpawn = PlantType.SUNFLOWER;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.S)) typeToSpawn = PlantType.TWIN_SUNFLOWER;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.D)) typeToSpawn = PlantType.SUN_SHROOM;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.F)) typeToSpawn = PlantType.PRIMAL_SUNFLOWER;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.G)) typeToSpawn = PlantType.GOLD_BLOOM;
-//                // --- NEW SHOOTERS ---
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Q)) typeToSpawn = PlantType.PEASHOOTER;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.W)) typeToSpawn = PlantType.REPEATER;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.E)) typeToSpawn = PlantType.THREEPEATER;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.R)) typeToSpawn = PlantType.SNOW_PEA;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.T)) typeToSpawn = PlantType.ROTOBAGA;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Y)) typeToSpawn = PlantType.PEA_POD;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.U)) typeToSpawn = PlantType.SPLIT_PEA;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.I)) typeToSpawn = PlantType.CITRON;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.O)) typeToSpawn = PlantType.CAULIPOWER;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.P)) typeToSpawn = PlantType.ELECTRIC_BLUEBERRY;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.H)) typeToSpawn = PlantType.BOWLING_BULB;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.J)) typeToSpawn = PlantType.CACTUS;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.K)) typeToSpawn = PlantType.FIRE_PEASHOOTER;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.L)) typeToSpawn = PlantType.STARFRUIT;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Z)) typeToSpawn = PlantType.GOO_PEASHOOTER;
-//            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.X)) typeToSpawn = PlantType.MEGA_GATLING_PEA;
+            if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.A)) typeToSpawn = PlantType.SUNFLOWER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.S)) typeToSpawn = PlantType.TWIN_SUNFLOWER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.D)) typeToSpawn = PlantType.SUN_SHROOM;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.F)) typeToSpawn = PlantType.PRIMAL_SUNFLOWER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.G)) typeToSpawn = PlantType.GOLD_BLOOM;
+                // --- NEW SHOOTERS ---
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Q)) typeToSpawn = PlantType.PEASHOOTER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.W)) typeToSpawn = PlantType.REPEATER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.E)) typeToSpawn = PlantType.THREEPEATER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.R)) typeToSpawn = PlantType.SNOW_PEA;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.T)) typeToSpawn = PlantType.ROTOBAGA;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Y)) typeToSpawn = PlantType.PEA_POD;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.U)) typeToSpawn = PlantType.SPLIT_PEA;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.I)) typeToSpawn = PlantType.CITRON;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.O)) typeToSpawn = PlantType.CAULIPOWER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.P)) typeToSpawn = PlantType.ELECTRIC_BLUEBERRY;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.H)) typeToSpawn = PlantType.BOWLING_BULB;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.J)) typeToSpawn = PlantType.CACTUS;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.K)) typeToSpawn = PlantType.FIRE_PEASHOOTER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.L)) typeToSpawn = PlantType.STARFRUIT;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Z)) typeToSpawn = PlantType.GOO_PEASHOOTER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.X)) typeToSpawn = PlantType.MEGA_GATLING_PEA;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.C)) typeToSpawn = PlantType.SEA_SHROOM;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.V)) typeToSpawn = PlantType.PUFF_SHROOM;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.B)) typeToSpawn = PlantType.FUME_SHROOM;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.N)) typeToSpawn = PlantType.CABBAGE_PULT;
             if (typeToSpawn != null) {
                 double spawnX = col * Constants.Game.TILE_WIDTH;
                 double spawnY = row * Constants.Game.TILE_HEIGHT;

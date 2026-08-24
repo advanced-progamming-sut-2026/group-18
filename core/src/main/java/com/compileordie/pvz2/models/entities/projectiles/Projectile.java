@@ -14,6 +14,7 @@ import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.Barrel;
 public abstract class Projectile {
     protected double x;
     protected double y;
+    protected double startX;
     protected double xSpeed;
     protected double ySpeed = 0;
     protected int damage;
@@ -33,6 +34,7 @@ public abstract class Projectile {
     public Projectile(double x, double y, double xSpeed, int damage, DamageType type) {
         this.x = x;
         this.y = y;
+        this.startX = x;
         this.xSpeed = xSpeed;
         this.damage = damage;
         this.type = type;
@@ -44,6 +46,15 @@ public abstract class Projectile {
         // Multiply by TIME_COEFFICIENT to convert ticks to actual seconds!
         this.x += this.xSpeed * delta * Constants.Game.TIME_COEFFICIENT;
         this.y += this.ySpeed * delta * Constants.Game.TIME_COEFFICIENT;
+
+        // --- NEW: Short-Range Spore Evaporation! ---
+        if (this.sourcePlantType == PlantType.SEA_SHROOM || this.sourcePlantType == PlantType.PUFF_SHROOM || this.sourcePlantType == PlantType.FUME_SHROOM) {
+            double maxRangePixels = 6.0 * Constants.Game.TILE_WIDTH; // Dies after exactly 6 tiles!
+            if (Math.abs(this.x - this.startX) >= maxRangePixels) {
+                this.destroy(); // Evaporate in midair!
+                return;
+            }
+        }
 
         // FIX 1: BOUNDARY LIMIT - Destroy if it flies off the 9x5 grid!
         if (this.x > 10 * Constants.Game.TILE_WIDTH || this.x < -2 * Constants.Game.TILE_WIDTH) {

@@ -468,7 +468,16 @@ public class Plant extends GameEntity {
     public int getExtraSunYield() { return extraSunYield; }
     public int getPierceBonus() { return pierceBonus; }
     public int getPoisonDmgTickBonus() { return poisonDmgTickBonus; }
-    public double getRangeTiles() { return (template != null ? template.getRangeTiles() : 10.0) + rangeBonus; }
+    public double getRangeTiles() {
+        double baseRange = (template != null ? template.getRangeTiles() : 10.0);
+
+        // --- FIX: Force short-range radar for Shrooms! ---
+        if (this.name.equals("Sea-shroom") || this.name.equals("Puff-shroom") || this.name.equals("Fume-shroom")) {
+            baseRange = 6.0;
+        }
+
+        return baseRange + rangeBonus;
+    }
     public void resetLifespan() {
         if (this.maxLifespanTicks > 0) this.currentLifespanTicks = this.maxLifespanTicks;
     }

@@ -85,7 +85,7 @@ public class DirectShootStrategy implements AttackStrategy {
         double x = plant.getX();
         double y = plant.getY();
         int damage = plant.getBaseDamage();
-        double speed = 4.0;
+        double speed = plant.getName().equals("Fume-shroom") ? 2.7 : 4.0;
         double tileHeight = Constants.Game.TILE_HEIGHT;
         double maxY = board.totalRows * tileHeight;
         int stackMultiplier = isPeaPod ? plant.getStackCount() : 1;
@@ -97,6 +97,9 @@ public class DirectShootStrategy implements AttackStrategy {
         if (isRotobaga) {
             baseX -= (Constants.Game.TILE_WIDTH * 0.2);
             baseY += (Constants.Game.TILE_HEIGHT * 0.045);
+        }
+        else if (plant.getName().equals("Puff-shroom")) {
+            baseX += (Constants.Game.TILE_WIDTH * 0.25); // Pushes it forward by 25% of a tile!
         }
 
         for (int offset : laneOffsets) {
