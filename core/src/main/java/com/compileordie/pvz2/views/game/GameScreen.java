@@ -1,18 +1,18 @@
 package com.compileordie.pvz2.views.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-//import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.controllers.menus.game.GameScreenController;
 import com.compileordie.pvz2.models.AppModel;
-import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
-import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
@@ -21,6 +21,7 @@ import com.compileordie.pvz2.models.entities.zombies.variants.capable.OctopusZom
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.waves.WaveType;
+import com.compileordie.pvz2.views.game.ui.GameScreenUI;
 import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.textures.TextureBank;
 
@@ -40,7 +41,7 @@ public class GameScreen implements Screen {
 
     private SpriteBatch batch;
     private FitViewport viewport;
-//    private ScreenViewport viewport;
+    /*private ScreenViewport viewport;*/
     private TextureBank textureBank;
     private PamPlayer player;
 
@@ -69,7 +70,7 @@ public class GameScreen implements Screen {
         if (testZombossOn) AppModel.gameSession.gameBoard.waveManager.type = WaveType.NO_WAVES;
 
         batch = new SpriteBatch();
-// This locks your world to exactly 1920x1080, scaling the grid and mouse perfectly!
+        // This locks your world to exactly 1920x1080, scaling the grid and mouse perfectly!
         viewport = new FitViewport(Constants.UI.DEFAULT_WIDTH, Constants.UI.DEFAULT_HEIGHT);
         simulationAccumulator = 0f;
         resourcesReleased = false;
@@ -119,6 +120,7 @@ public class GameScreen implements Screen {
                 GameScreenConstants.BG_REGION_PREFIX + chapterFolder
                     + GameScreenConstants.BG_TEXTURE_RIGHT_SUFFIX);
             boardDrawer.setBackgroundRegions(bgLeft, bgMain, bgRight);
+            boardDrawer.initSelectionAssets(textureBank);
             if (bgMain == null) {
                 Gdx.app.error("PVZ-DEBUG",
                     "❌ تصویر پس‌زمینه اصلی برای چپتر '" + chapterFolder + "' پیدا نشد!");
@@ -139,13 +141,18 @@ public class GameScreen implements Screen {
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
-        effectPulseTime += delta;
+        boolean paused = ui != null && ui.isPaused;
+
+        if (!paused) {
+            effectPulseTime += delta;
+        }
+
         updateTextureBank();
         handleInput();
         advanceSimulation(delta);
-        if (!ui.isPaused && testOn) testSpawner.update(delta);
-        cameraEffects.checkGiantZombieFootsteps(delta, ui.isPaused);
-        cameraEffects.updateCameraShake(delta);
+        if (!paused && testOn) testSpawner.update(delta);
+        cameraEffects.checkGiantZombieFootsteps(delta, paused);
+        cameraEffects.updateCameraShake(paused ? 0f : delta);
         viewport.getCamera().update();
         batch.setProjectionMatrix(viewport.getCamera().combined);
         updateSunHud();
@@ -167,9 +174,21 @@ public class GameScreen implements Screen {
     }
 
     private void handleInput() {
-// 1. Constantly track where the mouse is hovering
+        if (ui != null && ui.isPaused) return;
+
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
+            GameScreenController.cancelSelection();
+            return;
+        }
+
+        if (!Gdx.input.justTouched()) return;
         touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0);
         viewport.unproject(touchPoint);
+
+        Tile clickedTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
+        if (clickedTile != null) {
+            GameScreenController.handleTileClick(clickedTile);
+        }
 
         float meterX = touchPoint.x / Constants.UI.METER_TO_PIX;
         float meterY = touchPoint.y / Constants.UI.METER_TO_PIX;
@@ -178,15 +197,15 @@ public class GameScreen implements Screen {
             handleClickDamageTest(touchPoint.x, touchPoint.y);
         }
 
-        int col = (int) ((meterX - Constants.Game.PADDING_X_REALITY) / Constants.Game.TILE_WIDTH);
+        /*int col = (int) ((meterX - Constants.Game.PADDING_X_REALITY) / Constants.Game.TILE_WIDTH);
         int row = (int) ((meterY - Constants.Game.PADDING_Y_REALITY) / Constants.Game.TILE_HEIGHT);
 
         // 2. Only spawn if we are hovering over a valid tile
         if (row >= 0 && row < 5 && col >= 0 && col < 9) {
 
-            com.compileordie.pvz2.models.entities.plants.types.PlantType typeToSpawn = null;
+            PlantType typeToSpawn = null;
 
-//            // 3. The "Point and Press" Keyboard Hooks
+            // 3. The "Point and Press" Keyboard Hooks
             if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.A)) typeToSpawn = PlantType.SUNFLOWER;
             else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.S)) typeToSpawn = PlantType.TWIN_SUNFLOWER;
             else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.D)) typeToSpawn = PlantType.SUN_SHROOM;
@@ -209,10 +228,6 @@ public class GameScreen implements Screen {
             else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.L)) typeToSpawn = PlantType.STARFRUIT;
             else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Z)) typeToSpawn = PlantType.GOO_PEASHOOTER;
             else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.X)) typeToSpawn = PlantType.MEGA_GATLING_PEA;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.C)) typeToSpawn = PlantType.SEA_SHROOM;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.V)) typeToSpawn = PlantType.PUFF_SHROOM;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.B)) typeToSpawn = PlantType.FUME_SHROOM;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.N)) typeToSpawn = PlantType.CABBAGE_PULT;
             if (typeToSpawn != null) {
                 double spawnX = col * Constants.Game.TILE_WIDTH;
                 double spawnY = row * Constants.Game.TILE_HEIGHT;
@@ -220,13 +235,14 @@ public class GameScreen implements Screen {
                 Tile targetTile = AppModel.gameSession.gameBoard.getTile(row, col);
 
                 // --- HACK CODE FOR PEA POD STACKING ---
-                if (typeToSpawn == com.compileordie.pvz2.models.entities.plants.types.PlantType.PEA_POD
+                if (typeToSpawn == PlantType.PEA_POD
                     && targetTile.plant != null
                     && targetTile.plant.getName().equals("Pea Pod")) {
 
                     int currentHeads = targetTile.plant.getStackCount();
                     if (currentHeads < 5) {
-                        // NOTE: If your setter is named differently (like addHead() or increaseStackCount()), change it here!
+                        // NOTE: If your setter is named differently (like addHead() or increaseStackCount())
+                        //  change it here!
                         targetTile.plant.addStack();
                         Gdx.app.log("TEST-SPAWN", "⬆️ Upgraded Pea Pod to " + (currentHeads + 1) + " heads!");
                     } else {
@@ -235,24 +251,24 @@ public class GameScreen implements Screen {
                 }
                 // --- NORMAL SPAWNING FOR EVERYTHING ELSE ---
                 else {
-                    Plant testPlant = com.compileordie.pvz2.controllers.PlantSpawner.spawn(typeToSpawn, spawnX, spawnY, false, false);
+                    Plant testPlant = PlantSpawner.spawn(typeToSpawn, spawnX, spawnY, false, false);
                     targetTile.plant = testPlant;
                     AppModel.gameSession.gameBoard.addPlant(testPlant);
                     Gdx.app.log("TEST-SPAWN", "✅ Planted " + typeToSpawn.name() + " at Row: " + row + ", Col: " + col);
                 }
             }
         }
-//        if (!Gdx.input.justTouched()) return;
-//        touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-//        viewport.unproject(touchPoint);
-//        float meterX = touchPoint.x / Constants.UI.METER_TO_PIX;
-//        float meterY = touchPoint.y / Constants.UI.METER_TO_PIX;
-//        Gdx.app.log("&&&&--------PVZ-CLICK", String.format(
-//            "🖱️ مختصات کلیک -> پیکسل: (X: %.1f, Y: %.1f) | متر-مدل: (X: %.2f, Y: %.2f)",
-//            touchPoint.x, touchPoint.y, meterX, meterY));
-//        if (hasWeTestForClickForDamaging) {
-//            handleClickDamageTest(touchPoint.x, touchPoint.y);
-//        }
+        if (!Gdx.input.justTouched()) return;
+        touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+        viewport.unproject(touchPoint);
+        float meterX = touchPoint.x / Constants.UI.METER_TO_PIX;
+        float meterY = touchPoint.y / Constants.UI.METER_TO_PIX;
+        Gdx.app.log("&&&&--------PVZ-CLICK", String.format(
+            "🖱️ مختصات کلیک -> پیکسل: (X: %.1f, Y: %.1f) | متر-مدل: (X: %.2f, Y: %.2f)",
+            touchPoint.x, touchPoint.y, meterX, meterY));
+        if (hasWeTestForClickForDamaging) {
+            handleClickDamageTest(touchPoint.x, touchPoint.y);
+        }*/
     }
 
     private void updateSunHud() {
@@ -264,36 +280,46 @@ public class GameScreen implements Screen {
 
     private void drawWorld(float delta) {
         boolean paused = ui != null && ui.isPaused;
+        float worldDelta = paused ? 0f : delta;
+
         zombieDrawer.setPaused(paused);
         zombieDrawer.setEffectPulseTime(effectPulseTime);
         boardDrawer.setPaused(paused);
 
         batch.begin();
-        com.badlogic.gdx.math.Matrix4 originalMatrix = batch.getTransformMatrix().cpy();
+        Matrix4 originalMatrix = batch.getTransformMatrix().cpy();
         if (cameraEffects.shakeOffsetX != 0 || cameraEffects.shakeOffsetY != 0) {
             batch.getTransformMatrix().translate(
                 cameraEffects.shakeOffsetX, cameraEffects.shakeOffsetY, 0);
             batch.setTransformMatrix(batch.getTransformMatrix());
         }
         boardDrawer.drawBackground(batch);
-        boardDrawer.drawMowers(batch, player, delta);
-        boardDrawer.drawTombs(batch, player, delta);
-        boardDrawer.drawFireTiles(batch, player, delta);
-        //TODO:
+        boardDrawer.drawMowers(batch, player, worldDelta);
+        boardDrawer.drawTombs(batch, player, worldDelta);
+        boardDrawer.drawFireTiles(batch, player, worldDelta);
+
+        Tile hoveredTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
+        boardDrawer.drawTileHighlight(batch, hoveredTile);
+
         plantAssetManager.update();
         plantMatchManager.setPaused(paused);
-        plantMatchManager.draw(batch, player, delta);
-        debrisDrawer.drawDeadZombies(batch, player, delta);
+        plantMatchManager.draw(batch, player, worldDelta);
+        debrisDrawer.drawDeadZombies(batch, player, worldDelta);
+
+        // Zombies receive regular delta so their "idle" animation plays
         zombieDrawer.drawZombies(batch, player, delta);
-        zombossDrawer.drawZombossExplosion(batch, player, delta);
-        zombossDrawer.drawDarkZombossLaserSquare(batch, player, delta);
-        debrisDrawer.drawFallingDebris(batch, player, delta);
+
+        zombossDrawer.drawZombossExplosion(batch, player, worldDelta);
+        zombossDrawer.drawDarkZombossLaserSquare(batch, player, worldDelta);
+        debrisDrawer.drawFallingDebris(batch, player, worldDelta);
 
         Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
         viewport.unproject(mousePos);
-        boardDrawer.drawSuns(batch, player, delta, mousePos);
+        boardDrawer.drawSuns(batch, player, worldDelta, mousePos);
+        boardDrawer.drawCursorFollower(batch, plantAssetManager, mousePos, delta);
+
         batch.setTransformMatrix(originalMatrix);
-        zombossDrawer.drawZombossHealthBar(batch, player, viewport, delta);
+        zombossDrawer.drawZombossHealthBar(batch, player, viewport, worldDelta);
         batch.end();
     }
 

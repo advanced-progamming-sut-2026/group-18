@@ -41,7 +41,7 @@ public class PlantSelectionMenuController {
         }
 
         // 2. Save player changes to disk
-        new UserDatabase(AppModel.player.username).save(AppModel.player);
+        new UserDatabase().save(AppModel.player);
 
         // 3. Populate selection deck
         AppModel.selectionDeck.clear();

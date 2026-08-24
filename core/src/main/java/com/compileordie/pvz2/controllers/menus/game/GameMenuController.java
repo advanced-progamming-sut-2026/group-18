@@ -1,10 +1,12 @@
 package com.compileordie.pvz2.controllers.menus.game;
 
+import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.game.levels.LevelID;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class GameMenuController {
     private GameMenuController() {
@@ -33,12 +35,14 @@ public class GameMenuController {
                 PlantType.SUN_BEAN,
                 PlantType.ENLIGHTEN_MINT
             ));
-            return plants;
+            return plants.stream()
+                .filter(plantType -> AppModel.player.unlockedPlants.contains(plantType))
+                .collect(Collectors.toCollection(ArrayList::new));
         } else if (levelID == LevelID.WALNUT_BOWLING) {
             // TODO: Add Bowling Walnut and Giant Bowling Walnut
             return new ArrayList<>(Arrays.asList(PlantType.EXPLODE_O_NUT));
         } else {
-            return new ArrayList<>(Arrays.asList(PlantType.values()));
+            return AppModel.player.unlockedPlants;
         }
     }
 }
