@@ -297,7 +297,7 @@ public class PlantMatchManager {
             String clipName = getProjectileClipName(proj, tracker);
             if (pamPath == null) continue;
 
-            float drawX = (float) ((proj.getX() + Constants.Game.PADDING_X + (Constants.Game.TILE_WIDTH / 2.0f)) * Constants.UI.METER_TO_PIX);
+            float drawX = (float) ((proj.getX()  + (Constants.Game.TILE_WIDTH / 2.0f)) * Constants.UI.METER_TO_PIX);
 
             // Standard height offset for tall shooters (Peashooters, Cactus, etc.)
             float heightOffset = 0.20f;
@@ -312,7 +312,7 @@ public class PlantMatchManager {
                 ? (float) ((LobbedProjectile) proj).altitude
                 : 0f;
 
-            float drawY = (float) ((proj.getY() + lobAltitude + Constants.Game.PADDING_Y + (Constants.Game.TILE_HEIGHT * heightOffset)) * Constants.UI.METER_TO_PIX);
+            float drawY = (float) ((proj.getY() + lobAltitude  + (Constants.Game.TILE_HEIGHT * heightOffset)) * Constants.UI.METER_TO_PIX);
 
             tracker.lastDrawX = drawX;
             tracker.lastDrawY = drawY;
