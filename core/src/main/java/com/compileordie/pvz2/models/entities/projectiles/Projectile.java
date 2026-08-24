@@ -14,6 +14,7 @@ import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.Barrel;
 public abstract class Projectile {
     protected double x;
     protected double y;
+    protected double startX;
     protected double xSpeed;
     protected double ySpeed = 0;
     protected int damage;
@@ -33,6 +34,7 @@ public abstract class Projectile {
     public Projectile(double x, double y, double xSpeed, int damage, DamageType type) {
         this.x = x;
         this.y = y;
+        this.startX = x;
         this.xSpeed = xSpeed;
         this.damage = damage;
         this.type = type;
@@ -45,17 +47,29 @@ public abstract class Projectile {
         this.x += this.xSpeed * delta * Constants.Game.TIME_COEFFICIENT;
         this.y += this.ySpeed * delta * Constants.Game.TIME_COEFFICIENT;
 
-        // FIX 1: BOUNDARY LIMIT - Destroy if it flies off the 9x5 grid!
-        if (this.x > 10 * Constants.Game.TILE_WIDTH || this.x < -2 * Constants.Game.TILE_WIDTH) {
+        // --- NEW: Short-Range Spore Evaporation! ---
+        if (this.sourcePlantType == PlantType.SEA_SHROOM || this.sourcePlantType == PlantType.PUFF_SHROOM || this.sourcePlantType == PlantType.FUME_SHROOM) {
+            double maxRangePixels = 6.0 * Constants.Game.TILE_WIDTH; // Dies after exactly 6 tiles!
+            if (Math.abs(this.x - this.startX) >= maxRangePixels) {
+                this.destroy(); // Evaporate in midair!
+                return;
+            }
+        }
+
+        // --- FIX 1: BOUNDARY LIMIT ---
+        // Account for the new padded coordinates so bullets can actually reach the end of the lawn!
+        double rightBoundary = Constants.Game.PADDING_X + (10 * Constants.Game.TILE_WIDTH);
+        if (this.x > rightBoundary || this.x < -2 * Constants.Game.TILE_WIDTH) {
             this.destroy();
             return;
         }
 
         // --- The Static Obstacle Radar ---
         if (!this.ignoreObstacles) {
-            // FIX 2: Translate Logical X/Y to World X/Y before asking the board for the Tile!
-            float worldX = (float) (this.x + Constants.Game.PADDING_X_REALITY);
-            float worldY = (float) (this.y + Constants.Game.PADDING_Y_REALITY + 0.2);
+            // --- FIX 2: Remove Double-Padding! ---
+            // Teammate baked the padding in, so these are ALREADY the correct world coordinates!
+            float worldX = (float) this.x;
+            float worldY = (float) this.y;
 
             Tile currentTile = board.getTile(worldX, worldY);
 
@@ -94,8 +108,13 @@ public abstract class Projectile {
     // --- Standard Getters & Setters ---
     public double getX() { return x; }
     public double getY() { return y; }
-    public int getRow() { return (int) (y / Constants.Game.TILE_HEIGHT); }
-//    public int getRow() { return (int) (y / Constants.Game.TILE_SIZE); }
+
+    // --- FIX 3: THE LOGICAL ROW FIX ---
+    // Subtract the new PADDING_Y before dividing so the engine registers the correct row!
+    public int getRow() {
+        return (int) Math.floor((this.y - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
+    }
+
     public int getDamage() { return damage; }
     public void setDamage(int damage) { this.damage = damage; } //  For Torchwood damage scaling
     public DamageType getType() { return type; }

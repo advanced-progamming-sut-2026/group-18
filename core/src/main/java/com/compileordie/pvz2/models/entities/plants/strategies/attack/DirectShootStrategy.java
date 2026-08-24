@@ -26,8 +26,11 @@ public class DirectShootStrategy implements AttackStrategy {
 
     // --- NEW: SMART AAA RAYCAST RADAR ---
     private boolean hasTargetInVector(GameBoard board, Plant plant, double[] vector, double range) {
-        double pX = plant.getX() + Constants.Game.PADDING_X_REALITY;
-        int pRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
+        // FIX 1: Teammate baked padding into the coordinates, so do NOT double-add it!
+        double pX = plant.getX();
+
+        // FIX 2: Correctly calculate the row by subtracting the new PADDING_Y!
+        int pRow = (int) Math.floor((plant.getY() - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
 
         return board.getAllZombies().stream().anyMatch(z -> {
             if (z.isDead() || z.isHypnotized()) return false;
@@ -85,11 +88,13 @@ public class DirectShootStrategy implements AttackStrategy {
         double x = plant.getX();
         double y = plant.getY();
         int damage = plant.getBaseDamage();
-        double speed = 4.0;
+        double speed = plant.getName().equals("Fume-shroom") ? 2.7 : 4.0;
         double tileHeight = Constants.Game.TILE_HEIGHT;
-        double maxY = board.totalRows * tileHeight;
-        int stackMultiplier = isPeaPod ? plant.getStackCount() : 1;
 
+        // FIX 3: Increase maxY to account for the new padding, otherwise Row 4 won't shoot!
+        double maxY = Constants.Game.PADDING_Y + (board.totalRows * tileHeight) + tileHeight;
+
+        int stackMultiplier = isPeaPod ? plant.getStackCount() : 1;
         double gapMultiplier = isRotobaga ? 0.37 : (isPeaPod ? 0.4 : 0.6);
 
         double baseX = x;
@@ -98,6 +103,9 @@ public class DirectShootStrategy implements AttackStrategy {
             baseX -= (Constants.Game.TILE_WIDTH * 0.2);
             baseY += (Constants.Game.TILE_HEIGHT * 0.045);
         }
+        else if (plant.getName().equals("Puff-shroom")) {
+            baseX += (Constants.Game.TILE_WIDTH * 0.25);
+        }
 
         for (int offset : laneOffsets) {
             double spawnY = baseY + (offset * tileHeight);
@@ -105,9 +113,6 @@ public class DirectShootStrategy implements AttackStrategy {
             if (spawnY >= 0 && spawnY < maxY) {
                 for (double[] vector : shootVectors) {
 
-                    // --- TRUE PVZ2 FIRING LOGIC ---
-                    // Starfruit shoots all 5 vectors if ANY target exists.
-                    // Everyone else (Rotobaga, Split Pea) ONLY shoots the specific vectors that have targets!
                     if (!isStarfruit && !vectorTargetMap.getOrDefault(vector, false)) {
                         continue;
                     }
@@ -119,7 +124,6 @@ public class DirectShootStrategy implements AttackStrategy {
                             double spawnX = baseX + (orderIndex * gapMultiplier * Constants.Game.TILE_WIDTH * vector[0]);
                             double finalSpawnY = spawnY + (orderIndex * gapMultiplier * tileHeight * vector[1]);
 
-                            // STARFRUIT PENTAGON SPAWN LOGIC
                             if (isStarfruit) {
                                 spawnX += (Constants.Game.TILE_WIDTH * 0.25) * vector[0];
                                 finalSpawnY += (Constants.Game.TILE_HEIGHT * 0.25) * vector[1];

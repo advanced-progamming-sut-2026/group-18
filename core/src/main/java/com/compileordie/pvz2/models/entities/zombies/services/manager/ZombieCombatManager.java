@@ -59,15 +59,17 @@ public class ZombieCombatManager {
             Projectile proj = projectiles.get(p);
             if (proj.isDead()) continue;
 
-            // FIX: Translate logical projectile X to World X!
-            double projWorldX = proj.getX() + Constants.Game.PADDING_X_REALITY;
+            // --- FIX 1: Removed Double-Padding! ---
+            // The projectile's X already contains the padding. Adding it again was creating
+            // a "ghost bullet" that was exactly 6.47 units ahead of the visual one!
+            double projWorldX = proj.getX();
 
             for (Zombie zombie : zombies) {
                 if (zombie.isDead()) continue;
                 if (proj.getRow() == zombie.getCurrentRow()) {
                     double distance = Math.abs(projWorldX - zombie.getX());
-                    if (distance <= tileWidth / 2.0) {
 
+                    if (distance <= tileWidth / 2.0) {
                         // FIX: We MUST call onHit() so the Projectile can deploy its custom effects (like Hypnotize!)
                         proj.onHit(zombie, myMap);
 
@@ -79,8 +81,10 @@ public class ZombieCombatManager {
     }
 
     private void processPlantEating(Zombie z, Plant p) {
-        double pWorldX = p.getX() + Constants.Game.PADDING_X_REALITY;
-        double pWorldY = p.getY() + Constants.Game.PADDING_Y_REALITY + 0.2;
+        // --- FIX 2: Removed Double-Padding for Plants! ---
+        // Prevents zombies from stopping and eating the air tiles away from the plant!
+        double pWorldX = p.getX();
+        double pWorldY = p.getY() + 0.2; // Kept the 0.2 hitbox offset, but removed PADDING_Y
 
         if (Math.abs(z.getY() - pWorldY) <= tileHeight / 6) {
             if (Math.abs(z.getX() - pWorldX) <= tileWidth / 6) {
@@ -94,9 +98,9 @@ public class ZombieCombatManager {
     }
 
     private void processSpecialCombatAbilities(Zombie z, Plant p) {
-        // Translate for special abilities too!
-        double pWorldX = p.getX() + Constants.Game.PADDING_X_REALITY;
-        double pWorldY = p.getY() + Constants.Game.PADDING_Y_REALITY + 0.2;
+        // --- FIX 3: Removed Double-Padding for Abilities! ---
+        double pWorldX = p.getX();
+        double pWorldY = p.getY() + 0.2;
 
         if (z.getType() == ZombieType.DODO_RIDER && (Math.abs(z.getY() - pWorldY) <= tileHeight / 6 && Math.abs(z.getX() - pWorldX) <= tileWidth / 1.7) && isVisible(p) && !p.hasActiveCover()) {
             ((DodoRiderZombie) z).onPlantCollisionWithHalfOfTileWidth(PlantType.getByName(p.getName()));
