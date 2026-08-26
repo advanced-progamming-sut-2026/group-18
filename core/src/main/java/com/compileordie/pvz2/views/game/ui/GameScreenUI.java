@@ -1,22 +1,26 @@
-package com.compileordie.pvz2.views.game;
+package com.compileordie.pvz2.views.game.ui;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.compileordie.pvz2.controllers.menus.game.GameScreenController;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.game.SessionBuilder;
 import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.views.ScreenManager;
 import com.compileordie.pvz2.views.ScreenType;
+import com.compileordie.pvz2.views.game.GameScreenConstants;
 import pvz.libpvz.textures.TextureBank;
 import pvz.skin.BorderedTable;
 import pvz.skin.PvzSkin;
@@ -24,27 +28,27 @@ import pvz.skin.PvzSkin;
 /**
  * Pause menu, game-end panel, and sun HUD (extracted from GameScreen).
  */
-final class GameScreenUI {
-
-    Stage uiStage;
-    boolean isPaused = false;
-    ImageButton pauseButton;
-    Table pauseOverlayContainer;
-    Texture pauseOverlayTexture;
-    Skin skin;
-    Table gameEndOverlayContainer;
-    Label sunAmountLabel;
+public final class GameScreenUI {
+    public Stage uiStage;
+    public static boolean isPaused = false;
+    public ImageButton pauseButton;
+    public Table pauseOverlayContainer;
+    public Texture pauseOverlayTexture;
+    public Skin skin;
+    public Table gameEndOverlayContainer;
+    public Label sunAmountLabel;
     private final Runnable onResume;
     private final Runnable onRestart;
     private final Runnable onExitToMain;
 
-    GameScreenUI(Runnable onResume, Runnable onRestart, Runnable onExitToMain) {
+    public GameScreenUI(Runnable onResume, Runnable onRestart, Runnable onExitToMain) {
         this.onResume = onResume;
         this.onRestart = onRestart;
         this.onExitToMain = onExitToMain;
     }
 
-    void setupPauseUI() {
+    @SuppressWarnings("checkstyle:LineLength")
+    public void setupPauseUI() {
         uiStage = new Stage(new ScreenViewport());
         skin = PvzSkin.get();
 
@@ -53,7 +57,20 @@ final class GameScreenUI {
         root.top().right();
         uiStage.addActor(root);
 
-        pauseButton = new ImageButton(skin, "ingame_pause");
+        ImageButton.ImageButtonStyle pauseStyle = new ImageButton.ImageButtonStyle(
+            skin.get("ingame_pause", ImageButton.ImageButtonStyle.class)
+        );
+        if (pauseStyle.imageChecked != null) {
+            pauseStyle.imageDown = pauseStyle.imageChecked;
+        }
+        pauseStyle.checked = null;
+        pauseStyle.imageChecked = null;
+        pauseStyle.checkedOver = null;
+        pauseStyle.imageCheckedOver = null;
+        pauseStyle.checkedDown = null;
+        pauseStyle.imageCheckedDown = null;
+
+        pauseButton = new ImageButton(pauseStyle);
         root.add(pauseButton).pad(GameScreenConstants.PAUSE_BUTTON_PAD);
         pauseButton.addListener(new ClickListener() {
             @Override
@@ -67,7 +84,7 @@ final class GameScreenUI {
     /**
      * Full pause panel with fog decoration (same logic as original buildPauseMenuPanel).
      */
-    void buildPauseMenuPanelWithFog(TextureBank textureBank) {
+    public void buildPauseMenuPanelWithFog(TextureBank textureBank) {
         if (pauseOverlayContainer != null) {
             pauseOverlayContainer.remove();
         }
@@ -85,7 +102,6 @@ final class GameScreenUI {
         Stack panelStack = new Stack();
         TextureRegion fogRegion = (textureBank != null)
             ? textureBank.region(GameScreenConstants.PAUSE_FOG_DECORATION_REGION) : null;
-
         float fogWidth = 0f;
         float fogHeight = 0f;
         if (fogRegion != null) {
@@ -97,7 +113,6 @@ final class GameScreenUI {
                 "❌ تصویر تزئینی مه ('" + GameScreenConstants.PAUSE_FOG_DECORATION_REGION + "') پیدا نشد!");
         }
         float overlapAmount = fogHeight * GameScreenConstants.PAUSE_FOG_OVERLAP_RATIO;
-
         Table panelWrapper = new Table();
         panelWrapper.top();
         if (overlapAmount > 0) {
@@ -106,14 +121,12 @@ final class GameScreenUI {
         panelWrapper.add(panel)
             .size(GameScreenConstants.PAUSE_PANEL_WIDTH, GameScreenConstants.PAUSE_PANEL_HEIGHT);
         panelStack.add(panelWrapper);
-
         if (fogRegion != null) {
             Table fogWrapper = new Table();
             fogWrapper.top();
             fogWrapper.add(new Image(fogRegion)).size(fogWidth, fogHeight);
             panelStack.add(fogWrapper);
         }
-
         pauseOverlayContainer.add(panelStack)
             .size(GameScreenConstants.PAUSE_PANEL_WIDTH,
                 GameScreenConstants.PAUSE_PANEL_HEIGHT + overlapAmount);
@@ -159,24 +172,47 @@ final class GameScreenUI {
             .pad(GameScreenConstants.PAUSE_MENU_BUTTON_PAD).row();
     }
 
-    void setupGameUI(TextureBank textureBank) {
-        Table topUI = new Table();
-        topUI.setFillParent(true);
-        topUI.top().left();
-        Table sunBox = new Table();
-        TextureRegion sunRegion = textureBank.region(
-            "IMAGE_UI_SEASONS_UNCOMPRESSED_PVZ2_SEASONS_UIASSET_ICON_SUN");
-        if (sunRegion != null) {
-            sunBox.add(new Image(sunRegion)).size(64, 64).padRight(10);
-        }
-        sunAmountLabel = new Label("0000", skin, "medium_outline");
-        sunAmountLabel.setFontScale(1.2f);
-        sunBox.add(sunAmountLabel);
-        topUI.add(sunBox).pad(20);
-        uiStage.addActor(topUI);
+    public void setupGameUI(TextureBank textureBank) {
+        Table sunTable = new Table();
+        sunTable.setFillParent(true);
+        sunTable.top().left();
+
+        // 1. Game Resources HUD & Shovel (Pinned Top-Left)
+        Table leftUITable = new Table();
+        leftUITable.setFillParent(true);
+        leftUITable.top().left();
+
+        GameCurrencyHud currencyHud = new GameCurrencyHud(skin, uiStage, textureBank);
+        leftUITable.add(currencyHud).pad(15).left().row();
+
+        Table toolsTable = new Table();
+        toolsTable.left();
+
+        ImageButton shovelButton = new ImageButton(skin, "ingame_shovel");
+        shovelButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                GameScreenController.toggleShovel();
+            }
+        });
+        toolsTable.add(shovelButton).padRight(12);
+
+        PlantFoodBank plantFoodBank = new PlantFoodBank(textureBank);
+        toolsTable.add(plantFoodBank);
+
+        leftUITable.add(toolsTable).padLeft(15).left();
+
+        uiStage.addActor(leftUITable);
+
+        Table cardBarTable = new Table();
+        cardBarTable.setFillParent(true);
+        cardBarTable.top();
+        PlantCardBar cardBar = new PlantCardBar(skin, textureBank, AppModel.gameSession.gameBoard.economyManager);
+        cardBarTable.add(cardBar).padTop(10);
+        uiStage.addActor(cardBarTable);
     }
 
-    void showGameEndPanel(boolean isWin) {
+    public void showGameEndPanel(boolean isWin) {
         if (uiStage == null) return;
         gameEndOverlayContainer = new Table();
         gameEndOverlayContainer.setFillParent(true);
@@ -196,7 +232,7 @@ final class GameScreenUI {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     AppModel.wonLastGame = null;
-                    ScreenManager.setMenuScreen(ScreenType.MAIN);
+                    ScreenManager.setMenuScreen(ScreenType.GAME);
                 }
             });
             panel.add(exitButton)
@@ -210,6 +246,7 @@ final class GameScreenUI {
             .size(GameScreenConstants.PAUSE_PANEL_WIDTH + 100,
                 GameScreenConstants.PAUSE_PANEL_HEIGHT + 100);
         uiStage.addActor(gameEndOverlayContainer);
+        gameEndOverlayContainer.toFront();
     }
 
     private void addLoseButtons(BorderedTable panel) {
@@ -233,7 +270,7 @@ final class GameScreenUI {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 AppModel.wonLastGame = null;
-                ScreenManager.setMenuScreen(ScreenType.MAIN);
+                ScreenManager.setMenuScreen(ScreenType.GAME);
             }
         });
         panel.add(tryAgainButton)
@@ -246,34 +283,37 @@ final class GameScreenUI {
             .pad(GameScreenConstants.PAUSE_MENU_BUTTON_PAD).row();
     }
 
-    void setPaused(boolean paused) {
-        this.isPaused = paused;
+    public void setPaused(boolean paused) {
+        isPaused = paused;
         if (pauseOverlayContainer != null) {
             pauseOverlayContainer.setVisible(paused);
             pauseOverlayContainer.setTouchable(paused ? Touchable.enabled : Touchable.disabled);
+            if (paused) {
+                pauseOverlayContainer.toFront();
+            }
         }
     }
 
-    void updateSunLabel(int amount) {
+    public void updateSunLabel(int amount) {
         if (sunAmountLabel != null) {
             sunAmountLabel.setText(String.format("%04d", amount));
         }
     }
 
-    void actAndDraw(float delta) {
+    public void actAndDraw(float delta) {
         if (uiStage != null) {
             uiStage.act(delta);
             uiStage.draw();
         }
     }
 
-    void resize(int width, int height) {
+    public void resize(int width, int height) {
         if (uiStage != null) {
             uiStage.getViewport().update(width, height, true);
         }
     }
 
-    Texture createSolidTexture(Color color) {
+    public Texture createSolidTexture(Color color) {
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(color);
         pixmap.fill();
@@ -282,7 +322,7 @@ final class GameScreenUI {
         return texture;
     }
 
-    void dispose() {
+    public void dispose() {
         if (uiStage != null) uiStage.dispose();
         if (pauseOverlayTexture != null) pauseOverlayTexture.dispose();
     }

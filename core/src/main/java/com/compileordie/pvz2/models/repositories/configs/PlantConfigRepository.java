@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.models.repositories.configs;
 
 import com.badlogic.gdx.Gdx;
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.PlantTemplate;
 import com.compileordie.pvz2.models.entities.plants.UpgradeLevel;
 import com.compileordie.pvz2.models.entities.plants.enums.AttackStrategyType;
@@ -106,14 +107,18 @@ public class PlantConfigRepository {
         // Safely parse Action Interval Ticks to handle "-"
         String intervalStr = parts[12].trim();
         if (intervalStr.equals("-")) {
-            template.setActionIntervalTicks(0.0);
+            template.setActionIntervalTicks(0);
         } else {
-            template.setActionIntervalTicks(Double.parseDouble(intervalStr) * 10.0);
+            template.setActionIntervalTicks(
+                (int) Math.floor(Double.parseDouble(intervalStr) / Constants.Game.TIME_COEFFICIENT)
+            );
         }
 
         // NEW: Clean and direct Recharge parsing!
         String rechargeStr = parts[13].trim();
-        template.setRechargeTicks(Double.parseDouble(rechargeStr) * 10.0);
+        template.setRechargeTicks(
+            (int) Math.floor(Double.parseDouble(rechargeStr) / Constants.Game.TIME_COEFFICIENT)
+        );
     }
 
     private Map<Integer, UpgradeLevel> parseUpgradeMap(String[] parts) {
@@ -209,19 +214,19 @@ public class PlantConfigRepository {
         if (upgradeStr.contains("pierce +")) pierceBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
         if (upgradeStr.contains("plant food chance +")) plantFoodChanceBonus = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", ""));
         if (upgradeStr.contains("range +")) rangeBonus = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", ""));
-        if (upgradeStr.contains("lifespan +")) lifespanBonusTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
+        if (upgradeStr.contains("lifespan +")) lifespanBonusTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) / Constants.Game.TIME_COEFFICIENT;
         if (upgradeStr.contains("butter +")) butterChanceBonus = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", ""));
-        if (upgradeStr.contains("cooldown -")) rechargeReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
-        if (upgradeStr.contains("eat time -") || upgradeStr.contains("prod. time -") || upgradeStr.contains("charge time -") || upgradeStr.contains("regen -") || upgradeStr.contains("digest -")) actionIntervalReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
-        if (upgradeStr.contains("grow time -")) growTimeReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
-        if (upgradeStr.contains("chill time +")) chillTimeBonusTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
+        if (upgradeStr.contains("cooldown -")) rechargeReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) / Constants.Game.TIME_COEFFICIENT;
+        if (upgradeStr.contains("eat time -") || upgradeStr.contains("prod. time -") || upgradeStr.contains("charge time -") || upgradeStr.contains("regen -") || upgradeStr.contains("digest -")) actionIntervalReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) / Constants.Game.TIME_COEFFICIENT;
+        if (upgradeStr.contains("grow time -")) growTimeReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) / Constants.Game.TIME_COEFFICIENT;
+        if (upgradeStr.contains("chill time +")) chillTimeBonusTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) / Constants.Game.TIME_COEFFICIENT;
         if (upgradeStr.contains("aoe dmg +")) aoeDamageBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
         if (upgradeStr.contains("warmth radius +")) warmthRadiusBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
-        if (upgradeStr.contains("arm time -")) armTimeReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
+        if (upgradeStr.contains("arm time -")) armTimeReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) / Constants.Game.TIME_COEFFICIENT;
         if (upgradeStr.contains("crush 2x")) extraCrushes = 1;
         if (upgradeStr.contains("bounces +")) extraBounces = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
         if (upgradeStr.contains("targets +")) extraTargets = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
-        if (upgradeStr.contains("freeze time +")) freezeTimeBonusTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 10.0;
+        if (upgradeStr.contains("freeze time +")) freezeTimeBonusTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) / Constants.Game.TIME_COEFFICIENT;
         if (upgradeStr.contains("max size +")) maxSizeBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
         if (upgradeStr.contains("aoe on death") || upgradeStr.contains("explode on finish")) explodesOnDeath = true;
         if (upgradeStr.contains("zombie hp buff")) zombieHpBuff = true;

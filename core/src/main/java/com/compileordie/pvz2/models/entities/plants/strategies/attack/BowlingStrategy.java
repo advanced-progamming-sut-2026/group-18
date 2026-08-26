@@ -6,6 +6,9 @@ import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 
+import static com.compileordie.pvz2.config.Constants.Game.PADDING_Y;
+import static com.compileordie.pvz2.config.Constants.Game.TILE_HEIGHT;
+
 public class BowlingStrategy implements AttackStrategy {
 
     private final Class<? extends Projectile> projectileType;
@@ -18,7 +21,8 @@ public class BowlingStrategy implements AttackStrategy {
 
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
-        int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
+        // --- FIX: The Logical Row Fix ---
+        int plantRow = (int) Math.floor((plant.getY() - PADDING_Y) / TILE_HEIGHT);
 
         // STEP 1: If we aren't winding up yet, scan for targets!
         if (!plant.isWindingUp) {
@@ -43,7 +47,7 @@ public class BowlingStrategy implements AttackStrategy {
         plant.holdAction = true; // Keep holding the engine hostage
 
         // Wait exactly 0.4 seconds (24 ticks) for the 'special' animation to physically throw the bulb!
-        if (plant.windupTimer >= 11) {
+        if (plant.windupTimer >= 8) {
             plant.isWindingUp = false;
             plant.holdAction = false; // RELEASE! This tells Plant.java to reset the timer to 0!
 

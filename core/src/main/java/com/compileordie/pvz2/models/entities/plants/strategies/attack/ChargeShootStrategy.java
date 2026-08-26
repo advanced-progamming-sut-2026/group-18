@@ -8,6 +8,9 @@ import com.compileordie.pvz2.models.game.board.GameBoard;
 
 import java.util.List;
 
+import static com.compileordie.pvz2.config.Constants.Game.PADDING_Y;
+import static com.compileordie.pvz2.config.Constants.Game.TILE_HEIGHT;
+
 public class ChargeShootStrategy implements AttackStrategy {
 
     private final Class<? extends Projectile> projectileType;
@@ -18,12 +21,12 @@ public class ChargeShootStrategy implements AttackStrategy {
 
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
-
-        int plantRow = (int) (plant.getY() / com.compileordie.pvz2.config.Constants.Game.TILE_HEIGHT);
+        // --- FIX 1: The Logical Row Fix ---
+        int plantRow = (int) Math.floor((plant.getY() - PADDING_Y) / TILE_HEIGHT);
         List<Zombie> zombies = board.getAllZombies();
 
-        // FIX: Translate plant to World X so it only sees zombies actually in front of it!
-        double plantWorldX = plant.getX() + com.compileordie.pvz2.config.Constants.Game.PADDING_X_REALITY;
+        // --- FIX 2: Removed Double-Padding! ---
+        double plantWorldX = plant.getX();
 
         boolean targetExists = zombies.stream()
             .anyMatch(z -> !z.isDead() && !z.isHypnotized() && z.getCurrentRow() == plantRow && z.getX() > plantWorldX);

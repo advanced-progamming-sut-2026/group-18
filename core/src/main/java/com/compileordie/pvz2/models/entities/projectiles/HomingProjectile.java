@@ -29,9 +29,12 @@ public class HomingProjectile extends Projectile {
                 return;
             }
 
-            // FIX 2: Convert projectile's logical coordinates to world coordinates to track the world zombie!
-            double projWorldX = this.x + Constants.Game.PADDING_X_REALITY;
-            double projWorldY = this.y + Constants.Game.PADDING_Y_REALITY + 0.2;
+            // --- FIX 2: Removed Double-Padding! ---
+            // The projectile's logical coordinates are now perfectly synced with world coordinates!
+            double projWorldX = this.x;
+
+            // We keep the +0.2 offset so the cloud visually aims at the zombie's chest instead of its feet!
+            double projWorldY = this.y + 0.2;
 
             double dirX = target.getX() - projWorldX;
             double dirY = target.getY() - projWorldY;

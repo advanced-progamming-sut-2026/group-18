@@ -2,23 +2,25 @@ package com.compileordie.pvz2.views.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.controllers.menus.game.GameScreenController;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.LawnMower;
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.game.board.Tile;
+import pvz.libpvz.pam.ClipRef;
 import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.textures.TextureBank;
 
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Background, mowers, tombs, fire tiles, suns (extracted, logic unchanged).
- */
 final class BoardEntityDrawer {
 
     private static final ZombieVisualRegistry.PamSpec MOWER_PAM_SPEC =
@@ -40,6 +42,10 @@ final class BoardEntityDrawer {
     private TextureRegion bgMainRegion;
     private TextureRegion bgRightRegion;
     private boolean isPaused;
+    private NinePatch tileHighlightPatch;
+    private TextureRegion shovelCursorRegion;
+    private float cursorAnimTime = 0f;
+    private TextureRegion plantFoodCursorRegion;
 
     BoardEntityDrawer(GameRenderStates states, Set<String> brokenAssets) {
         this.states = states;
@@ -55,7 +61,6 @@ final class BoardEntityDrawer {
     }
 
     void drawBackground(SpriteBatch batch) {
-// FIX: Use the constant 1920x1080 width instead of the raw window size!
         float screenW = Constants.UI.DEFAULT_WIDTH;
         float screenH = Constants.UI.DEFAULT_HEIGHT;
         if (bgLeftRegion != null && bgMainRegion != null && bgRightRegion != null) {
@@ -205,14 +210,10 @@ final class BoardEntityDrawer {
             GameRenderStates.SunRenderState state =
                 states.sunRenderStates.computeIfAbsent(sun, s -> new GameRenderStates.SunRenderState());
             state.animTime += delta;
-//            float baseX = (float) sun.getX() * Constants.UI.METER_TO_PIX;
-//            float baseY = (float) sun.getY() * Constants.UI.METER_TO_PIX;
-            // TODO:
-// PADDING removed! sun.getX() and sun.getY() now natively hold the world coordinates!
-            float baseX = (float) ((sun.getX() + Constants.Game.PADDING_X_REALITY + (Constants.Game.TILE_WIDTH / 2.0f)) * Constants.UI.METER_TO_PIX);
-            float baseY = (float) ((sun.getY() + Constants.Game.PADDING_Y_REALITY) * Constants.UI.METER_TO_PIX);
-//            float baseX = (float) ((sun.getX() + (Constants.Game.TILE_WIDTH / 2.0f)) * Constants.UI.METER_TO_PIX);
-//            float baseY = (float) (sun.getY() * Constants.UI.METER_TO_PIX);
+
+            // --- FIX: Removed Double-Padding! Sun coordinates are already world coordinates! ---
+            float baseX = (float) ((sun.getX() + (Constants.Game.TILE_WIDTH / 2.0f)) * Constants.UI.METER_TO_PIX);
+            float baseY = (float) (sun.getY() * Constants.UI.METER_TO_PIX);
 
             if (!state.isFading) {
                 float dx = baseX - mousePos.x;
@@ -250,6 +251,67 @@ final class BoardEntityDrawer {
             } finally {
                 batch.setColor(oldColor);
             }
+        }
+    }
+
+    void initSelectionAssets(TextureBank textureBank) {
+        TextureRegion selectRegion = textureBank.region("IMAGE_UI_PACKETS_SELECT");
+        if (selectRegion != null) {
+            this.tileHighlightPatch = new NinePatch(selectRegion, 8, 8, 8, 8);
+        }
+        this.shovelCursorRegion = textureBank.region("IMAGE_UI_HUD_INGAME_SHOVEL_ICON");
+        this.plantFoodCursorRegion = textureBank.region("IMAGE_UI_HUD_INGAME_PLANTFOOD_BUTTON");
+    }
+
+    void drawTileHighlight(SpriteBatch batch, Tile tile) {
+        if (tile == null || tileHighlightPatch == null) return;
+        if (GameScreenController.selectedCard == null
+            && !GameScreenController.isShovelSelected
+            && !GameScreenController.isPlantFoodSelected) return;
+
+        float tileX = (tile.column * Constants.Game.TILE_WIDTH + Constants.Game.PADDING_X) * Constants.UI.METER_TO_PIX;
+        float tileY = (tile.row * Constants.Game.TILE_HEIGHT + Constants.Game.PADDING_Y) * Constants.UI.METER_TO_PIX;
+        float tileW = Constants.Game.TILE_WIDTH * Constants.UI.METER_TO_PIX;
+        float tileH = Constants.Game.TILE_HEIGHT * Constants.UI.METER_TO_PIX;
+
+        tileHighlightPatch.draw(batch, tileX, tileY, tileW, tileH);
+    }
+
+    void drawCursorFollower(SpriteBatch batch, PlantAssetManager plantAssets, Vector3 mousePos, float delta) {
+        if (!isPaused) {
+            cursorAnimTime += delta;
+        }
+
+        // 1. Plant Card Selected: Render Idle Animation under cursor
+        if (GameScreenController.selectedCard != null && plantAssets != null) {
+            PlantType plantType = GameScreenController.selectedCard.plantType;
+            ClipRef clip = plantAssets.loadPlantClip(plantType);
+            if (clip != null) {
+                float drawX = mousePos.x;
+                float drawY = mousePos.y;
+
+                Matrix4 original = batch.getTransformMatrix().cpy();
+                Matrix4 scaled = original.cpy()
+                    .translate(drawX, drawY, 0)
+                    .scale(0.55f, 0.55f, 1f)
+                    .translate(-drawX, -drawY, 0);
+
+                batch.setTransformMatrix(scaled);
+                plantAssets.drawPlant(batch, clip, cursorAnimTime, drawX, drawY, true);
+                batch.setTransformMatrix(original);
+            }
+        }
+        // 2. Shovel Selected: Render Shovel Icon at cursor
+        else if (GameScreenController.isShovelSelected && shovelCursorRegion != null) {
+            float w = shovelCursorRegion.getRegionWidth() * 0.8f;
+            float h = shovelCursorRegion.getRegionHeight() * 0.8f;
+            batch.draw(shovelCursorRegion, mousePos.x - (w / 2f), mousePos.y - (h / 2f), w, h);
+        }
+        // 3. Plant Food Selected: Render Plant Food Icon at cursor
+        else if (GameScreenController.isPlantFoodSelected && plantFoodCursorRegion != null) {
+            float w = plantFoodCursorRegion.getRegionWidth() * 0.8f;
+            float h = plantFoodCursorRegion.getRegionHeight() * 0.8f;
+            batch.draw(plantFoodCursorRegion, mousePos.x - (w / 2f), mousePos.y - (h / 2f), w, h);
         }
     }
 }

@@ -64,6 +64,7 @@ public class TravelLogMenuScreen extends MenuScreen {
         }
 
         TextButton minigamesBtn = new TextButton("MINIGAMES", skin, "default");
+        minigamesBtn.getLabel().setColor(Color.YELLOW);
         minigamesBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {

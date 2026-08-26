@@ -1,4 +1,4 @@
-package com.compileordie.pvz2.utils;
+package com.compileordie.pvz2.utils.dev;
 
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.game.levels.ChapterType;
