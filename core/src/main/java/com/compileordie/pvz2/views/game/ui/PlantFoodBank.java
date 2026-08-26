@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.ImageButton.ImageButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Scaling;
 import com.compileordie.pvz2.controllers.menus.game.GameScreenController;
@@ -85,11 +86,21 @@ public class PlantFoodBank extends Table {
         for (int i = 0; i < MAX_PLANT_FOOD; i++) {
             slotStacks[i] = new Stack();
 
-            Image fillingSlot = new Image(fillingSlotRegion != null ? new TextureRegionDrawable(fillingSlotRegion) : null);
+            Image fillingSlot;
+            if (fillingSlotRegion != null) {
+                fillingSlot = new Image(new TextureRegionDrawable(fillingSlotRegion));
+            } else {
+                fillingSlot = new Image((Drawable) null);
+            }
             fillingSlot.setScaling(Scaling.none);
             slotStacks[i].add(fillingSlot);
 
-            Image filledSlot = new Image(filledSlotRegion != null ? new TextureRegionDrawable(filledSlotRegion) : null);
+            Image filledSlot;
+            if (filledSlotRegion != null) {
+                filledSlot = new Image(new TextureRegionDrawable(filledSlotRegion));
+            } else {
+                filledSlot = new Image((Drawable) null);
+            }
             filledSlot.setScaling(Scaling.none);
             slotStacks[i].add(filledSlot);
 
@@ -117,10 +128,12 @@ public class PlantFoodBank extends Table {
                     ToastManager.showError("Debug mode is disabled!");
                     return;
                 }
-
-                AppModel.player.plantFoodCount = MAX_PLANT_FOOD;
+                if (AppModel.player.plantFoodCount >= MAX_PLANT_FOOD) {
+                    ToastManager.showError("Plant food is already full!");
+                }
+                AppModel.player.plantFoodCount++;
                 new UserDatabase(AppModel.player.username).save(AppModel.player);
-                ToastManager.showSuccess("Plant Food replenished!");
+                ToastManager.showSuccess("Plant food added!");
             }
         });
         return button;
