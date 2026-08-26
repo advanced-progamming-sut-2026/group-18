@@ -24,12 +24,8 @@ public class DirectShootStrategy implements AttackStrategy {
         this.projectileType = projectileType;
     }
 
-    // --- NEW: SMART AAA RAYCAST RADAR ---
     private boolean hasTargetInVector(GameBoard board, Plant plant, double[] vector, double range) {
-        // FIX 1: Teammate baked padding into the coordinates, so do NOT double-add it!
         double pX = plant.getX();
-
-        // FIX 2: Correctly calculate the row by subtracting the new PADDING_Y!
         int pRow = (int) Math.floor((plant.getY() - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
 
         return board.getAllZombies().stream().anyMatch(z -> {
@@ -38,38 +34,41 @@ public class DirectShootStrategy implements AttackStrategy {
             double dx = z.getX() - pX;
             int rowDiff = z.getCurrentRow() - pRow;
 
-            // Out of range check
-            if (Math.abs(dx) > range) return false;
+            if (Math.abs(dx) > range || Math.abs(rowDiff * Constants.Game.TILE_HEIGHT) > range) return false;
 
-            // Pure Horizontal Shots (Peashooter, Split Pea)
+            // Horizontal check
             if (Math.abs(vector[1]) < 0.01) {
-                return rowDiff == 0 && (vector[0] > 0 ? dx >= 0 : dx <= 0);
+                return rowDiff == 0 && (vector[0] > 0 ? dx >= -0.1 : dx <= 0.1);
             }
-            // Pure Vertical Shots (Starfruit Up/Down)
+
+            // Vertical check
             if (Math.abs(vector[0]) < 0.01) {
-                return Math.abs(dx) <= Constants.Game.TILE_WIDTH && (vector[1] > 0 ? rowDiff > 0 : rowDiff < 0);
+                return Math.abs(dx) <= (Constants.Game.TILE_WIDTH / 1.5)
+                    && (vector[1] > 0 ? rowDiff > 0 : rowDiff < 0);
             }
-            // Diagonal Shots (Rotobaga, Starfruit Diagonals)
-            boolean correctX = (vector[0] > 0 ? dx >= -20 : dx <= 20); // Small 20px buffer for overlap
-            boolean correctY = (vector[1] > 0 ? rowDiff > 0 : rowDiff < 0);
-            return correctX && correctY;
+
+            // Diagonal raycast
+            if (vector[1] > 0 && rowDiff <= 0) return false;
+            if (vector[1] < 0 && rowDiff >= 0) return false;
+            if (vector[0] > 0 && dx < -Constants.Game.TILE_WIDTH) return false;
+            if (vector[0] < 0 && dx > Constants.Game.TILE_WIDTH) return false;
+
+            double expectedDxAtRow = (rowDiff * Constants.Game.TILE_HEIGHT) * (vector[0] / vector[1]);
+            return Math.abs(dx - expectedDxAtRow) <= Constants.Game.TILE_WIDTH;
         });
     }
 
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
-
         boolean isRotobaga = plant.getName().equals("Rotobaga");
         boolean isPeaPod = plant.getName().equals("Pea Pod");
         boolean isStarfruit = plant.getName().equals("Starfruit");
-
+        boolean isFumeShroom = plant.getName().equals("Fume-shroom");
         double rangeInPixels = plant.getRangeTiles() * Constants.Game.TILE_WIDTH;
 
-        // Legacy flags for simple animations
         plant.isShootingForward = hasTargetInVector(board, plant, new double[]{1.0, 0.0}, rangeInPixels);
         plant.isShootingBackward = hasTargetInVector(board, plant, new double[]{-1.0, 0.0}, rangeInPixels);
 
-        // --- PRE-CALCULATE RADAR FOR ALL VECTORS ---
         Map<double[], Boolean> vectorTargetMap = new HashMap<>();
         boolean anyTargetExists = false;
 
@@ -79,48 +78,88 @@ public class DirectShootStrategy implements AttackStrategy {
             if (hasTarget) anyTargetExists = true;
         }
 
-        // If ABSOLUTELY NOTHING is in any of the vector paths, hold fire!
         if (!anyTargetExists) {
+            plant.holdAction = true;
+            plant.isWindingUp = false;
+            return;
+        }
+
+        // --- WINDUP ENGINE ---
+        if (!plant.isWindingUp) {
+            plant.isWindingUp = true;
+            plant.windupTimer = 0;
             plant.holdAction = true;
             return;
         }
 
+        plant.windupTimer += tickDelta;
+        plant.holdAction = true;
+
+        double maxWindup = isFumeShroom ? 15 : 7;
+        if (plant.windupTimer < maxWindup) {
+            return;
+        }
+
+        // --- FIRE PROJECTILES ---
+        plant.isWindingUp = false;
+        plant.holdAction = false;
+
         double x = plant.getX();
         double y = plant.getY();
         int damage = plant.getBaseDamage();
-        double speed = plant.getName().equals("Fume-shroom") ? 2.7 : 4.0;
+
+        // --- FIX 2: Increased speed for snappy gas expansion ---
+        double speed = isFumeShroom ? 5.0 : 4.0;
         double tileHeight = Constants.Game.TILE_HEIGHT;
-
-        // FIX 3: Increase maxY to account for the new padding, otherwise Row 4 won't shoot!
         double maxY = Constants.Game.PADDING_Y + (board.totalRows * tileHeight) + tileHeight;
-
         int stackMultiplier = isPeaPod ? plant.getStackCount() : 1;
         double gapMultiplier = isRotobaga ? 0.37 : (isPeaPod ? 0.4 : 0.6);
 
         double baseX = x;
         double baseY = y;
-        if (isRotobaga) {
-            baseX -= (Constants.Game.TILE_WIDTH * 0.2);
-            baseY += (Constants.Game.TILE_HEIGHT * 0.045);
-        }
-        else if (plant.getName().equals("Puff-shroom")) {
+        if (plant.getName().equals("Puff-shroom")) {
             baseX += (Constants.Game.TILE_WIDTH * 0.25);
         }
 
         for (int offset : laneOffsets) {
             double spawnY = baseY + (offset * tileHeight);
-
             if (spawnY >= 0 && spawnY < maxY) {
                 for (double[] vector : shootVectors) {
-
-                    if (!isStarfruit && !vectorTargetMap.getOrDefault(vector, false)) {
+                    if (!isStarfruit && !isRotobaga && !vectorTargetMap.getOrDefault(vector, false)) {
                         continue;
                     }
 
+                    // --- FIX 3: Multi-Puff Smoke Stream for Fume-shroom ---
+                    if (isFumeShroom && projectileType == FumeProjectile.class) {
+                        double maxRangePixels = plant.getRangeTiles() * Constants.Game.TILE_WIDTH;
+                        int puffCount = 4; // Spawns 4 overlapping puffs
+                        int splitDamage = Math.max(1, damage / puffCount); // Distribute damage evenly
+
+                        for (int p = 0; p < puffCount; p++) {
+                            try {
+                                double puffOffset = p * (Constants.Game.TILE_WIDTH * 0.35);
+                                double spawnX = baseX + puffOffset;
+
+                                Projectile proj = projectileType.getDeclaredConstructor(
+                                    double.class, double.class, double.class, int.class, double.class
+                                ).newInstance(spawnX, spawnY, speed, splitDamage, maxRangePixels);
+
+                                proj.setSourcePlantType(PlantType.FUME_SHROOM);
+                                proj.setXSpeed(speed * vector[0]);
+                                proj.setYSpeed(speed * vector[1]);
+
+                                board.getActiveProjectiles().add(proj);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        continue;
+                    }
+
+                    // Standard projectile spawning for all other plants
                     for (int s = 0; s < stackMultiplier; s++) {
                         try {
                             int orderIndex = vector.length > 2 ? (int) (vector[2] + s) : s;
-
                             double spawnX = baseX + (orderIndex * gapMultiplier * Constants.Game.TILE_WIDTH * vector[0]);
                             double finalSpawnY = spawnY + (orderIndex * gapMultiplier * tileHeight * vector[1]);
 
@@ -130,33 +169,20 @@ public class DirectShootStrategy implements AttackStrategy {
                             }
 
                             Projectile proj;
-
                             if (projectileType == IceProjectile.class) {
                                 double totalChillTime = 100.0 + plant.getChillTimeBonusTicks();
-                                proj = projectileType
-                                    .getDeclaredConstructor(double.class, double.class, double.class, int.class, double.class)
+                                proj = projectileType.getDeclaredConstructor(double.class, double.class, double.class, int.class, double.class)
                                     .newInstance(spawnX, finalSpawnY, speed, damage, totalChillTime);
-
                             } else if (projectileType == PiercingProjectile.class) {
                                 int totalPierces = 3 + plant.getPierceBonus();
-                                proj = projectileType
-                                    .getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
+                                proj = projectileType.getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
                                     .newInstance(spawnX, finalSpawnY, speed, damage, totalPierces);
-
                             } else if (projectileType == PoisonProjectile.class) {
                                 int totalPoisonDmg = 6 + plant.getPoisonDmgTickBonus();
-                                proj = projectileType
-                                    .getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
+                                proj = projectileType.getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
                                     .newInstance(spawnX, finalSpawnY, speed, damage, totalPoisonDmg);
-
-                            } else if (projectileType == FumeProjectile.class) {
-                                double maxRangePixels = plant.getRangeTiles() * Constants.Game.TILE_WIDTH;
-                                proj = projectileType
-                                    .getDeclaredConstructor(double.class, double.class, double.class, int.class, double.class)
-                                    .newInstance(spawnX, finalSpawnY, speed, damage, maxRangePixels);
                             } else {
-                                proj = projectileType
-                                    .getDeclaredConstructor(double.class, double.class, double.class, int.class)
+                                proj = projectileType.getDeclaredConstructor(double.class, double.class, double.class, int.class)
                                     .newInstance(spawnX, finalSpawnY, speed, damage);
                             }
 

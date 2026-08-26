@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class FumeProjectile extends Projectile {
-    private final double startX;
+
     private final double maxRangePixels;
 
     private final Set<Zombie> hitZombies = new HashSet<>();
@@ -20,7 +20,6 @@ public class FumeProjectile extends Projectile {
 
     public FumeProjectile(double x, double y, double speed, int damage, double maxRangePixels) {
         super(x, y, speed, damage, DamageType.NORMAL);
-        this.startX = x;
         this.maxRangePixels = maxRangePixels;
         this.enumType = ProjectileType.NORMAL;
     }
@@ -29,13 +28,17 @@ public class FumeProjectile extends Projectile {
     public void tick(GameBoard board, double delta) {
         super.tick(board, delta);
 
-        if (this.x - this.startX >= maxRangePixels) {
-            this.isDead = true;
+        if (this.isDead) return;
+
+
+        if (Math.abs(this.x - this.startX) >= this.maxRangePixels) {
+            this.destroy();
         }
     }
 
     @Override
     public void onHit(Zombie target, GameBoard board) {
+        // Piercing Logic: Only damage each zombie once as the gas passes through!
         if (hitZombies.contains(target)) return;
         hitZombies.add(target);
 

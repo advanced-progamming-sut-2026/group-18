@@ -20,11 +20,13 @@ public class BouncingProjectile extends Projectile {
         // Move the projectile using the parent radar logic
         super.tick(board, delta);
 
-        // --- NEW: Lawn Boundary Wall-Bouncing Physics ---
-        double maxY = board.totalRows * Constants.Game.TILE_HEIGHT;
+        // --- FIX: Updated Lawn Boundary Wall-Bouncing Physics! ---
+        // We must include PADDING_Y so the bulb bounces perfectly at the top and bottom of the padded grid!
+        double minY = Constants.Game.PADDING_Y;
+        double maxY = Constants.Game.PADDING_Y + (board.totalRows * Constants.Game.TILE_HEIGHT);
 
-        if (this.y <= 0) {
-            this.y = 0;
+        if (this.y <= minY) {
+            this.y = minY;
             this.ySpeed = Math.abs(this.ySpeed); // Hit the top, bounce DOWN
         } else if (this.y >= maxY) {
             this.y = maxY;

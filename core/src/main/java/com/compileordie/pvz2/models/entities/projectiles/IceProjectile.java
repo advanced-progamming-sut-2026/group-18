@@ -8,6 +8,8 @@ import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 
+import static com.compileordie.pvz2.config.Constants.Game.TILE_WIDTH;
+
 public class IceProjectile extends Projectile {
 
     public final double chillDurationTicks;
@@ -24,12 +26,12 @@ public class IceProjectile extends Projectile {
         target.addEffect(new StatusEffect(EffectType.CHILLED, (int) this.chillDurationTicks));
 
         // 2. The 1x1 Splash Chill Effect
-        int tileCol = (int) Math.floor(target.getX() / Constants.Game.TILE_WIDTH);
+        int tileCol = (int) Math.floor(target.getX() / TILE_WIDTH);
         int tileRow = target.getCurrentRow();
 
         for (Zombie z : board.getAllZombies()) {
             if (z != target && !z.isDead() && z.getCurrentRow() == tileRow) {
-                int zCol = (int) Math.floor(z.getX() / Constants.Game.TILE_WIDTH);
+                int zCol = (int) Math.floor(z.getX() / TILE_WIDTH);
                 if (zCol == tileCol) {
                     z.addEffect(new StatusEffect(EffectType.CHILLED, (int) this.chillDurationTicks));
                 }

@@ -8,15 +8,35 @@ import com.compileordie.pvz2.models.game.economy.SunType;
 
 public class SunProduceStrategy implements AttackStrategy {
 
-    // Safely isolated for your Daily Quest system!
     private int totalSunsProduced = 0;
 
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
         String name = plant.getName();
-        totalSunsProduced++; // Safely increments for quests without breaking growth
 
-        double spawnX = plant.getX() + 0.5;
+        // --- THE WINDUP ENGINE ---
+        if (!plant.isWindingUp) {
+            plant.isWindingUp = true;
+            plant.windupTimer = 0;
+            plant.holdAction = true; // Tell Plant.java to pause the main timer!
+            return;
+        }
+
+        plant.windupTimer += tickDelta;
+        plant.holdAction = true;
+
+        // Wait 20 ticks (2 sec?) for the plant to physically glow before popping the sun!
+        if (plant.windupTimer < 27) {
+            return;
+        }
+
+        // --- ANIMATION FINISHED! SPAWN THE SUN! ---
+        plant.isWindingUp = false;
+        plant.holdAction = false; // RELEASE! Plant.java will now reset the main timer!
+
+        totalSunsProduced++;
+
+        double spawnX = plant.getX() + 0.17;
         double spawnY = plant.getY();
         float ground = (float) plant.getY();
 
@@ -30,19 +50,12 @@ public class SunProduceStrategy implements AttackStrategy {
                 board.economyManager.suns.add(new Sun(spawnX, spawnY, SunType.LARGE, false, ground));
             }
             // 3. Sun-shroom (True Time-Based Dynamic Growth)
-// 3. Sun-shroom (True Time-Based Dynamic Growth)
             else if (name.equals("Sun-shroom")) {
                 SunType shroomType;
-                int stage = plant.getGrowthStage(); // The Plant does the math now!
-
-                if (stage >= 3) {
-                    shroomType = SunType.LARGE;  // Stage 3 (75 suns)
-                } else if (stage == 2) {
-                    shroomType = SunType.MEDIUM; // Stage 2 (50 suns)
-                } else {
-                    shroomType = SunType.NORMAL; // Stage 1 (25 suns)
-                }
-
+                int stage = plant.getGrowthStage();
+                if (stage >= 3) shroomType = SunType.LARGE;
+                else if (stage == 2) shroomType = SunType.MEDIUM;
+                else shroomType = SunType.NORMAL;
                 board.economyManager.suns.add(new Sun(spawnX, spawnY, shroomType, false, ground));
             }
             // 4. Gold Bloom (Instant 375, then dies)
@@ -56,18 +69,15 @@ public class SunProduceStrategy implements AttackStrategy {
             // 5. Default / Standard Sunflower (50 Suns)
             else {
                 board.economyManager.suns.add(new Sun(spawnX, spawnY, SunType.MEDIUM, false, ground));
-                // Add the Level 4 perk!
                 if (plant.hasDoubleSunChance() && Math.random() < 0.4) {
                     board.economyManager.suns.add(new Sun(spawnX + 0.3, spawnY, SunType.MEDIUM, false, ground));
                 }
             }
 
-            // 6. Trigger the custom UI Message Queue!
             int xInt = (int) plant.getX();
             int yInt = (int) plant.getY();
             AppModel.addAfterPrompt("plant " + name + " produced a sun at (" + xInt + ", " + yInt + ")");
 
-            // 7. Cleanup Gold Bloom
             if (name.equals("Gold Bloom")) {
                 plant.setCurrentHp(0);
                 plant.die();
@@ -78,7 +88,6 @@ public class SunProduceStrategy implements AttackStrategy {
         }
     }
 
-    // For your quest engine to check how many suns this specific plant yielded
     public int getTotalSunsProduced() {
         return this.totalSunsProduced;
     }

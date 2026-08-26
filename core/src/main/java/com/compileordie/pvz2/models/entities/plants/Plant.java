@@ -125,7 +125,7 @@ public class Plant extends GameEntity {
         this.actionIntervalTicks = actionIntervalTicks;
 
         // Sun producers must WAIT first. Everyone else starts fully charged!
-        if (attackStrategy instanceof SunProduceStrategy) { this.currentActionTimer = 0; }
+        if (attackStrategy instanceof SunProduceStrategy || this.name.equals("Citron")) { this.currentActionTimer = 0; }
         else { this.currentActionTimer = actionIntervalTicks; }
 
         this.attackStrategy = attackStrategy;
@@ -473,7 +473,7 @@ public class Plant extends GameEntity {
 
         // --- FIX: Force short-range radar for Shrooms! ---
         if (this.name.equals("Sea-shroom") || this.name.equals("Puff-shroom") || this.name.equals("Fume-shroom")) {
-            baseRange = 6.0;
+            baseRange = 4.0;
         }
 
         return baseRange + rangeBonus;
@@ -512,11 +512,9 @@ public class Plant extends GameEntity {
         }
 
         double age = this.getAgeTicks();
-        double stg2Threshold = Math.max(0, 240.0 - this.getGrowTimeReductionTicks());
-        double stg3Threshold = Math.max(0, 720.0 - this.getGrowTimeReductionTicks());
-        double stg4Threshold = Math.max(0, 1200.0 - this.getGrowTimeReductionTicks());
+        double stg2Threshold = Math.max(0, 480.0 - this.getGrowTimeReductionTicks());
+        double stg3Threshold = Math.max(0, 1440.0 - this.getGrowTimeReductionTicks());
 
-        if (age >= stg4Threshold && this.maxSizeBonus > 0) return 4;
         if (age >= stg3Threshold) return 3;
         if (age >= stg2Threshold) return 2;
 

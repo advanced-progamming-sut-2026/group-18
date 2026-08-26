@@ -25,7 +25,7 @@ public class HomingStrategy implements AttackStrategy {
 
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
-// FIX: Explicitly filter out dead AND hypnotized zombies so they are never targeted!
+        // FIX: Explicitly filter out dead AND hypnotized zombies so they are never targeted!
         List<Zombie> activeZombies = board.getAllZombies().stream()
             .filter(z -> !z.isDead() && !z.isHypnotized())
             .collect(Collectors.toList());
@@ -35,9 +35,9 @@ public class HomingStrategy implements AttackStrategy {
         TargetingMode currentMode = plant.targetsHighestHp() ? TargetingMode.HIGHEST_HP : baseTargetingMode;
         Zombie target = null;
 
-        // FIX: Use World Coordinates to accurately find distance!
-        double pWorldX = plant.getX() + Constants.Game.PADDING_X_REALITY;
-        double pWorldY = plant.getY() + Constants.Game.PADDING_Y_REALITY + 0.2;
+        // --- FIX: Removed Double-Padding! Use plant's native world coordinates. ---
+        double pWorldX = plant.getX();
+        double pWorldY = plant.getY() + 0.2;
 
         switch (currentMode) {
             case CLOSEST:

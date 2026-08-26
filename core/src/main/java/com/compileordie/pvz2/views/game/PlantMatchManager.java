@@ -6,6 +6,7 @@ import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.enums.PlantCategory;
+import com.compileordie.pvz2.models.entities.projectiles.ButterProjectile;
 import com.compileordie.pvz2.models.entities.projectiles.LobbedProjectile;
 import com.compileordie.pvz2.models.entities.projectiles.PiercingProjectile;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
@@ -32,6 +33,7 @@ public class PlantMatchManager {
         double startX;            // FIX: Locks in the spawn position!
         double distanceTraveled;  // FIX: Pure distance, fixes reverse projectiles!
         PlantType type;
+        boolean isButter = false;
         int lastPierceCount = -1; // FIX: Tracks Cactus midair hits!
     }
 
@@ -45,6 +47,7 @@ public class PlantMatchManager {
 
     private final Map<Projectile, ProjectileHitTracker> trackedProjectiles = new HashMap<>();
     private final List<HitAnim> hitAnims = new ArrayList<>();
+    private final Set<Plant> trackedExplosives = new HashSet<>();
 
     public PlantMatchManager(GameRenderStates states, PlantAssetManager assetManager) {
         this.states = states;
@@ -71,13 +74,45 @@ public class PlantMatchManager {
     // PART 1: PLANTS
     // ==========================================
     private void drawPlants(SpriteBatch batch, GameBoard board, float delta) {
+        Set<Plant> currentExplosives = new HashSet<>();
+
         for (Lane lane : board.lanes) {
             for (Tile tile : lane.tiles) {
                 Plant plant = tile.plant;
                 if (plant == null || !plant.isAlive()) continue;
+
+                // Track explosives that are currently alive on the board
+                if (plant.getCategory() == PlantCategory.EXPLOSIVE) {
+                    currentExplosives.add(plant);
+                }
+
                 drawSinglePlant(batch, plant, delta);
             }
         }
+
+        // --- NEW: Explosive Plant Death Tracker! ---
+        // If an explosive plant was here last frame but is gone now, it detonated!
+        var explIter = trackedExplosives.iterator();
+        while (explIter.hasNext()) {
+            Plant p = explIter.next();
+            if (!currentExplosives.contains(p)) {
+                float ex = (float) (p.getX() * Constants.UI.METER_TO_PIX);
+                // Add a tiny Y offset so the explosion is centered perfectly on the tile!
+                float ey = (float) ((p.getY() + (Constants.Game.TILE_HEIGHT * 0.2f)) * Constants.UI.METER_TO_PIX);
+                // Spawn the Explosion Graphic!
+                if (p.getName().equals("Potato Mine")) {
+                    hitAnims.add(new HitAnim(ex, ey, "768/INITIAL/EFFECTS/POTATOMINE_EXPLOSION/POTATOMINE_EXPLOSION.PAM", "animation2"));
+                }
+                else if (p.getName().equals("Cherry Bomb")) {
+                    hitAnims.add(new HitAnim(ex, ey, "768/FULL/EFFECTS/CHERRYBOMB_EXPLOSION_REAR/CHERRYBOMB_EXPLOSION_REAR.PAM", "explosion3"));
+                }
+
+                explIter.remove();
+            }
+        }
+
+        // Update memory for the next frame
+        trackedExplosives.addAll(currentExplosives);
     }
 
     private void drawSinglePlant(SpriteBatch batch, Plant plant, float delta) {
@@ -130,8 +165,13 @@ public class PlantMatchManager {
             return getSunProduceClip(name, plant);
         }
 
-        if (plant.getCategory() == PlantCategory.SHOOTER || plant.getCategory() == PlantCategory.HOMING) {
+        if (plant.getCategory() == PlantCategory.SHOOTER || plant.getCategory() == PlantCategory.HOMING
+            || plant.getCategory() == PlantCategory.STRIKE_THROUGH || plant.getCategory() == PlantCategory.LOBBER) {
             return getShooterClip(name, plant, state);
+        }
+
+        if (plant.getCategory() == PlantCategory.EXPLOSIVE) {
+            return getExplosiveClip(name, plant, state);
         }
 
         return "idle";
@@ -149,55 +189,49 @@ public class PlantMatchManager {
     private String getSunProduceClip(String name, Plant plant) {
         if (name.equals("Gold Bloom")) return "attack";
 
-        double timeUntilAction = plant.getActionIntervalTicks() - plant.getCurrentActionTimer();
-
-        if (name.equals("Sun-shroom")) {
-            int stage = plant.getGrowthStage();
-            float actionTicks = (stage == 3) ? 19.3f : 18.3f;
-            if (timeUntilAction > 0 && timeUntilAction <= actionTicks) {
-                return "special_stage" + stage;
-            }
-            return "idle2_stage" + stage;
-        }
-
-        float actionTicks = 0f;
-        switch (name) {
-            case "Sunflower": actionTicks = 20.0f; break;
-            case "Twin Sunflower": actionTicks = 15.0f; break;
-            case "Primal Sunflower": actionTicks = 17.0f; break;
-        }
-
-        if (timeUntilAction > 0 && timeUntilAction <= actionTicks) {
+        // As long as the Strategy says it is winding up, we play the animation!
+        if (plant.isWindingUp) {
+            if (name.equals("Sun-shroom")) return "special_stage" + plant.getGrowthStage();
             return "special";
         }
+
+        if (name.equals("Sun-shroom")) return "idle2_stage" + plant.getGrowthStage();
         return "idle";
     }
 
     private String getShooterClip(String name, Plant plant, GameRenderStates.PlantRenderState state) {
         if (plant.isFed()) return getPlantFoodClip(name, plant, state);
 
-        boolean isAttacking = !plant.holdAction && plant.getCurrentActionTimer() < 10.0;
+        // Graphics engine simply asks the logic engine if it's currently winding up!
+        boolean isAttacking = plant.isWindingUp;
 
         switch (name) {
-
             case "Fume-shroom" -> {
                 return isAttacking ? "special" : "idle2";
             }
-
             case "Puff-shroom" -> {
-                boolean isFumeAttacking = !plant.holdAction && plant.getCurrentActionTimer() < 40.0;
-                return isFumeAttacking ? "special_stage1" : "idle2_stage1";
+                return isAttacking ? "special_stage1" : "idle2_stage1";
             }
-
             case "Mega Gatling Pea" -> {
                 return isAttacking ? "attack_stage2" : "idle_stage2";
             }
-
-            case "Goo Peashooter", "Cactus" -> {
+            case "Goo Peashooter" -> {
                 return isAttacking ? "attack" : "idle3";
             }
 
-            case "Starfruit", "Fire Peashooter" , "Sea-shroom" , "Cabbage-pult" -> {
+            case "Cactus", "Cabbage-pult", "Kernel-pult", "Melon-pult", "Winter Melon", "Pepper-pult" -> {
+                double timer = plant.getCurrentActionTimer();
+
+                if (isAttacking) return "attack";
+                if (timer < 15.0) return "attack";
+
+                if (name.equals("Cactus") || name.equals("Pepper-pult")) return "idle3";
+                if (name.equals("Cabbage-pult")) return "idle2";
+
+                // Kernel, Melon, and Winter Melon all use standard "idle"!
+                return "idle";
+            }
+            case "Starfruit", "Fire Peashooter" , "Sea-shroom" -> {
                 return isAttacking ? "attack" : "idle2";
             }
             case "Bowling Bulb" -> {
@@ -225,8 +259,11 @@ public class PlantMatchManager {
             case "Citron" -> {
                 double timer = plant.getCurrentActionTimer();
                 double maxInterval = plant.getActionIntervalTicks();
-                if (timer < 10.0) return "attack";
-                if (timer < 30.0) return "recovery";
+                double age = plant.getAgeTicks();
+
+                if (age < maxInterval) {if (age < 70.0) return "charge";}
+                if (timer < 7.0) return "attack";
+                if (timer < 20.0) return "recovery";
                 if (timer < maxInterval) return "charge";
                 if (plant.holdAction) return "idle";
                 return "idle";
@@ -251,6 +288,35 @@ public class PlantMatchManager {
         }
 
         if (isAttacking) {
+            return "attack";
+        }
+
+        return "idle";
+    }
+
+    private String getExplosiveClip(String name, Plant plant, GameRenderStates.PlantRenderState state) {
+        if (name.equals("Potato Mine")) {
+            if (plant.isWindingUp) return "attack";
+            if (plant.getAgeTicks() < 10.0) return "plant";
+            if (!plant.isArmed()) return "plant_idle";
+
+            if (state.currentClip != null && state.currentClip.equals("plant_idle") && plant.isArmed()) {
+                return "recover";
+            }
+            if (state.currentClip != null && state.currentClip.equals("recover")) {
+                if (state.animTime < 0.75f) return "recover";
+                return "idle";
+            }
+            return "idle";
+        }
+
+        // --- FIX BUG 1 (Part 2): 2-Part Animation Sequence ---
+        if (name.equals("Cherry Bomb")) {
+            // First 10 ticks: Plant sits and giggles (idle)
+            if (plant.windupTimer < 10.0) {
+                return "idle";
+            }
+            // Last 10 ticks: Plant swells up rapidly (attack)
             return "attack";
         }
 
@@ -292,26 +358,38 @@ public class PlantMatchManager {
             // Calculate true absolute distance traveled regardless of direction!
             tracker.distanceTraveled = Math.abs(proj.getX() - tracker.startX);
             tracker.type = proj.getSourcePlantType();
+            tracker.isButter = (proj instanceof ButterProjectile);
 
             String pamPath = getProjectilePamPath(proj);
             String clipName = getProjectileClipName(proj, tracker);
             if (pamPath == null) continue;
 
-            float drawX = (float) ((proj.getX()  + (Constants.Game.TILE_WIDTH / 2.0f)) * Constants.UI.METER_TO_PIX);
-
-            // Standard height offset for tall shooters (Peashooters, Cactus, etc.)
+            // --- FIX: Dynamic Offsets for Omni-directional shooters! ---
+            float widthOffset = Constants.Game.TILE_WIDTH / 2.0f; // Default for forward shooters
             float heightOffset = 0.20f;
+            PlantType sourcePlant = proj.getSourcePlantType();
 
-            // --- FIX: Drop the visual height for tiny shrooms! ---
-            if (proj.getSourcePlantType() == PlantType.PUFF_SHROOM || proj.getSourcePlantType() == PlantType.SEA_SHROOM) {
+            // Tiny Shrooms
+            if (sourcePlant == PlantType.PUFF_SHROOM || sourcePlant == PlantType.SEA_SHROOM) {
                 heightOffset = 0.037f; // Pulls it perfectly down to mouth level!
             }
+            // Omni-directional shooters!
+            else if (sourcePlant == PlantType.STARFRUIT || sourcePlant == PlantType.ROTOBAGA || sourcePlant == PlantType.SPLIT_PEA) {
+                // Do NOT force them to the right! Let them spawn at their true physical center!
+                widthOffset = 0f;
+                // Center them on the main body of the plant!
+                heightOffset = 0.05f;
+            }
 
-// --- FIX: Apply the Parabolic Altitude to Lobbed Projectiles! ---
+            // Apply the dynamic width offset
+            float drawX = (float) ((proj.getX() + widthOffset) * Constants.UI.METER_TO_PIX);
+
+            // --- FIX: Apply the Parabolic Altitude to Lobbed Projectiles! ---
             float lobAltitude = (proj instanceof LobbedProjectile)
                 ? (float) ((LobbedProjectile) proj).altitude
                 : 0f;
 
+            // Apply the dynamic height offset
             float drawY = (float) ((proj.getY() + lobAltitude  + (Constants.Game.TILE_HEIGHT * heightOffset)) * Constants.UI.METER_TO_PIX);
 
             tracker.lastDrawX = drawX;
@@ -374,6 +452,10 @@ public class PlantMatchManager {
             case PUFF_SHROOM -> "768/INITIAL/EFFECTS/T_PUFFSHROOM_PROJECTILE/T_PUFFSHROOM_PROJECTILE.PAM";
             case FUME_SHROOM -> "768/INITIAL/EFFECTS/FUMESHROOM_BUBBLES/FUMESHROOM_BUBBLES.PAM";
             case CABBAGE_PULT -> "768/INITIAL/EFFECTS/T_CABBAGEPULT_PROJECTILE/T_CABBAGEPULT_PROJECTILE.PAM";
+            case KERNEL_PULT -> "768/INITIAL/EFFECTS/T_KERNALPULT_PROJECTILE/T_KERNALPULT_PROJECTILE.PAM";
+            case MELON_PULT -> "768/INITIAL/EFFECTS/T_MELON_PROJECTILE/T_MELON_PROJECTILE.PAM";
+            case WINTER_MELON -> "768/FULL/EFFECTS/T_WINTERMELON_PROJECTILE/T_WINTERMELON_PROJECTILE.PAM";
+            case PEPPER_PULT -> "768/FULL/EFFECTS/T_PEPPERPULT_PROJECTILE/T_PEPPERPULT_PROJECTILE.PAM";
             case BOWLING_BULB -> {
                 int dmg = proj.getDamage();
                 if (dmg >= 180) yield "768/FULL/EFFECTS/BOWLINGBULB_PROJECTILE3/BOWLINGBULB_PROJECTILE3.PAM";
@@ -393,10 +475,12 @@ public class PlantMatchManager {
         double dist = rawDist / Constants.Game.TILE_WIDTH;
 
         // --- FIX 2: Bind Cabbage-pult animations purely to the physics arc! ---
-        if (source == PlantType.CABBAGE_PULT) {
+        if (source == PlantType.CABBAGE_PULT || source == PlantType.KERNEL_PULT
+            || source == PlantType.MELON_PULT || source == PlantType.WINTER_MELON
+            || source == PlantType.PEPPER_PULT) {
             double p = 0;
-            if (proj instanceof com.compileordie.pvz2.models.entities.projectiles.LobbedProjectile) {
-                p = ((com.compileordie.pvz2.models.entities.projectiles.LobbedProjectile) proj).getProgress();
+            if (proj instanceof LobbedProjectile) {
+                p = ((LobbedProjectile) proj).getProgress();
             }
             if (p < 0.33) return "animation";   // Going UP
             if (p < 0.66) return "animation2";  // Apex (FLAT)
@@ -463,7 +547,7 @@ public class PlantMatchManager {
         if (source == null) return "768/INITIAL/EFFECTS/T_SPLAT_PEA/T_SPLAT_PEA.PAM";
 
         return switch (source) {
-            case BOWLING_BULB -> null; // FIX: Prevents fake pea splat for bouncy bulbs!
+            case BOWLING_BULB , CAULIPOWER -> null; // FIX: Prevents fake pea splat for bouncy bulbs!
             case PUFF_SHROOM -> "768/INITIAL/EFFECTS/T_PUFFSHROOM_HIT/T_PUFFSHROOM_HIT.PAM";
             case SEA_SHROOM -> "768/FULL/EFFECTS/SEASHOOTER_FX/SEASHOOTER_FX.PAM";
             case SNOW_PEA -> "768/INITIAL/EFFECTS/T_SPLAT_SNOW_PEA/T_SPLAT_SNOW_PEA.PAM";
@@ -476,6 +560,12 @@ public class PlantMatchManager {
             case GOO_PEASHOOTER -> "768/INITIAL/EFFECTS/GOOPEASHOOTER_PROJECTILES/GOOPEASHOOTER_PROJECTILES.PAM";
             case FUME_SHROOM -> "768/INITIAL/EFFECTS/FUMESHROOM_BUBBLES_HIT/FUMESHROOM_BUBBLES_HIT.PAM";
             case CABBAGE_PULT -> "768/INITIAL/EFFECTS/SPLAT_CABBAGEPULT/SPLAT_CABBAGEPULT.PAM";
+            case MELON_PULT -> "768/INITIAL/EFFECTS/T_SPLAT_MELONPULT/T_SPLAT_MELONPULT.PAM";
+            case WINTER_MELON -> "768/FULL/EFFECTS/T_SPLAT_WINTERMELON/T_SPLAT_WINTERMELON.PAM";
+            case PEPPER_PULT -> "768/FULL/EFFECTS/T_PEPPERPULT_PROJECTILE_SPLAT/T_PEPPERPULT_PROJECTILE_SPLAT.PAM";
+            case KERNEL_PULT -> tracker.isButter
+                ? "768/INITIAL/EFFECTS/SPLAT_KERNALPULT_BUTTER/SPLAT_KERNALPULT_BUTTER.PAM"
+                : "768/INITIAL/EFFECTS/SPLAT_KERNALPULT_KERNAL/SPLAT_KERNALPULT_KERNAL.PAM";
             case PEASHOOTER, REPEATER, THREEPEATER, PEA_POD, SPLIT_PEA -> "768/INITIAL/EFFECTS/T_SPLAT_PEA/T_SPLAT_PEA.PAM";
             default -> "768/INITIAL/EFFECTS/T_SPLAT_PEA/T_SPLAT_PEA.PAM";
         };
@@ -497,7 +587,8 @@ public class PlantMatchManager {
         if (source == PlantType.ELECTRIC_BLUEBERRY) return "attack";
 
         if (source == PlantType.ROTOBAGA || source == PlantType.SPLIT_PEA
-            || source == PlantType.SEA_SHROOM || source == PlantType.FUME_SHROOM || source == PlantType.CABBAGE_PULT) return "animation";
+            || source == PlantType.SEA_SHROOM || source == PlantType.FUME_SHROOM
+            || source == PlantType.CABBAGE_PULT || source == PlantType.KERNEL_PULT) return "animation";
 
         if (source == PlantType.STARFRUIT) {
             if (dist < 3.5) return "idle";

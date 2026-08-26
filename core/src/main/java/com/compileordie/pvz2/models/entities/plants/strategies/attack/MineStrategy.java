@@ -22,9 +22,13 @@ public class MineStrategy implements AttackStrategy {
 
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
+        // --- FIX BUG 2: THE GHOST BOMB ---
+        // If the plant is dead, abort! This stops the invisible infinite explosions!
+        if (!plant.isAlive()) return;
+
         if (!plant.isArmed()) return;
 
-        int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
+        int plantRow = (int) Math.floor((plant.getY() - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
         int plantCol = (int) (plant.getX() / Constants.Game.TILE_WIDTH);
 
         boolean triggered = false;
@@ -37,7 +41,6 @@ public class MineStrategy implements AttackStrategy {
         else {
             for (Zombie z : board.getAllZombies()) {
                 if (z.isDead()) continue;
-
                 if (z.getCurrentRow() == plantRow) {
                     int zCol = (int) (z.getX() / Constants.Game.TILE_WIDTH);
                     if (zCol == plantCol) {
@@ -51,9 +54,27 @@ public class MineStrategy implements AttackStrategy {
         // 3. Detonation Engine
         if (triggered) {
 
-            // --- Jalapeno (Lane-Wide Fire Attack) ---
+            // --- THE WINDUP HOOK ---
+            if (!plant.isWindingUp) {
+                plant.isWindingUp = true;
+                plant.windupTimer = 0;
+            }
+
+            plant.windupTimer += tickDelta;
+
+            double requiredWindup = 0.0;
+            if (plant.getName().equals("Potato Mine")) requiredWindup = 10.0;
+                // --- FIX BUG 1 (Part 1): Set 20-tick fuse (10 for idle, 10 for attack) ---
+            else if (plant.getName().equals("Cherry Bomb")) requiredWindup = 20.0;
+
+            if (plant.windupTimer < requiredWindup) {
+                return;
+            }
+
+            plant.isWindingUp = false;
+
+            // --- DAMAGE EXECUTION ---
             if (plant.getName().equals("Jalapeno")) {
-                // 1. Burn all zombies in the lane and cleanse ice
                 for (Zombie z : board.getAllZombies()) {
                     if (!z.isDead() && z.getCurrentRow() == plantRow) {
                         z.takeDamage(plant.getBaseDamage(), DamageType.EXPLOSIVE, PlantType.getByName(plant.getName()));
@@ -61,36 +82,17 @@ public class MineStrategy implements AttackStrategy {
                         z.removeStatusEffect(EffectType.CHILLED);
                     }
                 }
-
-                // 2. Melt all Ice Blocks in the lane /// TODO : check this part later
-//                for (int c = 0; c < board.totalCols; c++) {
-//                    Tile t = board.getTile(plantRow, c);
-//                      if (t != null && t.obstacle instanceof com.compileordie.pvz2.models.entities.obstacles.IceBlock) {
-//                        // Blast the ice block with massive damage so it instantly breaks
-//                        ((com.compileordie.pvz2.models.entities.obstacles.IceBlock) t.obstacle).takeDamage(9999, ProjectileType.FIRE);
-//                    }
-//
-//                    // Also unfreeze any plants in this lane that were frozen!
-//                    if (t != null && t.plant != null && t.plant.hasActiveCover()) {
-//                        t.plant.takeDamage(9999); // Damages the cover (ice), freeing the plant
-//                    }
-//                }
-            }
-            // --- RADIAL & SINGLE TILE BOMBS ---
-            else {
+            } else {
                 if (splashRadiusTiles > 0) {
-                    // --- Primal Potato Mine, Cherry Bomb, Grapeshot (3x3 Splash Damage) ---
                     double radiusPixels = splashRadiusTiles * Constants.Game.TILE_HEIGHT;
                     for (Zombie z : board.getAllZombies()) {
                         if (z.isDead()) continue;
-
                         double dist = Math.hypot(z.getX() - plant.getX(), z.getY() - plant.getY());
                         if (dist <= radiusPixels) {
                             z.takeDamage(plant.getBaseDamage(), DamageType.EXPLOSIVE, PlantType.getByName(plant.getName()));
                         }
                     }
                 } else {
-                    // --- Normal Potato Mine (Single Tile Damage) ---
                     for (Zombie z : board.getAllZombies()) {
                         if (!z.isDead() && z.getCurrentRow() == plantRow) {
                             int zCol = (int) (z.getX() / Constants.Game.TILE_WIDTH);
@@ -101,41 +103,32 @@ public class MineStrategy implements AttackStrategy {
                     }
                 }
             }
-                    // --- THE DOOM-SHROOM PAYLOAD (CRATER) ---
-                        if (plant.getName().equals("Doom-shroom")) {
-                            Tile centerTile = board.getTile(plantRow, plantCol);
-                                if (centerTile != null) {
-                                    // --- LILY PAD & POOL CHECK ---
-                                    if (centerTile.hasLilyPad || centerTile.isUnderWater()) {
-                                        // The Lily Pad absorbs the blast! No crater is formed. We "destroy" the Lily Pad by resetting the tile's flag:
-                                        centerTile.hasLilyPad = false;
-                                        } else {
-                                            // Solid ground gets a crater! 1800 ticks = 180 seconds!
-                                            centerTile.obstacle = new Crater(plantRow, plantCol, 1800.0);
-                                        }
-                                }
-                        }
 
-            // --- ICEBERG LETTUCE PAYLOAD ---
+            if (plant.getName().equals("Doom-shroom")) {
+                Tile centerTile = board.getTile(plantRow, plantCol);
+                if (centerTile != null) {
+                    if (centerTile.hasLilyPad || centerTile.isUnderWater()) {
+                        centerTile.hasLilyPad = false;
+                    } else {
+                        centerTile.obstacle = new Crater(plantRow, plantCol, 1800.0);
+                    }
+                }
+            }
+
             if (plant.getName().equals("Iceberg Lettuce")) {
-                // Base trap freeze is usually 10 seconds (100 ticks)
                 int baseFreezeTicks = 100;
                 int totalFreeze = baseFreezeTicks + (int) plant.getFreezeTimeBonusTicks();
-
                 for (Zombie z : board.getAllZombies()) {
                     if (!z.isDead() && z.getCurrentRow() == plantRow) {
                         int zCol = (int) (z.getX() / Constants.Game.TILE_WIDTH);
                         if (zCol == plantCol) {
-
-                            // Freeze the zombie!
                             z.addEffect(new StatusEffect(EffectType.FROZEN, totalFreeze));
-                            // Iceberg Lettuce only freezes the FIRST zombie it touches!
                             break;
                         }
                     }
                 }
             }
-            // --- THE GRAPESHOT PAYLOAD ---
+
             if (plant.getName().equals("Grapeshot")) {
                 int totalBounces = 3 + plant.getExtraBounces();
                 for (int i = 0; i < 5; i++) {
