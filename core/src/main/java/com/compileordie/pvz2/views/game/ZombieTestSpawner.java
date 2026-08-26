@@ -5,9 +5,9 @@ import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
-import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
-import com.compileordie.pvz2.models.entities.zombies.variants.ZomBoss.EgyptZomboss;
 import com.compileordie.pvz2.models.entities.zombies.variants.ZomBoss.DarkZomboss;
+import com.compileordie.pvz2.models.entities.zombies.variants.ZomBoss.EgyptZomboss;
+import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.levels.ChapterType; // 👈 این ایمپورت اضافه شد
 
 import java.util.ArrayList;
@@ -96,14 +96,12 @@ public class ZombieTestSpawner {
             return;
         }
 
-        // حالت NORMAL: رفتار قبلی، بدون تغییر.
-        AppModel.currentChapter = ChapterType.ANCIENT_EGYPT;
-
         // جمع‌آوری تمام انواع زامبی‌های تعریف‌شده در Enum
         for (ZombieType type : ZombieType.values()) {
             zombieTypes.add(type);
         }
-        Gdx.app.log("PVZ-TEST-SPAWNER", " تعداد " + zombieTypes.size() + " نوع زامبی برای تست در حالت DARK شناسایی شد.");
+        Gdx.app.log("PVZ-TEST-SPAWNER", " تعداد "
+            + zombieTypes.size() + " نوع زامبی برای تست در حالت DARK شناسایی شد.");
     }
 
     /**
