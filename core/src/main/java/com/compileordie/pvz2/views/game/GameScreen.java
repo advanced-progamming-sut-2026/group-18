@@ -13,7 +13,6 @@ import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.controllers.PlantSpawner;
 import com.compileordie.pvz2.controllers.menus.game.GameScreenController;
 import com.compileordie.pvz2.models.AppModel;
-import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
@@ -25,8 +24,10 @@ import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.waves.WaveType;
 import com.compileordie.pvz2.views.game.ui.GameScreenUI;
+import com.compileordie.pvz2.views.game.ui.LevelStartDialog;
 import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.textures.TextureBank;
+import pvz.skin.PvzSkin;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -89,6 +90,16 @@ public class GameScreen implements Screen {
         ui.buildPauseMenuPanelWithFog(textureBank);
         ui.setupGameUI(textureBank);
         Gdx.input.setInputProcessor(ui.uiStage);
+
+        GameScreenUI.isPaused = true;
+        LevelStartDialog.show(
+            ui.uiStage,
+            AppModel.currentLevel,
+            PvzSkin.get(),
+            textureBank,
+            player,
+            () -> GameScreenUI.isPaused = false
+        );
     }
 
     private void initHelpers() {
@@ -272,7 +283,7 @@ public class GameScreen implements Screen {
     }
 
     private void drawWorld(float delta) {
-        boolean paused = ui != null && ui.isPaused;
+        boolean paused = ui != null && GameScreenUI.isPaused;
         float worldDelta = paused ? 0f : delta;
 
         zombieDrawer.setPaused(paused);
@@ -385,7 +396,7 @@ public class GameScreen implements Screen {
             ui.showGameEndPanel(AppModel.wonLastGame);
             return;
         }
-        if (AppModel.gameSession == null || ui.isPaused) return;
+        if (AppModel.gameSession == null || GameScreenUI.isPaused) return;
         simulationAccumulator += delta;
         while (simulationAccumulator >= GameScreenConstants.SIMULATION_STEP_SECONDS) {
             AppModel.gameSession.tick(1);
