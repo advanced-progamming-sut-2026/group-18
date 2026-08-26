@@ -6,5 +6,6 @@
   "loveYourPlantsMaxLost": 5,
   "maxTideLevel": 4,
   "seedPacketDespawn": 60,
-  "beghouledScore": 5
+  "beghouledScore": 5,
+  "spawnDelaySeconds": 10
 }

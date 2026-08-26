@@ -9,4 +9,5 @@ public class GameplayConfig {
     public int maxTideLevel;
     public int seedPacketDespawn;
     public int beghouledScore;
+    public int spawnDelaySeconds;
 }

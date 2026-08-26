@@ -7,7 +7,9 @@ public enum WinCondition {
     STANDARD {
         @Override
         public boolean evaluate(GameBoard gameBoard) {
-            return gameBoard.waveManager.isLastWave() && gameBoard.getAllZombies().isEmpty();
+            return gameBoard.waveManager.isLastWave()
+                && gameBoard.waveManager.pendingZombieQueue.isEmpty()
+                && gameBoard.getAllZombies().isEmpty();
         }
     },
     TIMED_WAR {

@@ -25,6 +25,7 @@ import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.waves.WaveType;
 import com.compileordie.pvz2.views.game.ui.GameScreenUI;
 import com.compileordie.pvz2.views.game.ui.LevelStartDialog;
+import com.compileordie.pvz2.views.helpers.ToastManager;
 import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.textures.TextureBank;
 import pvz.skin.PvzSkin;
@@ -104,8 +105,23 @@ public class GameScreen implements Screen {
             PvzSkin.get(),
             textureBank,
             player,
-            () -> GameScreenUI.isPaused = false
+            () -> {
+                GameScreenUI.isPaused = false;
+                ToastManager.showMessage("The match begins!");
+            }
         );
+
+        if (AppModel.gameSession != null && AppModel.gameSession.gameBoard != null) {
+            AppModel.gameSession.gameBoard.waveManager.setWaveEventListener(
+                (currentWave, totalWaves, isFinalWave, message) -> {
+                    if (isFinalWave) {
+                        ToastManager.showError(message);
+                    } else {
+                        ToastManager.showMessage(message);
+                    }
+                }
+            );
+        }
     }
 
     private void initHelpers() {
