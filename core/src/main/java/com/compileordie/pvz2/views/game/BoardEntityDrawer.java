@@ -13,7 +13,9 @@ import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.LawnMower;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
+import com.compileordie.pvz2.models.entities.zombies.variants.summoner.TombType;
 import com.compileordie.pvz2.models.game.board.Tile;
+import com.compileordie.pvz2.models.game.levels.ChapterType;
 import pvz.libpvz.pam.ClipRef;
 import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.textures.TextureBank;
@@ -63,19 +65,31 @@ final class BoardEntityDrawer {
     void drawBackground(SpriteBatch batch) {
         float screenW = Constants.UI.DEFAULT_WIDTH;
         float screenH = Constants.UI.DEFAULT_HEIGHT;
+
+        float mainY = 0f;
+        float mainHeight = screenH;
+
+        if (AppModel.currentChapter == ChapterType.FROSTBITE_CAVES) {
+            mainHeight = screenH * 1.025f;
+            float shiftDown = 25f; // Adjust pixel amount to shift down as needed
+            mainY = -shiftDown;
+        }
+
         if (bgLeftRegion != null && bgMainRegion != null && bgRightRegion != null) {
             float leftAspect = (float) bgLeftRegion.getRegionWidth() / bgLeftRegion.getRegionHeight();
             float leftWidth = (screenH * leftAspect) * GameScreenConstants.BG_SIDE_SCALE;
             batch.draw(bgLeftRegion, 0, 0, leftWidth, screenH);
+
             float rightAspect = (float) bgRightRegion.getRegionWidth() / bgRightRegion.getRegionHeight();
             float rightWidth = (screenH * rightAspect) * GameScreenConstants.BG_SIDE_SCALE;
             float visibleRightWidth = rightWidth * 0.25f;
             float rightX = screenW - visibleRightWidth;
             batch.draw(bgRightRegion, rightX, 0, rightWidth, screenH);
+
             float mainWidth = rightX - leftWidth;
-            batch.draw(bgMainRegion, leftWidth, 0, mainWidth, screenH);
+            batch.draw(bgMainRegion, leftWidth, mainY, mainWidth, mainHeight);
         } else if (bgMainRegion != null) {
-            batch.draw(bgMainRegion, 0, 0, screenW, screenH);
+            batch.draw(bgMainRegion, 0, mainY, screenW, mainHeight);
         }
     }
 
@@ -161,7 +175,7 @@ final class BoardEntityDrawer {
                 oldColor = batch.getColor().cpy();
                 batch.setColor(new Color(1f, 1f, 1f, 0.6f));
             }
-            String myResolvedPath = tomb.type.equals("normal") ? resolvedPath : tomb.type.equals("sunable") ? "768/FULL/GRAVESTONES/DARK_SUN/DARK_SUN.PAM" : tomb.type.equals("foodable") ? "768/FULL/GRAVESTONES/DARK_PLANTFOOD/DARK_PLANTFOOD.PAM" : "768/FULL/GRAVESTONES/DARK_NOOP/DARK_NOOP.PAM" ;
+            String myResolvedPath = getMyResolvedPath(tomb, resolvedPath);
             player.draw(batch, myResolvedPath, animName, 0f, drawX, drawY,
                 GameScreenConstants.TOMB_SCALE, GameScreenConstants.TOMB_SCALE, true);
             if (oldColor != null) batch.setColor(oldColor);
@@ -170,6 +184,24 @@ final class BoardEntityDrawer {
         } finally {
             if (state.damageAlphaTimer > 0) batch.setColor(Color.WHITE);
         }
+    }
+
+    private static String getMyResolvedPath(Tomb tomb, String resolvedPath) {
+        String myResolvedPath;
+        if (tomb.type == TombType.NORMAL) {
+            myResolvedPath = resolvedPath;
+        } else {
+            if (tomb.type == TombType.SUN) {
+                myResolvedPath = "768/FULL/GRAVESTONES/DARK_SUN/DARK_SUN.PAM";
+            } else {
+                if (tomb.type == TombType.PLANT_FOOD)
+                    myResolvedPath = "768/FULL/GRAVESTONES/DARK_PLANTFOOD/DARK_PLANTFOOD.PAM";
+                else {
+                    myResolvedPath = "768/FULL/GRAVESTONES/DARK_NOOP/DARK_NOOP.PAM";
+                }
+            }
+        }
+        return myResolvedPath;
     }
 
     void drawFireTiles(SpriteBatch batch, PamPlayer player, float delta) {

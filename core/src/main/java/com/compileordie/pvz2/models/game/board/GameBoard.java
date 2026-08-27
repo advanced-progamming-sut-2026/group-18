@@ -13,6 +13,7 @@ import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.game.economy.EconomyManager;
 import com.compileordie.pvz2.models.game.economy.EconomyType;
+import com.compileordie.pvz2.models.game.economy.PlantFood;
 import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.models.game.minigames.vasebreaker.SeedPacket;
 import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
@@ -39,6 +40,7 @@ public class GameBoard {
     public WaveManager waveManager;
     public ArrayList<Vase> vases;
     public ArrayList<SeedPacket> seedPackets;
+    public ArrayList<PlantFood> plantFoods;
     public int tideLevel;
     public int maxTideLevel;
     public boolean specialIsLost;
@@ -66,6 +68,7 @@ public class GameBoard {
         this.economyManager = new EconomyManager(this, economyType, selectionDeck);
         this.vases = new ArrayList<>();
         this.seedPackets = new ArrayList<>();
+        this.plantFoods = new ArrayList<>();
         this.waveManager = new WaveManager(this, waveType, waveNumber, shouldStartWaves);
         this.tideLevel = 0;
         this.maxTideLevel = ConfigManager.gameplay().maxTideLevel;
