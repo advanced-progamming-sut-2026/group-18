@@ -18,6 +18,8 @@ import com.compileordie.pvz2.models.entities.zombies.variants.standard.AllStarZo
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.NewspaperZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.StandardZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.TombraiserZombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.BarrelRollerZombie;
+import com.compileordie.pvz2.models.game.levels.ChapterType;
 import pvz.libpvz.pam.PamPlayer;
 
 import java.util.ArrayList;
@@ -61,7 +63,8 @@ final class ZombieDrawer {
         for (Zombie zombie : currentZombies) {
             GameRenderStates.ZombieRenderState state =
                 states.zombieRenderStates.computeIfAbsent(zombie, z -> new GameRenderStates.ZombieRenderState());
-            boolean isEatingNow = zombie.isEating();
+            boolean isEatingNow = zombie.isEating()
+                || (zombie instanceof GargantuarZombie && ((GargantuarZombie) zombie).isSmashSequenceActive());
             if (isEatingNow != state.wasEating) {
                 state.animTime = 0f;
                 state.wasEating = isEatingNow;
@@ -99,6 +102,9 @@ final class ZombieDrawer {
             (zombie.getType() == ZombieType.PROSPECTOR_ZOMBIE
                 && ((ProspectorZombie) zombie).isReversedDirection)
                 || zombie.isHypnotized();
+        if (zombie.getType()== ZombieType.BARREL_ROLLER && !((BarrelRollerZombie)zombie).isRoller){
+            deadAnim.typeKey = "die2";
+        }
         states.deadZombies.add(deadAnim);
         spawnHeadDebrisIfNeeded(zombie, deadAnim);
     }
@@ -142,7 +148,7 @@ final class ZombieDrawer {
             }
             return;
         }
-        if (zombie.isSandstormSpawning()) {
+        if (zombie.isSandstormSpawning() && AppModel.currentChapter== ChapterType.ANCIENT_EGYPT) {
             special.drawSandstormSpawningZombie(batch, player, zombie, state, delta);
             return;
         }
@@ -227,7 +233,15 @@ final class ZombieDrawer {
             && ((OctopusZombie) zombie).isTossing()) {
             animName = "toss";
             renderAnimTime = (float) ((OctopusZombie) zombie).getTossAnimElapsed();
-        } else if (zombie.isEating()) {
+        } else if (zombie.getType() == ZombieType.ALL_STAR
+            && ((AllStarZombie) zombie).isTackleImpacting()) {
+            // 💥 لحظه‌ی برخورد تکل - قبلا همون تیکی که ضربه می‌خورد بلافاصله
+            // میفتاد رو walk عادی؛ الان تا پایان این تایمر، انیمیشن ضربه رو
+            // کامل (از صفر) نگه می‌داریم.
+            animName = "tackle";
+            renderAnimTime = (float) ((AllStarZombie) zombie).getTackleImpactElapsed();
+        } else if (zombie.isEating()
+            || (typeKey.contains("GARGANTUAR") && ((GargantuarZombie) zombie).isSmashSequenceActive())) {
             return eatingAnim(zombie, state, typeKey);
         } else if ("PIANIST_ZOMBIE".equals(typeKey)) {
             animName = "play";
@@ -240,6 +254,9 @@ final class ZombieDrawer {
             if (zombie.getType() == ZombieType.ALL_STAR
                 && ((AllStarZombie) zombie).isCharging()) {
                 animName = "run";
+            }
+            if (zombie.getType()==ZombieType.BARREL_ROLLER && !((BarrelRollerZombie)zombie).isRoller){
+                animName = "walk2";
             }
         }
         return new AnimChoice(animName, renderAnimTime);

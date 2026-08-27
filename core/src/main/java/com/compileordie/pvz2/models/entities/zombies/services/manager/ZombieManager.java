@@ -18,6 +18,7 @@ import com.compileordie.pvz2.models.entities.zombies.variants.mobility.SnorkelZo
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.TombraiserZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.Barrel;
+import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.BarrelRollerZombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Tile;
 
@@ -54,7 +55,6 @@ public class ZombieManager {
         combatManager.combatTick(myZombies, myPlants);
         combatManager.projectileCollisionTick(myMap);
         combatManager.combatingTwoZombie(myZombies);
-        spawnImpFromBarrel(myZombies, myObstacles);
         handleEgyptZomboss(myMap);
         handleDarkZomboss(myMap);
 
@@ -74,6 +74,13 @@ public class ZombieManager {
             if (z.getHealth() <= 0) {
                 if (z.shouldRemooove) myZombies.remove(i);
                 else z.shouldRemooove = true;
+            }
+            if (z.isHypnotized() && z.getX()>=Constants.Game.LANE_LENGTH){
+                z.setHealth(0);
+            }
+            if (z.getType()==ZombieType.BARREL_ROLLER && ((BarrelRollerZombie)z).spawnImp){
+                spawnImpFromBarrel(myMap, ((BarrelRollerZombie) z));
+                ((BarrelRollerZombie) z).spawnImp = false;
             }
         }
     }
@@ -188,26 +195,26 @@ public class ZombieManager {
         AppModel.gameSession.gameBoard.lanes.get(z.getCurrentRow()).zombies.add(imp);
     }
 
-    public void spawnImpFromBarrel(List<Zombie> activeZs, List<Obstacle> myObstacles) {
-        List<Obstacle> obstaclesCopy = new ArrayList<>(myObstacles);
-        for (Obstacle b : obstaclesCopy) {
-            if (b.type == ObstacleType.BARREL) {
-                if (((Barrel) b).isDestroyed() && ((Barrel) b).shouldWeSpawnImp()) {
-                    int row1 = Math.min(((Barrel) b).getRow() + 1, 4);
-                    Zombie imp1 = ZombieBuilder.create(ZombieType.IMP, b.getX(), ((Barrel) b).getRow() == 4 ? b.getY() : b.getY() + tileHeight, row1);
-                    activeZs.add(imp1);
-                    AppModel.gameSession.gameBoard.getAllZombies().add(imp1);
-                    AppModel.gameSession.gameBoard.lanes.get(row1).zombies.add(imp1);
-                    int row2 = Math.max(((Barrel) b).getRow() - 1, 0);
-                    Zombie imp2 = ZombieBuilder.create(ZombieType.IMP, b.getX(), ((Barrel) b).getRow() == 0 ? b.getY() : b.getY() - tileHeight, row2);
-                    activeZs.add(imp2);
-                    AppModel.gameSession.gameBoard.getAllZombies().add(imp2);
-                    AppModel.gameSession.gameBoard.lanes.get(row2).zombies.add(imp2);
-                    ((Barrel) b).stopSpawnImp();
-                }
-            }
+    public void spawnImpFromBarrel(GameBoard map, BarrelRollerZombie z) {
+        int r1;
+        int r2;
+        if (z.getCurrentRow()==0){
+            r1 = -1;
+        }else r1 = z.getCurrentRow()-1;
+        if (z.getCurrentRow()==4){
+            r2 = -1;
+        }else r2 = z.getCurrentRow()+1;
+        //--------
+        if (r1!=-1){
+            Zombie z1 = ZombieBuilder.create(ZombieType.IMP, z.getX()-1, z.getY()-Constants.Game.TILE_HEIGHT, r1);
+            map.getLane(r1).zombies.add(z1);
+        }
+        if (r2!=-1){
+            Zombie z2 = ZombieBuilder.create(ZombieType.IMP, z.getX()-1, z.getY()+Constants.Game.TILE_HEIGHT, r2);
+            map.getLane(r2).zombies.add(z2);
         }
     }
+
 
     public void spawnTomb(GameBoard gb) {
         List<Tile> ts = new ArrayList<>();

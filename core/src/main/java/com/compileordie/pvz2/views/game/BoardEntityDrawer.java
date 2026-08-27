@@ -120,6 +120,7 @@ final class BoardEntityDrawer {
     void drawTombs(SpriteBatch batch, PamPlayer player, float delta) {
         if (AppModel.gameSession == null || player == null) return;
         String resolvedPath = TOMB_PAM_SPEC.getResolvedPath();
+
         if (brokenAssets.contains(resolvedPath)) return;
 
         for (var lane : AppModel.gameSession.gameBoard.lanes) {
@@ -160,7 +161,8 @@ final class BoardEntityDrawer {
                 oldColor = batch.getColor().cpy();
                 batch.setColor(new Color(1f, 1f, 1f, 0.6f));
             }
-            player.draw(batch, resolvedPath, animName, 0f, drawX, drawY,
+            String myResolvedPath = tomb.type.equals("normal") ? resolvedPath : tomb.type.equals("sunable") ? "768/FULL/GRAVESTONES/DARK_SUN/DARK_SUN.PAM" : tomb.type.equals("foodable") ? "768/FULL/GRAVESTONES/DARK_PLANTFOOD/DARK_PLANTFOOD.PAM" : "768/FULL/GRAVESTONES/DARK_NOOP/DARK_NOOP.PAM" ;
+            player.draw(batch, myResolvedPath, animName, 0f, drawX, drawY,
                 GameScreenConstants.TOMB_SCALE, GameScreenConstants.TOMB_SCALE, true);
             if (oldColor != null) batch.setColor(oldColor);
         } catch (Throwable e) {

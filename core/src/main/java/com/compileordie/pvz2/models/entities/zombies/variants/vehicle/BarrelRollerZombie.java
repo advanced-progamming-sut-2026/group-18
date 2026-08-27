@@ -12,6 +12,9 @@ public class BarrelRollerZombie extends VehicleZombie {
 
     public static final int WAVE_COST = 500;
 //    protected boolean isVehicleDestroyed = false;
+    public boolean isRoller = true;
+    public boolean spawnImp = false;
+    public boolean isDestroiedBarrel = false;
 
     public BarrelRollerZombie(double health, double speed, int attackPower, int row, double startX,
                               double x, double y, double xSpeed, double ySpeed,
@@ -39,20 +42,20 @@ public class BarrelRollerZombie extends VehicleZombie {
 
     @Override
     public void move(int ticks) {
-
+        super.move(ticks);
         if (!isVehicleDestroyed()) {
             pushBarrel(ticks);
         } else {
             ((Barrel) this.vehicle).updatePosition(this.getX());
-            float dt = ticks * Constants.Game.TIME_COEFFICIENT;
-            setX(getX() - getXSpeed() * dt);
+//            float dt = ticks * Constants.Game.TIME_COEFFICIENT;
+//            setX(getX() - getXSpeed() * dt);
         }
     }
 
     @Override
     public void takeDamage(double amount, DamageType damageType, PlantType plantType) {
         if (isDead()) return;
-        takedDamage = true;
+        if (damageType!=DamageType.POISON) takedDamage = true;
         if (damageType == DamageType.FIRE){
             this.removeStatusEffect(EffectType.FROZEN);
             this.removeStatusEffect(EffectType.CHILLED);
@@ -71,6 +74,12 @@ public class BarrelRollerZombie extends VehicleZombie {
                 }
             }
         } else {
+            if (!isDestroiedBarrel) {
+                spawnImp = true;
+                isDestroiedBarrel = true;
+            }
+            isRoller = false;
+//            spawnImp = true;
             this.health -= amount;
         }
 

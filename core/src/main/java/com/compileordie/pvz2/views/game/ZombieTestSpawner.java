@@ -38,8 +38,12 @@ public class ZombieTestSpawner {
     // لبه‌ی راست نقشه (رفتار پیش‌فرض قبلی)
     private static final float EDGE_SPAWN_X = 18f;
 
-    // وسط زمین: ۹ ستون داریم (0..8)، ستون وسط ۴ ام، مرکزش (4+0.5)*TILE_WIDTH
-    private static final float MIDDLE_SPAWN_X = (7 + 0.5f) * (float) Constants.Game.TILE_WIDTH;
+    // وسط زمین: ۹ ستون داریم (0..8)، ستون وسط ۴ ام، مرکزش هم مثل بقیه‌ی
+    // اسپاون‌های میانی موجود در پروژه (مثلاً ZombieManager) باید علاوه‌بر
+    // آفست نیم‌کاشی، PADDING_X_REALITY رو هم داشته باشه؛ وگرنه با مدل
+    // هماهنگ نیست و به‌جای وسط زمین، سمت چپ صفحه (قبل از شروع تخته) ظاهر می‌شه.
+    private static final float MIDDLE_SPAWN_X =
+        Constants.Game.PADDING_X_REALITY + (4 + 0.5f) * (float) Constants.Game.TILE_WIDTH;
 
     // 👑 حالت تست اختصاصی زامباس: وقتی true باشه، این کلاس هیچ زامبی معمولی‌ای
     // اسپاون نمی‌کنه؛ فقط یک‌بار (اولین فراخوانی update) یک EgyptZomboss می‌سازه.

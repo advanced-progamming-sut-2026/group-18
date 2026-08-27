@@ -8,9 +8,11 @@ import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.boss.GargantuarZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.capable.*;
 import com.compileordie.pvz2.models.entities.zombies.variants.mobility.DodoRiderZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.mobility.MovementState;
+import com.compileordie.pvz2.models.entities.zombies.variants.standard.AllStarZombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Lane;
 import com.compileordie.pvz2.models.game.economy.Sun;
@@ -46,8 +48,8 @@ public class ZombieCombatManager {
 
         for (Zombie z : zombiesCopy) {
             for (Plant p : plantsCopy) {
-                processPlantEating(z, p);
-                processSpecialCombatAbilities(z, p);
+                if (!z.isHypnotized()) processPlantEating(z, p);
+                if (!z.isHypnotized()) processSpecialCombatAbilities(z, p);
             }
         }
     }
@@ -91,7 +93,18 @@ public class ZombieCombatManager {
                 if ((z.getType() == ZombieType.DODO_RIDER && ((DodoRiderZombie) z).getState() == MovementState.FLYING) || !isEatable(p)) {
                 } else {
                     z.isEating = true;
-                    p.takeDamage((int) ((z.getType() == ZombieType.ALL_STAR ? smashDamage : z.getAttackPower() * dt)));
+                    p.takeDamage((int) (z.getAttackPower() * dt));
+                    if (z.getType() == ZombieType.GARGANTUAR) {
+                        // 🥊 تضمین می‌کنه سیکل انیمیشن eat/smash_left حداقل
+                        // یک‌بار کامل پخش بشه، حتی اگه همین ضربه گیاه رو
+                        // بکشه و isEating تیک بعدی فورا false بشه (چون دیگه
+                        // گیاهی برای eating پیدا نمی‌شه).
+                        ((GargantuarZombie) z).notifyAttackedPlant();
+                    }
+                    if (z.getType()==ZombieType.ALL_STAR && ((AllStarZombie)z).isCharging()){
+                        p.takeDamage((int) smashDamage);
+                        ((AllStarZombie)z).stopCharge();
+                    }
                 }
             }
         }
@@ -112,7 +125,7 @@ public class ZombieCombatManager {
                 ((TurquoiseZombie) z).stopLaser();
             }
         }
-        if (z.getType() == ZombieType.EXPLORER_ZOMBIE && (Math.abs(z.getY() - pWorldY) <= tileHeight / 6 && Math.abs(z.getX() - pWorldX) <= tileWidth * 1) && isVisible(p)) {
+        if (z.getType() == ZombieType.EXPLORER_ZOMBIE && (Math.abs(z.getY() - pWorldY) <= tileHeight / 6 && Math.abs(z.getX() - pWorldX) <= tileWidth * 3) && isVisible(p)) {
             p.takeDamage((int) smashDamage);
         }
         if (z.getType() == ZombieType.HUNTER_ZOMBIE && (Math.abs(z.getY() - pWorldY) <= tileHeight / 6 && Math.abs(z.getX() - pWorldX) <= HunterZombie.ABILITY_RANGE) && isVisible(p) && !p.hasActiveCover()) {
@@ -135,10 +148,23 @@ public class ZombieCombatManager {
             for (Zombie z1 : zombiesCopy) {
                 if (z == z1 || !(Math.abs(z.getY() - z1.getY()) <= tileHeight / 6 && Math.abs(z.getX() - z1.getX()) <= tileWidth / 6)) continue;
                 if ((z.isHypnotized() && !z1.isHypnotized()) || (z1.isHypnotized() && !z.isHypnotized())) {
-                    z.isCombatingWithHypnotized = true;
-                    z1.isCombatingWithHypnotized = true;
-                    z.takeDamage((z1.getType() == ZombieType.ALL_STAR ? smashDamage : z1.getAttackPower() * dt), DamageType.NORMAL, null);
-                    z1.takeDamage((z.getType() == ZombieType.ALL_STAR ? smashDamage : z.getAttackPower() * dt), DamageType.NORMAL, null);
+                    z.isEating = true;
+                    z1.isEating = true;
+
+//                    z.takeDamage((z1.getType() == ZombieType.ALL_STAR ? smashDamage : z1.getAttackPower() * dt), DamageType.NORMAL, null);
+                    z.takeDamage((int) (z1.getAttackPower() * dt), DamageType.NORMAL, null);
+                    if (z1.getType()==ZombieType.ALL_STAR && ((AllStarZombie)z1).isCharging()){
+                        z.takeDamage((int) smashDamage, DamageType.NORMAL, null);
+                        ((AllStarZombie)z1).stopCharge();
+                    }
+
+                    z1.takeDamage((int) (z.getAttackPower() * dt), DamageType.NORMAL, null);
+                    if (z.getType()==ZombieType.ALL_STAR && ((AllStarZombie)z).isCharging()){
+                        z1.takeDamage((int) smashDamage, DamageType.NORMAL, null);
+                        ((AllStarZombie)z).stopCharge();
+                    }
+
+//                    z1.takeDamage((z.getType() == ZombieType.ALL_STAR ? smashDamage : z.getAttackPower() * dt), DamageType.NORMAL, null);
                 }
             }
         }

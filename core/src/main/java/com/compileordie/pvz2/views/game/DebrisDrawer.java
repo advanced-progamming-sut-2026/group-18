@@ -3,6 +3,8 @@ package com.compileordie.pvz2.views.game;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
+import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.BarrelRollerZombie;
 import pvz.libpvz.pam.PamPlayer;
 
 import java.util.HashSet;
@@ -128,6 +130,7 @@ final class DebrisDrawer {
         float baseX = deadAnim.x * Constants.UI.METER_TO_PIX;
         float baseY = deadAnim.y * Constants.UI.METER_TO_PIX;
         String animName = deadAnim.typeKey.equals("EXPLOSIVE_DEATH") ? "animation" : "die";
+        if (deadAnim.typeKey.equals("die2")) animName = "die2";
 
         for (ZombieVisualRegistry.PamSpec part : def.pams) {
             String resolvedPath = part.getResolvedPath();

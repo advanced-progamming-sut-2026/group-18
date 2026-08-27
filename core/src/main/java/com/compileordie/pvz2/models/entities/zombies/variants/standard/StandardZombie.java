@@ -70,7 +70,7 @@ public abstract class StandardZombie extends Zombie {
     @Override
     public void takeDamage(double amount, DamageType damageType, PlantType plantType) {
         if (isDead()) return;
-        takedDamage = true;
+        if (damageType!=DamageType.POISON) takedDamage = true;
         double newAmount = amount;
 
         if (damageType == DamageType.FIRE){
