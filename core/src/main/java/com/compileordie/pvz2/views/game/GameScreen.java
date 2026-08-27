@@ -40,6 +40,12 @@ import java.util.Set;
 public class GameScreen implements Screen {
     boolean testOn = false;
     boolean testZombossOn = false;
+    /**
+     * سوییچ اصلی همه‌ی قابلیت‌های تستیِ مربوط به زامبی: اسپاون زامبی‌های
+     * تستی (testSpawner) و همچنین تست دمیج با کلیک روی زامبی/قبر/زامباس
+     * (handleClickDamageTest). وقتی false باشه، همه‌ی این‌ها کاملاً خاموشن.
+     */
+    boolean testPastKommeh = false;
     private final ZombieTestSpawner testSpawner =
         new ZombieTestSpawner();
 
@@ -164,7 +170,7 @@ public class GameScreen implements Screen {
         updateTextureBank();
         handleInput();
         advanceSimulation(delta);
-        if (!paused && testOn) testSpawner.update(delta);
+        if (!paused && testPastKommeh) testSpawner.update(delta);
         cameraEffects.checkGiantZombieFootsteps(delta, paused);
         cameraEffects.updateCameraShake(paused ? 0f : delta);
         viewport.getCamera().update();
@@ -257,7 +263,7 @@ public class GameScreen implements Screen {
             GameScreenController.handleTileClick(clickedTile);
         }
 
-        if (Gdx.input.justTouched() && hasWeTestForClickForDamaging) {
+        if (Gdx.input.justTouched() && testPastKommeh && hasWeTestForClickForDamaging) {
             handleClickDamageTest(touchPoint.x, touchPoint.y);
         }
 
@@ -270,7 +276,7 @@ public class GameScreen implements Screen {
         Gdx.app.log("&&&&--------PVZ-CLICK", String.format(
             "🖱️ مختصات کلیک -> پیکسل: (X: %.1f, Y: %.1f) | متر-مدل: (X: %.2f, Y: %.2f)",
             touchPoint.x, touchPoint.y, meterX, meterY));
-        if (hasWeTestForClickForDamaging) {
+        if (testPastKommeh && hasWeTestForClickForDamaging) {
             handleClickDamageTest(touchPoint.x, touchPoint.y);
         }
     }

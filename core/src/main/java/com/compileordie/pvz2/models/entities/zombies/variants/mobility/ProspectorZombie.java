@@ -56,7 +56,7 @@ public class ProspectorZombie extends Zombie {
     @Override
     public void takeDamage(double amount, DamageType damageType, PlantType plantType) {
         if (isDead()) return;
-        takedDamage = true;
+        if (damageType!=DamageType.POISON) takedDamage = true;
         if (damageType == DamageType.FIRE){
             this.removeStatusEffect(EffectType.FROZEN);
             this.removeStatusEffect(EffectType.CHILLED);

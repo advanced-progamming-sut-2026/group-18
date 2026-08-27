@@ -9,6 +9,7 @@ import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
+import com.compileordie.pvz2.models.entities.zombies.variants.standard.AllStarZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.BucketHeadZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.KnightZombie;
 import com.compileordie.pvz2.models.game.board.Lane;
@@ -108,7 +109,7 @@ public abstract class Zombie extends GameEntity {
         super(startX, y, xSpeed, ySpeed);
         this.health = health;
         this.maxHealth = health;
-        this.stableSpeed = getXSpeed();
+        this.stableSpeed = xSpeed;
         this.attackPower = base_damage;
         this.currentRow = row;
         this.activeEffects = new ArrayList<>();
@@ -213,14 +214,14 @@ public abstract class Zombie extends GameEntity {
         }
 
         // بررسی اینکه وارد زمین شده یا ن
-        if (!fromGarg && !isMidLawnSpawn) {
-            if (getX() >= Constants.Game.TILE_WIDTH * 9 + Constants.Game.PADDING_X + 1) {
-                if (replacedSpeed == 0) replacedSpeed = getXSpeed();
-                setXSpeed(replacedSpeed * 3);
-            } else {
-                setXSpeed(replacedSpeed);
-            }
-        }
+//        if (!fromGarg && !isMidLawnSpawn && !(this.getType()==ZombieType.ALL_STAR)) {
+//            if (getX() >= Constants.Game.TILE_WIDTH * 9 + Constants.Game.PADDING_X + 1) {
+//                if (replacedSpeed == 0) replacedSpeed = getXSpeed();
+//                setXSpeed(replacedSpeed * 3);
+//            } else {
+//                setXSpeed(replacedSpeed);
+//            }
+//        }
 
 
         // آپدیت و مدیریت افکت‌ها

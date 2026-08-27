@@ -23,6 +23,7 @@ public class Tomb extends Obstacle {
     private final double positionX;
     private final double positionY;
     private boolean isDestroyed;
+    public String type="normal";
     // 👈 مثل zombie.takedDamage: هر بار دمیج واقعی می‌خوره true می‌شه، لایه‌ی
     // رندر (GameScreen) بعد از خوندنش دوباره false می‌کنه تا فلش نور یک‌بار پخش بشه.
     public boolean takedDamage = false;

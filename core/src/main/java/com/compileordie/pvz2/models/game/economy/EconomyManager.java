@@ -35,7 +35,7 @@ public class EconomyManager {
         this.suns = new ArrayList<>();
         this.selectionDeck = selectionDeck;
         this.plantCards = new ArrayList<>();
-        this.sunAmount = 0;
+        this.sunAmount = 1000;
         this.totalSunsGenerated = 0;
         this.tickCounter = 0;
         this.ticksUntilNextNaturalSun = calculateNextSpawnIntervalTicks();
@@ -79,12 +79,19 @@ public class EconomyManager {
 
     public void spawnNaturalSun() {
         // Choose a completely randomized horizontal grid column location
-        float y = MathUtils.random(Constants.Game.PADDING_Y_REALITY + 3 * Constants.Game.TILE_HEIGHT + 2,
-            Constants.Game.PADDING_Y_REALITY + 5 * Constants.Game.TILE_HEIGHT + 2);
-        float x = MathUtils.random(Constants.Game.PADDING_X_REALITY + 2 * Constants.Game.TILE_WIDTH,
-            Constants.Game.PADDING_X_REALITY + 8 * Constants.Game.TILE_WIDTH);
-        float ground = MathUtils.random(Constants.Game.PADDING_Y_REALITY + 1,
-            Math.max(Constants.Game.PADDING_Y_REALITY + 4, y - 3));
+        float y = MathUtils.random(3 * Constants.Game.TILE_HEIGHT + 2,
+            5 * Constants.Game.TILE_HEIGHT + 2);
+        // 🌞 مثل هر مختصات دیگه‌ای که وارد GameBoard می‌شه (زامبی‌ها، گیاه‌ها،
+        // خورشیدهای تولیدشده توسط گیاه)، اینجا هم باید PADDING_X_REALITY رو
+        // به مقدار خام/منطقی (column-based) اضافه کنیم تا خورشید داخل بازه‌ی
+        // واقعی تخته (world-space) بیفته، نه تو ناحیه‌ی پدینگ/چپِ صفحه. بدون
+        // این، وقتی مثلا RA Zombie (که getX() ش کاملا world-space هست) این
+        // خورشید رو هدف می‌گیره، اختلاف مختصات باعث می‌شه خورشید به سمت
+        // اشتباهی پرواز کنه.
+        float x = Constants.Game.PADDING_X_REALITY + MathUtils.random(2 * Constants.Game.TILE_WIDTH,
+            8 * Constants.Game.TILE_WIDTH);
+        float ground = MathUtils.random(1,
+            Math.max(4, y - 3));
         /*float x = MathUtils.random(Constants.Game.BOARD_COLS / 3f, Constants.Game.BOARD_COLS);
         float y = MathUtils.random(Constants.Game.BOARD_ROWS, Constants.Game.BOARD_ROWS + 1);
         float ground = MathUtils.random(Constants.Game.BOARD_ROWS / 4f);*/
@@ -211,6 +218,6 @@ public class EconomyManager {
             return;
         }
         tile.plant = null;
-         AppModel.addAfterPrompt(String.format("%s at (%.1f, %.1f) plucked!", plant.getName(), x, y));
+        AppModel.addAfterPrompt(String.format("%s at (%.1f, %.1f) plucked!", plant.getName(), x, y));
     }
 }

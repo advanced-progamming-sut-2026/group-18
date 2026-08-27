@@ -34,16 +34,18 @@ public class DodoRiderZombie extends Zombie {
     private int flyingDurationTicks;
     private int numOfFlyTicks;
     private boolean endOfFlying = false;
+    public double stableY;
 
     public DodoRiderZombie(double health, double speed, int attackPower, int row, double startX,
                            double x, double y, double xSpeed, double ySpeed) {
         super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, ZombieType.DODO_RIDER);
         this.state = MovementState.WALKING;
         this.flightTimer = 0; // counter
-        this.flightTime = 5;  // basic
+        this.flightTime = 1.5;  // basic
         this.ySpeedForFlying = 0.4;
         this.flyingDurationTicks = 20; // basic
         this.numOfFlyTicks = flyingDurationTicks; // counter
+        this.stableY = y;
     }
 
 
@@ -63,6 +65,7 @@ public class DodoRiderZombie extends Zombie {
     @Override
     public void move(int ticks) {
         if (state == MovementState.WALKING) {
+            setYSpeed(0);
             super.move(ticks);
             return;
         }
@@ -80,12 +83,12 @@ public class DodoRiderZombie extends Zombie {
 
             numOfFlyTicks = 0;
             flightTimer += (ticks * Constants.Game.TIME_COEFFICIENT);
-            setY(0);
+            setYSpeed(0);
             super.move(ticks);
             if (flightTimer >= flightTime) {
                 flightTimer = 0;
                 numOfFlyTicks = flyingDurationTicks;
-                setY(-ySpeedForFlying);
+                setYSpeed(-ySpeedForFlying);
                 endOfFlying = true;
             }
         }
@@ -98,7 +101,7 @@ public class DodoRiderZombie extends Zombie {
             this.removeStatusEffect(EffectType.CHILLED);
         }
         if (isDead()) return;
-        takedDamage = true;
+        if (damageType!=DamageType.POISON) takedDamage = true;
         this.health -= amount;
         if (health <= 0){
             health = 0;
