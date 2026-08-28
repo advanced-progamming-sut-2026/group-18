@@ -77,6 +77,17 @@ final class GameRenderStates {
         float fadeTimer = 0f;
     }
 
+    public static class PlantFoodRenderState {
+        public boolean isFading = false;
+        public float fadeTimer = 0f;
+    }
+
+    public static class SeedPacketRenderState {
+        public float animTime = 0f;
+        public boolean isFading = false;
+        public float fadeTimer = 0f;
+    }
+
     final Map<Plant, PlantRenderState> plantRenderStates = new HashMap<>();
     final Map<Zombie, ZombieRenderState> zombieRenderStates = new HashMap<>();
     final Map<LawnMower, MowerRenderState> mowerRenderStates = new HashMap<>();
@@ -85,6 +96,8 @@ final class GameRenderStates {
     final Map<Tile, Float> fireTileAnimTimes = new HashMap<>();
     final List<DeadZombieAnim> deadZombies = new ArrayList<>();
     final List<FallingDebris> fallingDebris = new ArrayList<>();
+    final Map<Object, PlantFoodRenderState> plantFoodRenderStates = new HashMap<>();
+    final Map<Object, SeedPacketRenderState> seedPacketRenderStates = new HashMap<>();
 
     void clearAll() {
         zombieRenderStates.clear();

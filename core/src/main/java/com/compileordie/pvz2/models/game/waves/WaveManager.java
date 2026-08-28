@@ -169,6 +169,9 @@ public class WaveManager {
 
                 Zombie zombie = ZombieBuilder.create(zombieType, x, y, targetTile.row);
                 gameBoard.lanes.get(targetTile.row).zombies.add(zombie);
+
+                // Show notification for underwater beach spawn
+                ToastManager.showMessage("A " + zombieType + " emerged from the water!");
                 return;
             }
         }

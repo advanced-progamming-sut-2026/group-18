@@ -320,6 +320,7 @@ public class GameScreen implements Screen {
             batch.setTransformMatrix(batch.getTransformMatrix());
         }
         boardDrawer.drawBackground(batch);
+        boardDrawer.drawGridLines(batch);
         boardDrawer.drawMowers(batch, player, worldDelta);
         boardDrawer.drawTombs(batch, player, worldDelta);
         boardDrawer.drawFireTiles(batch, player, worldDelta);
@@ -341,6 +342,8 @@ public class GameScreen implements Screen {
 
         Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
         viewport.unproject(mousePos);
+        boardDrawer.drawPlantFoods(batch, worldDelta, mousePos);
+        boardDrawer.drawSeedPackets(batch, plantAssetManager, worldDelta, mousePos);
         boardDrawer.drawSuns(batch, player, worldDelta, mousePos);
         boardDrawer.drawCursorFollower(batch, plantAssetManager, mousePos, delta);
 
