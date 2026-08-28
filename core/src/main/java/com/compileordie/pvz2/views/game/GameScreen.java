@@ -57,6 +57,7 @@ public class GameScreen implements Screen {
     private PamPlayer player;
 
     public boolean hasWeTestForClickForDamaging = true;
+    public boolean overrideForceDamageClick = true;
     private static final float CLICK_DAMAGE_TEST_RADIUS_PX = 50f;
 
     private float effectPulseTime = 0f;
@@ -176,8 +177,9 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
+        delta *= AppModel.player.gameSpeedCoefficient;
         ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
-        boolean paused = ui != null && ui.isPaused;
+        boolean paused = ui != null && GameScreenUI.isPaused;
 
         if (!paused) {
             effectPulseTime += delta;
@@ -279,10 +281,6 @@ public class GameScreen implements Screen {
             GameScreenController.handleTileClick(clickedTile);
         }
 
-        if (Gdx.input.justTouched() && testPastKommeh && hasWeTestForClickForDamaging) {
-            handleClickDamageTest(touchPoint.x, touchPoint.y);
-        }
-
         // TODO: For debug purposes. Remove later:
         if (!Gdx.input.justTouched()) return;
         touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0);
@@ -292,7 +290,7 @@ public class GameScreen implements Screen {
         Gdx.app.log("&&&&--------PVZ-CLICK", String.format(
             "🖱️ مختصات کلیک -> پیکسل: (X: %.1f, Y: %.1f) | متر-مدل: (X: %.2f, Y: %.2f)",
             touchPoint.x, touchPoint.y, meterX, meterY));
-        if (testPastKommeh && hasWeTestForClickForDamaging) {
+        if ((testPastKommeh && hasWeTestForClickForDamaging) || overrideForceDamageClick) {
             handleClickDamageTest(touchPoint.x, touchPoint.y);
         }
     }

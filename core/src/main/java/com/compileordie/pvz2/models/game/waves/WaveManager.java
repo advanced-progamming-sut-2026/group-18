@@ -39,6 +39,10 @@ public class WaveManager {
     private WaveEventListener listener;
     private final Random random = new Random();
     private boolean isSpawningFinalWave = false;
+    public double totalMatchBudget;
+    public double remainingMatchBudget;
+    private final List<Double> waveStartBudgetThresholds = new ArrayList<>();
+    private final List<Float> waveMarkerPercentages = new ArrayList<>();
 
     public WaveManager(GameBoard gameBoard, WaveType type, int waveNumber, boolean shouldStartWaves) {
         this.gameBoard = gameBoard;
@@ -49,6 +53,7 @@ public class WaveManager {
         this.previousWaveTotalMaxHealth = 0;
         this.tickCounter = 0;
         this.shouldStartWaves = shouldStartWaves;
+        initProgressTracking();
     }
 
     public void setWaveEventListener(WaveEventListener listener) {
@@ -77,6 +82,45 @@ public class WaveManager {
 
         if (canStartFirstWave || canStartNextWave) {
             spawnWave();
+        }
+    }
+
+    public void initProgressTracking() {
+        waveStartBudgetThresholds.clear();
+        waveMarkerPercentages.clear();
+
+        if (waveNumber <= 0) {
+            totalMatchBudget = 1;
+            remainingMatchBudget = 1;
+            return;
+        }
+
+        double cumulativeSpent = 0;
+        double calcBudget = this.waveBudget;
+
+        for (int w = 1; w <= waveNumber; w++) {
+            waveStartBudgetThresholds.add(cumulativeSpent);
+
+            double thisWaveBudget;
+            if (w == 1) {
+                thisWaveBudget = calcBudget;
+            } else if (w == waveNumber) {
+                thisWaveBudget = calcBudget * 2;
+            } else {
+                thisWaveBudget = Math.floor(calcBudget * 1.25f);
+            }
+
+            cumulativeSpent += thisWaveBudget;
+            calcBudget = thisWaveBudget;
+        }
+
+        totalMatchBudget = cumulativeSpent;
+        remainingMatchBudget = totalMatchBudget;
+
+        // Unreversed marker positions along the progress bar (0.0 = start, 1.0 = final wave)
+        for (int i = 1; i < waveStartBudgetThresholds.size(); i++) {
+            double spentThreshold = waveStartBudgetThresholds.get(i);
+            waveMarkerPercentages.add((float) (1.0 - (spentThreshold / totalMatchBudget)));
         }
     }
 
@@ -183,9 +227,7 @@ public class WaveManager {
             x = (gameBoard.totalCols - 0.5f - random.nextInt(2, 5))
                 * Constants.Game.TILE_WIDTH + Constants.Game.PADDING_X;
         }
-
         double y = (randomLaneIndex) * Constants.Game.TILE_HEIGHT + Constants.UI.BOTTOM_LINE_METER;
-
         Zombie zombie = ZombieBuilder.create(zombieType, x, y, randomLaneIndex);
         gameBoard.lanes.get(randomLaneIndex).zombies.add(zombie);
     }
@@ -217,6 +259,10 @@ public class WaveManager {
             }
         }
 
+        // Deduct unspent wave remainder so ghost points don't prevent reaching 0 at game end
+        double unusedBudget = waveBudget - spent;
+        remainingMatchBudget = Math.max(0, remainingMatchBudget - unusedBudget);
+
         return zombiesForWave;
     }
 
@@ -246,5 +292,28 @@ public class WaveManager {
 
     public boolean isLastWave() {
         return currentWave == waveNumber;
+    }
+
+    /**
+     * Deducts the zombie's wave cost from the remaining match budget upon death.
+     */
+    public void onZombieKilled(ZombieType zombieType) {
+        int cost = ConfigManager.zombies().get(zombieType).waveCost;
+        remainingMatchBudget = Math.max(0, remainingMatchBudget - cost);
+    }
+
+    /**
+     * Returns remaining match progress from 1.0 (100% remaining) down to 0.0 (0% remaining).
+     */
+    public float getRemainingProgressPercentage() {
+        if (totalMatchBudget <= 0) return 0f;
+        return (float) Math.clamp(remainingMatchBudget / totalMatchBudget, 0.0, 1.0);
+    }
+
+    /**
+     * Returns the list of progress percentages (0.0f - 1.0f) where each wave begins.
+     */
+    public List<Float> getWaveMarkerPercentages() {
+        return waveMarkerPercentages;
     }
 }

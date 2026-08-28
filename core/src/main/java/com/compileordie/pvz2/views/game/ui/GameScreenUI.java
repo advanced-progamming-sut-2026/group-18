@@ -17,6 +17,8 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.compileordie.pvz2.controllers.menus.game.GameScreenController;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.game.SessionBuilder;
+import com.compileordie.pvz2.models.game.levels.LevelType;
+import com.compileordie.pvz2.models.game.waves.WaveManager;
 import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.views.ScreenManager;
 import com.compileordie.pvz2.views.ScreenType;
@@ -37,6 +39,7 @@ public final class GameScreenUI {
     public Skin skin;
     public Table gameEndOverlayContainer;
     public Label sunAmountLabel;
+    public WaveProgressBarUI waveProgressBar;
     private final Runnable onResume;
     private final Runnable onRestart;
     private final Runnable onExitToMain;
@@ -210,6 +213,31 @@ public final class GameScreenUI {
         PlantCardBar cardBar = new PlantCardBar(skin, textureBank, AppModel.gameSession.gameBoard.economyManager);
         cardBarTable.add(cardBar).padTop(10);
         uiStage.addActor(cardBarTable);
+
+        // 2. Wave Progress Bar (Pinned Bottom Middle)
+        if (AppModel.gameSession != null && AppModel.gameSession.gameBoard != null) {
+            WaveManager waveManager = AppModel.gameSession.gameBoard.waveManager;
+            boolean isZomboss = AppModel.currentLevel != null && AppModel.currentLevel.levelType == LevelType.ZOMBOSS;
+
+            // Only construct and display the progress bar if there are valid finite waves or if it's a Zomboss level
+            if (waveManager != null && (waveManager.waveNumber > 0 || isZomboss)) {
+                waveProgressBar = new WaveProgressBarUI(
+                    AppModel.gameSession.gameBoard,
+                    waveManager,
+                    skin,
+                    textureBank,
+                    isZomboss
+                );
+                waveProgressBar.setSize(300f, 24f);
+
+                Table progressTable = new Table();
+                progressTable.setFillParent(true);
+                progressTable.bottom();
+                progressTable.add(waveProgressBar).padBottom(15);
+
+                uiStage.addActor(progressTable);
+            }
+        }
     }
 
     public void showGameEndPanel(boolean isWin) {

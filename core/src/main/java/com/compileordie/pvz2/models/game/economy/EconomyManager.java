@@ -35,6 +35,7 @@ public class EconomyManager {
         this.suns = new ArrayList<>();
         this.selectionDeck = selectionDeck;
         this.plantCards = new ArrayList<>();
+        // TODO: Reset back to 0
         this.sunAmount = 1000;
         this.totalSunsGenerated = 0;
         this.tickCounter = 0;
