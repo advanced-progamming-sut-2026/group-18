@@ -20,59 +20,38 @@ public enum WaveType {
     NORMAL {
         @Override
         public void spawnWave(WaveManager self, GameBoard gameBoard, List<ZombieType> zombies) {
-            placeZombiesRandomly(gameBoard, zombies, 0);
         }
     },
     ANCIENT_EGYPT {
         @Override
         public void spawnWave(WaveManager self, GameBoard gameBoard, List<ZombieType> zombies) {
-            if (self.currentWave == self.waveNumber) {
-                // Final wave Tornadoes: Drop zombies 1 to 4 columns further in
-                placeZombiesWithTornadoOffset(gameBoard, zombies);
-            } else {
-                placeZombiesRandomly(gameBoard, zombies, 0);
-            }
+            // Handled via WaveManager queue
         }
     },
     FROSTBITE_CAVE {
         @Override
         public void spawnWave(WaveManager self, GameBoard gameBoard, List<ZombieType> zombies) {
-            // Trigger environmental effect before spawning
-            triggerIcyWind(gameBoard);
-            placeZombiesRandomly(gameBoard, zombies, 0);
+            // 75% probability for icy winds at the start of a wave
+            if (new Random().nextFloat() < 0.75f) {
+                triggerIcyWind(gameBoard);
+            }
         }
     },
     BIG_WAVE_BEACH {
         @Override
         public void spawnWave(WaveManager self, GameBoard gameBoard, List<ZombieType> zombies) {
-            // Tide shifts with every wave
-            changeTide(gameBoard);
-
-            // Assume low shore ambush logic can be handled by offsetting some zombies
-            // You can loop over `zombies` here and set specific spawn states if they emerge from water
-            placeZombiesRandomly(gameBoard, zombies, 0);
+            changeTide(gameBoard); // Recalculates water/tide level at start of wave
         }
     },
     DARK_AGES {
         @Override
         public void spawnWave(WaveManager self, GameBoard gameBoard, List<ZombieType> zombies) {
-            // Necromancy: Spawn new tombs at the start of the wave
-            spawnDarkAgesTombs(gameBoard);
-
-            // Split zombies: Some spawn from tombs, rest spawn normally
-            int tombSpawnCount = zombies.size() / 3;
-            for (int i = 0; i < tombSpawnCount; i++) {
-                spawnZombieFromRandomTomb(gameBoard, zombies.get(i));
-            }
-
-            // Normal placement for the remaining zombies
-            placeZombiesRandomly(gameBoard, zombies.subList(tombSpawnCount, zombies.size()), 0);
+            spawnDarkAgesTombs(gameBoard); // Calls tomb spawner stub
         }
     },
     ZOMBOTANY {
         @Override
         public void spawnWave(WaveManager self, GameBoard gameBoard, List<ZombieType> zombies) {
-            // TODO: Must include special zombies
             NORMAL.spawnWave(self, gameBoard, zombies);
         }
     },
@@ -95,14 +74,10 @@ public enum WaveType {
         for (ZombieType zombieType : zombies) {
             int randomLaneIndex = random.nextInt(lanes.size());
 
-//            double x = (gameBoard.totalCols - 0.5f - columnOffset) * Constants.Game.TILE_SIZE;
-//            double y = (randomLaneIndex + 0.5f) * Constants.Game.TILE_SIZE;
             double x = 18f;
             double y = (randomLaneIndex) * Constants.Game.TILE_HEIGHT + Constants.UI.BOTTOM_LINE_METER;
 
-
             Zombie zombie = ZombieBuilder.create(zombieType, x, y, randomLaneIndex);
-
             lanes.get(randomLaneIndex).zombies.add(zombie);
         }
     }
@@ -131,27 +106,22 @@ public enum WaveType {
     }
 
     protected void triggerIcyWind(GameBoard gameBoard) {
-        Random random = new Random();
         List<Lane> lanes = gameBoard.lanes;
         if (lanes == null || lanes.isEmpty()) return;
 
-        int affectedLaneCount = random.nextInt(lanes.size()) + 1;
-        for (int i = 0; i < affectedLaneCount; i++) {
-            Lane lane = lanes.get(random.nextInt(lanes.size()));
-            for (Tile tile : lane.tiles) {
-                Plant plant = tile.plant;
+        Random random = new Random();
+        // Pick 1 specific row
+        Lane targetLane = lanes.get(random.nextInt(lanes.size()));
+        for (Tile tile : targetLane.tiles) {
+            Plant plant = tile.plant;
+            // Document rule: "کلیه گیاهان (به جز گیاهانی که تگ آتشین دارند)..."
+            if (plant != null && !plant.hasTag(PlantTag.FIRE)) {
+                // This single method now handles the 3 levels and the 600 HP ice block!
+                plant.addChill();
 
-                // Document rule: "کلیه گیاهان (به جز گیاهانی که تگ آتشین دارند)..."
-                if (plant != null && !plant.hasTag(PlantTag.FIRE)) {
-
-                    // This single method now handles the 3 levels and the 600 HP ice block!
-                    plant.addChill();
-
-                }
             }
         }
     }
-
 
 
     protected void changeTide(GameBoard gameBoard) {
@@ -175,9 +145,10 @@ public enum WaveType {
 
         if (emptyTiles.isEmpty()) return;
 
-        int tombsToSpawn = Math.min(emptyTiles.size(), random.nextInt(3) + 1);
+        int tombsToSpawn = Math.min(emptyTiles.size(), random.nextInt(2) + 1);
         for (int i = 0; i < tombsToSpawn; i++) {
             Tile targetTile = emptyTiles.remove(random.nextInt(emptyTiles.size()));
+            // TODO: Make it dark ages type of tomb
             targetTile.obstacle = new Tomb(700,
                 targetTile.row,
                 targetTile.column,

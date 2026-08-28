@@ -39,12 +39,6 @@ public enum TileType {
         public void tick(int ticks, Tile self, GameBoard gameBoard) {
         }
     },
-    DEEP_BEACH(false) {
-        @Override
-        public void tick(int ticks, Tile self, GameBoard gameBoard) {
-            handleOceanTileLogic(self, gameBoard);
-        }
-    },
     SHALLOW_BEACH(true) {
         @Override
         public void tick(int ticks, Tile self, GameBoard gameBoard) {

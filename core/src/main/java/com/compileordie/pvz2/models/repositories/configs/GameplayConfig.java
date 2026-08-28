@@ -8,5 +8,7 @@ public class GameplayConfig {
     public int loveYourPlantsMaxLost;
     public int maxTideLevel;
     public int seedPacketDespawn;
+    public int plantFoodDespawn;
     public int beghouledScore;
+    public int spawnDelaySeconds;
 }

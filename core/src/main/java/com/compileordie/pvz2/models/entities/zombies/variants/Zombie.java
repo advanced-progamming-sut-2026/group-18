@@ -5,11 +5,9 @@ import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
-import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
-import com.compileordie.pvz2.models.entities.zombies.variants.standard.AllStarZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.BucketHeadZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.KnightZombie;
 import com.compileordie.pvz2.models.game.board.Lane;
@@ -149,6 +147,8 @@ public abstract class Zombie extends GameEntity {
             }
         }
         //----
+
+        AppModel.gameSession.gameBoard.waveManager.onZombieKilled(this.getType());
     }
 
     // تیک ما در کلاس والد زامبی صرفا برای هندل کردن مرگ و افکت ها هست

@@ -25,6 +25,7 @@ import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.waves.WaveType;
 import com.compileordie.pvz2.views.game.ui.GameScreenUI;
 import com.compileordie.pvz2.views.game.ui.LevelStartDialog;
+import com.compileordie.pvz2.views.helpers.ToastManager;
 import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.textures.TextureBank;
 import pvz.skin.PvzSkin;
@@ -56,6 +57,7 @@ public class GameScreen implements Screen {
     private PamPlayer player;
 
     public boolean hasWeTestForClickForDamaging = true;
+    public boolean overrideForceDamageClick = true;
     private static final float CLICK_DAMAGE_TEST_RADIUS_PX = 50f;
 
     private float effectPulseTime = 0f;
@@ -104,8 +106,23 @@ public class GameScreen implements Screen {
             PvzSkin.get(),
             textureBank,
             player,
-            () -> GameScreenUI.isPaused = false
+            () -> {
+                GameScreenUI.isPaused = false;
+                ToastManager.showMessage("The match begins!");
+            }
         );
+
+        if (AppModel.gameSession != null && AppModel.gameSession.gameBoard != null) {
+            AppModel.gameSession.gameBoard.waveManager.setWaveEventListener(
+                (currentWave, totalWaves, isFinalWave, message) -> {
+                    if (isFinalWave) {
+                        ToastManager.showError(message);
+                    } else {
+                        ToastManager.showMessage(message);
+                    }
+                }
+            );
+        }
     }
 
     private void initHelpers() {
@@ -160,8 +177,9 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
+        delta *= AppModel.player.gameSpeedCoefficient;
         ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
-        boolean paused = ui != null && ui.isPaused;
+        boolean paused = ui != null && GameScreenUI.isPaused;
 
         if (!paused) {
             effectPulseTime += delta;
@@ -263,10 +281,6 @@ public class GameScreen implements Screen {
             GameScreenController.handleTileClick(clickedTile);
         }
 
-        if (Gdx.input.justTouched() && testPastKommeh && hasWeTestForClickForDamaging) {
-            handleClickDamageTest(touchPoint.x, touchPoint.y);
-        }
-
         // TODO: For debug purposes. Remove later:
         if (!Gdx.input.justTouched()) return;
         touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0);
@@ -276,7 +290,7 @@ public class GameScreen implements Screen {
         Gdx.app.log("&&&&--------PVZ-CLICK", String.format(
             "🖱️ مختصات کلیک -> پیکسل: (X: %.1f, Y: %.1f) | متر-مدل: (X: %.2f, Y: %.2f)",
             touchPoint.x, touchPoint.y, meterX, meterY));
-        if (testPastKommeh && hasWeTestForClickForDamaging) {
+        if ((testPastKommeh && hasWeTestForClickForDamaging) || overrideForceDamageClick) {
             handleClickDamageTest(touchPoint.x, touchPoint.y);
         }
     }
@@ -304,6 +318,7 @@ public class GameScreen implements Screen {
             batch.setTransformMatrix(batch.getTransformMatrix());
         }
         boardDrawer.drawBackground(batch);
+        boardDrawer.drawGridLines(batch);
         boardDrawer.drawMowers(batch, player, worldDelta);
         boardDrawer.drawTombs(batch, player, worldDelta);
         boardDrawer.drawFireTiles(batch, player, worldDelta);
@@ -325,6 +340,8 @@ public class GameScreen implements Screen {
 
         Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
         viewport.unproject(mousePos);
+        boardDrawer.drawPlantFoods(batch, worldDelta, mousePos);
+        boardDrawer.drawSeedPackets(batch, plantAssetManager, worldDelta, mousePos);
         boardDrawer.drawSuns(batch, player, worldDelta, mousePos);
         boardDrawer.drawCursorFollower(batch, plantAssetManager, mousePos, delta);
 
