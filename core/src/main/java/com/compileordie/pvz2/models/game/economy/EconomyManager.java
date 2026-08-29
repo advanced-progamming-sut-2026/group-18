@@ -152,6 +152,7 @@ public class EconomyManager {
         AppModel.addAfterPrompt("A radioactive sun exploded! BOOM!");
     }
 
+    // TODO: Migrate logic and remove next three methods
     public boolean collect(float x, float y) {
         float reach = Constants.Game.TILE_HEIGHT / 2f;
 
@@ -184,7 +185,7 @@ public class EconomyManager {
         for (PlantCard plantCard : plantCards) {
             if (plantCard.isReady() && plantCard.plantType == plantType) {
                 plant = PlantSpawner.spawn(plantType, x, y, plantCard.isBoosted, false);
-                if (type == EconomyType.CONVEYOR_BELT) {
+                if (type == EconomyType.CONVEYOR_BELT || type == EconomyType.VASE_BREAKER) {
                     plantCards.remove(plantCard);
                 } else if (gameBoard.levelID == LevelID.WALNUT_BOWLING) {
                     if (x < Constants.Game.TILE_WIDTH * 5) {

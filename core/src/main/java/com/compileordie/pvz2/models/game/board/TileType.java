@@ -1,6 +1,6 @@
 package com.compileordie.pvz2.models.game.board;
 
-import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.enums.PlantTag;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
@@ -25,33 +25,28 @@ public enum TileType {
     SLIPPERY_UP(false) {
         @Override
         public void tick(int ticks, Tile self, GameBoard gameBoard) {
-            handleSlipperyMovement(self, gameBoard, -1);
+            handleSlipperyMovement(self, gameBoard, 1);
         }
     },
     SLIPPERY_DOWN(false) {
         @Override
         public void tick(int ticks, Tile self, GameBoard gameBoard) {
-            handleSlipperyMovement(self, gameBoard, 1);
+            handleSlipperyMovement(self, gameBoard, -1);
         }
     },
     BIG_WAVE_BEACH(true) {
         @Override
         public void tick(int ticks, Tile self, GameBoard gameBoard) {
+            if (self.isUnderWater()) handleOceanTileLogic(self, gameBoard);
         }
     },
     SHALLOW_BEACH(true) {
         @Override
         public void tick(int ticks, Tile self, GameBoard gameBoard) {
-            // Shallow beaches behave like regular water when flooded
             if (self.isUnderWater()) handleOceanTileLogic(self, gameBoard);
         }
     },
     DARK_AGES(true) {
-        @Override
-        public void tick(int ticks, Tile self, GameBoard gameBoard) {
-        }
-    },
-    NECROMANCY(true) {
         @Override
         public void tick(int ticks, Tile self, GameBoard gameBoard) {
         }
@@ -105,6 +100,7 @@ public enum TileType {
                     lane.zombies.remove(i);
                     zombie.setCurrentRow(targetRow);
                     gameBoard.getLane(targetRow).zombies.add(zombie);
+                    zombie.setY(zombie.getY() + (rowOffset * Constants.Game.TILE_HEIGHT));
                 }
             }
         }
@@ -119,9 +115,7 @@ public enum TileType {
             if (!plant.hasTag(PlantTag.WATER) && !self.hasLilyPad) {
                 plant.takeDamage(99999);
                 self.plant = null;
-                AppModel.addAfterPrompt("Plant " + plant.getName() + " drowned in the ocean water!");
             }
         }
     }
-
 }

@@ -36,6 +36,11 @@ public enum EconomyType {
             }
         }
     },
+    VASE_BREAKER {
+        @Override
+        public void tick(int ticks, EconomyManager self, GameBoard gameBoard) {
+        }
+    },
     PLANT_WHAT_YOU_GET {
         @Override
         public void tick(int ticks, EconomyManager self, GameBoard gameBoard) {

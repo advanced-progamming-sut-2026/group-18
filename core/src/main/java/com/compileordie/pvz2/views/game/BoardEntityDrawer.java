@@ -42,7 +42,7 @@ final class BoardEntityDrawer {
     private static final String SUN_PAM = "768/INITIAL/EFFECTS/SUN/SUN.PAM";
     private static final String RADIOACTIVE_SUN_PAM = "768/FULL/EFFECTS/SUN_BOMB/SUN_BOMB.PAM";
 
-    private final GameRenderStates states;
+    public final GameRenderStates states;
     private final Set<String> brokenAssets;
     private TextureRegion bgLeftRegion;
     private TextureRegion bgMainRegion;
@@ -185,7 +185,7 @@ final class BoardEntityDrawer {
         if (brokenAssets.contains(resolvedPath)) return;
 
         for (var lane : AppModel.gameSession.gameBoard.lanes) {
-            for (Tomb tomb : lane.tombs) {
+            for (Tomb tomb : lane.getAllTombs()) {
                 if (tomb.isDestroyed()) continue;
                 drawOneTomb(batch, player, tomb, resolvedPath, delta);
             }
@@ -210,9 +210,8 @@ final class BoardEntityDrawer {
         else if (ratio > 0.25) animName = "damage3";
         else animName = "damage4";
 
-        float drawX = (float) (tomb.getPositionX()) * Constants.UI.METER_TO_PIX;
-        float drawY = (float) (tomb.getPositionY() + Constants.Game.PADDING_Y_REALITY)
-            * Constants.UI.METER_TO_PIX;
+        float drawX = (float) tomb.getPositionX() * Constants.UI.METER_TO_PIX;
+        float drawY = (float) tomb.getPositionY() * Constants.UI.METER_TO_PIX;
         state.lastDrawX = drawX;
         state.lastDrawY = drawY;
 

@@ -35,7 +35,7 @@ public class PlantCardBar extends Table {
         if (economyManager == null) return;
 
         // If conveyor belt mode, ConveyorBeltActor handles its own card animations
-        if (economyManager.type == EconomyType.CONVEYOR_BELT) {
+        if (economyManager.type == EconomyType.CONVEYOR_BELT || economyManager.type == EconomyType.VASE_BREAKER) {
             if (getChildren().isEmpty() || !(getChildren().first() instanceof ConveyorBeltActor)) {
                 syncBar();
             }
@@ -55,7 +55,7 @@ public class PlantCardBar extends Table {
         if (economyManager == null) return;
 
         // 1. Conveyor Belt Mode
-        if (economyManager.type == EconomyType.CONVEYOR_BELT) {
+        if (economyManager.type == EconomyType.CONVEYOR_BELT || economyManager.type == EconomyType.VASE_BREAKER) {
             ConveyorBeltActor conveyorBelt = new ConveyorBeltActor(skin, textureBank, configRepo);
             add(conveyorBelt).size(ConveyorBeltActor.BELT_WIDTH, ConveyorBeltActor.BELT_HEIGHT).center().top();
             return;

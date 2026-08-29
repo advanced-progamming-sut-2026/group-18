@@ -11,4 +11,5 @@ public class GameplayConfig {
     public int plantFoodDespawn;
     public int beghouledScore;
     public int spawnDelaySeconds;
+    public int bowlingLine;
 }

@@ -8,5 +8,6 @@
   "seedPacketDespawn": 30,
   "plantFoodDespawn": 30,
   "beghouledScore": 5,
-  "spawnDelaySeconds": 10
+  "spawnDelaySeconds": 10,
+  "bowlingLine": 4
 }

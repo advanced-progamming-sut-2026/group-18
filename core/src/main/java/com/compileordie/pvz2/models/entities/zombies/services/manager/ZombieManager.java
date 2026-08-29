@@ -1,10 +1,8 @@
 package com.compileordie.pvz2.models.entities.zombies.services.manager;
 
 import com.compileordie.pvz2.config.Constants;
-import java.util.Random;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
-import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
 import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
@@ -17,12 +15,14 @@ import com.compileordie.pvz2.models.entities.zombies.variants.boss.GargantuarZom
 import com.compileordie.pvz2.models.entities.zombies.variants.mobility.SnorkelZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.TombraiserZombie;
-import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.Barrel;
 import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.BarrelRollerZombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Tile;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import static com.badlogic.gdx.math.MathUtils.random;
 
 public class ZombieManager {
@@ -237,12 +237,16 @@ public class ZombieManager {
         }
         Tile randomTile1 = ts.get(index1);
         Tile randomTile2 = ts.get(index2);
-        Tomb tomb1 = new Tomb(700, randomTile1.row, randomTile1.column, (randomTile1.column + 0.5) * tileWidth, (randomTile1.row) * tileHeight);
-        randomTile1.obstacle = tomb1;
-        gb.getLane(randomTile1.row).tombs.add(tomb1);
-        Tomb tomb2 = new Tomb(700, randomTile2.row, randomTile2.column, (randomTile2.column + 0.5) * tileWidth, (randomTile2.row) * tileHeight);
-        randomTile2.obstacle = tomb2;
-        gb.getLane(randomTile2.row).tombs.add(tomb2);
+        randomTile1.obstacle = new Tomb(700,
+            randomTile1.row,
+            randomTile1.column,
+            (randomTile1.column + 0.5f) * Constants.Game.TILE_WIDTH + Constants.Game.PADDING_X,
+            (randomTile1.row + 0.5f) * Constants.Game.TILE_HEIGHT + Constants.Game.PADDING_Y);
+        randomTile2.obstacle = new Tomb(700,
+            randomTile2.row,
+            randomTile2.column,
+            (randomTile2.column + 0.5f) * Constants.Game.TILE_WIDTH + Constants.Game.PADDING_X,
+            (randomTile2.row + 0.5f) * Constants.Game.TILE_HEIGHT + Constants.Game.PADDING_Y);
     }
 
     public void miniTick(List<Zombie> myZombies, GameBoard myMap) {

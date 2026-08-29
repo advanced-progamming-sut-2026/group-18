@@ -1,6 +1,5 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.summoner;
 
-import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
 import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
@@ -9,6 +8,7 @@ import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
+import com.compileordie.pvz2.models.game.board.Tile;
 
 import java.util.EnumSet;
 
@@ -37,12 +37,12 @@ public class Tomb extends Obstacle {
     );
 
     public Tomb(double health, int row, int col, double positionX, double positionY) {
-        super(positionX+ Constants.Game.PADDING_X_REALITY, positionY, ObstacleType.TOMB);
+        super(positionX, positionY, ObstacleType.TOMB);
         this.health = health;
         this.maxHealth = health;
         this.row = row;
         this.col = col;
-        this.positionX = positionX+Constants.Game.PADDING_X_REALITY;
+        this.positionX = positionX;
         this.positionY = positionY;
         this.isDestroyed = false;
     }
@@ -56,6 +56,11 @@ public class Tomb extends Obstacle {
             this.health = 0;
             this.isDestroyed = true;
             this.type.dieSpawn(this, AppModel.gameSession.gameBoard);
+            for (Tile tile : AppModel.gameSession.gameBoard.getAllTiles()) {
+                if (tile.obstacle == this) {
+                    tile.obstacle = null;
+                }
+            }
         }
     }
 
