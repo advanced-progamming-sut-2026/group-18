@@ -23,10 +23,7 @@ import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.models.user.Player; // Arsam
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class GameBoard {
@@ -46,6 +43,7 @@ public class GameBoard {
     public int lostPlants;
     public int tickCounter;
     public int registeredShapes;
+    private List<Plant> plants;
 
     public GameBoard(LevelID levelID,
                      int totalRows,
@@ -74,6 +72,7 @@ public class GameBoard {
         this.lostPlants = 0;
         this.tickCounter = 0;
         this.registeredShapes = 0;
+        this.plants = new ArrayList<>();
     }
 
     // Arsam
@@ -93,6 +92,7 @@ public class GameBoard {
         for (Lane lane : lanes) {
             lane.tick(ticks);
         }
+
         zombieManager.tick(new ZombieTickContext(ticks, this));
         for (int i = projectiles.size() - 1; i >= 0; i--) {
             Projectile projectile = projectiles.get(i);
@@ -116,6 +116,26 @@ public class GameBoard {
         economyManager.tick(ticks);
         waveManager.tick(ticks);
         tickCounter += ticks;
+
+        List<Plant> currentPlants = new ArrayList<>();
+        for (Plant plant : getAllPlants()) {
+            if (plant != null && !plant.isDead() && plant.isAlive()) {
+                currentPlants.add(plant);
+            }
+        }
+        Iterator<Plant> iterator = plants.iterator();
+        while (iterator.hasNext()) {
+            Plant plant = iterator.next();
+            if (!currentPlants.contains(plant)) {
+                lostPlants++;
+                iterator.remove(); // Safely removes from `plants` so it is only counted once
+            }
+        }
+        for (Plant plant : currentPlants) {
+            if (!plants.contains(plant)) {
+                plants.add(plant);
+            }
+        }
     }
 
     public Tile getTile(int row, int column) {

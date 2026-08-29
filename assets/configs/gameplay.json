@@ -1,12 +1,10 @@
 {
   "basicWaveBudget": 1200,
-  "timedWarSunTarget": 2000,
-  "deadlineShift": 3,
+  "timedWarSunTarget": 4000,
   "timedWarMax": 300,
   "loveYourPlantsMaxLost": 5,
   "maxTideLevel": 4,
   "seedPacketDespawn": 30,
-  "plantFoodDespawn": 30,
   "beghouledScore": 5,
   "spawnDelaySeconds": 10,
   "bowlingLine": 4
