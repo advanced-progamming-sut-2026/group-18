@@ -7,6 +7,7 @@ import com.compileordie.pvz2.controllers.PlantSpawner;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.PlantTemplate;
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
@@ -180,9 +181,25 @@ public class GameScreenController {
         float spawnY = tile.row * Constants.Game.TILE_HEIGHT + Constants.Game.PADDING_Y
             + (Constants.Game.TILE_HEIGHT / 2f);
 
-        Plant newPlant = PlantSpawner.spawn(selectedCard.plantType, spawnX, spawnY, selectedCard.isBoosted, false);
-        if (newPlant == null) return;
-        tile.plant = newPlant;
+        if (selectedCard.plantType == PlantType.PEA_POD
+            && tile.plant != null
+            && tile.plant.getName().equals("Pea Pod")) {
+            int currentHeads = tile.plant.getStackCount();
+            if (currentHeads < 5) {
+                tile.plant.addStack();
+            } else {
+                ToastManager.showError("Pea Pod already had 5 heads!");
+            }
+        } else if (selectedCard.plantType == PlantType.HOT_POTATO) {
+            // TODO: To be implemented.
+        } else if (selectedCard.plantType == PlantType.GRAVE_BUSTER) {
+            // TODO: To be implemented.
+        } else if (selectedCard.plantType == PlantType.LILY_PAD) {
+            // TODO: To be implemented.
+        } else {
+            Plant newPlant = PlantSpawner.spawn(selectedCard.plantType, spawnX, spawnY, selectedCard.isBoosted, false);
+            tile.plant = newPlant;
+        }
         QuestManager.dispatch(QuestEvent.PLANT_PLANTED, 1, AppModel.currentChapter.name());
 
         if (isConveyor) {

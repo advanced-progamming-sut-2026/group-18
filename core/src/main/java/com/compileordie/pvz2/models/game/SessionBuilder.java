@@ -196,7 +196,7 @@ public class SessionBuilder {
                         tile.vase = new Vase(gameBoard,
                             tile.row,
                             tile.column,
-                            ZombieType.values()[MathUtils.random(ZombieType.values().length - 1)]);
+                            ZombieType.values()[MathUtils.random(ZombieType.values().length - 3)]);
                     }
                 }
             }
