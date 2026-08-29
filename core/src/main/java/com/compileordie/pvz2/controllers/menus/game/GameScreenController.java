@@ -8,8 +8,10 @@ import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.PlantTemplate;
 import com.compileordie.pvz2.models.game.board.Tile;
+import com.compileordie.pvz2.models.game.economy.EconomyType;
 import com.compileordie.pvz2.models.game.economy.PlantCard;
 import com.compileordie.pvz2.models.game.levels.LevelID;
+import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 import com.compileordie.pvz2.models.repositories.configs.PlantConfigRepository;
 import com.compileordie.pvz2.views.helpers.ToastManager;
 
@@ -134,8 +136,14 @@ public class GameScreenController {
             ToastManager.showError("Tile is not plantable!");
             return;
         }
+        if (AppModel.currentLevel == LevelID.WALNUT_BOWLING
+            && tile.column >= Constants.Game.BOARD_COLS - ConfigManager.gameplay().bowlingLine) {
+            ToastManager.showError("You can't plant past the line!");
+            return;
+        }
 
-        boolean isConveyor = AppModel.currentLevel == LevelID.CONVEYOR_BELT;
+        boolean isConveyor = AppModel.gameSession.gameBoard.economyManager.type == EconomyType.CONVEYOR_BELT
+            || AppModel.currentLevel == LevelID.VASE_BREAKER;
         PlantTemplate template = getConfigRepo().getTemplate(selectedCard.plantType);
         int cost = template != null ? template.getCost() : 0;
 

@@ -5,7 +5,6 @@ import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
-import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Lane;
 import com.compileordie.pvz2.models.game.board.Tile;
@@ -14,11 +13,7 @@ import com.compileordie.pvz2.models.game.levels.ChapterType;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 import com.compileordie.pvz2.views.helpers.ToastManager;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Random;
+import java.util.*;
 
 public class WaveManager {
     @FunctionalInterface
@@ -43,6 +38,7 @@ public class WaveManager {
     public double remainingMatchBudget;
     private final List<Double> waveStartBudgetThresholds = new ArrayList<>();
     private final List<Float> waveMarkerPercentages = new ArrayList<>();
+    public int chillWindRow = -1;
 
     public WaveManager(GameBoard gameBoard, WaveType type, int waveNumber, boolean shouldStartWaves) {
         this.gameBoard = gameBoard;
@@ -163,7 +159,7 @@ public class WaveManager {
         previousWaveTotalMaxHealth = 0;
 
         // 1. Run wave-wide environmental / tomb setups ONCE
-        type.spawnWave(this, gameBoard, List.of());
+        type.wave(this, gameBoard, List.of());
 
         // 2. Generate zombie types for this wave's budget
         List<ZombieType> zombieTypes = generateZombiesForBudget();
@@ -184,20 +180,8 @@ public class WaveManager {
     public void spawnSingleZombie(ZombieType zombieType) {
         if (gameBoard == null || gameBoard.lanes == null || gameBoard.lanes.isEmpty()) return;
 
-        // 1. Dark Ages: Necromancy (Spawns zombie from tomb with notification)
-        if (type == WaveType.DARK_AGES) {
-            ArrayList<Tomb> activeTombs = gameBoard.getAllTombs();
-            if (activeTombs != null && !activeTombs.isEmpty() && random.nextBoolean()) {
-                Tomb selectedTomb = activeTombs.get(random.nextInt(activeTombs.size()));
-                selectedTomb.spawnZombie(gameBoard, zombieType);
-
-                ToastManager.showMessage("Necromancy! A " + zombieType + " rose from a tomb!");
-                return;
-            }
-        }
-
-        // 2. Big Wave Beach: Spawn on flooded SHALLOW_BEACH tiles
-        if (type == WaveType.BIG_WAVE_BEACH && random.nextBoolean()) {
+        // Big Wave Beach: Spawn on flooded SHALLOW_BEACH tiles
+        if (type == WaveType.BIG_WAVE_BEACH && random.nextInt(100) < 20) {
             List<Tile> floodedShallowTiles = new ArrayList<>();
             for (Lane lane : gameBoard.lanes) {
                 for (Tile tile : lane.tiles) {
@@ -220,7 +204,7 @@ public class WaveManager {
             }
         }
 
-        // 3. Ancient Egypt Final Wave: Tornado offset (spawns in one of the 4 right-most columns)
+        // Ancient Egypt Final Wave: Tornado offset (spawns in one of the 4 right-most columns)
         int randomLaneIndex = random.nextInt(gameBoard.lanes.size());
         double x = 18f;
         if (type == WaveType.ANCIENT_EGYPT && isSpawningFinalWave) {

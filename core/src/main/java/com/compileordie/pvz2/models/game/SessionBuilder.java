@@ -6,6 +6,7 @@ import com.compileordie.pvz2.controllers.PlantSpawner;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
+import com.compileordie.pvz2.models.entities.zombies.variants.summoner.TombType;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.board.TileType;
@@ -24,10 +25,13 @@ import java.util.Set;
 
 public class SessionBuilder {
     private static EconomyType getEconomyType(LevelID levelID) {
-        if (levelID == LevelID.CONVEYOR_BELT) {
+        if (Set.of(LevelID.CONVEYOR_BELT, LevelID.WALNUT_BOWLING).contains(levelID)) {
             return EconomyType.CONVEYOR_BELT;
         }
-        if (Set.of(LevelID.NIGHT_OPS, LevelID.VASE_BREAKER, LevelID.WALNUT_BOWLING, LevelID.BEGHOULED)
+        if (levelID == LevelID.VASE_BREAKER) {
+            return EconomyType.VASE_BREAKER;
+        }
+        if (Set.of(LevelID.NIGHT_OPS, LevelID.WALNUT_BOWLING, LevelID.BEGHOULED)
             .contains(levelID)) {
             return EconomyType.NIGHT;
         }
@@ -85,32 +89,45 @@ public class SessionBuilder {
         if (levelID.chapterType == ChapterType.ANCIENT_EGYPT) {
             for (Tile tile : tiles) {
                 tile.type = TileType.ANCIENT_EGYPT;
-                if (tile.column >= 3 && new Random().nextInt(100) < 10) tile.obstacle = new Tomb(700,
-                    tile.row,
-                    tile.column,
-                    (tile.row + 0.5f) * Constants.Game.TILE_HEIGHT,
-                    (tile.column + 0.5f) * Constants.Game.TILE_WIDTH);
+                if (tile.column >= 3 && new Random().nextInt(100) < 7) {
+                    tile.obstacle = new Tomb(700,
+                        tile.row,
+                        tile.column,
+                        (tile.column + 0.5f) * Constants.Game.TILE_WIDTH + Constants.Game.PADDING_X,
+                        (tile.row + 0.5f) * Constants.Game.TILE_HEIGHT + Constants.Game.PADDING_Y);
+                }
             }
         } else if (levelID.chapterType == ChapterType.FROSTBITE_CAVES) {
             for (Tile tile : tiles) {
                 tile.type = TileType.FROSTBITE_CAVE;
-                if (new Random().nextInt(100) < 10) tile.type = TileType.SLIPPERY_UP;
-                if (new Random().nextInt(100) < 10) tile.type = TileType.SLIPPERY_DOWN;
+                if (tile.row < Constants.Game.BOARD_ROWS - 1 && new Random().nextInt(100) < 3) {
+                    tile.type = TileType.SLIPPERY_UP;
+                }
+                if (tile.row > 0 && new Random().nextInt(100) < 3) {
+                    tile.type = TileType.SLIPPERY_DOWN;
+                }
             }
         } else if (levelID.chapterType == ChapterType.BIG_WAVE_BEACH) {
             for (Tile tile : tiles) {
                 tile.type = TileType.BIG_WAVE_BEACH;
-                if (tile.column >= 3 && new Random().nextInt(100) < 10) tile.type = TileType.SHALLOW_BEACH;
+                if (tile.column >= 3 && new Random().nextInt(100) < 5) tile.type = TileType.SHALLOW_BEACH;
             }
         } else if (levelID.chapterType == ChapterType.DARK_AGES) {
             for (Tile tile : tiles) {
                 tile.type = TileType.DARK_AGES;
-                if (tile.column >= 3 && new Random().nextInt(100) < 10) tile.type = TileType.NECROMANCY;
-                if (tile.column >= 3 && new Random().nextInt(100) < 10) tile.obstacle = new Tomb(700,
+                Tomb tomb = new Tomb(700,
                     tile.row,
                     tile.column,
-                    (tile.row + 0.5f) * Constants.Game.TILE_HEIGHT,
-                    (tile.column + 0.5f) * Constants.Game.TILE_WIDTH);
+                    (tile.column + 0.5f) * Constants.Game.TILE_WIDTH + Constants.Game.PADDING_X,
+                    (tile.row + 0.5f) * Constants.Game.TILE_HEIGHT + Constants.Game.PADDING_Y);
+                int randomness = new Random().nextInt(100);
+                if (randomness < 20)
+                    tomb.type = TombType.SUN;
+                else if (randomness < 40)
+                    tomb.type = TombType.PLANT_FOOD;
+                if (tile.column >= 3 && new Random().nextInt(100) < 10) {
+                    tile.obstacle = tomb;
+                }
             }
         } else {
             for (Tile tile : tiles) {

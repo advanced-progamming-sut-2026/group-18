@@ -74,6 +74,7 @@ public class GameScreen implements Screen {
     private ZombieDrawer zombieDrawer;
     private BoardEntityDrawer boardDrawer;
     private ZombossDrawer zombossDrawer;
+    private SpecificBoardDrawer specificBoardDrawer;
     //TODO:
     private PlantAssetManager plantAssetManager;
     private PlantMatchManager plantMatchManager;
@@ -138,7 +139,8 @@ public class GameScreen implements Screen {
         zombieDrawer = new ZombieDrawer(states, brokenAssets, debrisDrawer);
         boardDrawer = new BoardEntityDrawer(states, brokenAssets);
         zombossDrawer = new ZombossDrawer(states, brokenAssets, color -> ui.createSolidTexture(color));
-        ui.isPaused = false;
+        specificBoardDrawer = new SpecificBoardDrawer(states, brokenAssets);
+        GameScreenUI.isPaused = false;
     }
 
     private void loadAssets() {
@@ -318,7 +320,12 @@ public class GameScreen implements Screen {
             batch.setTransformMatrix(batch.getTransformMatrix());
         }
         boardDrawer.drawBackground(batch);
+        specificBoardDrawer.drawSlipperyTiles(batch, player, worldDelta);
+        specificBoardDrawer.drawShallowBeaches(batch, player, worldDelta);
         boardDrawer.drawGridLines(batch);
+        specificBoardDrawer.drawBowlingLine(batch);
+        specificBoardDrawer.drawWaterLevel(batch, player, worldDelta);
+        specificBoardDrawer.drawMaxTideLevel(batch, player, worldDelta);
         boardDrawer.drawMowers(batch, player, worldDelta);
         boardDrawer.drawTombs(batch, player, worldDelta);
         boardDrawer.drawFireTiles(batch, player, worldDelta);
@@ -337,6 +344,12 @@ public class GameScreen implements Screen {
         zombossDrawer.drawZombossExplosion(batch, player, worldDelta);
         zombossDrawer.drawDarkZombossLaserSquare(batch, player, worldDelta);
         debrisDrawer.drawFallingDebris(batch, player, worldDelta);
+        int chillRow = AppModel.gameSession.gameBoard.waveManager.chillWindRow;
+        if (chillRow >= 0) {
+            boardDrawer.states.chillWinds.add(new GameRenderStates.ChillWindAnim(chillRow));
+            AppModel.gameSession.gameBoard.waveManager.chillWindRow = -1;
+        }
+        specificBoardDrawer.drawChillWinds(batch, player, boardDrawer.states, worldDelta);
 
         Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
         viewport.unproject(mousePos);

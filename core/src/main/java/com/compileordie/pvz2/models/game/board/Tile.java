@@ -2,6 +2,7 @@ package com.compileordie.pvz2.models.game.board;
 
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
+import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
@@ -16,7 +17,6 @@ public class Tile {
     public TileType type;
     public Plant plant;
     public Obstacle obstacle;
-    public Tomb tomb; // Redundant
     public boolean hasLilyPad;
     public boolean isOnFire;
     public double fireTime = 4;
@@ -33,7 +33,6 @@ public class Tile {
         this.type = type;
         this.plant = plant;
         this.obstacle = obstacle;
-        this.tomb = null;
         this.hasLilyPad = false;
         this.isOnFire = false;
     }
@@ -42,6 +41,7 @@ public class Tile {
         type.tick(ticks, this, gameBoard);
         if (plant != null) plant.tick(gameBoard, ticks);
         if (obstacle != null) obstacle.tick(ticks, gameBoard);
+        if (obstacle != null && !obstacle.isAlive()) obstacle = null;
 
         if (isOnFire){
             this.plant = null;
@@ -73,8 +73,16 @@ public class Tile {
         }
     }
 
+    public Tomb getTomb() {
+        if (obstacle != null && obstacle.type == ObstacleType.TOMB) {
+            return (Tomb) obstacle;
+        } else {
+            return null;
+        }
+    }
+
     public boolean isEmpty() {
-        return plant == null && !hasLilyPad && obstacle == null && tomb == null;
+        return plant == null && !hasLilyPad && obstacle == null && getTomb() == null;
     }
 
     public boolean isPlantable() {
@@ -94,7 +102,7 @@ public class Tile {
         return zombies;
     }
 
-    public boolean isHasLilyPad() {
+    public boolean hasLilyPad() {
         return hasLilyPad;
     }
 }
