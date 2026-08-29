@@ -35,6 +35,7 @@ final class GameRenderStates {
         float lastArmorHealth = Float.NaN;
         float bombAnimTime = 0f;
         boolean wasBooming = false;
+        float iceAnimTime = 0f;
     }
 
     static final class DeadZombieAnim {

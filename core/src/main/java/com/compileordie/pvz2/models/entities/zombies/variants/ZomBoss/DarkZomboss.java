@@ -59,6 +59,9 @@ public class DarkZomboss extends Zombie {
     }
 
     public void takeDamage(double amount, DamageType damageType, PlantType plantType) {
+        boolean wasFrozenByIceBlock = isFrozenByIce;
+        amount = absorbIceDamage(amount);
+        if (wasFrozenByIceBlock && amount <= 0) return;
         health -= amount;
         if (health<=0){
             health = 0;

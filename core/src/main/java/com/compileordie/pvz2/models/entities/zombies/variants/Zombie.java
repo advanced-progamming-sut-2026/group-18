@@ -48,6 +48,15 @@ public abstract class Zombie extends GameEntity {
     public boolean takedDamage = false;
     public boolean fromGarg = false;
 
+    // --- برای مکانیزم «داخل بلوک یخ گیر افتادن» (مثلا Frostbite Caves) ---
+    // یه فیلد پابلیک ساده که هر جای دیگه‌ی کد می‌تونه مستقیم true/false ست
+    // کنه؛ خودِ Zombie (توی tick()) با تشخیص لحظه‌ی تغییرش، افکت FROZEN رو
+    // اضافه/حذف می‌کنه و HP بلوک یخ رو مدیریت می‌کنه (جدا از health خودِ زامبی).
+    public boolean isFrozenByIce = false;
+    private boolean wasFrozenByIce = false;
+    private double iceHealth = 0;
+    public static final double ICE_BLOCK_MAX_HEALTH = 200;
+
     // --- برای انیمیشن پرتاب ایمپ توسط غول (Gargantuar) ---
     // مبدا پرتاب (نقطه‌ای که انیمیشن fly ازش شروع می‌شه)، به همون واحد متر که
     // getX()/getY() هستن. NaN یعنی این زامبی اصلا در حال پرتاب نیست/نبوده.
@@ -234,6 +243,18 @@ public abstract class Zombie extends GameEntity {
             }
         }
 
+        // 🧊 مدیریت بلوک یخ: تشخیص لحظه‌ی فعال/غیرفعال شدنِ isFrozenByIce (که
+        // ممکنه از هر جای دیگه‌ی کد مستقیم ست شده باشه) و اعمال/حذف افکت FROZEN
+        // به‌صورت خودکار همراهش.
+        if (isFrozenByIce && !wasFrozenByIce) {
+            iceHealth = ICE_BLOCK_MAX_HEALTH;
+            addEffect(new StatusEffect(EffectType.FROZEN, Integer.MAX_VALUE));
+            wasFrozenByIce = true;
+        } else if (!isFrozenByIce && wasFrozenByIce) {
+            removeStatusEffect(EffectType.FROZEN);
+            wasFrozenByIce = false;
+        }
+
         this.setXSpeed(isHypnotized ? -Math.abs(this.getXSpeed()) : Math.abs(this.getXSpeed()));
 
         // برای جابجایی - اعمال دمیح - اعمال توانایی سرویس ها هستند که پیش می برند
@@ -384,6 +405,30 @@ public abstract class Zombie extends GameEntity {
     }
     // ===============================
 
+    /**
+     * اگه این زامبی الان داخل بلوک یخه (isFrozenByIce)، دمیج رو اول از HP یخ
+     * (۲۰۰ تا) کم می‌کنه نه از جون خودِ زامبی. وقتی یخ می‌شکنه (HP یخ به صفر
+     * می‌رسه)، هم isFrozenByIce غیرفعال می‌شه (که باعث می‌شه View دیگه بلوک یخ
+     * رو رندر نکنه) و هم افکت FROZEN همون تیک بعد خاموش می‌شه (توسط tick()).
+     * @return مقدار دمیجی که باید واقعا به جون زامبی بخوره؛ اگه یخ کل دمیج رو
+     *         جذب کرده باشه (و نشکسته باشه)، صفر برمی‌گرده.
+     */
+    protected double absorbIceDamage(double amount) {
+        if (!isFrozenByIce) return amount;
+        iceHealth -= amount;
+        if (iceHealth <= 0) {
+            double overflow = -iceHealth;
+            iceHealth = 0;
+            isFrozenByIce = false;
+            return overflow;
+        }
+        return 0;
+    }
+
+    public double getIceHealth() {
+        return iceHealth;
+    }
+
     public abstract void takeDamage(double amount, DamageType damageType, PlantType plantType);
 
     public ZombieType getType() {
@@ -469,5 +514,9 @@ public abstract class Zombie extends GameEntity {
         }
         if (this.type==ZombieType.BUCKETHEAD) ((BucketHeadZombie)this).setArmorHealth(0);
         // اینجا باید گیاه به محض رویت زامبی در نزدیکی اش این متد را فراخوانی کند
+    }
+
+    public void setIceBlock(boolean b){
+        this.isFrozenByIce = b;
     }
 }

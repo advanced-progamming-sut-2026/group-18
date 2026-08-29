@@ -526,13 +526,26 @@ public class Plant extends GameEntity {
     public void forceMaxGrowth() {
         this.isMaxStageForced = true;
     }
+    /**
+     * دیمیجی که موقع «eating» یک گیاه به‌وسیله‌ی زامبی، برمی‌گرده و به خود زامبی می‌خوره.
+     * Endurian: مقدار پایه‌ش baseDamage است، و اگه currentHp بیشتر از baseHp باشه (یعنی
+     * plant food خورده و بافر گرفته) ۱۵ واحد هم بهش اضافه می‌شه.
+     * Garlic: صرفا baseDamage برمی‌گرده (بدون بونوس)؛ همین مقدار غیرصفر بودن باعث می‌شه
+     * تو ZombieCombatManager.processPlantEating هم دیمیج ریفلکت بخوره هم (چون گارلیکه)
+     * لاینش عوض بشه.
+     */
     public int getReflectDamage() {
-        if (!this.name.equals("Endurian")) return 0;
-        int reflectDmg = this.baseDamage;
-        if (this.currentHp > this.baseHp) {
-            reflectDmg += 15;
+        if (this.name.equals("Endurian")) {
+            int reflectDmg = this.baseDamage;
+            if (this.currentHp > this.baseHp) {
+                reflectDmg += 15;
+            }
+            return reflectDmg;
         }
-        return reflectDmg;
+        if (this.name.equals("Garlic")) {
+            return this.baseDamage;
+        }
+        return 0;
     }
 
     private void triggerExplosion() {

@@ -101,6 +101,9 @@ public class DodoRiderZombie extends Zombie {
             this.removeStatusEffect(EffectType.CHILLED);
         }
         if (isDead()) return;
+        boolean wasFrozenByIceBlock = isFrozenByIce;
+        amount = absorbIceDamage(amount);
+        if (wasFrozenByIceBlock && amount <= 0) return;
         if (damageType!=DamageType.POISON) takedDamage = true;
         this.health -= amount;
         if (health <= 0){

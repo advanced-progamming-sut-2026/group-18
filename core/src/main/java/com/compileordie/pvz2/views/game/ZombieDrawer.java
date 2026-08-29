@@ -34,6 +34,10 @@ import java.util.Set;
  */
 final class ZombieDrawer {
 
+    private static final String ICE_BLOCK_PAM =
+        "768/FULL/EFFECTS/FROSTBITE_ICE_BLOCK_ZOMBIE/FROSTBITE_ICE_BLOCK_ZOMBIE.PAM";
+    private static final String ICE_BLOCK_CLIP = "idle";
+
     private final GameRenderStates states;
     private final Set<String> brokenAssets;
     private final DebrisDrawer debris;
@@ -177,7 +181,31 @@ final class ZombieDrawer {
         }
         Map<String, Boolean> visibilityMap = ZombieVisualHelpers.buildArmorVisibilityMap(zombie, def);
         visibilityMap = applyDebrisVisibility(zombie, state, def, choice, baseX, baseY, visibilityMap);
+        drawIceBlockIfNeeded(batch, player, zombie, state, delta, baseX, baseY);
         drawZombieParts(batch, player, zombie, state, def, choice, baseX, baseY, visibilityMap);
+    }
+
+    /**
+     * وقتی zombie.isFrozenByIce فعاله، بلوک یخ (FROSTBITE_ICE_BLOCK_ZOMBIE)
+     * رو دقیقا زیر خود زامبی (یعنی قبل از drawZombieParts، چون در SpriteBatch
+     * هر چی زودتر رسم بشه زیرتره) با کلیپ "idle" پخش می‌کنه. به محض false شدن
+     * isFrozenByIce (چه با شکستن یخ توسط دمیج، چه هر دلیل دیگه‌ای)، این متد
+     * دیگه چیزی رسم نمی‌کنه.
+     */
+    private void drawIceBlockIfNeeded(SpriteBatch batch, PamPlayer player, Zombie zombie,
+                                      GameRenderStates.ZombieRenderState state, float delta,
+                                      float baseX, float baseY) {
+        if (!zombie.isFrozenByIce) return;
+        if (brokenAssets.contains(ICE_BLOCK_PAM)) return;
+
+        state.iceAnimTime += delta;
+        try {
+            player.draw(batch, ICE_BLOCK_PAM, ICE_BLOCK_CLIP, state.iceAnimTime,
+                baseX, baseY, GameScreenConstants.ZOMBIE_SCALE, GameScreenConstants.ZOMBIE_SCALE,
+                state.flip);
+        } catch (Throwable e) {
+            brokenAssets.add(ICE_BLOCK_PAM);
+        }
     }
 
     private void advanceAnimTime(Zombie zombie, GameRenderStates.ZombieRenderState state, float delta) {

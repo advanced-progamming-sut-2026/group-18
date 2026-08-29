@@ -25,6 +25,9 @@ public class ExplorerZombie extends CapableZombie {
     @Override
     public void takeDamage(double amount, DamageType damageType, PlantType plantType) {
         if (isDead()) return;
+        boolean wasFrozenByIceBlock = isFrozenByIce;
+        amount = absorbIceDamage(amount);
+        if (wasFrozenByIceBlock && amount <= 0) return;
         if (damageType!=DamageType.POISON) takedDamage = true;
 
         if (damageType == DamageType.ICE) {

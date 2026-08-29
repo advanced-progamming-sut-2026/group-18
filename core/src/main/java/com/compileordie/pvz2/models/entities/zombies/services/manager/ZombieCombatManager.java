@@ -34,6 +34,7 @@ public class ZombieCombatManager {
     double tileWidth = Constants.Game.TILE_WIDTH;
     double tileHeight = Constants.Game.TILE_HEIGHT;
     double smashDamage = 999999;
+    private final Random reflectRandom = new Random();
 
     public void combatTick(List<Zombie> myZombies, List<Plant> myPlants) {
         List<Zombie> zombiesCopy = new ArrayList<>(myZombies);
@@ -94,6 +95,21 @@ public class ZombieCombatManager {
                 } else {
                     z.isEating = true;
                     p.takeDamage((int) (z.getAttackPower() * dt));
+
+                    // --- درخواست ۱: reflect damage ---
+                    // هر گیاهی که موقع eating ازش دیمیج می‌خوره، به‌اندازه‌ی getReflectDamage()
+                    // خودش، به زامبی‌ای که داره می‌خورتش برمی‌گرده (فعلا فقط Endurian/Garlic
+                    // مقدار غیرصفر برمی‌گردونن؛ برای بقیه‌ی گیاه‌ها صفره پس اتفاقی نمی‌افته).
+                    int reflectDamage = p.getReflectDamage();
+                    if (reflectDamage > 0 && !z.isDead()) {
+                        z.takeDamage(reflectDamage, DamageType.NORMAL, PlantType.getByName(p.getName()));
+
+                        // --- درخواست ۲: هر زامبی‌ای که از گارلیک دیمیج بگیره، لاینش عوض بشه ---
+                        if (p.getName().equals("Garlic") && !z.isDead()) {
+                            switchZombieToRandomOtherLane(z);
+                        }
+                    }
+
                     if (z.getType() == ZombieType.GARGANTUAR) {
                         // 🥊 تضمین می‌کنه سیکل انیمیشن eat/smash_left حداقل
                         // یک‌بار کامل پخش بشه، حتی اگه همین ضربه گیاه رو
@@ -140,6 +156,43 @@ public class ZombieCombatManager {
             p.applyOctopus(400.0);
             ((OctopusZombie) z).startTossAnimation();
         }
+    }
+
+    /**
+     * زامبی رو به یه لاین دیگه (تصادفی، غیر از لاین فعلیش) منتقل می‌کنه.
+     * حواسمون هست که شماره‌ی لاین هیچ‌وقت از ۰ کمتر یا از ۴ بیشتر نشه (طبق درخواست)،
+     * و علاوه‌بر ست‌کردن currentRow/Y، خود زامبی رو از Lane.zombies قبلی حذف و به
+     * Lane.zombies جدید اضافه می‌کنیم (دقیقا هم‌الگو با playingPiano که همین‌جا برای
+     * پیانیست زامبی همین کار رو می‌کنه) تا بقیه‌ی سیستم‌هایی که lane.zombies رو
+     * می‌خونن (مثلا شمارش زامبی‌های هر لاین) دچار ناهماهنگی نشن.
+     */
+    private void switchZombieToRandomOtherLane(Zombie z) {
+        final int MIN_ROW = 0;
+        final int MAX_ROW = 4;
+
+        var lanes = AppModel.gameSession.gameBoard.lanes;
+        int currentRow = z.getCurrentRow();
+
+        List<Integer> candidateRows = new ArrayList<>();
+        for (int row = MIN_ROW; row <= MAX_ROW && row < lanes.size(); row++) {
+            if (row != currentRow) {
+                candidateRows.add(row);
+            }
+        }
+        if (candidateRows.isEmpty()) return;
+
+        int targetRow = candidateRows.get(reflectRandom.nextInt(candidateRows.size()));
+
+        if (currentRow >= 0 && currentRow < lanes.size()) {
+            Lane currentLane = lanes.get(currentRow);
+            currentLane.zombies.remove(z);
+        }
+
+        Lane nextLane = lanes.get(targetRow);
+        double newY = targetRow * tileHeight + (tileHeight / 2.0);
+        z.setY(newY);
+        z.setCurrentRow(targetRow);
+        nextLane.zombies.add(z);
     }
 
     public void combatingTwoZombie(List<Zombie> myZombies) {
