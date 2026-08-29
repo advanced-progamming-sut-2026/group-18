@@ -38,7 +38,6 @@ public final class GameScreenUI {
     public Texture pauseOverlayTexture;
     public Skin skin;
     public Table gameEndOverlayContainer;
-    public Label sunAmountLabel;
     public WaveProgressBarUI waveProgressBar;
     private final Runnable onResume;
     private final Runnable onRestart;
@@ -319,12 +318,6 @@ public final class GameScreenUI {
             if (paused) {
                 pauseOverlayContainer.toFront();
             }
-        }
-    }
-
-    public void updateSunLabel(int amount) {
-        if (sunAmountLabel != null) {
-            sunAmountLabel.setText(String.format("%04d", amount));
         }
     }
 

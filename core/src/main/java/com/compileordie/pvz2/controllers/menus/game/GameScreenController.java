@@ -7,13 +7,21 @@ import com.compileordie.pvz2.controllers.PlantSpawner;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.PlantTemplate;
+import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
+import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.economy.EconomyType;
 import com.compileordie.pvz2.models.game.economy.PlantCard;
+import com.compileordie.pvz2.models.game.economy.Sun;
 import com.compileordie.pvz2.models.game.levels.LevelID;
+import com.compileordie.pvz2.models.missions.quests.QuestEvent;
+import com.compileordie.pvz2.models.missions.quests.QuestManager;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 import com.compileordie.pvz2.models.repositories.configs.PlantConfigRepository;
 import com.compileordie.pvz2.views.helpers.ToastManager;
+
+import java.util.ArrayList;
 
 public class GameScreenController {
     public static PlantCard selectedCard = null;
@@ -164,6 +172,7 @@ public class GameScreenController {
         Plant newPlant = PlantSpawner.spawn(selectedCard.plantType, spawnX, spawnY, selectedCard.isBoosted, false);
         if (newPlant == null) return;
         tile.plant = newPlant;
+        QuestManager.dispatch(QuestEvent.PLANT_PLANTED, 1, AppModel.currentChapter.name());
 
         if (isConveyor) {
             AppModel.gameSession.gameBoard.economyManager.plantCards.remove(selectedCard);
@@ -173,5 +182,44 @@ public class GameScreenController {
         }
 
         cancelSelection();
+    }
+
+    public static void explodeSun(GameBoard gameBoard, Sun sun) {
+        int row = sun.getTileRow();
+        int column = sun.getTileColumn();
+
+        ArrayList<Zombie> zombies = gameBoard.getAllZombies();
+        int zombieDamageAmount = ConfigManager.economy().radioactiveSunZombieDamageAmount;
+        int zombieDamageRadius = ConfigManager.economy().radioactiveSunZombieDamageArea;
+
+        for (int i = zombies.size() - 1; i >= 0; i--) {
+            Zombie zombie = zombies.get(i);
+            boolean isInRangeX = Math.abs(sun.getX() - zombie.getX())
+                <= zombieDamageRadius * Constants.Game.TILE_WIDTH;
+            boolean isInRangeY = Math.abs(sun.getY() - zombie.getY())
+                <= zombieDamageRadius * Constants.Game.TILE_HEIGHT;
+
+            if (isInRangeX && isInRangeY) {
+                zombie.takeDamage(zombieDamageAmount, DamageType.EXPLOSIVE);
+            }
+        }
+
+        ArrayList<Plant> plants = gameBoard.getAllPlants();
+        int plantDamageAmount = ConfigManager.economy().radioactiveSunPlantDamageAmount;
+        int plantDamageRadius = ConfigManager.economy().radioactiveSunPlantDamageRange;
+
+        for (int i = plants.size() - 1; i >= 0; i--) {
+            Plant plant = plants.get(i);
+            boolean isInRangeX = Math.abs(sun.getX() - plant.getX())
+                <= plantDamageRadius * Constants.Game.TILE_WIDTH;
+            boolean isInRangeY = Math.abs(sun.getY() - plant.getY())
+                <= plantDamageRadius * Constants.Game.TILE_HEIGHT;
+
+            if (isInRangeX && isInRangeY) {
+                plant.takeDamage(plantDamageAmount);
+            }
+        }
+
+        ToastManager.showMessage("A radioactive sun exploded! BOOM!");
     }
 }

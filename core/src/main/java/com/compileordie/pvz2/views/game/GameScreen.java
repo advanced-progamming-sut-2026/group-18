@@ -195,7 +195,6 @@ public class GameScreen implements Screen {
         cameraEffects.updateCameraShake(paused ? 0f : delta);
         viewport.getCamera().update();
         batch.setProjectionMatrix(viewport.getCamera().combined);
-        updateSunHud();
         drawWorld(delta);
         if (ui != null) ui.actAndDraw(delta);
     }
@@ -294,13 +293,6 @@ public class GameScreen implements Screen {
             touchPoint.x, touchPoint.y, meterX, meterY));
         if ((testPastKommeh && hasWeTestForClickForDamaging) || overrideForceDamageClick) {
             handleClickDamageTest(touchPoint.x, touchPoint.y);
-        }
-    }
-
-    private void updateSunHud() {
-        if (ui != null && AppModel.gameSession != null) {
-            int amount = AppModel.gameSession.gameBoard.economyManager.sunAmount;
-            ui.updateSunLabel(amount);
         }
     }
 
