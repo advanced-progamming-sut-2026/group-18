@@ -302,6 +302,11 @@ final class BoardEntityDrawer {
                 state.fadeTimer += delta;
                 alpha = Math.max(0f, 1f - (state.fadeTimer / 0.5f));
                 if (state.fadeTimer >= 0.3f) {
+                    // --- Trigger Radioactive Sun Explosion ---
+                    if (sun.type.name().contains("RADIOACTIVE")) {
+                        GameScreenController.explodeSun(AppModel.gameSession.gameBoard, sun);
+                    }
+
                     AppModel.gameSession.gameBoard.economyManager.sunAmount += sun.type.value;
                     iterator.remove();
                     states.sunRenderStates.remove(sun);
