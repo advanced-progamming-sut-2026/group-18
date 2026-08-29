@@ -22,6 +22,7 @@ import com.compileordie.pvz2.models.entities.zombies.variants.capable.HunterZomb
 import com.compileordie.pvz2.models.entities.zombies.variants.capable.OctopusZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.game.board.Tile;
+import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
 import com.compileordie.pvz2.models.game.waves.WaveType;
 import com.compileordie.pvz2.views.game.ui.GameScreenUI;
 import com.compileordie.pvz2.views.game.ui.LevelStartDialog;
@@ -213,7 +214,7 @@ public class GameScreen implements Screen {
     }
 
     private void handleInput() {
-        if (ui != null && ui.isPaused) return;
+        if (ui != null && GameScreenUI.isPaused) return;
 
         // TODO: For debug purposes. Remove later:
         Tile hoveringTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
@@ -277,9 +278,16 @@ public class GameScreen implements Screen {
         touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0);
         viewport.unproject(touchPoint);
 
+        Vase clickedVase = GameScreenController.getVaseAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
+        if (clickedVase != null) {
+            GameScreenController.handleVaseClick(clickedVase);
+            return;
+        }
+
         Tile clickedTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
         if (clickedTile != null) {
             GameScreenController.handleTileClick(clickedTile);
+            return;
         }
 
         // TODO: For debug purposes. Remove later:
@@ -321,6 +329,7 @@ public class GameScreen implements Screen {
         boardDrawer.drawMowers(batch, player, worldDelta);
         boardDrawer.drawTombs(batch, player, worldDelta);
         boardDrawer.drawFireTiles(batch, player, worldDelta);
+        specificBoardDrawer.drawVases(batch, textureBank);
 
         Tile hoveredTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
         boardDrawer.drawTileHighlight(batch, hoveredTile);

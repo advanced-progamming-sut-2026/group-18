@@ -3,6 +3,7 @@ package com.compileordie.pvz2.views.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
@@ -10,8 +11,10 @@ import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.board.TileType;
 import com.compileordie.pvz2.models.game.levels.ChapterType;
 import com.compileordie.pvz2.models.game.levels.LevelID;
+import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 import pvz.libpvz.pam.PamPlayer;
+import pvz.libpvz.textures.TextureBank;
 
 import java.util.*;
 
@@ -230,5 +233,33 @@ final class SpecificBoardDrawer {
         shapeRenderer.end();
         Gdx.gl.glLineWidth(1.0f); // Reset line thickness back to default
         batch.begin();
+    }
+
+    public void drawVases(SpriteBatch batch, TextureBank textureBank) {
+        if (AppModel.gameSession == null || AppModel.gameSession.gameBoard == null || textureBank == null) return;
+
+        for (var lane : AppModel.gameSession.gameBoard.lanes) {
+            for (Tile tile : lane.tiles) {
+                Vase vase = tile.vase;
+                if (vase == null || vase.isBroken) continue;
+
+                String textureKey = switch (vase.type) {
+                    case GARGANTUAR -> "IMAGE_VASEBREAKER_VASE_GARGANTUAR_VASE_GARGANTUAR_115X150";
+                    case PLANT -> "IMAGE_VASEBREAKER_VASE_GREEN_VASE_GREEN_115X150";
+                    case NORMAL -> "IMAGE_VASEBREAKER_VASE_BROWN_VASE_BROWN_115X150";
+                };
+
+                TextureRegion region = textureBank.region(textureKey);
+                if (region == null) continue;
+
+                float drawX = (float) (vase.getX() * Constants.UI.METER_TO_PIX);
+                float drawY = (float) (vase.getY() * Constants.UI.METER_TO_PIX);
+
+                float width = region.getRegionWidth();
+                float height = region.getRegionHeight();
+
+                batch.draw(region, drawX - (width / 2f), drawY - (height / 2f), width, height);
+            }
+        }
     }
 }

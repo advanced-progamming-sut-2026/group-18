@@ -21,7 +21,8 @@ public enum WinCondition {
     VASE_BREAKER {
         @Override
         public boolean evaluate(GameBoard gameBoard) {
-            return gameBoard.vases.stream().map(vase -> vase.isBroken).reduce(true, Boolean::logicalAnd);
+            return gameBoard.getAllVases().stream().map(vase -> vase == null || vase.isBroken)
+                .reduce(true, Boolean::logicalAnd);
         }
     },
     I_ZOMBIE {

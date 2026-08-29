@@ -154,18 +154,18 @@ public class SessionBuilder {
             for (Tile tile : tiles) {
                 if (tile.column >= 3) {
                     int random = new Random().nextInt(100);
-                    if (random < 10) {
-                        gameBoard.vases.add(new Vase(gameBoard, tile.row, tile.column));
+                    if (random < 5) {
+                        tile.vase = new Vase(gameBoard, tile.row, tile.column);
                     } else if (random < 55) {
-                        gameBoard.vases.add(new Vase(gameBoard,
+                        tile.vase = new Vase(gameBoard,
                             tile.row,
                             tile.column,
-                            PlantType.values()[MathUtils.random(PlantType.values().length - 1)]));
+                            PlantType.values()[MathUtils.random(PlantType.values().length - 1)]);
                     } else {
-                        gameBoard.vases.add(new Vase(gameBoard,
+                        tile.vase = new Vase(gameBoard,
                             tile.row,
                             tile.column,
-                            ZombieType.values()[MathUtils.random(ZombieType.values().length - 1)]));
+                            ZombieType.values()[MathUtils.random(ZombieType.values().length - 1)]);
                     }
                 }
             }
