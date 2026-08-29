@@ -27,6 +27,8 @@ final class SpecificBoardDrawer {
     private static final String ICE_SLIDER_ANIM_CLIP = "idle";
     private static final String SHALLOW_BEACH_PAM = "768/FULL/EFFECTS/SHALLOW_PUDDLE_TILE/SHALLOW_PUDDLE_TILE.PAM";
     private static final String SHALLOW_BEACH_ANIM_CLIP = null;
+    private static final String PROTECT_TILE_PAM = "768/INITIAL/BACKGROUNDS/PROTECT_TILE/PROTECT_TILE.PAM";
+    private static final String PROTECT_TILE_ANIM_CLIP = "animation";
     private static final String WATER_LEVEL_PAM = "768/FULL/BACKGROUNDS/WATER_UNDERLAYER/WATER_UNDERLAYER.PAM";
     private static final String WATER_LEVEL_ANIM_CLIP = "Water";
     private static final float WATER_LERP_SPEED = 4.0f; // Higher values move faster
@@ -123,6 +125,52 @@ final class SpecificBoardDrawer {
         }
 
         sliderAnimTimes.keySet().removeIf(tile -> !activeShallowBeachTiles.contains(tile));
+    }
+
+    public void drawProtectTiles(SpriteBatch batch, PamPlayer player, float delta) {
+        if (AppModel.gameSession == null || player == null) return;
+
+        Set<Tile> activeProtectTiles = new HashSet<>();
+
+        for (var lane : AppModel.gameSession.gameBoard.lanes) {
+            for (Tile tile : lane.tiles) {
+                String pamPath = null;
+
+                if (tile.plant != null && tile.plant.isSpecial()) {
+                    pamPath = PROTECT_TILE_PAM;
+                }
+
+                if (pamPath == null || brokenAssets.contains(pamPath)) continue;
+
+                activeProtectTiles.add(tile);
+                float animTime = sliderAnimTimes.getOrDefault(tile, 0f) + delta;
+                sliderAnimTimes.put(tile, animTime);
+
+                float drawX = (((tile.column + 0.5f) * Constants.Game.TILE_WIDTH + Constants.Game.PADDING_X)
+                    * Constants.UI.METER_TO_PIX);
+                float drawY = (((tile.row + 0.5f) * Constants.Game.TILE_HEIGHT + Constants.Game.PADDING_Y)
+                    * Constants.UI.METER_TO_PIX);
+
+                try {
+                    player.draw(batch,
+                        pamPath,
+                        PROTECT_TILE_ANIM_CLIP,
+                        animTime,
+                        drawX + 4f,
+                        drawY + 2f,
+                        0.8f,
+                        0.8f,
+                        true);
+                } catch (Throwable e) {
+                    brokenAssets.add(pamPath);
+                    Gdx.app.error("PVZ-ASSET-MISSING",
+                        "❌ [SpecificBoardDrawer] Failed rendering slider tile PAM: "
+                            + pamPath + " | clip: " + PROTECT_TILE_ANIM_CLIP, e);
+                }
+            }
+        }
+
+        sliderAnimTimes.keySet().removeIf(tile -> !activeProtectTiles.contains(tile));
     }
 
     public void drawWaterLevel(SpriteBatch batch, PamPlayer player, float delta) {
@@ -261,5 +309,29 @@ final class SpecificBoardDrawer {
                 batch.draw(region, drawX - (width / 2f), drawY - (height / 2f), width, height);
             }
         }
+    }
+
+    public void drawDeadline(SpriteBatch batch) {
+        if (AppModel.gameSession == null || AppModel.currentLevel != LevelID.DEAD_LINE) {
+            return;
+        }
+
+        batch.end();
+
+        shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(Color.RED);
+
+        Gdx.gl.glLineWidth(8.0f);
+
+        float x = Constants.Game.DEADLINE_X * Constants.UI.METER_TO_PIX;
+        float startY = Constants.Game.PADDING_Y * Constants.UI.METER_TO_PIX;
+        float endY = ((Constants.Game.BOARD_ROWS * Constants.Game.TILE_HEIGHT) + Constants.Game.PADDING_Y)
+            * Constants.UI.METER_TO_PIX;
+        shapeRenderer.line(x, startY, x, endY);
+
+        shapeRenderer.end();
+        Gdx.gl.glLineWidth(1.0f); // Reset line thickness back to default
+        batch.begin();
     }
 }

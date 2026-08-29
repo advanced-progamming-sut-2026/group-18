@@ -11,6 +11,7 @@ import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.BucketHeadZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.KnightZombie;
 import com.compileordie.pvz2.models.game.board.Lane;
+import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.models.missions.quests.QuestEvent;
 import com.compileordie.pvz2.models.missions.quests.QuestManager;
 import com.compileordie.pvz2.models.user.Player;
@@ -161,7 +162,7 @@ public abstract class Zombie extends GameEntity {
             handleDeath();
             return;
         }
-//        if (takedDamage) takedDamage = false;
+        // if (takedDamage) takedDamage = false;
         if (skipThisTick) return;
 
         // ⏳ اگه در حال پخش انیمیشن پرتاب (fly-in) هستیم (مثلا ایمپی که تازه از
@@ -205,7 +206,13 @@ public abstract class Zombie extends GameEntity {
         }
 
         // برای رسیدن به خانه
-        if (getX()<=Constants.Game.EAT_HOME_X){
+        float endLine;
+        if (AppModel.currentLevel == LevelID.DEAD_LINE) {
+            endLine = Constants.Game.DEADLINE_X;
+        } else {
+            endLine = Constants.Game.EAT_HOME_X;
+        }
+        if (getX() <= endLine) {
             isEating = true;
             timerForHomeEating += Constants.Game.TIME_COEFFICIENT;
             if (timerForHomeEating >= 4){

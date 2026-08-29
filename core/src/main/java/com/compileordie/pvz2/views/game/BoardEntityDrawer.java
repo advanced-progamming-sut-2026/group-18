@@ -308,6 +308,7 @@ final class BoardEntityDrawer {
                     }
 
                     AppModel.gameSession.gameBoard.economyManager.sunAmount += sun.type.value;
+                    AppModel.gameSession.gameBoard.economyManager.totalSunsGenerated += sun.type.value;
                     iterator.remove();
                     states.sunRenderStates.remove(sun);
                     continue;

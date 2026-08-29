@@ -179,7 +179,14 @@ public final class GameScreenUI {
         sunTable.setFillParent(true);
         sunTable.top().left();
 
-        // 1. Game Resources HUD & Shovel (Pinned Top-Left)
+        setupLeftUI(textureBank);
+        setupCardBarUI(textureBank);
+        setupWaveProgressBar(textureBank);
+
+        LevelSpecificUI.setupLevelSpecificElements(uiStage, skin);
+    }
+
+    private void setupLeftUI(TextureBank textureBank) {
         Table leftUITable = new Table();
         leftUITable.setFillParent(true);
         leftUITable.top().left();
@@ -187,6 +194,13 @@ public final class GameScreenUI {
         GameCurrencyHud currencyHud = new GameCurrencyHud(skin, uiStage, textureBank);
         leftUITable.add(currencyHud).pad(15).left().row();
 
+        Table toolsTable = createToolsTable(textureBank);
+        leftUITable.add(toolsTable).padLeft(15).left();
+
+        uiStage.addActor(leftUITable);
+    }
+
+    private Table createToolsTable(TextureBank textureBank) {
         Table toolsTable = new Table();
         toolsTable.left();
 
@@ -202,23 +216,25 @@ public final class GameScreenUI {
         PlantFoodBank plantFoodBank = new PlantFoodBank(textureBank);
         toolsTable.add(plantFoodBank);
 
-        leftUITable.add(toolsTable).padLeft(15).left();
+        return toolsTable;
+    }
 
-        uiStage.addActor(leftUITable);
-
+    private void setupCardBarUI(TextureBank textureBank) {
         Table cardBarTable = new Table();
         cardBarTable.setFillParent(true);
         cardBarTable.top();
+
         PlantCardBar cardBar = new PlantCardBar(skin, textureBank, AppModel.gameSession.gameBoard.economyManager);
         cardBarTable.add(cardBar).padTop(10);
-        uiStage.addActor(cardBarTable);
 
-        // 2. Wave Progress Bar (Pinned Bottom Middle)
+        uiStage.addActor(cardBarTable);
+    }
+
+    private void setupWaveProgressBar(TextureBank textureBank) {
         if (AppModel.gameSession != null && AppModel.gameSession.gameBoard != null) {
             WaveManager waveManager = AppModel.gameSession.gameBoard.waveManager;
             boolean isZomboss = AppModel.currentLevel != null && AppModel.currentLevel.levelType == LevelType.ZOMBOSS;
 
-            // Only construct and display the progress bar if there are valid finite waves or if it's a Zomboss level
             if (waveManager != null && (waveManager.waveNumber > 0 || isZomboss)) {
                 waveProgressBar = new WaveProgressBarUI(
                     AppModel.gameSession.gameBoard,
