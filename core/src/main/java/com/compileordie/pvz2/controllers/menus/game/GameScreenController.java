@@ -15,6 +15,7 @@ import com.compileordie.pvz2.models.game.economy.EconomyType;
 import com.compileordie.pvz2.models.game.economy.PlantCard;
 import com.compileordie.pvz2.models.game.economy.Sun;
 import com.compileordie.pvz2.models.game.levels.LevelID;
+import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
 import com.compileordie.pvz2.models.missions.quests.QuestEvent;
 import com.compileordie.pvz2.models.missions.quests.QuestManager;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
@@ -52,6 +53,12 @@ public class GameScreenController {
         float meterY = worldPoint.y / Constants.UI.METER_TO_PIX;
 
         return AppModel.gameSession.gameBoard.getTile(meterX, meterY);
+    }
+
+    public static Vase getVaseAt(float screenX, float screenY, Viewport viewport) {
+        Tile tile = getTileAt(screenX, screenY, viewport);
+        if (tile == null) return null;
+        return tile.vase;
     }
 
     public static void selectCard(PlantCard card) {
@@ -110,6 +117,10 @@ public class GameScreenController {
         if (selectedCard != null) {
             handlePlantAction(tile);
         }
+    }
+
+    public static void handleVaseClick(Vase vase) {
+        vase.breakVase();
     }
 
     private static void handlePlantFoodAction(Tile tile) {
@@ -185,9 +196,6 @@ public class GameScreenController {
     }
 
     public static void explodeSun(GameBoard gameBoard, Sun sun) {
-        int row = sun.getTileRow();
-        int column = sun.getTileColumn();
-
         ArrayList<Zombie> zombies = gameBoard.getAllZombies();
         int zombieDamageAmount = ConfigManager.economy().radioactiveSunZombieDamageAmount;
         int zombieDamageRadius = ConfigManager.economy().radioactiveSunZombieDamageArea;

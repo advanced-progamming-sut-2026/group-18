@@ -38,7 +38,6 @@ public class GameBoard {
     public ArrayList<Projectile> projectiles;
     public EconomyManager economyManager;
     public WaveManager waveManager;
-    public ArrayList<Vase> vases;
     public ArrayList<SeedPacket> seedPackets;
     public ArrayList<PlantFood> plantFoods;
     public int tideLevel;
@@ -66,7 +65,6 @@ public class GameBoard {
         this.zombieManager = new ZombieManager();
         this.projectiles = new ArrayList<>();
         this.economyManager = new EconomyManager(this, economyType, selectionDeck);
-        this.vases = new ArrayList<>();
         this.seedPackets = new ArrayList<>();
         this.plantFoods = new ArrayList<>();
         this.waveManager = new WaveManager(this, waveType, waveNumber, shouldStartWaves);
@@ -177,6 +175,13 @@ public class GameBoard {
         return getAllTiles().stream()
             .filter(tile -> tile.obstacle != null && tile.obstacle.type == ObstacleType.TOMB)
             .map(tile -> (Tomb) tile.obstacle)
+            .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    public ArrayList<Vase> getAllVases() {
+        return getAllTiles().stream()
+            .filter(tile -> tile.vase != null)
+            .map(tile -> tile.vase)
             .collect(Collectors.toCollection(ArrayList::new));
     }
 

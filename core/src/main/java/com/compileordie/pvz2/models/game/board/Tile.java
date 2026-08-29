@@ -6,6 +6,7 @@ import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
+import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,11 +18,11 @@ public class Tile {
     public TileType type;
     public Plant plant;
     public Obstacle obstacle;
+    public Vase vase;
     public boolean hasLilyPad;
     public boolean isOnFire;
     public double fireTime = 4;
     public double fireTimer = 0;
-
     // NEW: Puddle memory
     public double puddleTimer = 0;
     public int puddleDamage = 0;
