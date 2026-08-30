@@ -119,6 +119,13 @@ public class GameBoard {
 
         List<Plant> currentPlants = new ArrayList<>();
         for (Plant plant : getAllPlants()) {
+            if (plant != null && (!plant.isAlive() || plant.isDead())) {
+                for (Tile tile : getAllTiles()) {
+                    if (tile.plant == plant) {
+                        tile.plant = null;
+                    }
+                }
+            }
             if (plant != null && !plant.isDead() && plant.isAlive()) {
                 currentPlants.add(plant);
             }

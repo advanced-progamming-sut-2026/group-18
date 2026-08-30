@@ -1,14 +1,11 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.ZomBoss;
 
 import com.compileordie.pvz2.config.Constants;
-import com.compileordie.pvz2.models.AppModel;
-import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
-
-import java.awt.*;
+import com.compileordie.pvz2.models.game.board.GameBoard;
 
 public class EgyptZomboss extends Zombie {
     public double health = 15000;
@@ -46,13 +43,13 @@ public class EgyptZomboss extends Zombie {
 
 
 
-    public EgyptZomboss() {
+    public EgyptZomboss(GameBoard gameBoard) {
         super(15000, 0, 0, 2, 15, 15, Constants.Game.PADDING_Y_REALITY+0.1+2*Constants.Game.TILE_HEIGHT, 0, 0, ZombieType.ZOMBOSS_IN_EGYPT);
         baseX = getX();
         rowDown = 2;
         rowUp = 3;
-        AppModel.gameSession.gameBoard.lanes.get(rowDown).zombies.add(this);
-        AppModel.gameSession.gameBoard.lanes.get(rowUp).zombies.add(this);
+        gameBoard.lanes.get(rowDown).zombies.add(this);
+        gameBoard.lanes.get(rowUp).zombies.add(this);
     }
 
     public void takeDamage(double amount, DamageType damageType, PlantType plantType) {

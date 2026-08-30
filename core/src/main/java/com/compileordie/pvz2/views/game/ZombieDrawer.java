@@ -183,8 +183,8 @@ final class ZombieDrawer {
         }
         Map<String, Boolean> visibilityMap = ZombieVisualHelpers.buildArmorVisibilityMap(zombie, def);
         visibilityMap = applyDebrisVisibility(zombie, state, def, choice, baseX, baseY, visibilityMap);
-        drawIceBlockIfNeeded(batch, player, zombie, state, delta, baseX, baseY);
         drawZombieParts(batch, player, zombie, state, def, choice, baseX, baseY, visibilityMap);
+        drawIceBlockIfNeeded(batch, player, zombie, state, delta, baseX, baseY);
     }
 
     /**
@@ -201,12 +201,22 @@ final class ZombieDrawer {
         if (brokenAssets.contains(ICE_BLOCK_PAM)) return;
 
         state.iceAnimTime += delta;
+
+        com.badlogic.gdx.graphics.Color color = batch.getColor();
+        float oldAlpha = color.a;
+
         try {
+            color.a = oldAlpha * 0.4f;
+            batch.setColor(color);
+
             player.draw(batch, ICE_BLOCK_PAM, ICE_BLOCK_CLIP, state.iceAnimTime,
                 baseX, baseY, GameScreenConstants.ZOMBIE_SCALE, GameScreenConstants.ZOMBIE_SCALE,
                 state.flip);
         } catch (Throwable e) {
             brokenAssets.add(ICE_BLOCK_PAM);
+        } finally {
+            color.a = oldAlpha;
+            batch.setColor(color);
         }
     }
 

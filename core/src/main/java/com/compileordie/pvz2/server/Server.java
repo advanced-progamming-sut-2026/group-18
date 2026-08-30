@@ -52,10 +52,10 @@ public class Server {
 
     public void start(int port) throws IOException {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("[Server] در حال گوش دادن روی پورت " + port + " ...");
+            System.out.println("[Server] Listening on port " + port + " ...");
             while (true) {
                 Socket socket = serverSocket.accept();
-                System.out.println("[Server] اتصال جدید: " + socket.getRemoteSocketAddress());
+                System.out.println("[Server] New connection: " + socket.getRemoteSocketAddress());
                 ClientHandler handler = new ClientHandler(socket, this);
                 threadPool.submit(handler);
             }

@@ -24,6 +24,7 @@ import com.compileordie.pvz2.models.repositories.configs.PlantConfigRepository;
 import com.compileordie.pvz2.views.helpers.ToastManager;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class GameScreenController {
     public static PlantCard selectedCard = null;
@@ -148,13 +149,16 @@ public class GameScreenController {
     }
 
     private static void handlePlantAction(Tile tile) {
-        if (tile.plant != null && tile.plant.isAlive()) {
-            ToastManager.showError("Tile is already occupied!");
-            return;
-        }
-        if (!tile.isPlantable()) {
-            ToastManager.showError("Tile is not plantable!");
-            return;
+        if (!List.of(PlantType.PEA_POD, PlantType.HOT_POTATO,PlantType.GRAVE_BUSTER,PlantType.LILY_PAD)
+            .contains(selectedCard.plantType)) {
+            if (tile.plant != null && tile.plant.isAlive()) {
+                ToastManager.showError("Tile is already occupied!");
+                return;
+            }
+            if (!tile.isPlantable()) {
+                ToastManager.showError("Tile is not plantable!");
+                return;
+            }
         }
         if (AppModel.currentLevel == LevelID.WALNUT_BOWLING
             && tile.column >= Constants.Game.BOARD_COLS - ConfigManager.gameplay().bowlingLine) {

@@ -283,6 +283,8 @@ public abstract class Zombie extends GameEntity {
 
         // برای جابجایی - اعمال دمیح - اعمال توانایی سرویس ها هستند که پیش می برند
 
+        // TODO: Remove if wrong
+        if (isFrozenByIce) this.setXSpeed(0);
     }
 
     public void handleDeath() {

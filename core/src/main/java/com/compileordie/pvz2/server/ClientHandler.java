@@ -52,7 +52,7 @@ public class ClientHandler implements Runnable {
                 }
             }
         } catch (IOException e) {
-            System.out.println("[Server] اتصال قطع شد: " + socket.getRemoteSocketAddress());
+            System.out.println("[Server] Disconnected: " + socket.getRemoteSocketAddress());
         } finally {
             server.unregisterOnlineClient(username);
             try {
