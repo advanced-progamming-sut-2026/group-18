@@ -15,7 +15,7 @@ import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tombraise
 import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.BarrelRollerZombie;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 import com.compileordie.pvz2.models.repositories.configs.ZombieStatsConfig;
-
+//
 public class ZombieBuilder {
     private ZombieType type;
     private double x;
