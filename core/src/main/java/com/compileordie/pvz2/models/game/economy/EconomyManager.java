@@ -35,7 +35,7 @@ public class EconomyManager {
         this.suns = new ArrayList<>();
         this.selectionDeck = selectionDeck;
         this.plantCards = new ArrayList<>();
-        this.sunAmount = 1000;
+        this.sunAmount = 0;
         this.totalSunsGenerated = 0;
         this.tickCounter = 0;
         this.ticksUntilNextNaturalSun = calculateNextSpawnIntervalTicks();

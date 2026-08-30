@@ -4,7 +4,11 @@ import com.badlogic.gdx.math.MathUtils;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.controllers.PlantSpawner;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
+import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
+import com.compileordie.pvz2.models.entities.zombies.variants.ZomBoss.DarkZomboss;
+import com.compileordie.pvz2.models.entities.zombies.variants.ZomBoss.EgyptZomboss;
+import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.TombType;
 import com.compileordie.pvz2.models.game.board.GameBoard;
@@ -15,6 +19,7 @@ import com.compileordie.pvz2.models.game.judges.LossCondition;
 import com.compileordie.pvz2.models.game.judges.WinCondition;
 import com.compileordie.pvz2.models.game.levels.ChapterType;
 import com.compileordie.pvz2.models.game.levels.LevelID;
+import com.compileordie.pvz2.models.game.levels.LevelType;
 import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
 import com.compileordie.pvz2.models.game.waves.WaveType;
 
@@ -89,7 +94,7 @@ public class SessionBuilder {
         if (levelID.chapterType == ChapterType.ANCIENT_EGYPT) {
             populateAncientEgypt(tiles);
         } else if (levelID.chapterType == ChapterType.FROSTBITE_CAVES) {
-            populateFrostbiteCaves(tiles);
+            populateFrostbiteCaves(tiles, gameSession.gameBoard);
         } else if (levelID.chapterType == ChapterType.BIG_WAVE_BEACH) {
             populateBigWaveBeach(tiles);
         } else if (levelID.chapterType == ChapterType.DARK_AGES) {
@@ -108,14 +113,30 @@ public class SessionBuilder {
         }
     }
 
-    private static void populateFrostbiteCaves(List<Tile> tiles) {
+    private static void populateFrostbiteCaves(List<Tile> tiles, GameBoard gameBoard) {
         for (Tile tile : tiles) {
             tile.type = TileType.FROSTBITE_CAVE;
-            if (tile.row < Constants.Game.BOARD_ROWS - 1 && new Random().nextInt(100) < 3) {
+            if (tile.row < Constants.Game.BOARD_ROWS - 1 && new Random().nextInt(100) < 2) {
                 tile.type = TileType.SLIPPERY_UP;
+                continue;
             }
-            if (tile.row > 0 && new Random().nextInt(100) < 3) {
+            if (tile.row > 0 && new Random().nextInt(100) < 2) {
                 tile.type = TileType.SLIPPERY_DOWN;
+                continue;
+            }
+            if (tile.column >= Constants.Game.BOARD_COLS / 3 && new Random().nextInt(100) < 5) {
+                ZombieType zombieType = null;
+                while (zombieType == null) {
+                    zombieType = ZombieType.values()[MathUtils.random(ZombieType.values().length - 3)];
+                    if (zombieType.chapter != null && zombieType.chapter != ChapterType.FROSTBITE_CAVES) {
+                        zombieType = null;
+                    }
+                }
+                double x = (tile.column + 0.5f) * Constants.Game.TILE_WIDTH + Constants.Game.PADDING_X;
+                double y = tile.row * Constants.Game.TILE_HEIGHT + Constants.UI.BOTTOM_LINE_METER;
+                Zombie zombie = ZombieBuilder.create(zombieType, x, y, tile.row);
+                zombie.setIceBlock(true);
+                gameBoard.getLane(tile.row).zombies.add(zombie);
             }
         }
     }
@@ -193,10 +214,17 @@ public class SessionBuilder {
                             tile.column,
                             PlantType.values()[MathUtils.random(PlantType.values().length - 1)]);
                     } else {
+                        ZombieType zombieType = null;
+                        while (zombieType == null) {
+                            zombieType = ZombieType.values()[MathUtils.random(ZombieType.values().length - 3)];
+                            if (zombieType.chapter != null && zombieType.chapter != ChapterType.DARK_AGES) {
+                                zombieType = null;
+                            }
+                        }
                         tile.vase = new Vase(gameBoard,
                             tile.row,
                             tile.column,
-                            ZombieType.values()[MathUtils.random(ZombieType.values().length - 3)]);
+                            zombieType);
                     }
                 }
             }
@@ -211,6 +239,10 @@ public class SessionBuilder {
                         false);
                 }
             }
+        } else if (levelID == LevelID.BOSS_ANCIENT_EGYPT) {
+            gameBoard.getLane(Constants.Game.BOARD_ROWS / 2).zombies.add(new EgyptZomboss(gameBoard));
+        } else if (levelID == LevelID.BOSS_DARK_AGES) {
+            gameBoard.getLane(Constants.Game.BOARD_ROWS / 2).zombies.add(new DarkZomboss(gameBoard));
         }
     }
 

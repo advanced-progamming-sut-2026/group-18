@@ -2,6 +2,7 @@ package com.compileordie.pvz2.views.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
@@ -174,6 +175,7 @@ final class ZombieDrawer {
         state.lastDrawX = baseX;
         state.lastDrawY = baseY;
         updateDamageFlash(zombie, state, delta);
+        drawFoodedHaloIfNeeded(batch, zombie, baseX, baseY);
         AnimChoice choice = chooseAnim(zombie, state, typeKey);
         if (isPaused) {
             choice.animName = (zombie.getType() == ZombieType.NEWSPAPER_ZOMBIE)
@@ -181,8 +183,8 @@ final class ZombieDrawer {
         }
         Map<String, Boolean> visibilityMap = ZombieVisualHelpers.buildArmorVisibilityMap(zombie, def);
         visibilityMap = applyDebrisVisibility(zombie, state, def, choice, baseX, baseY, visibilityMap);
-        drawIceBlockIfNeeded(batch, player, zombie, state, delta, baseX, baseY);
         drawZombieParts(batch, player, zombie, state, def, choice, baseX, baseY, visibilityMap);
+        drawIceBlockIfNeeded(batch, player, zombie, state, delta, baseX, baseY);
     }
 
     /**
@@ -199,12 +201,51 @@ final class ZombieDrawer {
         if (brokenAssets.contains(ICE_BLOCK_PAM)) return;
 
         state.iceAnimTime += delta;
+
+        com.badlogic.gdx.graphics.Color color = batch.getColor();
+        float oldAlpha = color.a;
+
         try {
+            color.a = oldAlpha * 0.4f;
+            batch.setColor(color);
+
             player.draw(batch, ICE_BLOCK_PAM, ICE_BLOCK_CLIP, state.iceAnimTime,
                 baseX, baseY, GameScreenConstants.ZOMBIE_SCALE, GameScreenConstants.ZOMBIE_SCALE,
                 state.flip);
         } catch (Throwable e) {
             brokenAssets.add(ICE_BLOCK_PAM);
+        } finally {
+            color.a = oldAlpha;
+            batch.setColor(color);
+        }
+    }
+
+    /**
+     * وقتی zombie.isFooded تروئه، یه هاله‌ی نرم زرد+سبز دور زامبی (پشت خودِ
+     * اسپرایتش، چون قبل از drawZombieParts صدا زده می‌شه) رسم می‌کنه؛ فقط
+     * برای اطلاع بازیکن که این زامبی موقع مرگ پلنت‌فود زمین می‌ندازه.
+     * baseX/baseY دقیقا همون مختصاتیه که خودِ بدن زامبی هم باهاش رسم می‌شه
+     * (zombie.getX()/getY() که قبلا پدینگ‌دار شده، ضرب در METER_TO_PIX)، پس
+     * هیچ پدینگ اضافه‌ای اینجا لازم نیست.
+     */
+    private void drawFoodedHaloIfNeeded(SpriteBatch batch, Zombie zombie, float baseX, float baseY) {
+        if (!zombie.isFooded) return;
+
+        Texture halo = ZombieVisualHelpers.getHaloTexture();
+        float pulse = 0.85f + 0.15f * (float) Math.sin(effectPulseTime * 3f);
+
+        float greenSize = 110f * pulse;
+        float yellowSize = 78f * pulse;
+
+        Color oldColor = batch.getColor().cpy();
+        try {
+            batch.setColor(0.45f, 1f, 0.2f, 0.55f); // سبز
+            batch.draw(halo, baseX - greenSize / 2f, baseY - greenSize / 2f, greenSize, greenSize);
+
+            batch.setColor(1f, 0.9f, 0.15f, 0.55f); // زرد
+            batch.draw(halo, baseX - yellowSize / 2f, baseY - yellowSize / 2f, yellowSize, yellowSize);
+        } finally {
+            batch.setColor(oldColor);
         }
     }
 

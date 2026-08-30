@@ -10,6 +10,7 @@ public final class Constants {
             public static final String PREFERENCES = ROOT + "preferences.json";
             public static final String AUTH = ROOT + "auth.json";
             public static final String USERS = ROOT + "users/";
+            public static final String ACCOUNTS = ROOT + "accounts.tsv";
         }
 
         public static final class Configs {

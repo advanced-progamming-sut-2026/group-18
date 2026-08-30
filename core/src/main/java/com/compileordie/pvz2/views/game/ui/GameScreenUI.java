@@ -233,15 +233,13 @@ public final class GameScreenUI {
     private void setupWaveProgressBar(TextureBank textureBank) {
         if (AppModel.gameSession != null && AppModel.gameSession.gameBoard != null) {
             WaveManager waveManager = AppModel.gameSession.gameBoard.waveManager;
-            boolean isZomboss = AppModel.currentLevel != null && AppModel.currentLevel.levelType == LevelType.ZOMBOSS;
 
-            if (waveManager != null && (waveManager.waveNumber > 0 || isZomboss)) {
+            if (waveManager != null && waveManager.waveNumber > 0) {
                 waveProgressBar = new WaveProgressBarUI(
                     AppModel.gameSession.gameBoard,
                     waveManager,
                     skin,
-                    textureBank,
-                    isZomboss
+                    textureBank
                 );
                 waveProgressBar.setSize(300f, 24f);
 

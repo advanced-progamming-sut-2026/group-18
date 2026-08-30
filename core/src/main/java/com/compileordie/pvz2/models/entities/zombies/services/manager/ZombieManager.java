@@ -78,7 +78,7 @@ public class ZombieManager {
             if (z.isHypnotized() && z.getX()>=Constants.Game.LANE_LENGTH){
                 z.setHealth(0);
             }
-            if (z.getType()==ZombieType.BARREL_ROLLER && ((BarrelRollerZombie)z).spawnImp){
+            if (z.getType()==ZombieType.BARREL_ROLLER && !z.isHypnotized() && ((BarrelRollerZombie)z).spawnImp){
                 spawnImpFromBarrel(myMap, ((BarrelRollerZombie) z));
                 ((BarrelRollerZombie) z).spawnImp = false;
             }
@@ -252,9 +252,17 @@ public class ZombieManager {
     public void miniTick(List<Zombie> myZombies, GameBoard myMap) {
         List<Zombie> zombiesCopy = new ArrayList<>(myZombies);
         for (Zombie z : zombiesCopy) {
-            processMiniTickSpawns(z, myZombies, myMap);
+            // 🧠 وقتی زامبی هیپنوتایز شده، طبق درخواست، همه‌ی قابلیت‌های خاصش
+            // (اسپاون ایمپ/قبر، دزدی/برگردوندن خورشید، نواختن پیانو و ...) باید
+            // خاموش بشن - فقط رفتار «خوردن زامبی‌های دیگه» (که جای دیگه‌ای، در
+            // combatingTwoZombie، مستقل هندل می‌شه) دست‌نخورده می‌مونه.
+            // processMiniTickMovement عمدا این‌جا شامل نمی‌شه چون صرفا وضعیت
+            // فیزیکی حرکته (مثلا شنای غواص)، نه یه «قابلیت» به معنای واقعی.
+            if (!z.isHypnotized()) {
+                processMiniTickSpawns(z, myZombies, myMap);
+                combatManager.processMiniTickAbilities(z, myZombies, myMap);
+            }
             processMiniTickMovement(z, myMap);
-            combatManager.processMiniTickAbilities(z, myZombies, myMap);
         }
     }
 

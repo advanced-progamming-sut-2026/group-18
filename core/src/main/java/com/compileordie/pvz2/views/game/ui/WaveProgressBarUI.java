@@ -20,18 +20,14 @@ public class WaveProgressBarUI extends Group {
     private final TextureBank textureBank;
 
     private final Group markerGroup;
-    private final boolean isZombossLevel;
-    private Zombie zombossEntity;
 
     public WaveProgressBarUI(GameBoard gameBoard,
                              WaveManager waveManager,
                              Skin skin,
-                             TextureBank textureBank,
-                             boolean isZombossLevel) {
+                             TextureBank textureBank) {
         this.gameBoard = gameBoard;
         this.waveManager = waveManager;
         this.textureBank = textureBank;
-        this.isZombossLevel = isZombossLevel;
 
         this.progressBar = new ProgressBar(0f, 1f, 0.001f, false, skin, "ingame_progress");
         this.progressBar.setAnimateDuration(0.25f);
@@ -41,11 +37,9 @@ public class WaveProgressBarUI extends Group {
         this.markerGroup = new Group();
         this.addActor(markerGroup);
 
-        if (!isZombossLevel) {
-            setupWaveMarkers();
-        }
+        setupWaveMarkers();
 
-        if (waveManager != null && waveManager.waveNumber <= 0 && !isZombossLevel) {
+        if (waveManager != null && waveManager.waveNumber <= 0) {
             this.setVisible(false);
         }
     }
@@ -91,12 +85,7 @@ public class WaveProgressBarUI extends Group {
     @Override
     public void act(float delta) {
         super.act(delta);
-
-        if (isZombossLevel) {
-            updateZombossHealth();
-        } else {
-            updateWaveProgress();
-        }
+        updateWaveProgress();
     }
 
     private void updateWaveProgress() {
@@ -105,35 +94,10 @@ public class WaveProgressBarUI extends Group {
         progressBar.setValue(unreversedProgress);
     }
 
-    private void updateZombossHealth() {
-        if (zombossEntity == null || !zombossEntity.isAlive()) {
-            findZombossEntity();
-        }
-
-        if (zombossEntity != null && zombossEntity.getMaxHealth() > 0) {
-            float healthPercent = (float) (zombossEntity.getHealth() / zombossEntity.getMaxHealth());
-            progressBar.setValue(Math.clamp(healthPercent, 0f, 1f));
-        } else {
-            progressBar.setValue(0f);
-        }
-    }
-
-    private void findZombossEntity() {
-        if (gameBoard == null) return;
-        for (Zombie zombie : gameBoard.getAllZombies()) {
-            if (zombie.getType().name().contains("ZOMBOSS")) {
-                this.zombossEntity = zombie;
-                break;
-            }
-        }
-    }
-
     @Override
     public void setSize(float width, float height) {
         super.setSize(width, height);
         progressBar.setSize(width, height);
-        if (!isZombossLevel) {
-            setupWaveMarkers();
-        }
+        setupWaveMarkers();
     }
 }

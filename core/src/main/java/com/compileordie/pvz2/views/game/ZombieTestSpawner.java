@@ -122,7 +122,7 @@ public class ZombieTestSpawner {
                 try {
                     // سازنده‌ی خودِ EgyptZomboss، خودش این آبجکت رو به لاین‌های
                     // rowDown و rowUp اضافه می‌کنه؛ چیز دیگه‌ای لازم نیست.
-                    new EgyptZomboss();
+                    new EgyptZomboss(AppModel.gameSession.gameBoard);
                     Gdx.app.log("PVZ-TEST-SPAWNER", "👑 [ZOMBOSS TEST] یک EgyptZomboss اسپاون شد.");
                 } catch (Exception e) {
                     Gdx.app.error("PVZ-TEST-SPAWNER", "❌ خطا در اسپاون زامباس: " + e.getMessage());
@@ -137,7 +137,7 @@ public class ZombieTestSpawner {
                 try {
                     // سازنده‌ی خودِ DarkZomboss هم دقیقا مثل EgyptZomboss، خودش
                     // این آبجکت رو به لاین‌های rowDown و rowUp اضافه می‌کنه.
-                    new DarkZomboss();
+                    new DarkZomboss(AppModel.gameSession.gameBoard);
                     Gdx.app.log("PVZ-TEST-SPAWNER", "👑 [DARK ZOMBOSS TEST] یک DarkZomboss اسپاون شد.");
                 } catch (Exception e) {
                     Gdx.app.error("PVZ-TEST-SPAWNER", "❌ خطا در اسپاون زامباس دارک: " + e.getMessage());

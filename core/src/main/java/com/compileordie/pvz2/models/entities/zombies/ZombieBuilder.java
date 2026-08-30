@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.models.entities.zombies;
 
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.ZomBoss.EgyptZomboss;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
@@ -183,7 +184,7 @@ public class ZombieBuilder {
                 return new ImpDragon(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             case ZOMBOSS_IN_EGYPT:
-                return new EgyptZomboss();
+                return new EgyptZomboss(AppModel.gameSession.gameBoard);
 
             default:
                 ZombieStatsConfig defaultStats = ConfigManager.zombies().get(ZombieType.STANDARD);

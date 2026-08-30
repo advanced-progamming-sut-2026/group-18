@@ -1,0 +1,193 @@
+package com.compileordie.pvz2.server;
+
+import com.compileordie.pvz2.network.protocol.Message;
+import com.compileordie.pvz2.network.protocol.MessageType;
+import com.compileordie.pvz2.server.auth.Account;
+import com.compileordie.pvz2.server.auth.AccountStore;
+import com.compileordie.pvz2.server.auth.AccountValidator;
+import com.compileordie.pvz2.server.auth.PasswordHasher;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+
+/**
+ * فاز ۰ - گام ۰.۳: یک Thread جداگانه به‌ازای هر اتصال کلاینت (اجرا شده روی thread-pool سرور).
+ * فعلا فقط PING -> PONG را جواب می‌دهد؛ در فاز ۱ به بعد سوییچ روی MessageType کامل می‌شود
+ * (AUTH_LOGIN, AUTH_REGISTER, LEADERBOARD_REQUEST, IZOMBIE_* و ...).
+ */
+public class ClientHandler implements Runnable {
+
+    private final Socket socket;
+    private final Server server;
+    private PrintWriter out;
+
+    /** بعد از لاگین موفق (فاز ۱) پر می‌شود؛ تا آن موقع null است. */
+    private String username;
+
+    public ClientHandler(Socket socket, Server server) {
+        this.socket = socket;
+        this.server = server;
+    }
+
+    @Override
+    public void run() {
+        try (
+                BufferedReader in = new BufferedReader(
+                        new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+                PrintWriter writer = new PrintWriter(
+                        socket.getOutputStream(), true, StandardCharsets.UTF_8)
+        ) {
+            this.out = writer;
+            String line;
+            while ((line = in.readLine()) != null) {
+                try {
+                    Message message = Message.fromWire(line);
+                    handleMessage(message);
+                } catch (IllegalArgumentException badMessage) {
+                    send(new Message(MessageType.ERROR).put("reason", "bad_message"));
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("[Server] Disconnected: " + socket.getRemoteSocketAddress());
+        } finally {
+            server.unregisterOnlineClient(username);
+            try {
+                socket.close();
+            } catch (IOException ignored) {
+            }
+        }
+    }
+
+    /**
+     * نقطه‌ی ورود پردازش پیام‌ها. فعلا فقط PING پیاده شده؛ در فاز ۱ به بعد
+     * case های AUTH_LOGIN, AUTH_REGISTER, LEADERBOARD_REQUEST, IZOMBIE_* و ... اضافه می‌شوند.
+     */
+    private void handleMessage(Message message) {
+        switch (message.getType()) {
+            case PING:
+                send(new Message(MessageType.PONG));
+                break;
+            case AUTH_REGISTER:
+                handleRegister(message);
+                break;
+            case AUTH_LOGIN:
+                handleLogin(message);
+                break;
+            case PLAYER_STATE_PUSH:
+                handlePlayerStatePush(message);
+                break;
+            case PLAYER_STATE_PULL:
+                handlePlayerStatePull(message);
+                break;
+            default:
+                send(new Message(MessageType.ERROR).put("reason", "not_implemented_yet"));
+                break;
+        }
+    }
+
+    /** فاز ۱ - گام ۱.۱: ثبت‌نام. یکتایی username اینجا (سمت سرور) نهایی چک می‌شود. */
+    private void handleRegister(Message message) {
+        AccountStore store = server.getAccountStore();
+        String username = message.get("username");
+        String password = message.get("password");
+
+        String usernameError = AccountValidator.validateUsername(username);
+        if (usernameError != null) {
+            send(new Message(MessageType.AUTH_RESULT).put("status", "INVALID_USERNAME").put("error", usernameError));
+            return;
+        }
+        String passwordError = AccountValidator.validatePassword(password);
+        if (passwordError != null) {
+            send(new Message(MessageType.AUTH_RESULT).put("status", "INVALID_PASSWORD").put("error", passwordError));
+            return;
+        }
+        if (store.exists(username)) {
+            send(new Message(MessageType.AUTH_RESULT).put("status", "USERNAME_TAKEN"));
+            return;
+        }
+
+        String passwordHash = PasswordHasher.sha256Hex(password);
+        store.createAccount(username, passwordHash);
+
+        this.username = username;
+        server.registerOnlineClient(username, this);
+
+        send(new Message(MessageType.AUTH_RESULT)
+                .put("status", "SUCCESS")
+                .put("session", username)
+                .put("data", ""));
+    }
+
+    /** فاز ۱ - گام ۱.۲ و ۱.۴: ورود؛ اگر موفق بود، آخرین دیتای بازیکن هم همراه پاسخ برگردانده می‌شود. */
+    private void handleLogin(Message message) {
+        AccountStore store = server.getAccountStore();
+        String username = message.get("username");
+        String password = message.get("password");
+
+        Account account = store.get(username);
+        if (account == null) {
+            send(new Message(MessageType.AUTH_RESULT).put("status", "USER_NOT_FOUND"));
+            return;
+        }
+
+        String passwordHash = PasswordHasher.sha256Hex(password == null ? "" : password);
+        if (!account.getPasswordHashHex().equals(passwordHash)) {
+            send(new Message(MessageType.AUTH_RESULT).put("status", "WRONG_PASSWORD"));
+            return;
+        }
+
+        this.username = username;
+        server.registerOnlineClient(username, this);
+
+        send(new Message(MessageType.AUTH_RESULT)
+                .put("status", "SUCCESS")
+                .put("session", username)
+                .put("data", account.getPlayerDataBase64()));
+    }
+
+    /**
+     * فاز ۱ - گام ۱.۴: کلاینت بعد از هر تغییر مهم (خرید، امتیاز و ...) کل دیتای Player را
+     * (به‌صورت Base64 شده) دوباره push می‌کند تا سرور همیشه آخرین نسخه را داشته باشد.
+     */
+    private void handlePlayerStatePush(Message message) {
+        String session = message.get("session");
+        String data = message.get("data");
+        if (session == null || !session.equals(this.username)) {
+            send(new Message(MessageType.ERROR).put("reason", "invalid_session"));
+            return;
+        }
+        server.getAccountStore().updatePlayerData(session, data == null ? "" : data);
+        send(new Message(MessageType.PLAYER_STATE_RESULT).put("status", "SUCCESS"));
+    }
+
+    /** درخواست دستی گرفتن آخرین نسخه‌ی دیتای بازیکن (معمولا لازم نیست چون login خودش data را برمی‌گرداند). */
+    private void handlePlayerStatePull(Message message) {
+        String session = message.get("session");
+        if (session == null || !session.equals(this.username)) {
+            send(new Message(MessageType.ERROR).put("reason", "invalid_session"));
+            return;
+        }
+        Account account = server.getAccountStore().get(session);
+        String data = account == null ? "" : account.getPlayerDataBase64();
+        send(new Message(MessageType.PLAYER_STATE_RESULT).put("status", "SUCCESS").put("data", data));
+    }
+
+    /** ارسال یک پیام به این کلاینت مشخص (بعدا برای relay بین دو کلاینت هم استفاده می‌شود). */
+    public void send(Message message) {
+        if (out != null) {
+            out.println(message.toWire());
+        }
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+}
