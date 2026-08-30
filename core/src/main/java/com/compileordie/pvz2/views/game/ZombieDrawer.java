@@ -2,6 +2,7 @@ package com.compileordie.pvz2.views.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
@@ -174,6 +175,7 @@ final class ZombieDrawer {
         state.lastDrawX = baseX;
         state.lastDrawY = baseY;
         updateDamageFlash(zombie, state, delta);
+        drawFoodedHaloIfNeeded(batch, zombie, baseX, baseY);
         AnimChoice choice = chooseAnim(zombie, state, typeKey);
         if (isPaused) {
             choice.animName = (zombie.getType() == ZombieType.NEWSPAPER_ZOMBIE)
@@ -205,6 +207,35 @@ final class ZombieDrawer {
                 state.flip);
         } catch (Throwable e) {
             brokenAssets.add(ICE_BLOCK_PAM);
+        }
+    }
+
+    /**
+     * وقتی zombie.isFooded تروئه، یه هاله‌ی نرم زرد+سبز دور زامبی (پشت خودِ
+     * اسپرایتش، چون قبل از drawZombieParts صدا زده می‌شه) رسم می‌کنه؛ فقط
+     * برای اطلاع بازیکن که این زامبی موقع مرگ پلنت‌فود زمین می‌ندازه.
+     * baseX/baseY دقیقا همون مختصاتیه که خودِ بدن زامبی هم باهاش رسم می‌شه
+     * (zombie.getX()/getY() که قبلا پدینگ‌دار شده، ضرب در METER_TO_PIX)، پس
+     * هیچ پدینگ اضافه‌ای اینجا لازم نیست.
+     */
+    private void drawFoodedHaloIfNeeded(SpriteBatch batch, Zombie zombie, float baseX, float baseY) {
+        if (!zombie.isFooded) return;
+
+        Texture halo = ZombieVisualHelpers.getHaloTexture();
+        float pulse = 0.85f + 0.15f * (float) Math.sin(effectPulseTime * 3f);
+
+        float greenSize = 110f * pulse;
+        float yellowSize = 78f * pulse;
+
+        Color oldColor = batch.getColor().cpy();
+        try {
+            batch.setColor(0.45f, 1f, 0.2f, 0.55f); // سبز
+            batch.draw(halo, baseX - greenSize / 2f, baseY - greenSize / 2f, greenSize, greenSize);
+
+            batch.setColor(1f, 0.9f, 0.15f, 0.55f); // زرد
+            batch.draw(halo, baseX - yellowSize / 2f, baseY - yellowSize / 2f, yellowSize, yellowSize);
+        } finally {
+            batch.setColor(oldColor);
         }
     }
 

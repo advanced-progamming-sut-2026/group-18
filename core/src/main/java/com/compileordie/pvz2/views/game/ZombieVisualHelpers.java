@@ -1,6 +1,8 @@
 package com.compileordie.pvz2.views.game;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
@@ -22,6 +24,34 @@ final class ZombieVisualHelpers {
     private static final float BLINK_SPEED_HYPNOTIZED = 6f;
     private static final float BLINK_SPEED_STUNNED = 8f;
     private static final float BLINK_SPEED_POISON = 5f;
+
+    // 🌱 تکسچر نرم دایره‌ای (radial gradient سفید با افت شفافیت از مرکز به
+    // لبه) که فقط یک‌بار (lazy) ساخته و کش می‌شه؛ برای رسم هاله‌ی زرد+سبز دور
+    // زامبی‌های isFooded استفاده می‌شه. چون خودِ رنگ موقع batch.draw ست می‌شه
+    // (setColor)، همین یک تکسچر خام برای هر دو رنگ کافیه.
+    private static Texture haloTexture;
+
+    static Texture getHaloTexture() {
+        if (haloTexture == null) {
+            final int size = 128;
+            Pixmap pixmap = new Pixmap(size, size, Pixmap.Format.RGBA8888);
+            float cx = size / 2f;
+            float cy = size / 2f;
+            float maxDist = size / 2f;
+            for (int y = 0; y < size; y++) {
+                for (int x = 0; x < size; x++) {
+                    float dist = (float) Math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
+                    float alpha = Math.max(0f, 1f - dist / maxDist);
+                    alpha = alpha * alpha; // نرم‌تر شدن افت لبه
+                    pixmap.setColor(1f, 1f, 1f, alpha);
+                    pixmap.drawPixel(x, y);
+                }
+            }
+            haloTexture = new Texture(pixmap);
+            pixmap.dispose();
+        }
+        return haloTexture;
+    }
 
     private ZombieVisualHelpers() {}
 
@@ -127,7 +157,7 @@ final class ZombieVisualHelpers {
     }
 
     private static void applyStandardArmor(Map<String, Boolean> map, List<String> stateFilters,
-                                          ZombieType type, StandardZombie sz) {
+                                           ZombieType type, StandardZombie sz) {
         String prefix = switch (type) {
             case CONEHEAD -> "zombie_armor_cone_";
             case BUCKETHEAD -> "zombie_armor_bucket_";

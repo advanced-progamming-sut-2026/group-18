@@ -11,6 +11,7 @@ import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.BucketHeadZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.KnightZombie;
 import com.compileordie.pvz2.models.game.board.Lane;
+import com.compileordie.pvz2.models.game.economy.PlantFood;
 import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.models.missions.quests.QuestEvent;
 import com.compileordie.pvz2.models.missions.quests.QuestManager;
@@ -43,6 +44,13 @@ public abstract class Zombie extends GameEntity {
     protected ZombieType type;
     protected boolean hasMetalArmor = false; // Tracks if armor was removed by Magnet-shroom
     protected boolean isGlowing;
+    // --- برای مکانیزم پلنت‌فودِ زمینی (drop روی زمین بعد از مرگ) ---
+    // با احتمال ۱۰٪ true می‌شه (دقیقا شبیه الگوی isGlowing بالا که ۵٪ داره،
+    // با این تفاوت که isGlowing یه پلنت‌فود مستقیم به player.plantFoodCount
+    // اضافه می‌کنه، ولی این یکی باید دقیقا سرجای مرگِ زامبی، یک آبجکت
+    // PlantFood واقعی روی زمین (gameBoard.plantFoods) اسپاون کنه که بازیکن
+    // باید بره جمعش کنه - رجوع کن به die() پایین.
+    public boolean isFooded;
     public boolean killByExplosive = false;
     public boolean takedDamage = false;
     public boolean fromGarg = false;
@@ -133,6 +141,7 @@ public abstract class Zombie extends GameEntity {
             this.hasMetalArmor = true;
         }
         this.isGlowing = new Random().nextInt(100) < 5;
+        this.isFooded = new Random().nextInt(100) < 5;
     }
 
     @Override
@@ -145,6 +154,14 @@ public abstract class Zombie extends GameEntity {
             if (player.plantFoodCount > 3) player.plantFoodCount = 3;
             AppModel.addAfterPrompt("The glowing zombie dropped a plant food; you have "
                 + player.plantFoodCount + " plant foods now.");
+        }
+        if (isFooded) {
+            // 🌱 دقیقا سرجای مرگِ زامبی (getX()/getY() که همین الان، قبل از
+            // حذف شدن از لاین، هنوز مقدار واقعی و پدینگ‌دار خودشونن - دقیقا
+            // همون الگویی که TombType.PLANT_FOOD قبلا برای Tomb استفاده کرده)
+            // یک PlantFood روی زمین اسپاون می‌شه که بازیکن باید بره جمعش کنه.
+            AppModel.gameSession.gameBoard.plantFoods.add(new PlantFood(getX(), getY()));
+            AppModel.addAfterPrompt("The zombie dropped a plant food on the ground!");
         }
         QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED, 1, AppModel.currentChapter.toString());
 
