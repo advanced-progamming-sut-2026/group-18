@@ -21,8 +21,7 @@ public class SnorkelZombie extends Zombie {
     }
 
     public static boolean isOceanTile(TileType type) {
-        if (type == TileType.DEEP_BEACH || type == TileType.SHALLOW_BEACH) return true;
-        return false;
+        return type == TileType.SHALLOW_BEACH;
     }
 
 

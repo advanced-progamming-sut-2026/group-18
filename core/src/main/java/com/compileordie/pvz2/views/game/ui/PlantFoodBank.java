@@ -130,6 +130,7 @@ public class PlantFoodBank extends Table {
                 }
                 if (AppModel.player.plantFoodCount >= MAX_PLANT_FOOD) {
                     ToastManager.showError("Plant food is already full!");
+                    return;
                 }
                 AppModel.player.plantFoodCount++;
                 new UserDatabase(AppModel.player.username).save(AppModel.player);

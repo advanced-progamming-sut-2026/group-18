@@ -31,7 +31,6 @@ public class Player implements Json.Serializable {
     public ArrayList<News> news = new ArrayList<>();
     public HashMap<PlantType, Integer> seedPackets = new HashMap<>();
     public HashMap<PlantType, Integer> plantLevels = new HashMap<>();
-    // TODO: Use it:
     public HashMap<PlantType, Boolean> plantBoosts = new HashMap<>();
     public HashMap<String, Integer> questProgress = new HashMap<>();
     public HashSet<String> claimedQuests = new HashSet<>();

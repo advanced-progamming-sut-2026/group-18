@@ -64,10 +64,10 @@ abstract public class GameEntity {
     }
 
     public int getTileRow() {
-        return (int) Math.floor(this.getY() / Constants.Game.TILE_HEIGHT);
+        return (int) Math.floor((this.getY() - Constants.UI.BOTTOM_LINE_METER) / Constants.Game.TILE_HEIGHT);
     }
 
     public int getTileColumn() {
-        return (int) Math.floor(this.getX() / Constants.Game.TILE_WIDTH);
+        return (int) Math.floor((this.getX() - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH);
     }
 }

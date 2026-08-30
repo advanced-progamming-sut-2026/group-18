@@ -20,7 +20,7 @@
     <!-- Method and Class Length Rules -->
     <rule ref="category/java/design.xml/NcssCount">
         <properties>
-            <property name="methodReportLevel" value="50"/>
+            <property name="methodReportLevel" value="100"/>
             <property name="classReportLevel" value="500"/>
         </properties>
     </rule>

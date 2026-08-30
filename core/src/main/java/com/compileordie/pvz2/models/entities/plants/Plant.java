@@ -273,7 +273,12 @@ public class Plant extends GameEntity {
 
                         // If it's a fire plant, check if we are within its specific warmth radius!
                         if (checkingPlant.hasTag(PlantTag.FIRE)) {
-                            int effectiveRadius = checkingPlant.getWarmthRadius() > 0 ? checkingPlant.getWarmthRadius() : 1;
+                            int effectiveRadius;
+                            if (checkingPlant.getWarmthRadius() > 0) {
+                                effectiveRadius = checkingPlant.getWarmthRadius();
+                            } else {
+                                effectiveRadius = 1;
+                            }
 
                             if (Math.abs(r - row) <= effectiveRadius && Math.abs(c - col) <= effectiveRadius) {
                                 hasAdjacentFire = true;
@@ -410,7 +415,9 @@ public class Plant extends GameEntity {
             }
         }
         if (this.atkSpeedBonusPercentage > 0) {
-            this.actionIntervalTicks = Math.max(1.0, this.actionIntervalTicks * (1.0 - (this.atkSpeedBonusPercentage / 100.0)));
+            this.actionIntervalTicks = Math.max(
+                1.0, this.actionIntervalTicks * (1.0 - (this.atkSpeedBonusPercentage / 100.0))
+            );
         }
         this.level = targetLevel;
     }
@@ -418,7 +425,6 @@ public class Plant extends GameEntity {
     @Override
     public void die() {
         super.die();
-        AppModel.gameSession.gameBoard.lostPlants++;
         if (isSpecial) {
             AppModel.gameSession.gameBoard.specialIsLost = true;
         }

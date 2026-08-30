@@ -17,6 +17,7 @@ import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Lane;
 import com.compileordie.pvz2.models.game.economy.Sun;
 import com.compileordie.pvz2.models.game.economy.SunType;
+import com.compileordie.pvz2.models.game.levels.LevelID;
 
 import java.util.*;
 
@@ -41,8 +42,14 @@ public class ZombieCombatManager {
         List<Plant> plantsCopy = new ArrayList<>(myPlants);
 
         // FIX: Zombies must stop biting the air if the plant dies!
+        float endLine;
+        if (AppModel.currentLevel == LevelID.DEAD_LINE) {
+            endLine = Constants.Game.DEADLINE_X;
+        } else {
+            endLine = Constants.Game.EAT_HOME_X;
+        }
         for (Zombie z : zombiesCopy) {
-            if (z.getX() > Constants.Game.EAT_HOME_X) {
+            if (z.getX() > endLine) {
                 z.isEating = false;
             }
         }

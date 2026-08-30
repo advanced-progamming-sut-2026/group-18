@@ -5,14 +5,13 @@ import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
-import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
-import com.compileordie.pvz2.models.entities.zombies.variants.standard.AllStarZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.BucketHeadZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.KnightZombie;
 import com.compileordie.pvz2.models.game.board.Lane;
+import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.models.missions.quests.QuestEvent;
 import com.compileordie.pvz2.models.missions.quests.QuestManager;
 import com.compileordie.pvz2.models.user.Player;
@@ -158,6 +157,8 @@ public abstract class Zombie extends GameEntity {
             }
         }
         //----
+
+        AppModel.gameSession.gameBoard.waveManager.onZombieKilled(this.getType());
     }
 
     // تیک ما در کلاس والد زامبی صرفا برای هندل کردن مرگ و افکت ها هست
@@ -170,7 +171,7 @@ public abstract class Zombie extends GameEntity {
             handleDeath();
             return;
         }
-//        if (takedDamage) takedDamage = false;
+        // if (takedDamage) takedDamage = false;
         if (skipThisTick) return;
 
         // ⏳ اگه در حال پخش انیمیشن پرتاب (fly-in) هستیم (مثلا ایمپی که تازه از
@@ -214,7 +215,13 @@ public abstract class Zombie extends GameEntity {
         }
 
         // برای رسیدن به خانه
-        if (getX()<=Constants.Game.EAT_HOME_X){
+        float endLine;
+        if (AppModel.currentLevel == LevelID.DEAD_LINE) {
+            endLine = Constants.Game.DEADLINE_X;
+        } else {
+            endLine = Constants.Game.EAT_HOME_X;
+        }
+        if (getX() <= endLine) {
             isEating = true;
             timerForHomeEating += Constants.Game.TIME_COEFFICIENT;
             if (timerForHomeEating >= 4){

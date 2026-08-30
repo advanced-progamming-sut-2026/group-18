@@ -6,6 +6,7 @@ import com.compileordie.pvz2.controllers.PlantSpawner;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
+import com.compileordie.pvz2.models.entities.zombies.variants.summoner.TombType;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.board.TileType;
@@ -24,10 +25,13 @@ import java.util.Set;
 
 public class SessionBuilder {
     private static EconomyType getEconomyType(LevelID levelID) {
-        if (levelID == LevelID.CONVEYOR_BELT) {
+        if (Set.of(LevelID.CONVEYOR_BELT, LevelID.WALNUT_BOWLING).contains(levelID)) {
             return EconomyType.CONVEYOR_BELT;
         }
-        if (Set.of(LevelID.NIGHT_OPS, LevelID.VASE_BREAKER, LevelID.WALNUT_BOWLING, LevelID.BEGHOULED)
+        if (levelID == LevelID.VASE_BREAKER) {
+            return EconomyType.VASE_BREAKER;
+        }
+        if (Set.of(LevelID.NIGHT_OPS, LevelID.WALNUT_BOWLING, LevelID.BEGHOULED)
             .contains(levelID)) {
             return EconomyType.NIGHT;
         }
@@ -80,75 +84,119 @@ public class SessionBuilder {
     }
 
     private static void populateTiles(LevelID levelID, GameSession gameSession) {
-        GameBoard gameBoard = gameSession.gameBoard;
-        List<Tile> tiles = gameBoard.getAllTiles();
+        List<Tile> tiles = gameSession.gameBoard.getAllTiles();
+
         if (levelID.chapterType == ChapterType.ANCIENT_EGYPT) {
-            for (Tile tile : tiles) {
-                tile.type = TileType.ANCIENT_EGYPT;
-                if (tile.column >= 3 && new Random().nextInt(100) < 10) tile.obstacle = new Tomb(700,
-                    tile.row,
-                    tile.column,
-                    (tile.row + 0.5f) * Constants.Game.TILE_HEIGHT,
-                    (tile.column + 0.5f) * Constants.Game.TILE_WIDTH);
-            }
+            populateAncientEgypt(tiles);
         } else if (levelID.chapterType == ChapterType.FROSTBITE_CAVES) {
-            for (Tile tile : tiles) {
-                tile.type = TileType.FROSTBITE_CAVE;
-                if (new Random().nextInt(100) < 10) tile.type = TileType.SLIPPERY_UP;
-                if (new Random().nextInt(100) < 10) tile.type = TileType.SLIPPERY_DOWN;
-            }
+            populateFrostbiteCaves(tiles);
         } else if (levelID.chapterType == ChapterType.BIG_WAVE_BEACH) {
-            for (Tile tile : tiles) {
-                tile.type = TileType.BIG_WAVE_BEACH;
-                if (tile.column >= 3 && new Random().nextInt(100) < 10) tile.type = TileType.SHALLOW_BEACH;
-            }
+            populateBigWaveBeach(tiles);
         } else if (levelID.chapterType == ChapterType.DARK_AGES) {
-            for (Tile tile : tiles) {
-                tile.type = TileType.DARK_AGES;
-                if (tile.column >= 3 && new Random().nextInt(100) < 10) tile.type = TileType.NECROMANCY;
-                if (tile.column >= 3 && new Random().nextInt(100) < 10) tile.obstacle = new Tomb(700,
-                    tile.row,
-                    tile.column,
-                    (tile.row + 0.5f) * Constants.Game.TILE_HEIGHT,
-                    (tile.column + 0.5f) * Constants.Game.TILE_WIDTH);
-            }
+            populateDarkAges(tiles);
         } else {
-            for (Tile tile : tiles) {
-                tile.type = TileType.NORMAL;
+            populateDefaultTiles(tiles);
+        }
+    }
+
+    private static void populateAncientEgypt(List<Tile> tiles) {
+        for (Tile tile : tiles) {
+            tile.type = TileType.ANCIENT_EGYPT;
+            if (tile.column >= 3 && new Random().nextInt(100) < 7) {
+                tile.obstacle = createTomb(tile);
             }
         }
+    }
+
+    private static void populateFrostbiteCaves(List<Tile> tiles) {
+        for (Tile tile : tiles) {
+            tile.type = TileType.FROSTBITE_CAVE;
+            if (tile.row < Constants.Game.BOARD_ROWS - 1 && new Random().nextInt(100) < 3) {
+                tile.type = TileType.SLIPPERY_UP;
+            }
+            if (tile.row > 0 && new Random().nextInt(100) < 3) {
+                tile.type = TileType.SLIPPERY_DOWN;
+            }
+        }
+    }
+
+    private static void populateBigWaveBeach(List<Tile> tiles) {
+        for (Tile tile : tiles) {
+            tile.type = TileType.BIG_WAVE_BEACH;
+            if (tile.column >= 3 && new Random().nextInt(100) < 5) {
+                tile.type = TileType.SHALLOW_BEACH;
+            }
+        }
+    }
+
+    private static void populateDarkAges(List<Tile> tiles) {
+        for (Tile tile : tiles) {
+            tile.type = TileType.DARK_AGES;
+            Tomb tomb = createTomb(tile);
+
+            int randomness = new Random().nextInt(100);
+            if (randomness < 20) {
+                tomb.type = TombType.SUN;
+            } else if (randomness < 40) {
+                tomb.type = TombType.PLANT_FOOD;
+            }
+
+            if (tile.column >= 3 && new Random().nextInt(100) < 10) {
+                tile.obstacle = tomb;
+            }
+        }
+    }
+
+    private static void populateDefaultTiles(List<Tile> tiles) {
+        for (Tile tile : tiles) {
+            tile.type = TileType.NORMAL;
+        }
+    }
+
+    private static Tomb createTomb(Tile tile) {
+        return new Tomb(
+            700,
+            tile.row,
+            tile.column,
+            (tile.column + 0.5f) * Constants.Game.TILE_WIDTH + Constants.Game.PADDING_X,
+            (tile.row + 0.5f) * Constants.Game.TILE_HEIGHT + Constants.Game.PADDING_Y
+        );
     }
 
     private static void addObjects(LevelID levelID, GameSession gameSession) {
         GameBoard gameBoard = gameSession.gameBoard;
         List<Tile> tiles = gameBoard.getAllTiles();
         if (levelID == LevelID.SAVE_OUR_SEEDS) {
-            for (Tile tile : tiles) {
-                if (tile.column < 7 && new Random().nextInt(100) < 10) {
-                    PlantType plantType = PlantType.values()[MathUtils.random(PlantType.values().length - 1)];
-                    PlantSpawner.spawn(plantType,
-                        (tile.column + 0.5f) * Constants.Game.TILE_WIDTH,
-                        (tile.row + 0.5f) * Constants.Game.TILE_HEIGHT,
-                        false,
-                        true);
+            int specialPlants = 0;
+            while (specialPlants < 2) {
+                for (Tile tile : tiles) {
+                    if (tile.isPlantable() && tile.column < 3 && new Random().nextInt(100) < 3) {
+                        PlantType plantType = PlantType.values()[MathUtils.random(PlantType.values().length - 1)];
+                        tile.plant = PlantSpawner.spawn(plantType,
+                            (tile.column + 0.5f) * Constants.Game.TILE_WIDTH + Constants.Game.PADDING_X,
+                            (tile.row + 0.5f) * Constants.Game.TILE_HEIGHT + Constants.Game.PADDING_Y,
+                            false,
+                            true);
+                        specialPlants++;
+                    }
                 }
             }
         } else if (levelID == LevelID.VASE_BREAKER) {
             for (Tile tile : tiles) {
                 if (tile.column >= 3) {
                     int random = new Random().nextInt(100);
-                    if (random < 10) {
-                        gameBoard.vases.add(new Vase(gameBoard, tile.row, tile.column));
+                    if (random < 5) {
+                        tile.vase = new Vase(gameBoard, tile.row, tile.column);
                     } else if (random < 55) {
-                        gameBoard.vases.add(new Vase(gameBoard,
+                        tile.vase = new Vase(gameBoard,
                             tile.row,
                             tile.column,
-                            PlantType.values()[MathUtils.random(PlantType.values().length - 1)]));
+                            PlantType.values()[MathUtils.random(PlantType.values().length - 1)]);
                     } else {
-                        gameBoard.vases.add(new Vase(gameBoard,
+                        tile.vase = new Vase(gameBoard,
                             tile.row,
                             tile.column,
-                            ZombieType.values()[MathUtils.random(ZombieType.values().length - 1)]));
+                            ZombieType.values()[MathUtils.random(ZombieType.values().length - 3)]);
                     }
                 }
             }

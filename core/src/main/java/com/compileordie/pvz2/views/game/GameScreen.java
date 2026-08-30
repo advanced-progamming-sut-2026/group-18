@@ -22,9 +22,11 @@ import com.compileordie.pvz2.models.entities.zombies.variants.capable.HunterZomb
 import com.compileordie.pvz2.models.entities.zombies.variants.capable.OctopusZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.game.board.Tile;
+import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
 import com.compileordie.pvz2.models.game.waves.WaveType;
 import com.compileordie.pvz2.views.game.ui.GameScreenUI;
 import com.compileordie.pvz2.views.game.ui.LevelStartDialog;
+import com.compileordie.pvz2.views.helpers.ToastManager;
 import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.textures.TextureBank;
 import pvz.skin.PvzSkin;
@@ -56,6 +58,7 @@ public class GameScreen implements Screen {
     private PamPlayer player;
 
     public boolean hasWeTestForClickForDamaging = true;
+    public boolean overrideForceDamageClick = true;
     private static final float CLICK_DAMAGE_TEST_RADIUS_PX = 50f;
 
     private float effectPulseTime = 0f;
@@ -72,6 +75,7 @@ public class GameScreen implements Screen {
     private ZombieDrawer zombieDrawer;
     private BoardEntityDrawer boardDrawer;
     private ZombossDrawer zombossDrawer;
+    private SpecificBoardDrawer specificBoardDrawer;
     //TODO:
     private PlantAssetManager plantAssetManager;
     private PlantMatchManager plantMatchManager;
@@ -104,8 +108,23 @@ public class GameScreen implements Screen {
             PvzSkin.get(),
             textureBank,
             player,
-            () -> GameScreenUI.isPaused = false
+            () -> {
+                GameScreenUI.isPaused = false;
+                ToastManager.showMessage("The match begins!");
+            }
         );
+
+        if (AppModel.gameSession != null && AppModel.gameSession.gameBoard != null) {
+            AppModel.gameSession.gameBoard.waveManager.setWaveEventListener(
+                (currentWave, totalWaves, isFinalWave, message) -> {
+                    if (isFinalWave) {
+                        ToastManager.showError(message);
+                    } else {
+                        ToastManager.showMessage(message);
+                    }
+                }
+            );
+        }
     }
 
     private void initHelpers() {
@@ -121,7 +140,8 @@ public class GameScreen implements Screen {
         zombieDrawer = new ZombieDrawer(states, brokenAssets, debrisDrawer);
         boardDrawer = new BoardEntityDrawer(states, brokenAssets);
         zombossDrawer = new ZombossDrawer(states, brokenAssets, color -> ui.createSolidTexture(color));
-        ui.isPaused = false;
+        specificBoardDrawer = new SpecificBoardDrawer(states, brokenAssets);
+        GameScreenUI.isPaused = false;
     }
 
     private void loadAssets() {
@@ -160,8 +180,9 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
+        delta *= AppModel.player.gameSpeedCoefficient;
         ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
-        boolean paused = ui != null && ui.isPaused;
+        boolean paused = ui != null && GameScreenUI.isPaused;
 
         if (!paused) {
             effectPulseTime += delta;
@@ -175,7 +196,6 @@ public class GameScreen implements Screen {
         cameraEffects.updateCameraShake(paused ? 0f : delta);
         viewport.getCamera().update();
         batch.setProjectionMatrix(viewport.getCamera().combined);
-        updateSunHud();
         drawWorld(delta);
         if (ui != null) ui.actAndDraw(delta);
     }
@@ -194,7 +214,7 @@ public class GameScreen implements Screen {
     }
 
     private void handleInput() {
-        if (ui != null && ui.isPaused) return;
+        if (ui != null && GameScreenUI.isPaused) return;
 
         // TODO: For debug purposes. Remove later:
         Tile hoveringTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
@@ -258,13 +278,16 @@ public class GameScreen implements Screen {
         touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0);
         viewport.unproject(touchPoint);
 
+        Vase clickedVase = GameScreenController.getVaseAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
+        if (clickedVase != null) {
+            GameScreenController.handleVaseClick(clickedVase);
+            return;
+        }
+
         Tile clickedTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
         if (clickedTile != null) {
             GameScreenController.handleTileClick(clickedTile);
-        }
-
-        if (Gdx.input.justTouched() && testPastKommeh && hasWeTestForClickForDamaging) {
-            handleClickDamageTest(touchPoint.x, touchPoint.y);
+            return;
         }
 
         // TODO: For debug purposes. Remove later:
@@ -276,15 +299,8 @@ public class GameScreen implements Screen {
         Gdx.app.log("&&&&--------PVZ-CLICK", String.format(
             "🖱️ مختصات کلیک -> پیکسل: (X: %.1f, Y: %.1f) | متر-مدل: (X: %.2f, Y: %.2f)",
             touchPoint.x, touchPoint.y, meterX, meterY));
-        if (testPastKommeh && hasWeTestForClickForDamaging) {
+        if ((testPastKommeh && hasWeTestForClickForDamaging) || overrideForceDamageClick) {
             handleClickDamageTest(touchPoint.x, touchPoint.y);
-        }
-    }
-
-    private void updateSunHud() {
-        if (ui != null && AppModel.gameSession != null) {
-            int amount = AppModel.gameSession.gameBoard.economyManager.sunAmount;
-            ui.updateSunLabel(amount);
         }
     }
 
@@ -304,9 +320,18 @@ public class GameScreen implements Screen {
             batch.setTransformMatrix(batch.getTransformMatrix());
         }
         boardDrawer.drawBackground(batch);
+        specificBoardDrawer.drawSlipperyTiles(batch, player, worldDelta);
+        specificBoardDrawer.drawShallowBeaches(batch, player, worldDelta);
+        specificBoardDrawer.drawProtectTiles(batch, player, worldDelta);
+        boardDrawer.drawGridLines(batch);
+        specificBoardDrawer.drawBowlingLine(batch);
+        specificBoardDrawer.drawDeadline(batch);
+        specificBoardDrawer.drawWaterLevel(batch, player, worldDelta);
+        specificBoardDrawer.drawMaxTideLevel(batch, player, worldDelta);
         boardDrawer.drawMowers(batch, player, worldDelta);
         boardDrawer.drawTombs(batch, player, worldDelta);
         boardDrawer.drawFireTiles(batch, player, worldDelta);
+        specificBoardDrawer.drawVases(batch, textureBank);
 
         Tile hoveredTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
         boardDrawer.drawTileHighlight(batch, hoveredTile);
@@ -323,8 +348,19 @@ public class GameScreen implements Screen {
         zombossDrawer.drawDarkZombossLaserSquare(batch, player, worldDelta);
         debrisDrawer.drawFallingDebris(batch, player, worldDelta);
 
+        if (AppModel.gameSession != null) {
+            int chillRow = AppModel.gameSession.gameBoard.waveManager.chillWindRow;
+            if (chillRow >= 0) {
+                boardDrawer.states.chillWinds.add(new GameRenderStates.ChillWindAnim(chillRow));
+                AppModel.gameSession.gameBoard.waveManager.chillWindRow = -1;
+            }
+        }
+        specificBoardDrawer.drawChillWinds(batch, player, boardDrawer.states, worldDelta);
+
         Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
         viewport.unproject(mousePos);
+        boardDrawer.drawPlantFoods(batch, worldDelta, mousePos);
+        boardDrawer.drawSeedPackets(batch, plantAssetManager, worldDelta, mousePos);
         boardDrawer.drawSuns(batch, player, worldDelta, mousePos);
         boardDrawer.drawCursorFollower(batch, plantAssetManager, mousePos, delta);
 
