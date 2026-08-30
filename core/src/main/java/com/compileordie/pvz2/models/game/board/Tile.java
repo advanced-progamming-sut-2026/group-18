@@ -43,6 +43,8 @@ public class Tile {
         if (plant != null) plant.tick(gameBoard, ticks);
         if (obstacle != null) obstacle.tick(ticks, gameBoard);
 
+        tickPuddle(ticks);
+
         if (isOnFire){
             this.plant = null;
             fireTimer += ticks* Constants.Game.TIME_COEFFICIENT;
@@ -50,8 +52,16 @@ public class Tile {
                 fireTimer = 0;
                 isOnFire = false;
             }
-            // NEW: Process the puddle fading away!
-            tickPuddle(ticks);
+        }
+    }
+
+    public void tickPuddle(double delta) {
+        if (puddleTimer > 0) {
+            puddleTimer -= delta;
+            if (puddleTimer <= 0) {
+                puddleTimer = 0;
+                puddleDamage = 0; // --- FIX: Disables the poison damage when it fades! ---
+            }
         }
     }
 
@@ -63,14 +73,6 @@ public class Tile {
         this.isOnFire = true;
 
 
-    }
-
-    // NEW: The tick logic for the puddle
-    public void tickPuddle(double delta) {
-        if (puddleTimer > 0) {
-            puddleTimer -= delta;
-            if (puddleTimer < 0) puddleTimer = 0; // Clean up when the 10 seconds are over
-        }
     }
 
     public boolean isEmpty() {

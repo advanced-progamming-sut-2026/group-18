@@ -12,7 +12,6 @@ public class MeleeStrategy implements AttackStrategy {
     private final boolean isAoE;
     private final boolean isInstantKill;
 
-    // REMOVED rangeTiles from the constructor!
     public MeleeStrategy(boolean isAoE, boolean isInstantKill) {
         this.isAoE = isAoE;
         this.isInstantKill = isInstantKill;
@@ -20,70 +19,107 @@ public class MeleeStrategy implements AttackStrategy {
 
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
-        if (!plant.isArmed()) return;
+        if (!plant.isAlive() || !plant.isArmed()) return;
 
-        int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
-        double plantX = plant.getX();
-
-        double attackRadiusPixels = plant.getRangeTiles() * Constants.Game.TILE_HEIGHT;
+        int plantRow = (int) Math.floor((plant.getY() - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
+        int plantCol = (int) Math.floor((plant.getX() - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH);
 
         boolean attacked = false;
 
-        // --- KIWIBEAST DYNAMIC DAMAGE CALCULATION ---
         int currentDamage = plant.getBaseDamage();
         if (plant.getName().equals("Kiwibeast")) {
-            int stage = plant.getGrowthStage(); // Piggybacks on Sun-shroom's math!
-
-            // Stage 1 adds 0. Stage 2 adds +15. Stage 3 adds +30. Stage 4 adds +45!
+            int stage = plant.getGrowthStage();
             currentDamage += (stage - 1) * 15;
         }
 
-        // --- PHAT BEET LOGIC (Radial 3x3 AoE) ---
-        if (isAoE) {
+// ==========================================
+        // 1. PHAT BEET & KIWIBEAST LOGIC (True 3x3 Continuous Pixel Box)
+        // ==========================================
+        if (isAoE && !plant.getName().equals("Wasabi Whip")) {
+            double radiusPx = Constants.Game.TILE_WIDTH * 1.5;
+
+            double currentTimer = plant.getCurrentActionTimer();
+            boolean isDamageFrame = (currentTimer >= 12.0 && (currentTimer - tickDelta) < 12.0);
+
+            // --- NEW: SPAWN THE VISUAL PULSE ON THE DAMAGE FRAME! ---
+            if (isDamageFrame) {
+                com.compileordie.pvz2.models.entities.plants.strategies.food.AreaDamageEffect
+                    .spawnVisualHit(board, plant.getX(), plant.getY(), PlantType.getByName(plant.getName()), false);
+            }
+
             for (Zombie z : board.getAllZombies()) {
                 if (z.isDead()) continue;
 
-                double dist = Math.hypot(z.getX() - plant.getX(), z.getY() - plant.getY());
-                if (dist <= attackRadiusPixels) {
-                    z.takeDamage(currentDamage, DamageType.NORMAL, PlantType.getByName(plant.getName()));
+                int zRow = z.getCurrentRow();
+                double distPx = Math.abs(z.getX() - plant.getX());
+
+                if (Math.abs(zRow - plantRow) <= 1 && distPx <= radiusPx) {
+
                     attacked = true;
+
+                    if (isDamageFrame) {
+                        z.takeDamage(currentDamage, DamageType.NORMAL, PlantType.getByName(plant.getName()));
+                    }
                 }
             }
         }
-        // --- BONK CHOY & WASABI WHIP LOGIC (Linear, Front/Back Priority) ---
-        else if (!isInstantKill) {
+        // ==========================================
+        // 2. BONK CHOY & WASABI WHIP LOGIC (Directional Radar)
+        // ==========================================
+        else if (!isInstantKill || plant.getName().equals("Wasabi Whip")) {
 
             Zombie bestFront = null;
-            double closestFront = Double.MAX_VALUE;
+            double closestFrontPx = Double.MAX_VALUE;
 
             Zombie bestBack = null;
-            double closestBack = Double.MAX_VALUE;
+            double closestBackPx = Double.MAX_VALUE;
+
+            int rangeTiles = plant.getName().equals("Wasabi Whip") ? 2 : 1;
 
             for (Zombie z : board.getAllZombies()) {
                 if (z.isDead() || z.getCurrentRow() != plantRow) continue;
 
-                double dist = z.getX() - plantX;
+                int zCol = (int) Math.floor((z.getX() - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH);
+                double distPx = z.getX() - plant.getX();
 
-                if (Math.abs(dist) <= attackRadiusPixels) {
-                    if (dist >= 0 && dist < closestFront) {
-                        closestFront = dist;
+                if ((zCol >= plantCol && zCol <= plantCol + rangeTiles) && distPx >= 0) {
+                    if (distPx < closestFrontPx) {
+                        closestFrontPx = distPx;
                         bestFront = z;
-                    } else if (dist < 0 && Math.abs(dist) < closestBack) {
-                        closestBack = Math.abs(dist);
+                    }
+                }
+                else if ((zCol <= plantCol && zCol >= plantCol - rangeTiles) && distPx < 0) {
+                    if (Math.abs(distPx) < closestBackPx) {
+                        closestBackPx = Math.abs(distPx);
                         bestBack = z;
                     }
                 }
             }
 
-            Zombie target = (bestFront != null) ? bestFront : bestBack;
+            Zombie target = null;
+
+            if (bestFront != null && bestBack != null) {
+                plant.windupTimer = 3.0;
+                target = Math.random() > 0.5 ? bestFront : bestBack;
+            } else if (bestFront != null) {
+                plant.windupTimer = 1.0;
+                target = bestFront;
+            } else if (bestBack != null) {
+                plant.windupTimer = 2.0;
+                target = bestBack;
+            }
 
             if (target != null) {
-                target.takeDamage(currentDamage, DamageType.NORMAL, PlantType.getByName(plant.getName()));
+                DamageType dmgType = plant.getName().equals("Wasabi Whip") ? DamageType.FIRE : DamageType.NORMAL;
+                target.takeDamage(currentDamage, dmgType, PlantType.getByName(plant.getName()));
                 attacked = true;
             }
         }
+
         if (!attacked) {
             plant.holdAction = true;
+        } else {
+            plant.holdAction = false;
         }
     }
 }

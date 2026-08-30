@@ -125,7 +125,8 @@ public abstract class Projectile {
     public void setSourcePlantType(PlantType sourcePlantType) { this.sourcePlantType = sourcePlantType; }
     public PlantType getSourcePlantType() { return sourcePlantType; }
     public boolean getIgnoreObstacles() { return ignoreObstacles; }
-
+    public double getYSpeed() { return ySpeed; }
+    public double getXSpeed() { return xSpeed; }
     // Ignition Getters & Setters ---
     public boolean isIgnited() { return isIgnited; }
     public void setIgnited(boolean ignited) { this.isIgnited = ignited; }

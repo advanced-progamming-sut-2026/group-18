@@ -10,28 +10,29 @@ public class SquashStrategy implements AttackStrategy {
 
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
-        // If it's already jumping, or if it's exhausted as a meat shield, do nothing!
         if (plant.isHidden() || plant.isExhausted() || !plant.isArmed()) return;
 
-        int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
+        int plantRow = (int) Math.floor((plant.getY() - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
         Zombie closestTarget = null;
         double closestDist = Double.MAX_VALUE;
 
-        // Scan 1.5 tiles front and back
+        // Scan 2.0 tiles front and back
         for (Zombie z : board.getAllZombies()) {
             if (z.isDead() || z.getCurrentRow() != plantRow) continue;
 
             double dist = Math.abs(z.getX() - plant.getX());
-            if (dist <= 1.5 * Constants.Game.TILE_HEIGHT && dist < closestDist) {
+            if (dist <= 2.0 * Constants.Game.TILE_WIDTH && dist < closestDist) {
                 closestDist = dist;
                 closestTarget = z;
             }
         }
 
         if (closestTarget != null) {
-            // TRIGGER THE CHAIN!
-            plant.setHidden(true); // Hide the actual plant
-            int totalCrushes = 1 + plant.getExtraCrushes(); // Base 1, +1 if upgraded
+            // --- THE FIX: We completely deleted the 10-tick "turn" delay! ---
+            // Now, backward jumps trigger instantly, EXACTLY like forward jumps!
+            plant.isWindingUp = false;
+            plant.setHidden(true);
+            int totalCrushes = 1 + plant.getExtraCrushes();
 
             SquashProjectile jumpOut = new SquashProjectile(plant, plant.getX(), plant.getY(), closestTarget.getX(), closestTarget.getY(), false, totalCrushes, false);
             board.getActiveProjectiles().add(jumpOut);

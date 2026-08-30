@@ -1,11 +1,9 @@
 package com.compileordie.pvz2.models.entities.plants;
-
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.entities.plants.enums.PlantCategory;
 import com.compileordie.pvz2.models.entities.plants.enums.PlantTag;
-import com.compileordie.pvz2.models.entities.plants.factory.FoodEffectFactory;
 import com.compileordie.pvz2.models.entities.plants.strategies.attack.AttackStrategy;
 import com.compileordie.pvz2.models.entities.plants.strategies.attack.SunProduceStrategy;
 import com.compileordie.pvz2.models.entities.plants.strategies.food.PlantFoodEffectStrategy;
@@ -17,21 +15,18 @@ import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.economy.Sun;
 import com.compileordie.pvz2.models.game.economy.SunType;
 import com.compileordie.pvz2.models.user.Player;
-
 import java.util.List;
 import java.util.Map;
-
-// Unified state for Ice Blocks and Octopuses!
 enum PlantCoverState {
     NONE, ICE, OCTOPUS
 }
-
 public class Plant extends GameEntity {
-
-    // --- Crowd Control & Cover Mechanics ---
+    public boolean isFiringButter = false;
+    public double plantFoodTimer = 0;
+    public double sunDropCooldown = 0.0;
     private PlantCoverState coverState = PlantCoverState.NONE;
     private double coverHp = 0;
-    private int chillLevel = 0; // Reaches 3 -> Turns into ICE
+    private int chillLevel = 0;
     private boolean isSpecial;
     private String name;
     private PlantCategory category;
@@ -45,44 +40,33 @@ public class Plant extends GameEntity {
     private double currentActionTimer = 0;
     private int level = 1;
     public PlantTemplate template;
-    public boolean holdAction = false; // charge plants hold their charge if there are no zombies in the lane!
+    public boolean holdAction = false;
     private double atkSpeedBonusPercentage = 0.0;
-    private double maxLifespanTicks = -1; // -1 means infinite lifespan (like Peashooter)
+    private double maxLifespanTicks = -1;
     private double currentLifespanTicks = -1;
     private double rangeBonus = 0.0;
-
-    // Special flags for specific AI behaviors
     private boolean doubleSunChance = false;
     private boolean targetsHighestHp = false;
     private int extraSunYield = 0;
-    private boolean isHidden = false; // True when Squash is jumping!
-    private boolean isExhausted = false; // True when Squash is done attacking and becomes a meat shield
-    private int extraCrushes = 0; // For the "Can crush 2x" upgrade!
-    public boolean isShootingForward = false;  // Tells the view we are shooting right
-    public boolean isShootingBackward = false; // Tells the view we are shooting left
-
-    // life cycle tracking ...
+    private boolean isHidden = false;
+    private boolean isExhausted = false;
+    private int extraCrushes = 0;
+    public boolean isShootingForward = false;
+    public boolean isShootingBackward = false;
     private double ageTicks = 0;
     private double growTimeReductionTicks = 0;
     public double getAgeTicks() { return ageTicks; }
     public double getGrowTimeReductionTicks() { return growTimeReductionTicks; }
-
-    // logic strategies
     private AttackStrategy attackStrategy;
     private PlantFoodEffectStrategy foodStrategy;
     private Map<Integer, UpgradeLevel> upgradeMap;
-
-    // NEW: engine variables for our advanced shooters
     private int stackCount = 1;
     private double chillTimeBonusTicks = 0;
-
-    // --- NEW: BOWLING BULB QUEUE & WINDUP ENGINE ---
     public java.util.LinkedList<Integer> bulbs = new java.util.LinkedList<>(java.util.Arrays.asList(1, 2, 3));
     public double bulbRegenTimer = 0;
     public boolean isWindingUp = false;
     public double windupTimer = 0;
     public int currentlyFiringBulb = 0;
-
     private double actionIntervalReductionTicks = 0.0;
     private int pierceBonus = 0;
     private int poisonDmgTickBonus = 0;
@@ -92,7 +76,7 @@ public class Plant extends GameEntity {
     private int warmthRadiusBonus = 0;
     private double maxArmTimeTicks = 0;
     private double currentArmTimer = 0;
-    private boolean isArmed = true; // True by default for non-traps!
+    private boolean isArmed = true;
     private int extraBounces = 0;
     private int extraTargets = 0;
     private double freezeTimeBonusTicks = 0;
@@ -100,8 +84,6 @@ public class Plant extends GameEntity {
     private boolean isMaxStageForced = false;
     private boolean isBlueFlame = false;
     private boolean explodesOnDeath = false;
-
-    // NEW: Hypno-shroom Buff Flags
     private boolean zombieHpBuff = false;
     private boolean zombieDmgBuff = false;
     private boolean plantFoodOnSpawn = false;
@@ -109,11 +91,7 @@ public class Plant extends GameEntity {
     private double mintDurationBonusTicks = 0.0;
     private boolean resetFamilyCooldowns = false;
     private boolean isBoosted;
-
-    public Plant(String name, PlantCategory category, List<PlantTag> tags,
-                 double x, double y, int hp, int damage, int cost, double actionIntervalTicks,
-                 AttackStrategy attackStrategy, PlantFoodEffectStrategy foodStrategy,
-                 Map<Integer, UpgradeLevel> upgradeMap) {
+    public Plant(String name, PlantCategory category, List<PlantTag> tags, double x, double y, int hp, int damage, int cost, double actionIntervalTicks, AttackStrategy attackStrategy, PlantFoodEffectStrategy foodStrategy, Map<Integer, UpgradeLevel> upgradeMap) {
         super(x, y, 0, 0);
         this.name = name;
         this.category = category;
@@ -123,56 +101,52 @@ public class Plant extends GameEntity {
         this.baseDamage = damage;
         this.cost = cost;
         this.actionIntervalTicks = actionIntervalTicks;
-
-        // Sun producers must WAIT first. Everyone else starts fully charged!
         if (attackStrategy instanceof SunProduceStrategy || this.name.equals("Citron")) { this.currentActionTimer = 0; }
         else { this.currentActionTimer = actionIntervalTicks; }
-
         this.attackStrategy = attackStrategy;
         this.foodStrategy = foodStrategy;
         this.upgradeMap = upgradeMap;
-
         if (this.name.equals("Mega Gatling Pea")) {
-            this.plantFoodChance = 0.0; // Base 5% chance!
+            this.plantFoodChance = 0.0;
         }
         if (this.name.equals("Puff-shroom") || this.name.equals("Sea-shroom")) {
-            this.maxLifespanTicks = 600.0; // 60 Seconds
+            this.maxLifespanTicks = 600.0;
             this.currentLifespanTicks = 600.0;
         }
         if (this.name.equals("Kernel-pult")) {
             this.butterChance = 25.0;
         }
         if (this.name.equals("Potato Mine")) {
-            this.maxArmTimeTicks = 150.0; // 15 seconds
+            this.maxArmTimeTicks = 150.0;
             this.isArmed = false;
         } else if (this.name.equals("Primal Potato Mine")) {
-            this.maxArmTimeTicks = 50.0; // 5 seconds
+            this.maxArmTimeTicks = 50.0;
             this.isArmed = false;
         }
     }
-
     public void tick(GameBoard board, int tickDelta) {
-        // GUARANTEED DEATH CHECK 1: If it died via time/decay (like a Mint)
         if (this.isDead() || this.currentHp <= 0) {
             this.die();
             return;
         }
-
-        // 1. If covered by Ice or Octopus, the plant is completely disabled
+        if (this.sunDropCooldown > 0) {
+            this.sunDropCooldown -= tickDelta;
+        }
         if (coverState != PlantCoverState.NONE) {
-            // Only Ice melts from nearby fire plants
             if (coverState == PlantCoverState.ICE) {
                 handleIceMelting(board, tickDelta);
             }
-            return; // Skip attacking while covered!
+            return;
         }
-
+// --- THE PLANT FOOD ENGINE ---
+        if (this.isFed) {
+            this.plantFoodTimer += tickDelta;
+            return; // Pause normal shooting/sun production while eating Plant Food!
+        }
         if (isBoosted) {
             feed(board, AppModel.player);
             isBoosted = false;
         }
-
-        // The plant gets older every single frame!
         this.ageTicks += tickDelta;
         if (this.maxLifespanTicks > 0) {
             this.currentLifespanTicks -= tickDelta;
@@ -181,100 +155,71 @@ public class Plant extends GameEntity {
                 return;
             }
         }
-
-// --- NEW: Advanced Bowling Bulb Ammo Regeneration ---
         if (this.name.equals("Bowling Bulb") && bulbs.size() < 3) {
             bulbRegenTimer += tickDelta;
-
             if (bulbRegenTimer >= getRegenThreshold()) {
                 int growingBulb = 1;
                 if (!bulbs.contains(1)) growingBulb = 1;
                 else if (!bulbs.contains(2)) growingBulb = 2;
                 else if (!bulbs.contains(3)) growingBulb = 3;
-
                 bulbs.add(growingBulb);
-                // FIX: Keep the queue strictly sorted so it ALWAYS fires Cyan(1) -> Blue(2) -> Orange(3)!
                 java.util.Collections.sort(bulbs);
                 bulbRegenTimer = 0;
             }
         }
-
         currentActionTimer += tickDelta;
-
-        // --- THE TRAP ARMING ENGINE ---
         if (!this.isArmed) {
             this.currentArmTimer += tickDelta;
             if (this.currentArmTimer >= this.maxArmTimeTicks) {
                 this.isArmed = true;
             }
-            // An unarmed trap cannot trigger its attack strategy!
             return;
         }
-
-        // 2. Execute attack strategy
         if (currentActionTimer >= actionIntervalTicks) {
-            this.holdAction = false; // reset the flag
-
+            this.holdAction = false;
             if (this.plantFoodChance > 0 && (Math.random() * 100 < this.plantFoodChance)) {
-                // It won the dice roll! Trigger the ultimate for free!
                 this.feed(board, null);
-            }
-            else if (attackStrategy != null) {
+            } else if (attackStrategy != null) {
                 attackStrategy.attack(this, board, tickDelta);
             }
-            // If the strategy didn't request a hold, reset the timer!
             if(!this.holdAction) {
                 currentActionTimer = 0;
             }
         }
     }
-
-    // --- Unified Crowd Control API ---
-
     public void addChill() {
         if (coverState != PlantCoverState.NONE) return;
-
         chillLevel++;
         if (chillLevel >= 3) {
             this.coverState = PlantCoverState.ICE;
-            this.coverHp = 600.0; // Base Ice HP
-            this.chillLevel = 0;  // Reset chill stacks
+            this.coverHp = 600.0;
+            this.chillLevel = 0;
         }
     }
-
     public void applyOctopus(double octopusHp) {
         if (coverState != PlantCoverState.NONE) return;
-
         this.coverState = PlantCoverState.OCTOPUS;
         this.coverHp = octopusHp;
         this.chillLevel = 0;
     }
-
     public boolean hasActiveCover() {
         return this.coverState != PlantCoverState.NONE;
     }
-
     private void handleIceMelting(GameBoard board, int tickDelta) {
         Tile currentTile = board.getTile((float) this.getX(), (float) this.getY());
         if (currentTile == null) return;
-
         boolean hasAdjacentFire = false;
         int row = currentTile.row;
         int col = currentTile.column;
-
         for (int r = row - 2; r <= row + 2; r++) {
             for (int c = col - 2; c <= col + 2; c++) {
                 if (r == row && c == col) continue;
-
                 if (r >= 0 && r < board.totalRows && c >= 0 && c < board.totalCols) {
                     Tile adjacentTile = board.getTile(r, c);
                     if (adjacentTile != null && adjacentTile.plant != null) {
                         Plant checkingPlant = adjacentTile.plant;
-
-                        // If it's a fire plant, check if we are within its specific warmth radius!
                         if (checkingPlant.hasTag(PlantTag.FIRE)) {
                             int effectiveRadius = checkingPlant.getWarmthRadius() > 0 ? checkingPlant.getWarmthRadius() : 1;
-
                             if (Math.abs(r - row) <= effectiveRadius && Math.abs(c - col) <= effectiveRadius) {
                                 hasAdjacentFire = true;
                                 break;
@@ -285,60 +230,59 @@ public class Plant extends GameEntity {
             }
             if (hasAdjacentFire) break;
         }
-
         if (hasAdjacentFire) {
-            // Melts at 60 HP per second (6 HP per tick)
             double meltAmount = (60.0 / 10.0) * tickDelta;
-            takeDamage((int) meltAmount); // Damage goes to the cover!
+            takeDamage((int) meltAmount);
         }
     }
-
-    // ----------------------------------
-
     public void feed(GameBoard board, Player player) {
         if (this.isFed || hasActiveCover()) return; // Can't feed a frozen plant!
 
         this.isFed = true;
-        if (this.template != null && this.template.getFoodEffectType() != null) {
-            PlantFoodEffectStrategy foodStrategy = FoodEffectFactory.createEffect(
-                this.template.getFoodEffectType(),
-                this.template.getProjectileType(),
-                this.template.getFoodEffectValue(),
-                this.template
-            );
-            foodStrategy.applyEffect(this, board, player);
+        this.plantFoodTimer = 0;
+
+        // Use the strategy injected from the constructor!
+        if (this.foodStrategy != null) {
+
+            // Convert our logical tick delay into exact seconds for the visual sync!
+            float delaySeconds = (float) (this.getFoodWindupDelay() * Constants.Game.TIME_COEFFICIENT);
+
+            // LibGDX Timer executes the payload exactly when the animation finishes winding up!
+            com.badlogic.gdx.utils.Timer.schedule(new com.badlogic.gdx.utils.Timer.Task() {
+                @Override
+                public void run() {
+                    if (!isDead()) {
+                        foodStrategy.applyEffect(Plant.this, board, player);
+                    }
+                }
+            }, delaySeconds);
+
+        } else {
+            System.out.println("DEBUG: " + this.name + " has no Plant Food Strategy mapped!");
         }
     }
 
     public void resetFeed() {
         this.isFed = false;
+        this.plantFoodTimer = 0;
     }
-
     public boolean isFed() {
         return this.isFed;
     }
-
     public void takeDamage(int amount) {
         if (this.isDead()) return;
-
-        // --- SUN BEAN MECHANIC ---
         if (this.name.equals("Sun Bean")) {
-            if (AppModel.gameSession != null && AppModel.gameSession.gameBoard != null) {
-                // Base 5 + Upgrade 5 = 10 Sun at level 2!
-                int sunAmount = 5 + this.getExtraSunYield();
-
-                if(sunAmount > 5) {
-                    AppModel.gameSession.gameBoard.economyManager.suns.add(
-                        new Sun(this.getX(), this.getY(), SunType.SMALL, false, (float)this.getY())
-                    );
+            if (this.sunDropCooldown <= 0) {
+                if (AppModel.gameSession != null && AppModel.gameSession.gameBoard != null) {
+                    int sunAmount = 5 + this.getExtraSunYield();
+                    if (sunAmount > 5) {
+                        AppModel.gameSession.gameBoard.economyManager.suns.add(new Sun(this.getX(), this.getY(), SunType.SMALL, false, (float)this.getY()));
+                    }
+                    AppModel.gameSession.gameBoard.economyManager.suns.add(new Sun(this.getX(), this.getY(), SunType.TINY, false, (float)this.getY()));
                 }
-                AppModel.gameSession.gameBoard.economyManager.suns.add(
-                    new Sun(this.getX(), this.getY(), SunType.TINY, false, (float)this.getY())
-                );
+                this.sunDropCooldown = 10.0;
             }
         }
-
-        // 1. Check Ice/Octopus covers first
         if (coverState != PlantCoverState.NONE) {
             this.coverHp -= amount;
             if (this.coverHp <= 0) {
@@ -347,26 +291,18 @@ public class Plant extends GameEntity {
             }
             return;
         }
-
-        // 2. Track if we currently have Plant Food Armor (currentHp > baseHp)
         boolean hadArmor = (this.currentHp > this.baseHp);
-
         this.currentHp -= amount;
-
-        // 3. ARMOR BREAK CHECK
         if (hadArmor && this.currentHp <= this.baseHp && this.currentHp > 0) {
             if (this.name.equals("Explode-o-nut")) {
-                this.triggerExplosion(); // BOOM! (Armor explosion)
+                this.triggerExplosion();
             }
         }
-
-        // 4. GUARANTEED DEATH CHECK
         if (this.currentHp <= 0) {
             this.currentHp = 0;
-            this.die(); // die() will now trigger the final explosion!
+            this.die();
         }
     }
-
     public void applyLevelUpgrade(int targetLevel) {
         for (int i = 2; i <= targetLevel; i++) {
             if (upgradeMap != null && upgradeMap.containsKey(i)) {
@@ -414,7 +350,6 @@ public class Plant extends GameEntity {
         }
         this.level = targetLevel;
     }
-
     @Override
     public void die() {
         super.die();
@@ -422,26 +357,20 @@ public class Plant extends GameEntity {
         if (isSpecial) {
             AppModel.gameSession.gameBoard.specialIsLost = true;
         }
-
-        // --- DEATH EXPLOSION HOOK ---
         if (this.name.equals("Explode-o-nut") || (this.name.equals("Torchwood") && this.explodesOnDeath)) {
-            this.triggerExplosion(); // BOOM!
+            this.triggerExplosion();
         }
-
         int xInt = (int) this.getX();
         int yInt = (int) this.getY();
         AppModel.addAfterPrompt("Plant " + this.name + " at (" + xInt + ", " + yInt + ") is destroyed.");
     }
-
-    // --- Bowling Bulb Queue Helpers ---
     public int getBulbCount() { return bulbs.size(); }
-    public void consumeBulb() {} // Disabled!
+    public void consumeBulb() {}
     public void reloadAllBulbs() {
         this.bulbs.clear();
         this.bulbs.addAll(java.util.Arrays.asList(1, 2, 3));
         this.bulbRegenTimer = 0;
     }
-
     public int getStackCount() { return stackCount; }
     public void addStack() { if (this.stackCount < 5) this.stackCount++; }
     public double getChillTimeBonusTicks() { return chillTimeBonusTicks; }
@@ -470,12 +399,9 @@ public class Plant extends GameEntity {
     public int getPoisonDmgTickBonus() { return poisonDmgTickBonus; }
     public double getRangeTiles() {
         double baseRange = (template != null ? template.getRangeTiles() : 10.0);
-
-        // --- FIX: Force short-range radar for Shrooms! ---
         if (this.name.equals("Sea-shroom") || this.name.equals("Puff-shroom") || this.name.equals("Fume-shroom")) {
             baseRange = 4.0;
         }
-
         return baseRange + rangeBonus;
     }
     public void resetLifespan() {
@@ -510,14 +436,11 @@ public class Plant extends GameEntity {
         if (isMaxStageForced) {
             return 3 + maxSizeBonus;
         }
-
         double age = this.getAgeTicks();
         double stg2Threshold = Math.max(0, 480.0 - this.getGrowTimeReductionTicks());
         double stg3Threshold = Math.max(0, 1440.0 - this.getGrowTimeReductionTicks());
-
         if (age >= stg3Threshold) return 3;
         if (age >= stg2Threshold) return 2;
-
         return 1;
     }
     public boolean isFrozen() {
@@ -534,28 +457,21 @@ public class Plant extends GameEntity {
         }
         return reflectDmg;
     }
-
     private void triggerExplosion() {
         if (AppModel.gameSession == null || AppModel.gameSession.gameBoard == null) return;
         GameBoard board = AppModel.gameSession.gameBoard;
-
         double radiusPixels = 1.5 * Constants.Game.TILE_HEIGHT;
-
         for (Zombie z : board.getAllZombies()) {
             if (z.isDead()) continue;
-
             double dist = Math.hypot(z.getX() - this.getX(), z.getY() - this.getY());
             if (dist <= radiusPixels) {
                 z.takeDamage(this.baseDamage, DamageType.NORMAL, PlantType.getByName(this.getName()));
             }
         }
     }
-
     public void applyBoost() {
         this.isBoosted = true;
     }
-
-    // --- HELPER FOR GRAPHICS ENGINE ---
     public double getRegenThreshold() {
         int growingBulb = 1;
         if (!bulbs.contains(1)) growingBulb = 1;
@@ -563,5 +479,30 @@ public class Plant extends GameEntity {
         else if (!bulbs.contains(3)) growingBulb = 3;
         double baseThreshold = (growingBulb == 3) ? 600.0 : (growingBulb == 2 ? 300.0 : 120.0);
         return Math.max(1.0, baseThreshold - this.actionIntervalReductionTicks);
+    }
+    private double getFoodWindupDelay() {
+        switch (this.name) {
+            case "Sunflower":
+            case "Twin Sunflower":
+                return 16.6;
+            case "Primal Sunflower":
+                return 20.0;
+            case "Fume-shroom" :
+                return 30.0;
+            case "Sun-shroom", "Fire Peashooter":
+                return 10.0;
+            case "Starfruit", "Puff-shroom", "Cactus", "Goo Peashooter":
+                return 15.0;
+            case "Snow Pea" :
+                return 7.0;
+            case "Peashooter", "Repeater", "Threepeater", "Split Pea", "Mega Gatling Pea", "Phat Beet", "Kiwibeast" :
+                return 3.0;
+            case "Citron":
+                return 90.0;
+            case "Wall-nut", "Explode-o-nut", "Sun Bean", "Tall-nut", "Torchwood" :
+                return 0.0;
+            default:
+                return 19.0;
+        }
     }
 }

@@ -11,36 +11,64 @@ public class TangleKelpStrategy implements AttackStrategy {
 
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
-        if (!plant.isArmed()) return;
+        if (!plant.isAlive() || !plant.isArmed()) return;
 
-        int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
-        int plantCol = (int) (plant.getX() / Constants.Game.TILE_WIDTH);
+        int plantRow = (int) Math.floor((plant.getY() - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
+        int plantCol = (int) Math.floor((plant.getX() - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH);
 
-        // Base targets = 1. Plus upgrades!
-        int maxTargets = 1 + plant.getExtraTargets();
-        int targetsHit = 0;
-
-        for (Zombie z : board.getAllZombies()) {
-            if (z.isDead()) continue;
-
-            if (z.getCurrentRow() == plantRow) {
-                int zCol = (int) (z.getX() / Constants.Game.TILE_WIDTH);
-                if (zCol == plantCol) {
-
-                    // Instantly kills normal zombies, severely damages Gargantuars!
-                    z.takeDamage(800, DamageType.NORMAL, PlantType.getByName(plant.getName()));
-                    targetsHit++;
-
-                    if (targetsHit >= maxTargets) {
-                        break; // Stop pulling if we hit our capacity!
+        // 1. TRIGGER PHASE: Check if a zombie is on the tile
+        if (!plant.isWindingUp) {
+            boolean zombieInRange = false;
+            for (Zombie z : board.getAllZombies()) {
+                if (z.isDead()) continue;
+                if (z.getCurrentRow() == plantRow) {
+                    int zCol = (int) Math.floor((z.getX() - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH);
+                    if (zCol == plantCol) {
+                        zombieInRange = true;
+                        break;
                     }
                 }
             }
+
+            if (zombieInRange) {
+                plant.isWindingUp = true;
+                plant.windupTimer = 0;
+            }
         }
 
-        // If we grabbed at least one zombie, the Kelp destroys itself!
-        if (targetsHit > 0) {
-            plant.die();
+        // 2. ANIMATION & DAMAGE PHASE
+        if (plant.isWindingUp) {
+            double oldTimer = plant.windupTimer;
+            plant.windupTimer += tickDelta;
+
+            double damageTick = 15.0; // Damage hits after it dives!
+            double deathTick = 60.0;  // Total time to play submerge -> attack -> merge
+
+            // DEAL DAMAGE EXACTLY AT TICK 15
+            if (oldTimer < damageTick && plant.windupTimer >= damageTick) {
+                int maxTargets = 1 + plant.getExtraTargets();
+                int targetsHit = 0;
+
+                for (Zombie z : board.getAllZombies()) {
+                    if (z.isDead()) continue;
+                    if (z.getCurrentRow() == plantRow) {
+                        int zCol = (int) Math.floor((z.getX() - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH);
+                        if (zCol == plantCol) {
+                            z.takeDamage(800, DamageType.NORMAL, PlantType.getByName(plant.getName()));
+                            targetsHit++;
+
+                            if (targetsHit >= maxTargets) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // DIE AT TICK 60
+            if (plant.windupTimer >= deathTick) {
+                plant.die();
+            }
         }
     }
 }

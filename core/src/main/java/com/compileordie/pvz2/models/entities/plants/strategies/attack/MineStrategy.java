@@ -22,27 +22,23 @@ public class MineStrategy implements AttackStrategy {
 
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
-        // --- FIX BUG 2: THE GHOST BOMB ---
-        // If the plant is dead, abort! This stops the invisible infinite explosions!
         if (!plant.isAlive()) return;
-
         if (!plant.isArmed()) return;
 
         int plantRow = (int) Math.floor((plant.getY() - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
-        int plantCol = (int) (plant.getX() / Constants.Game.TILE_WIDTH);
+        // --- THE FIX: Subtract PADDING_X to get the true array index (0 to 8)! ---
+        int plantCol = (int) Math.floor((plant.getX() - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH);
 
         boolean triggered = false;
 
-        // --- INSTANT EXPLOSIVE BYPASS ---
-        if (plant.getName().equals("Cherry Bomb") || plant.getName().equals("Grapeshot") || plant.getName().equals("Jalapeno")|| plant.getName().equals("Doom-shroom")) {
-            triggered = true; // Bombs detonate instantly, they don't wait for zombies!
-        }
-        // --- STANDARD TRAP LOGIC ---
-        else {
+        if (plant.getName().equals("Cherry Bomb") || plant.getName().equals("Grapeshot") || plant.getName().equals("Jalapeno") || plant.getName().equals("Doom-shroom")) {
+            triggered = true;
+        } else {
             for (Zombie z : board.getAllZombies()) {
                 if (z.isDead()) continue;
                 if (z.getCurrentRow() == plantRow) {
-                    int zCol = (int) (z.getX() / Constants.Game.TILE_WIDTH);
+                    // --- THE FIX: Zombie columns get the padding subtraction too ---
+                    int zCol = (int) Math.floor((z.getX() - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH);
                     if (zCol == plantCol) {
                         triggered = true;
                         break;
@@ -51,94 +47,109 @@ public class MineStrategy implements AttackStrategy {
             }
         }
 
-        // 3. Detonation Engine
         if (triggered) {
-
-            // --- THE WINDUP HOOK ---
             if (!plant.isWindingUp) {
                 plant.isWindingUp = true;
                 plant.windupTimer = 0;
             }
 
+            double oldTimer = plant.windupTimer;
             plant.windupTimer += tickDelta;
 
             double requiredWindup = 0.0;
-            if (plant.getName().equals("Potato Mine")) requiredWindup = 10.0;
-                // --- FIX BUG 1 (Part 1): Set 20-tick fuse (10 for idle, 10 for attack) ---
-            else if (plant.getName().equals("Cherry Bomb")) requiredWindup = 20.0;
+            if (plant.getName().equals("Potato Mine") || plant.getName().equals("Primal Potato Mine")) requiredWindup = 10.0;
+            else if (plant.getName().equals("Cherry Bomb") || plant.getName().equals("Grapeshot") || plant.getName().equals("Jalapeno")) requiredWindup = 20.0;
+            else if (plant.getName().equals("Doom-shroom")) requiredWindup = 75.0; // Your tweaked death timer!
+            else if (plant.getName().equals("Iceberg Lettuce")) requiredWindup = 15.0;
+            boolean executeDamage = false;
+            boolean executeDeath = false;
 
-            if (plant.windupTimer < requiredWindup) {
+            if (plant.getName().equals("Doom-shroom")) {
+                double damageTick = 60.0;
+                if (oldTimer < damageTick && plant.windupTimer >= damageTick) executeDamage = true;
+                if (plant.windupTimer >= requiredWindup) executeDeath = true;
+            } else {
+                if (plant.windupTimer >= requiredWindup) {
+                    executeDamage = true;
+                    executeDeath = true;
+                }
+            }
+
+            if (!executeDamage && !executeDeath) {
                 return;
             }
 
-            plant.isWindingUp = false;
-
-            // --- DAMAGE EXECUTION ---
-            if (plant.getName().equals("Jalapeno")) {
-                for (Zombie z : board.getAllZombies()) {
-                    if (!z.isDead() && z.getCurrentRow() == plantRow) {
-                        z.takeDamage(plant.getBaseDamage(), DamageType.EXPLOSIVE, PlantType.getByName(plant.getName()));
-                        z.removeStatusEffect(EffectType.FROZEN);
-                        z.removeStatusEffect(EffectType.CHILLED);
-                    }
-                }
-            } else {
-                if (splashRadiusTiles > 0) {
-                    double radiusPixels = splashRadiusTiles * Constants.Game.TILE_HEIGHT;
+            if (executeDamage) {
+                if (plant.getName().equals("Jalapeno")) {
                     for (Zombie z : board.getAllZombies()) {
-                        if (z.isDead()) continue;
-                        double dist = Math.hypot(z.getX() - plant.getX(), z.getY() - plant.getY());
-                        if (dist <= radiusPixels) {
+                        if (!z.isDead() && z.getCurrentRow() == plantRow) {
                             z.takeDamage(plant.getBaseDamage(), DamageType.EXPLOSIVE, PlantType.getByName(plant.getName()));
+                            z.removeStatusEffect(EffectType.FROZEN);
+                            z.removeStatusEffect(EffectType.CHILLED);
                         }
                     }
                 } else {
-                    for (Zombie z : board.getAllZombies()) {
-                        if (!z.isDead() && z.getCurrentRow() == plantRow) {
-                            int zCol = (int) (z.getX() / Constants.Game.TILE_WIDTH);
-                            if (zCol == plantCol) {
+                    if (splashRadiusTiles > 0) {
+                        double radiusPixels = splashRadiusTiles * Constants.Game.TILE_HEIGHT;
+                        for (Zombie z : board.getAllZombies()) {
+                            if (z.isDead()) continue;
+                            double dist = Math.hypot(z.getX() - plant.getX(), z.getY() - plant.getY());
+                            if (dist <= radiusPixels) {
                                 z.takeDamage(plant.getBaseDamage(), DamageType.EXPLOSIVE, PlantType.getByName(plant.getName()));
+                            }
+                        }
+                    } else {
+                        for (Zombie z : board.getAllZombies()) {
+                            if (!z.isDead() && z.getCurrentRow() == plantRow) {
+                                // --- THE FIX: Zombie columns get the padding subtraction too ---
+                                int zCol = (int) Math.floor((z.getX() - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH);
+                                if (zCol == plantCol) {
+                                    z.takeDamage(plant.getBaseDamage(), DamageType.EXPLOSIVE, PlantType.getByName(plant.getName()));
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            if (plant.getName().equals("Doom-shroom")) {
-                Tile centerTile = board.getTile(plantRow, plantCol);
-                if (centerTile != null) {
-                    if (centerTile.hasLilyPad || centerTile.isUnderWater()) {
-                        centerTile.hasLilyPad = false;
-                    } else {
-                        centerTile.obstacle = new Crater(plantRow, plantCol, 1800.0);
-                    }
-                }
-            }
-
-            if (plant.getName().equals("Iceberg Lettuce")) {
-                int baseFreezeTicks = 100;
-                int totalFreeze = baseFreezeTicks + (int) plant.getFreezeTimeBonusTicks();
-                for (Zombie z : board.getAllZombies()) {
-                    if (!z.isDead() && z.getCurrentRow() == plantRow) {
-                        int zCol = (int) (z.getX() / Constants.Game.TILE_WIDTH);
-                        if (zCol == plantCol) {
-                            z.addEffect(new StatusEffect(EffectType.FROZEN, totalFreeze));
-                            break;
+                if (plant.getName().equals("Doom-shroom")) {
+                    Tile centerTile = board.getTile(plantRow, plantCol);
+                    if (centerTile != null) {
+                        if (centerTile.hasLilyPad || centerTile.isUnderWater()) {
+                            centerTile.hasLilyPad = false;
+                        } else {
+                            centerTile.obstacle = new Crater(plantRow, plantCol, 1800.0);
                         }
                     }
                 }
-            }
 
-            if (plant.getName().equals("Grapeshot")) {
-                int totalBounces = 3 + plant.getExtraBounces();
-                for (int i = 0; i < 5; i++) {
-                    double randomAngle = Math.random() * Math.PI * 2;
-                    GrapeProjectile grape = new GrapeProjectile(plant.getX(), plant.getY(), randomAngle, 200, totalBounces);
-                    board.getActiveProjectiles().add(grape);
+                if (plant.getName().equals("Iceberg Lettuce")) {
+                    int baseFreezeTicks = 100;
+                    int totalFreeze = baseFreezeTicks + (int) plant.getFreezeTimeBonusTicks();
+                    for (Zombie z : board.getAllZombies()) {
+                        if (!z.isDead() && z.getCurrentRow() == plantRow) {
+                            // --- THE FIX: Zombie columns get the padding subtraction too ---
+                            int zCol = (int) Math.floor((z.getX() - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH);
+                            if (zCol == plantCol) {
+                                z.addEffect(new StatusEffect(EffectType.FROZEN, totalFreeze));
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (plant.getName().equals("Grapeshot")) {
+                    int totalBounces = 3 + plant.getExtraBounces();
+                    for (int i = 0; i < 4; i++) {
+                        double randomAngle = Math.random() * Math.PI * 2;
+                        GrapeProjectile grape = new GrapeProjectile(plant.getX(), plant.getY(), randomAngle, 200, totalBounces);
+                        board.getActiveProjectiles().add(grape);
+                    }
                 }
             }
 
-            plant.die();
+            if (executeDeath) {
+                plant.die();
+            }
         }
     }
 }

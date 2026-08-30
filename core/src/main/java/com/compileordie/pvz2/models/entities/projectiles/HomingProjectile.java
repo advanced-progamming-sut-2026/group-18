@@ -68,7 +68,7 @@ public class HomingProjectile extends Projectile {
             this.destroy();
         } else if (this.sourcePlantType == PlantType.ELECTRIC_BLUEBERRY) {
             // ELECTRIC BLUEBERRY FIX: Deliver massive instant-kill damage!
-            target.takeDamage(5000, DamageType.NORMAL, this.sourcePlantType);
+            target.takeDamage(5000, DamageType.EXPLOSIVE, this.sourcePlantType);
             this.destroy();
         } else {
             // For future homing plants that actually do physical damage

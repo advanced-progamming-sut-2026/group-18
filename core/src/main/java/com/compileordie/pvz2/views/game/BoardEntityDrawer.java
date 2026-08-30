@@ -46,6 +46,7 @@ final class BoardEntityDrawer {
     private TextureRegion shovelCursorRegion;
     private float cursorAnimTime = 0f;
     private TextureRegion plantFoodCursorRegion;
+    private static final String CRATER_PAM = "768/FULL/EFFECTS/CRATER/CRATER.PAM";
 
     BoardEntityDrawer(GameRenderStates states, Set<String> brokenAssets) {
         this.states = states;
@@ -196,6 +197,33 @@ final class BoardEntityDrawer {
             }
         }
         states.fireTileAnimTimes.keySet().removeIf(tile -> !stillOnFire.contains(tile));
+    }
+
+    void drawCraters(SpriteBatch batch, PamPlayer player, float delta) {
+        if (AppModel.gameSession == null || player == null) return;
+        if (brokenAssets.contains(CRATER_PAM)) return;
+
+        for (var lane : AppModel.gameSession.gameBoard.lanes) {
+            for (Tile tile : lane.tiles) {
+                if (tile.obstacle instanceof com.compileordie.pvz2.models.entities.obstacles.Crater) {
+
+                    // --- POSITION FIX: Added TILE_HEIGHT / 2.0f so it centers vertically! ---
+                    float craterX = (float) ((Constants.Game.PADDING_X + (tile.column * Constants.Game.TILE_WIDTH) + (Constants.Game.TILE_WIDTH / 2.0f)) * Constants.UI.METER_TO_PIX);
+                    float craterY = (float) ((Constants.Game.PADDING_Y + (tile.row * Constants.Game.TILE_HEIGHT) + (Constants.Game.TILE_HEIGHT / 2.0f)) * Constants.UI.METER_TO_PIX);
+
+                    // --- SCALE FIX: 0.5f means half size. (Tweak to 0.4f or 0.6f if needed!) ---
+                    float scale = 0.8f;
+
+                    try {
+                        // --- NEW: Using the full draw method to pass the scale! ---
+                        player.draw(batch, CRATER_PAM, "", 0f, craterX, craterY, scale, scale, true);
+                    } catch (Throwable e) {
+                        brokenAssets.add(CRATER_PAM);
+                        Gdx.app.error("PVZ-ASSET-MISSING", "❌ رندر گودال (Crater) با خطا مواجه شد: " + e.getMessage());
+                    }
+                }
+            }
+        }
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

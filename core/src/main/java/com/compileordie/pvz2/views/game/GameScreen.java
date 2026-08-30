@@ -179,35 +179,53 @@ public class GameScreen implements Screen {
     private void handleInput() {
         if (ui != null && ui.isPaused) return;
 
+        // --- DEBUG: FEED ALL PLANTS (SPACEBAR) ---
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            if (AppModel.gameSession != null && AppModel.gameSession.gameBoard != null) {
+                for (Plant p : AppModel.gameSession.gameBoard.getAllPlants()) {
+                    p.feed(AppModel.gameSession.gameBoard, null);
+                }
+                Gdx.app.log("TEST-FOOD", "🌟 Plant Food triggered for ALL plants!");
+            }
+        }
+
         // TODO: For debug purposes. Remove later:
         Tile hoveringTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
 
         if (hoveringTile != null) {
+            if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.F)) {
+                if (hoveringTile.plant != null) {
+                    hoveringTile.plant.feed(AppModel.gameSession.gameBoard, null);
+                    Gdx.app.log("TEST-FOOD", "🌟 Fed " + hoveringTile.plant.getName() + " via Hover!");
+                }
+                return; // Return immediately so it doesn't trigger anything else!
+            }
+
             PlantType typeToSpawn = null;
             if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.A)) typeToSpawn = PlantType.MELON_PULT;
             else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.S)) typeToSpawn = PlantType.WINTER_MELON;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.D)) typeToSpawn = PlantType.SUN_SHROOM;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.F)) typeToSpawn = PlantType.PEPPER_PULT;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.G)) typeToSpawn = PlantType.POTATO_MINE;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Q)) typeToSpawn = PlantType.CHERRY_BOMB;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.W)) typeToSpawn = PlantType.REPEATER;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.E)) typeToSpawn = PlantType.THREEPEATER;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.R)) typeToSpawn = PlantType.SNOW_PEA;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.T)) typeToSpawn = PlantType.ROTOBAGA;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Y)) typeToSpawn = PlantType.PEA_POD;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.D)) typeToSpawn = PlantType.BOMBARD_MINT;
+           // else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.F)) typeToSpawn = PlantType.CATTAIL_MINT;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.G)) typeToSpawn = PlantType.CAT_TAIL;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Q)) typeToSpawn = PlantType.ENLIGHTEN_MINT;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.W)) typeToSpawn = PlantType.REINFORCE_MINT;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.E)) typeToSpawn = PlantType.PIERCE_MINT;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.R)) typeToSpawn = PlantType.ENFORCE_MINT;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.T)) typeToSpawn = PlantType.CAT_TAIL;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Y)) typeToSpawn = PlantType.DOOM_SHROOM;
             else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.U)) typeToSpawn = PlantType.SPLIT_PEA;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.I)) typeToSpawn = PlantType.CITRON;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.O)) typeToSpawn = PlantType.CAULIPOWER;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.P)) typeToSpawn = PlantType.ELECTRIC_BLUEBERRY;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.H)) typeToSpawn = PlantType.BOWLING_BULB;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.J)) typeToSpawn = PlantType.CACTUS;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.K)) typeToSpawn = PlantType.FIRE_PEASHOOTER;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.L)) typeToSpawn = PlantType.STARFRUIT;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Z)) typeToSpawn = PlantType.GOO_PEASHOOTER;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.X)) typeToSpawn = PlantType.MEGA_GATLING_PEA;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.C)) typeToSpawn = PlantType.SEA_SHROOM;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.V)) typeToSpawn = PlantType.PUFF_SHROOM;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.B)) typeToSpawn = PlantType.FUME_SHROOM;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.I)) typeToSpawn = PlantType.ICE_SHROOM;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.O)) typeToSpawn = PlantType.ICEBERG_LETTUCE;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.P)) typeToSpawn = PlantType.BONK_CHOY;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.H)) typeToSpawn = PlantType.PHAT_BEET;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.J)) typeToSpawn = PlantType.WASABI_WHIP;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.K)) typeToSpawn = PlantType.KIWIBEAST;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.L)) typeToSpawn = PlantType.WALL_NUT;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Z)) typeToSpawn = PlantType.TALL_NUT;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.X)) typeToSpawn = PlantType.SWEET_POTATO;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.C)) typeToSpawn = PlantType.EXPLODE_O_NUT;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.V)) typeToSpawn = PlantType.SUN_BEAN;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.B)) typeToSpawn = PlantType.TORCHWOOD;
             else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.N)) typeToSpawn = PlantType.CABBAGE_PULT;
             else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.M)) typeToSpawn = PlantType.KERNEL_PULT;
             if (typeToSpawn != null) {
@@ -232,8 +250,19 @@ public class GameScreen implements Screen {
             }
         }
 
+// --- DEBUG: FEED SPECIFIC PLANT (RIGHT-CLICK) ---
         if (Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
-            GameScreenController.cancelSelection();
+            // Check if we are hovering over a specific tile
+            Tile rightClickedTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
+
+            if (rightClickedTile != null && rightClickedTile.plant != null) {
+                // If there is a plant here, feed it!
+                rightClickedTile.plant.feed(AppModel.gameSession.gameBoard, null);
+                Gdx.app.log("TEST-FOOD", "🌟 Fed " + rightClickedTile.plant.getName());
+            } else {
+                // Otherwise, perform the normal cancel action
+                GameScreenController.cancelSelection();
+            }
             return;
         }
 
@@ -290,7 +319,7 @@ public class GameScreen implements Screen {
         boardDrawer.drawMowers(batch, player, worldDelta);
         boardDrawer.drawTombs(batch, player, worldDelta);
         boardDrawer.drawFireTiles(batch, player, worldDelta);
-
+        boardDrawer.drawCraters(batch, player, worldDelta);
         Tile hoveredTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
         boardDrawer.drawTileHighlight(batch, hoveredTile);
 
