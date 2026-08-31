@@ -21,8 +21,9 @@ public class AttractStrategy implements AttackStrategy {
         for (Zombie z : board.getAllZombies()) {
             if (z.isDead()) continue;
 
-            // 1. Must be in the lane directly above or below
-            if (Math.abs(z.getCurrentRow() - plantRow) == 1) {
+
+            // Only pull zombies that are in adjacent lanes
+            if (z.occupiesRow(plantRow + 1) || z.occupiesRow(plantRow - 1)) {
 
                 // 2. Must NOT have passed the Sweet Potato, but must be within 1.5 tiles!
                 if (z.getX() >= pullRangeMin && z.getX() <= pullRangeMax) {

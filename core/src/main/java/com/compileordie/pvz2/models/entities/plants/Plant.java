@@ -219,7 +219,13 @@ public class Plant extends GameEntity {
                     if (adjacentTile != null && adjacentTile.plant != null) {
                         Plant checkingPlant = adjacentTile.plant;
                         if (checkingPlant.hasTag(PlantTag.FIRE)) {
-                            int effectiveRadius = checkingPlant.getWarmthRadius() > 0 ? checkingPlant.getWarmthRadius() : 1;
+                            int effectiveRadius;
+                            if (checkingPlant.getWarmthRadius() > 0) {
+                                effectiveRadius = checkingPlant.getWarmthRadius();
+                            } else {
+                                effectiveRadius = 1;
+                            }
+
                             if (Math.abs(r - row) <= effectiveRadius && Math.abs(c - col) <= effectiveRadius) {
                                 hasAdjacentFire = true;
                                 break;
@@ -346,14 +352,15 @@ public class Plant extends GameEntity {
             }
         }
         if (this.atkSpeedBonusPercentage > 0) {
-            this.actionIntervalTicks = Math.max(1.0, this.actionIntervalTicks * (1.0 - (this.atkSpeedBonusPercentage / 100.0)));
+            this.actionIntervalTicks = Math.max(
+                1.0, this.actionIntervalTicks * (1.0 - (this.atkSpeedBonusPercentage / 100.0))
+            );
         }
         this.level = targetLevel;
     }
     @Override
     public void die() {
         super.die();
-        AppModel.gameSession.gameBoard.lostPlants++;
         if (isSpecial) {
             AppModel.gameSession.gameBoard.specialIsLost = true;
         }
@@ -362,7 +369,6 @@ public class Plant extends GameEntity {
         }
         int xInt = (int) this.getX();
         int yInt = (int) this.getY();
-        AppModel.addAfterPrompt("Plant " + this.name + " at (" + xInt + ", " + yInt + ") is destroyed.");
     }
     public int getBulbCount() { return bulbs.size(); }
     public void consumeBulb() {}
@@ -449,13 +455,26 @@ public class Plant extends GameEntity {
     public void forceMaxGrowth() {
         this.isMaxStageForced = true;
     }
+    /**
+     * دیمیجی که موقع «eating» یک گیاه به‌وسیله‌ی زامبی، برمی‌گرده و به خود زامبی می‌خوره.
+     * Endurian: مقدار پایه‌ش baseDamage است، و اگه currentHp بیشتر از baseHp باشه (یعنی
+     * plant food خورده و بافر گرفته) ۱۵ واحد هم بهش اضافه می‌شه.
+     * Garlic: صرفا baseDamage برمی‌گرده (بدون بونوس)؛ همین مقدار غیرصفر بودن باعث می‌شه
+     * تو ZombieCombatManager.processPlantEating هم دیمیج ریفلکت بخوره هم (چون گارلیکه)
+     * لاینش عوض بشه.
+     */
     public int getReflectDamage() {
-        if (!this.name.equals("Endurian")) return 0;
-        int reflectDmg = this.baseDamage;
-        if (this.currentHp > this.baseHp) {
-            reflectDmg += 15;
+        if (this.name.equals("Endurian")) {
+            int reflectDmg = this.baseDamage;
+            if (this.currentHp > this.baseHp) {
+                reflectDmg += 15;
+            }
+            return reflectDmg;
         }
-        return reflectDmg;
+        if (this.name.equals("Garlic")) {
+            return this.baseDamage;
+        }
+        return 0;
     }
     private void triggerExplosion() {
         if (AppModel.gameSession == null || AppModel.gameSession.gameBoard == null) return;

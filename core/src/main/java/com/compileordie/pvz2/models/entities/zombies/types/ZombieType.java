@@ -20,6 +20,7 @@ public enum ZombieType {
     PIANIST_ZOMBIE(150, null),
     NEWSPAPER_ZOMBIE(150, null),
     BARREL_ROLLER(150, null),
+    RAINCOAT_ZOMBIE(150, null),
 
 
     // === مصر باستان ===

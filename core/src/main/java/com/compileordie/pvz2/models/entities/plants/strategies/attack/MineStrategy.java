@@ -36,7 +36,7 @@ public class MineStrategy implements AttackStrategy {
         } else {
             for (Zombie z : board.getAllZombies()) {
                 if (z.isDead()) continue;
-                if (z.getCurrentRow() == plantRow) {
+                if (z.occupiesRow(plantRow)) {
                     // --- THE FIX: Zombie columns get the padding subtraction too ---
                     int zCol = (int) Math.floor((z.getX() - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH);
                     if (zCol == plantCol) {
@@ -82,7 +82,7 @@ public class MineStrategy implements AttackStrategy {
             if (executeDamage) {
                 if (plant.getName().equals("Jalapeno")) {
                     for (Zombie z : board.getAllZombies()) {
-                        if (!z.isDead() && z.getCurrentRow() == plantRow) {
+                        if (!z.isDead() && z.occupiesRow(plantRow)) {
                             z.takeDamage(plant.getBaseDamage(), DamageType.EXPLOSIVE, PlantType.getByName(plant.getName()));
                             z.removeStatusEffect(EffectType.FROZEN);
                             z.removeStatusEffect(EffectType.CHILLED);
@@ -100,7 +100,7 @@ public class MineStrategy implements AttackStrategy {
                         }
                     } else {
                         for (Zombie z : board.getAllZombies()) {
-                            if (!z.isDead() && z.getCurrentRow() == plantRow) {
+                            if (!z.isDead() && z.occupiesRow(plantRow)) {
                                 // --- THE FIX: Zombie columns get the padding subtraction too ---
                                 int zCol = (int) Math.floor((z.getX() - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH);
                                 if (zCol == plantCol) {
@@ -126,7 +126,7 @@ public class MineStrategy implements AttackStrategy {
                     int baseFreezeTicks = 100;
                     int totalFreeze = baseFreezeTicks + (int) plant.getFreezeTimeBonusTicks();
                     for (Zombie z : board.getAllZombies()) {
-                        if (!z.isDead() && z.getCurrentRow() == plantRow) {
+                        if (!z.isDead() && z.occupiesRow(plantRow)) {
                             // --- THE FIX: Zombie columns get the padding subtraction too ---
                             int zCol = (int) Math.floor((z.getX() - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH);
                             if (zCol == plantCol) {

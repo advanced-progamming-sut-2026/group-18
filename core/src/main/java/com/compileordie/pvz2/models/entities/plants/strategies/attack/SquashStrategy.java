@@ -18,7 +18,7 @@ public class SquashStrategy implements AttackStrategy {
 
         // Scan 2.0 tiles front and back
         for (Zombie z : board.getAllZombies()) {
-            if (z.isDead() || z.getCurrentRow() != plantRow) continue;
+            if (z.isDead() || !z.occupiesRow(plantRow)) continue;
 
             double dist = Math.abs(z.getX() - plant.getX());
             if (dist <= 2.0 * Constants.Game.TILE_WIDTH && dist < closestDist) {

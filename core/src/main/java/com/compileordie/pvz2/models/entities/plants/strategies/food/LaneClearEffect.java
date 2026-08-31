@@ -83,7 +83,8 @@ public class LaneClearEffect implements PlantFoodEffectStrategy {
                     zombie.setY(newY);
                 }
             }
-            plant.resetFeed();
         }
+
+        plant.resetFeed();
     }
 }

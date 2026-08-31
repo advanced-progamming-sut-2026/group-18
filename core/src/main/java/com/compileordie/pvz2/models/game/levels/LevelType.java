@@ -5,7 +5,7 @@ import com.compileordie.pvz2.utils.Toolbox;
 public enum LevelType {
     STANDARD,
     SPECIAL,
-    BOSS,
+    ZOMBOSS,
     MINIGAME;
 
     public static LevelType getByName(String name) {

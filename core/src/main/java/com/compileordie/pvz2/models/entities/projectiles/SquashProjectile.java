@@ -130,7 +130,7 @@ public class SquashProjectile extends LobbedProjectile {
             double dist = Math.abs(z.getX() - this.x);
             int ownerRow = (int) Math.floor((owner.getY() - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
 
-            if (dist <= 1.5 * Constants.Game.TILE_WIDTH && z.getCurrentRow() == ownerRow) {
+            if (dist <= 1.5 * Constants.Game.TILE_WIDTH && z.occupiesRow((int) (owner.getY() / Constants.Game.TILE_HEIGHT))) {
                 return z;
             }
         }

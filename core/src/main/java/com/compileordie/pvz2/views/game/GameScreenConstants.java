@@ -56,6 +56,7 @@ public final class GameScreenConstants {
             case BIG_WAVE_BEACH -> "BEACH";
             case DARK_AGES -> "DARK";
             case FROSTBITE_CAVES -> "ICEAGE";
+            case MINIGAME -> "FRONTLAWN_SPRING";
             default -> "EGYPT";
         };
     }

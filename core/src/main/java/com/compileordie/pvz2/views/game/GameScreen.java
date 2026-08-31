@@ -13,7 +13,6 @@ import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.controllers.PlantSpawner;
 import com.compileordie.pvz2.controllers.menus.game.GameScreenController;
 import com.compileordie.pvz2.models.AppModel;
-import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
@@ -23,10 +22,14 @@ import com.compileordie.pvz2.models.entities.zombies.variants.capable.HunterZomb
 import com.compileordie.pvz2.models.entities.zombies.variants.capable.OctopusZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.game.board.Tile;
+import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
 import com.compileordie.pvz2.models.game.waves.WaveType;
 import com.compileordie.pvz2.views.game.ui.GameScreenUI;
+import com.compileordie.pvz2.views.game.ui.LevelStartDialog;
+import com.compileordie.pvz2.views.helpers.ToastManager;
 import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.textures.TextureBank;
+import pvz.skin.PvzSkin;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -39,6 +42,12 @@ import java.util.Set;
 public class GameScreen implements Screen {
     boolean testOn = false;
     boolean testZombossOn = false;
+    /**
+     * سوییچ اصلی همه‌ی قابلیت‌های تستیِ مربوط به زامبی: اسپاون زامبی‌های
+     * تستی (testSpawner) و همچنین تست دمیج با کلیک روی زامبی/قبر/زامباس
+     * (handleClickDamageTest). وقتی false باشه، همه‌ی این‌ها کاملاً خاموشن.
+     */
+    boolean testPastKommeh = false;
     private final ZombieTestSpawner testSpawner =
         new ZombieTestSpawner();
 
@@ -49,6 +58,7 @@ public class GameScreen implements Screen {
     private PamPlayer player;
 
     public boolean hasWeTestForClickForDamaging = true;
+    public boolean overrideForceDamageClick = true;
     private static final float CLICK_DAMAGE_TEST_RADIUS_PX = 50f;
 
     private float effectPulseTime = 0f;
@@ -65,6 +75,7 @@ public class GameScreen implements Screen {
     private ZombieDrawer zombieDrawer;
     private BoardEntityDrawer boardDrawer;
     private ZombossDrawer zombossDrawer;
+    private SpecificBoardDrawer specificBoardDrawer;
     //TODO:
     private PlantAssetManager plantAssetManager;
     private PlantMatchManager plantMatchManager;
@@ -89,6 +100,31 @@ public class GameScreen implements Screen {
         ui.buildPauseMenuPanelWithFog(textureBank);
         ui.setupGameUI(textureBank);
         Gdx.input.setInputProcessor(ui.uiStage);
+
+        GameScreenUI.isPaused = true;
+        LevelStartDialog.show(
+            ui.uiStage,
+            AppModel.currentLevel,
+            PvzSkin.get(),
+            textureBank,
+            player,
+            () -> {
+                GameScreenUI.isPaused = false;
+                ToastManager.showMessage("The match begins!");
+            }
+        );
+
+        if (AppModel.gameSession != null && AppModel.gameSession.gameBoard != null) {
+            AppModel.gameSession.gameBoard.waveManager.setWaveEventListener(
+                (currentWave, totalWaves, isFinalWave, message) -> {
+                    if (isFinalWave) {
+                        ToastManager.showError(message);
+                    } else {
+                        ToastManager.showMessage(message);
+                    }
+                }
+            );
+        }
     }
 
     private void initHelpers() {
@@ -104,7 +140,8 @@ public class GameScreen implements Screen {
         zombieDrawer = new ZombieDrawer(states, brokenAssets, debrisDrawer);
         boardDrawer = new BoardEntityDrawer(states, brokenAssets);
         zombossDrawer = new ZombossDrawer(states, brokenAssets, color -> ui.createSolidTexture(color));
-        ui.isPaused = false;
+        specificBoardDrawer = new SpecificBoardDrawer(states, brokenAssets);
+        GameScreenUI.isPaused = false;
     }
 
     private void loadAssets() {
@@ -143,8 +180,9 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
+        delta *= AppModel.player.gameSpeedCoefficient;
         ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
-        boolean paused = ui != null && ui.isPaused;
+        boolean paused = ui != null && GameScreenUI.isPaused;
 
         if (!paused) {
             effectPulseTime += delta;
@@ -153,12 +191,11 @@ public class GameScreen implements Screen {
         updateTextureBank();
         handleInput();
         advanceSimulation(delta);
-        if (!paused && testOn) testSpawner.update(delta);
+        if (!paused && testPastKommeh) testSpawner.update(delta);
         cameraEffects.checkGiantZombieFootsteps(delta, paused);
         cameraEffects.updateCameraShake(paused ? 0f : delta);
         viewport.getCamera().update();
         batch.setProjectionMatrix(viewport.getCamera().combined);
-        updateSunHud();
         drawWorld(delta);
         if (ui != null) ui.actAndDraw(delta);
     }
@@ -177,60 +214,39 @@ public class GameScreen implements Screen {
     }
 
     private void handleInput() {
-        if (ui != null && ui.isPaused) return;
-
-        // --- DEBUG: FEED ALL PLANTS (SPACEBAR) ---
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-            if (AppModel.gameSession != null && AppModel.gameSession.gameBoard != null) {
-                for (Plant p : AppModel.gameSession.gameBoard.getAllPlants()) {
-                    p.feed(AppModel.gameSession.gameBoard, null);
-                }
-                Gdx.app.log("TEST-FOOD", "🌟 Plant Food triggered for ALL plants!");
-            }
-        }
+        if (ui != null && GameScreenUI.isPaused) return;
 
         // TODO: For debug purposes. Remove later:
         Tile hoveringTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
 
         if (hoveringTile != null) {
-            if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.F)) {
-                if (hoveringTile.plant != null) {
-                    hoveringTile.plant.feed(AppModel.gameSession.gameBoard, null);
-                    Gdx.app.log("TEST-FOOD", "🌟 Fed " + hoveringTile.plant.getName() + " via Hover!");
-                    return; // Return immediately so it doesn't trigger anything else if feeding!
-                }
-            }
-
             PlantType typeToSpawn = null;
-            // 53-69 Mapped to A-Q
-            if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.A)) typeToSpawn = PlantType.MAGNET_SHROOM;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.B)) typeToSpawn = PlantType.HYPNO_SHROOM;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.C)) typeToSpawn = PlantType.GOO_PEASHOOTER;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.D)) typeToSpawn = PlantType.IMITATER;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.E)) typeToSpawn = PlantType.ICE_SHROOM;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.F)) typeToSpawn = PlantType.LILY_PAD;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.G)) typeToSpawn = PlantType.HOT_POTATO;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.H)) typeToSpawn = PlantType.GRAVE_BUSTER;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.I)) typeToSpawn = PlantType.ENLIGHTEN_MINT;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.J)) typeToSpawn = PlantType.CHOMPER;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.K)) typeToSpawn = PlantType.ARMA_MINT;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.L)) typeToSpawn = PlantType.BOMBARD_MINT;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.M)) typeToSpawn = PlantType.ENFORCE_MINT;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.N)) typeToSpawn = PlantType.REINFORCE_MINT;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.O)) typeToSpawn = PlantType.ENCHANT_MINT;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.P)) typeToSpawn = PlantType.PIERCE_MINT;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Q)) typeToSpawn = PlantType.CATTAIL_MINT;
-                // Kept 44-52 Mapped to R-Z
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.R)) typeToSpawn = PlantType.WALL_NUT;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.S)) typeToSpawn = PlantType.TALL_NUT;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.T)) typeToSpawn = PlantType.ENDURIAN;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.U)) typeToSpawn = PlantType.GARLIC;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.V)) typeToSpawn = PlantType.SWEET_POTATO;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.W)) typeToSpawn = PlantType.EXPLODE_O_NUT;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.X)) typeToSpawn = PlantType.PUMPKIN;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Y)) typeToSpawn = PlantType.SUN_BEAN;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Z)) typeToSpawn = PlantType.TORCHWOOD;
-
+            if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.A)) typeToSpawn = PlantType.MELON_PULT;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.S)) typeToSpawn = PlantType.WINTER_MELON;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.D)) typeToSpawn = PlantType.SUN_SHROOM;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.F)) typeToSpawn = PlantType.PEPPER_PULT;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.G)) typeToSpawn = PlantType.POTATO_MINE;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Q)) typeToSpawn = PlantType.CHERRY_BOMB;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.W)) typeToSpawn = PlantType.REPEATER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.E)) typeToSpawn = PlantType.THREEPEATER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.R)) typeToSpawn = PlantType.SNOW_PEA;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.T)) typeToSpawn = PlantType.ROTOBAGA;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Y)) typeToSpawn = PlantType.PEA_POD;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.U)) typeToSpawn = PlantType.SPLIT_PEA;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.I)) typeToSpawn = PlantType.CITRON;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.O)) typeToSpawn = PlantType.CAULIPOWER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.P)) typeToSpawn = PlantType.ELECTRIC_BLUEBERRY;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.H)) typeToSpawn = PlantType.BOWLING_BULB;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.J)) typeToSpawn = PlantType.CACTUS;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.K)) typeToSpawn = PlantType.FIRE_PEASHOOTER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.L)) typeToSpawn = PlantType.STARFRUIT;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Z)) typeToSpawn = PlantType.GOO_PEASHOOTER;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.X)) typeToSpawn = PlantType.MEGA_GATLING_PEA;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.C)) typeToSpawn = PlantType.SEA_SHROOM;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.V)) typeToSpawn = PlantType.PUFF_SHROOM;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.B)) typeToSpawn = PlantType.FUME_SHROOM;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.N)) typeToSpawn = PlantType.CABBAGE_PULT;
+            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.M)) typeToSpawn = PlantType.KERNEL_PULT;
             if (typeToSpawn != null) {
                 if (typeToSpawn == PlantType.PEA_POD
                     && hoveringTile.plant != null
@@ -253,19 +269,8 @@ public class GameScreen implements Screen {
             }
         }
 
-// --- DEBUG: FEED SPECIFIC PLANT (RIGHT-CLICK) ---
         if (Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
-            // Check if we are hovering over a specific tile
-            Tile rightClickedTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
-
-            if (rightClickedTile != null && rightClickedTile.plant != null) {
-                // If there is a plant here, feed it!
-                rightClickedTile.plant.feed(AppModel.gameSession.gameBoard, null);
-                Gdx.app.log("TEST-FOOD", "🌟 Fed " + rightClickedTile.plant.getName());
-            } else {
-                // Otherwise, perform the normal cancel action
-                GameScreenController.cancelSelection();
-            }
+            GameScreenController.cancelSelection();
             return;
         }
 
@@ -273,13 +278,16 @@ public class GameScreen implements Screen {
         touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0);
         viewport.unproject(touchPoint);
 
+        Vase clickedVase = GameScreenController.getVaseAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
+        if (clickedVase != null) {
+            GameScreenController.handleVaseClick(clickedVase);
+            return;
+        }
+
         Tile clickedTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
         if (clickedTile != null) {
             GameScreenController.handleTileClick(clickedTile);
-        }
-
-        if (Gdx.input.justTouched() && hasWeTestForClickForDamaging) {
-            handleClickDamageTest(touchPoint.x, touchPoint.y);
+            return;
         }
 
         // TODO: For debug purposes. Remove later:
@@ -291,20 +299,13 @@ public class GameScreen implements Screen {
         Gdx.app.log("&&&&--------PVZ-CLICK", String.format(
             "🖱️ مختصات کلیک -> پیکسل: (X: %.1f, Y: %.1f) | متر-مدل: (X: %.2f, Y: %.2f)",
             touchPoint.x, touchPoint.y, meterX, meterY));
-        if (hasWeTestForClickForDamaging) {
+        if ((testPastKommeh && hasWeTestForClickForDamaging) || overrideForceDamageClick) {
             handleClickDamageTest(touchPoint.x, touchPoint.y);
         }
     }
 
-    private void updateSunHud() {
-        if (ui != null && AppModel.gameSession != null) {
-            int amount = AppModel.gameSession.gameBoard.economyManager.sunAmount;
-            ui.updateSunLabel(amount);
-        }
-    }
-
     private void drawWorld(float delta) {
-        boolean paused = ui != null && ui.isPaused;
+        boolean paused = ui != null && GameScreenUI.isPaused;
         float worldDelta = paused ? 0f : delta;
 
         zombieDrawer.setPaused(paused);
@@ -319,9 +320,20 @@ public class GameScreen implements Screen {
             batch.setTransformMatrix(batch.getTransformMatrix());
         }
         boardDrawer.drawBackground(batch);
+        specificBoardDrawer.drawSlipperyTiles(batch, player, worldDelta);
+        specificBoardDrawer.drawShallowBeaches(batch, player, worldDelta);
+        specificBoardDrawer.drawProtectTiles(batch, player, worldDelta);
+        boardDrawer.drawGridLines(batch);
+        specificBoardDrawer.drawBowlingLine(batch);
+        specificBoardDrawer.drawDeadline(batch);
+        specificBoardDrawer.drawWaterLevel(batch, player, worldDelta);
+        specificBoardDrawer.drawMaxTideLevel(batch, player, worldDelta);
         boardDrawer.drawMowers(batch, player, worldDelta);
+        specificBoardDrawer.drawBrains(batch, player, worldDelta);
         boardDrawer.drawTombs(batch, player, worldDelta);
         boardDrawer.drawFireTiles(batch, player, worldDelta);
+        specificBoardDrawer.drawVases(batch, textureBank);
+
         boardDrawer.drawCraters(batch, player, worldDelta);
         Tile hoveredTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
         boardDrawer.drawTileHighlight(batch, hoveredTile);
@@ -338,8 +350,19 @@ public class GameScreen implements Screen {
         zombossDrawer.drawDarkZombossLaserSquare(batch, player, worldDelta);
         debrisDrawer.drawFallingDebris(batch, player, worldDelta);
 
+        if (AppModel.gameSession != null) {
+            int chillRow = AppModel.gameSession.gameBoard.waveManager.chillWindRow;
+            if (chillRow >= 0) {
+                boardDrawer.states.chillWinds.add(new GameRenderStates.ChillWindAnim(chillRow));
+                AppModel.gameSession.gameBoard.waveManager.chillWindRow = -1;
+            }
+        }
+        specificBoardDrawer.drawChillWinds(batch, player, boardDrawer.states, worldDelta);
+
         Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
         viewport.unproject(mousePos);
+        boardDrawer.drawPlantFoods(batch, worldDelta, mousePos);
+        boardDrawer.drawSeedPackets(batch, plantAssetManager, worldDelta, mousePos);
         boardDrawer.drawSuns(batch, player, worldDelta, mousePos);
         boardDrawer.drawCursorFollower(batch, plantAssetManager, mousePos, delta);
 
@@ -417,7 +440,7 @@ public class GameScreen implements Screen {
             ui.showGameEndPanel(AppModel.wonLastGame);
             return;
         }
-        if (AppModel.gameSession == null || ui.isPaused) return;
+        if (AppModel.gameSession == null || GameScreenUI.isPaused) return;
         simulationAccumulator += delta;
         while (simulationAccumulator >= GameScreenConstants.SIMULATION_STEP_SECONDS) {
             AppModel.gameSession.tick(1);

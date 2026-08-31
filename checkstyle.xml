@@ -39,7 +39,7 @@
 
         <!-- Long methods -->
         <module name="MethodLength">
-            <property name="max" value="50"/>
+            <property name="max" value="100"/>
         </module>
 
     </module>

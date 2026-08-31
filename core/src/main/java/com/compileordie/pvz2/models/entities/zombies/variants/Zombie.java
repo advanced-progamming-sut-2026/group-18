@@ -5,13 +5,14 @@ import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.GameEntity;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
-import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.BucketHeadZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.KnightZombie;
 import com.compileordie.pvz2.models.game.board.Lane;
+import com.compileordie.pvz2.models.game.economy.PlantFood;
+import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.models.missions.quests.QuestEvent;
 import com.compileordie.pvz2.models.missions.quests.QuestManager;
 import com.compileordie.pvz2.models.user.Player;
@@ -43,9 +44,26 @@ public abstract class Zombie extends GameEntity {
     protected ZombieType type;
     protected boolean hasMetalArmor = false; // Tracks if armor was removed by Magnet-shroom
     protected boolean isGlowing;
+    // --- برای مکانیزم پلنت‌فودِ زمینی (drop روی زمین بعد از مرگ) ---
+    // با احتمال ۱۰٪ true می‌شه (دقیقا شبیه الگوی isGlowing بالا که ۵٪ داره،
+    // با این تفاوت که isGlowing یه پلنت‌فود مستقیم به player.plantFoodCount
+    // اضافه می‌کنه، ولی این یکی باید دقیقا سرجای مرگِ زامبی، یک آبجکت
+    // PlantFood واقعی روی زمین (gameBoard.plantFoods) اسپاون کنه که بازیکن
+    // باید بره جمعش کنه - رجوع کن به die() پایین.
+    public boolean isFooded;
     public boolean killByExplosive = false;
     public boolean takedDamage = false;
     public boolean fromGarg = false;
+
+    // --- برای مکانیزم «داخل بلوک یخ گیر افتادن» (مثلا Frostbite Caves) ---
+    // یه فیلد پابلیک ساده که هر جای دیگه‌ی کد می‌تونه مستقیم true/false ست
+    // کنه؛ خودِ Zombie (توی tick()) با تشخیص لحظه‌ی تغییرش، افکت FROZEN رو
+    // اضافه/حذف می‌کنه و HP بلوک یخ رو مدیریت می‌کنه (جدا از health خودِ زامبی).
+    public boolean isFrozenByIce = false;
+    private boolean wasFrozenByIce = false;
+    public boolean frozenByIcePast = false;
+    private double iceHealth = 0;
+    public static final double ICE_BLOCK_MAX_HEALTH = 200;
 
     // --- برای انیمیشن پرتاب ایمپ توسط غول (Gargantuar) ---
     // مبدا پرتاب (نقطه‌ای که انیمیشن fly ازش شروع می‌شه)، به همون واحد متر که
@@ -108,7 +126,7 @@ public abstract class Zombie extends GameEntity {
         super(startX, y, xSpeed, ySpeed);
         this.health = health;
         this.maxHealth = health;
-        this.stableSpeed = getXSpeed();
+        this.stableSpeed = xSpeed;
         this.attackPower = base_damage;
         this.currentRow = row;
         this.activeEffects = new ArrayList<>();
@@ -124,20 +142,27 @@ public abstract class Zombie extends GameEntity {
             this.hasMetalArmor = true;
         }
         this.isGlowing = new Random().nextInt(100) < 5;
+        this.isFooded = new Random().nextInt(100) < 5;
     }
 
     @Override
     public void die() {
         super.die();
-        AppModel.addAfterPrompt("Zombie " + type + " died!");
         if (isGlowing) {
             Player player = AppModel.player;
             player.plantFoodCount++;
             if (player.plantFoodCount > 3) player.plantFoodCount = 3;
-            AppModel.addAfterPrompt("The glowing zombie dropped a plant food; you have "
-                + player.plantFoodCount + " plant foods now.");
         }
-        QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED, 1, AppModel.currentChapter.toString());
+        if (isFooded) {
+            // 🌱 دقیقا سرجای مرگِ زامبی (getX()/getY() که همین الان، قبل از
+            // حذف شدن از لاین، هنوز مقدار واقعی و پدینگ‌دار خودشونن - دقیقا
+            // همون الگویی که TombType.PLANT_FOOD قبلا برای Tomb استفاده کرده)
+            // یک PlantFood روی زمین اسپاون می‌شه که بازیکن باید بره جمعش کنه.
+            AppModel.gameSession.gameBoard.plantFoods.add(new PlantFood(getX(), getY()));
+        }
+        // NOTE: must use .name() (e.g. "ANCIENT_EGYPT"), not .toString() (e.g. "Ancient Egypt"),
+        // since that's the exact identifier QuestDatabaseSeeder uses for Chapter Hunter quests.
+        QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED, 1, AppModel.currentChapter.name());
 
         //----
         int tileCol = (int) Math.floor(getX() / Constants.Game.TILE_WIDTH);
@@ -148,6 +173,8 @@ public abstract class Zombie extends GameEntity {
             }
         }
         //----
+
+        AppModel.gameSession.gameBoard.waveManager.onZombieKilled(this.getType());
     }
 
     // تیک ما در کلاس والد زامبی صرفا برای هندل کردن مرگ و افکت ها هست
@@ -160,7 +187,7 @@ public abstract class Zombie extends GameEntity {
             handleDeath();
             return;
         }
-//        if (takedDamage) takedDamage = false;
+        // if (takedDamage) takedDamage = false;
         if (skipThisTick) return;
 
         // ⏳ اگه در حال پخش انیمیشن پرتاب (fly-in) هستیم (مثلا ایمپی که تازه از
@@ -204,7 +231,15 @@ public abstract class Zombie extends GameEntity {
         }
 
         // برای رسیدن به خانه
-        if (getX()<=Constants.Game.EAT_HOME_X){
+        float endLine;
+        if (AppModel.currentLevel == LevelID.DEAD_LINE) {
+            endLine = Constants.Game.DEADLINE_X;
+        } else if (AppModel.currentLevel == LevelID.I_ZOMBIE) {
+            endLine = Constants.Game.BRAINS_X;
+        } else {
+            endLine = Constants.Game.EAT_HOME_X;
+        }
+        if (getX() <= endLine) {
             isEating = true;
             timerForHomeEating += Constants.Game.TIME_COEFFICIENT;
             if (timerForHomeEating >= 4){
@@ -213,14 +248,14 @@ public abstract class Zombie extends GameEntity {
         }
 
         // بررسی اینکه وارد زمین شده یا ن
-        if (!fromGarg && !isMidLawnSpawn) {
-            if (getX() >= Constants.Game.TILE_WIDTH * 9 + Constants.Game.PADDING_X + 1) {
-                if (replacedSpeed == 0) replacedSpeed = getXSpeed();
-                setXSpeed(replacedSpeed * 3);
-            } else {
-                setXSpeed(replacedSpeed);
-            }
-        }
+//        if (!fromGarg && !isMidLawnSpawn && !(this.getType()==ZombieType.ALL_STAR)) {
+//            if (getX() >= Constants.Game.TILE_WIDTH * 9 + Constants.Game.PADDING_X + 1) {
+//                if (replacedSpeed == 0) replacedSpeed = getXSpeed();
+//                setXSpeed(replacedSpeed * 3);
+//            } else {
+//                setXSpeed(replacedSpeed);
+//            }
+//        }
 
 
         // آپدیت و مدیریت افکت‌ها
@@ -233,9 +268,24 @@ public abstract class Zombie extends GameEntity {
             }
         }
 
+        // 🧊 مدیریت بلوک یخ: تشخیص لحظه‌ی فعال/غیرفعال شدنِ isFrozenByIce (که
+        // ممکنه از هر جای دیگه‌ی کد مستقیم ست شده باشه) و اعمال/حذف افکت FROZEN
+        // به‌صورت خودکار همراهش.
+        if (isFrozenByIce && !wasFrozenByIce) {
+            iceHealth = ICE_BLOCK_MAX_HEALTH;
+            wasFrozenByIce = true;
+        } else if (!isFrozenByIce && wasFrozenByIce) {
+            removeStatusEffect(EffectType.FROZEN);
+            wasFrozenByIce = false;
+        }
+
         this.setXSpeed(isHypnotized ? -Math.abs(this.getXSpeed()) : Math.abs(this.getXSpeed()));
 
         // برای جابجایی - اعمال دمیح - اعمال توانایی سرویس ها هستند که پیش می برند
+
+        // TODO: Remove if wrong
+        if (isFrozenByIce) setXSpeed(0);
+        else if (frozenByIcePast) setXSpeed(stableSpeed);
 
     }
 
@@ -375,6 +425,31 @@ public abstract class Zombie extends GameEntity {
         this.currentRow = currentRow;
     }
 
+    /**
+     * آیا این زامبی هم‌اکنون در ردیف {@code row} حضور داره؟ همه‌ی
+     * استراتژی‌های حمله/تشخیصِ گیاهان باید برای چک «این زامبی تو لاین منه یا
+     * نه» از این متد استفاده کنن (به‌جای مقایسه‌ی مستقیم با getCurrentRow())،
+     * چون بعضی از زامبی‌ها (مثل EgyptZomboss/DarkZomboss) هم‌زمان دو ردیف رو
+     * اشغال می‌کنن و این متد رو override می‌کنن تا هر دو ردیف رو پوشش بده.
+     * برای بقیه‌ی زامبی‌های معمولی (تک-ردیفه) رفتار پیش‌فرض دقیقا همون
+     * currentRow == row قبلیه، پس هیچ تغییر رفتاری براشون ایجاد نمی‌شه.
+     */
+    public boolean occupiesRow(int row) {
+        return row == currentRow;
+    }
+
+    /**
+     * از بین همه‌ی ردیف‌هایی که این زامبی توشون حضور داره، اونی که به
+     * {@code referenceRow} نزدیک‌تره رو برمی‌گردونه. برای زامبی‌های معمولی
+     * (تک-ردیفه) همیشه دقیقا currentRow برمی‌گرده (یعنی هیچ تغییر رفتاری).
+     * جاهایی مثل DirectShootStrategy که با rowDiff کار می‌کنن (نه فقط تساوی
+     * ساده) باید به‌جای getCurrentRow() از این استفاده کنن تا با زامبی‌های
+     * دو-ردیفه (EgyptZomboss/DarkZomboss) هم درست کار کنن.
+     */
+    public int closestRowTo(int referenceRow) {
+        return currentRow;
+    }
+
     // ==== بسیار خطرناک ولی موقت ====
     public void takeDamage(double amount, DamageType damageType){
 //        this.health -= amount;
@@ -382,6 +457,30 @@ public abstract class Zombie extends GameEntity {
         this.takeDamage(amount, damageType, null);
     }
     // ===============================
+
+    /**
+     * اگه این زامبی الان داخل بلوک یخه (isFrozenByIce)، دمیج رو اول از HP یخ
+     * (۲۰۰ تا) کم می‌کنه نه از جون خودِ زامبی. وقتی یخ می‌شکنه (HP یخ به صفر
+     * می‌رسه)، هم isFrozenByIce غیرفعال می‌شه (که باعث می‌شه View دیگه بلوک یخ
+     * رو رندر نکنه) و هم افکت FROZEN همون تیک بعد خاموش می‌شه (توسط tick()).
+     * @return مقدار دمیجی که باید واقعا به جون زامبی بخوره؛ اگه یخ کل دمیج رو
+     *         جذب کرده باشه (و نشکسته باشه)، صفر برمی‌گرده.
+     */
+    protected double absorbIceDamage(double amount) {
+        if (!isFrozenByIce) return amount;
+        iceHealth -= amount;
+        if (iceHealth <= 0) {
+            double overflow = -iceHealth;
+            iceHealth = 0;
+            isFrozenByIce = false;
+            return overflow;
+        }
+        return 0;
+    }
+
+    public double getIceHealth() {
+        return iceHealth;
+    }
 
     public abstract void takeDamage(double amount, DamageType damageType, PlantType plantType);
 
@@ -468,5 +567,10 @@ public abstract class Zombie extends GameEntity {
         }
         if (this.type==ZombieType.BUCKETHEAD) ((BucketHeadZombie)this).setArmorHealth(0);
         // اینجا باید گیاه به محض رویت زامبی در نزدیکی اش این متد را فراخوانی کند
+    }
+
+    public void setIceBlock(boolean b){
+        this.isFrozenByIce = b;
+        if (isFrozenByIce) frozenByIcePast = true;
     }
 }

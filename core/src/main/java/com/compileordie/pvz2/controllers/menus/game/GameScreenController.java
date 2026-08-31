@@ -7,11 +7,24 @@ import com.compileordie.pvz2.controllers.PlantSpawner;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.PlantTemplate;
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
+import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
+import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
+import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Tile;
+import com.compileordie.pvz2.models.game.economy.EconomyType;
 import com.compileordie.pvz2.models.game.economy.PlantCard;
+import com.compileordie.pvz2.models.game.economy.Sun;
 import com.compileordie.pvz2.models.game.levels.LevelID;
+import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
+import com.compileordie.pvz2.models.missions.quests.QuestEvent;
+import com.compileordie.pvz2.models.missions.quests.QuestManager;
+import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 import com.compileordie.pvz2.models.repositories.configs.PlantConfigRepository;
 import com.compileordie.pvz2.views.helpers.ToastManager;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GameScreenController {
     public static PlantCard selectedCard = null;
@@ -42,6 +55,12 @@ public class GameScreenController {
         float meterY = worldPoint.y / Constants.UI.METER_TO_PIX;
 
         return AppModel.gameSession.gameBoard.getTile(meterX, meterY);
+    }
+
+    public static Vase getVaseAt(float screenX, float screenY, Viewport viewport) {
+        Tile tile = getTileAt(screenX, screenY, viewport);
+        if (tile == null) return null;
+        return tile.vase;
     }
 
     public static void selectCard(PlantCard card) {
@@ -102,6 +121,10 @@ public class GameScreenController {
         }
     }
 
+    public static void handleVaseClick(Vase vase) {
+        vase.breakVase();
+    }
+
     private static void handlePlantFoodAction(Tile tile) {
         if (tile.plant == null || !tile.plant.isAlive()) {
             ToastManager.showError("No plant to feed!");
@@ -126,16 +149,25 @@ public class GameScreenController {
     }
 
     private static void handlePlantAction(Tile tile) {
-        if (tile.plant != null && tile.plant.isAlive()) {
-            ToastManager.showError("Tile is already occupied!");
-            return;
+        if (!List.of(PlantType.PEA_POD, PlantType.HOT_POTATO,PlantType.GRAVE_BUSTER,PlantType.LILY_PAD)
+            .contains(selectedCard.plantType)) {
+            if (tile.plant != null && tile.plant.isAlive()) {
+                ToastManager.showError("Tile is already occupied!");
+                return;
+            }
+            if (!tile.isPlantable()) {
+                ToastManager.showError("Tile is not plantable!");
+                return;
+            }
         }
-        if (!tile.isPlantable()) {
-            ToastManager.showError("Tile is not plantable!");
+        if (AppModel.currentLevel == LevelID.WALNUT_BOWLING
+            && tile.column >= Constants.Game.BOARD_COLS - ConfigManager.gameplay().bowlingLine) {
+            ToastManager.showError("You can't plant past the line!");
             return;
         }
 
-        boolean isConveyor = AppModel.currentLevel == LevelID.CONVEYOR_BELT;
+        boolean isConveyor = AppModel.gameSession.gameBoard.economyManager.type == EconomyType.CONVEYOR_BELT
+            || AppModel.currentLevel == LevelID.VASE_BREAKER;
         PlantTemplate template = getConfigRepo().getTemplate(selectedCard.plantType);
         int cost = template != null ? template.getCost() : 0;
 
@@ -153,9 +185,29 @@ public class GameScreenController {
         float spawnY = tile.row * Constants.Game.TILE_HEIGHT + Constants.Game.PADDING_Y
             + (Constants.Game.TILE_HEIGHT / 2f);
 
-        Plant newPlant = PlantSpawner.spawn(selectedCard.plantType, spawnX, spawnY, selectedCard.isBoosted, false);
-        if (newPlant == null) return;
-        tile.plant = newPlant;
+        if (selectedCard.plantType == PlantType.PEA_POD
+            && tile.plant != null
+            && tile.plant.getName().equals("Pea Pod")) {
+            int currentHeads = tile.plant.getStackCount();
+            if (currentHeads < 5) {
+                tile.plant.addStack();
+            } else {
+                ToastManager.showError("Pea Pod already had 5 heads!");
+            }
+        } else if (selectedCard.plantType == PlantType.HOT_POTATO) {
+            // TODO: To be implemented.
+        } else if (selectedCard.plantType == PlantType.GRAVE_BUSTER) {
+            // TODO: To be implemented.
+        } else if (selectedCard.plantType == PlantType.LILY_PAD) {
+            // TODO: To be implemented.
+        } else {
+            Plant newPlant = PlantSpawner.spawn(selectedCard.plantType, spawnX, spawnY, selectedCard.isBoosted, false);
+            tile.plant = newPlant;
+            // Feeds Master Demolisher / Cloudy Day / Night or Morning / Family Slayer /
+            // One Less Column / Defenseless Row / Defenseless Cross.
+            AppModel.gameSession.gameBoard.recordPlanting(selectedCard.plantType, tile);
+        }
+        QuestManager.dispatch(QuestEvent.PLANT_PLANTED, 1, AppModel.currentChapter.name());
 
         if (isConveyor) {
             AppModel.gameSession.gameBoard.economyManager.plantCards.remove(selectedCard);
@@ -165,5 +217,41 @@ public class GameScreenController {
         }
 
         cancelSelection();
+    }
+
+    public static void explodeSun(GameBoard gameBoard, Sun sun) {
+        ArrayList<Zombie> zombies = gameBoard.getAllZombies();
+        int zombieDamageAmount = ConfigManager.economy().radioactiveSunZombieDamageAmount;
+        int zombieDamageRadius = ConfigManager.economy().radioactiveSunZombieDamageArea;
+
+        for (int i = zombies.size() - 1; i >= 0; i--) {
+            Zombie zombie = zombies.get(i);
+            boolean isInRangeX = Math.abs(sun.getX() - zombie.getX())
+                <= zombieDamageRadius * Constants.Game.TILE_WIDTH;
+            boolean isInRangeY = Math.abs(sun.getY() - zombie.getY())
+                <= zombieDamageRadius * Constants.Game.TILE_HEIGHT;
+
+            if (isInRangeX && isInRangeY) {
+                zombie.takeDamage(zombieDamageAmount, DamageType.EXPLOSIVE);
+            }
+        }
+
+        ArrayList<Plant> plants = gameBoard.getAllPlants();
+        int plantDamageAmount = ConfigManager.economy().radioactiveSunPlantDamageAmount;
+        int plantDamageRadius = ConfigManager.economy().radioactiveSunPlantDamageRange;
+
+        for (int i = plants.size() - 1; i >= 0; i--) {
+            Plant plant = plants.get(i);
+            boolean isInRangeX = Math.abs(sun.getX() - plant.getX())
+                <= plantDamageRadius * Constants.Game.TILE_WIDTH;
+            boolean isInRangeY = Math.abs(sun.getY() - plant.getY())
+                <= plantDamageRadius * Constants.Game.TILE_HEIGHT;
+
+            if (isInRangeX && isInRangeY) {
+                plant.takeDamage(plantDamageAmount);
+            }
+        }
+
+        ToastManager.showMessage("A radioactive sun exploded! BOOM!");
     }
 }

@@ -76,7 +76,6 @@ public class SunProduceStrategy implements AttackStrategy {
 
             int xInt = (int) plant.getX();
             int yInt = (int) plant.getY();
-            AppModel.addAfterPrompt("plant " + name + " produced a sun at (" + xInt + ", " + yInt + ")");
 
             if (name.equals("Gold Bloom")) {
                 plant.setCurrentHp(0);

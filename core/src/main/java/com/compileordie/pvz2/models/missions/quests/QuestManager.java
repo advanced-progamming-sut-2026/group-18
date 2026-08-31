@@ -46,6 +46,16 @@ public class QuestManager {
         if (player == null) return;
 
         checkDailyReset(player);
+
+        // Track which plants (or "MOWER") landed kills this level, so GameJudge can later
+        // work out whether Family Slayer's "only used <family> to kill" condition holds.
+        // This lives here (rather than in every Zombie subclass) so plant/zombie classes never
+        // need to know anything about the quest system beyond the single dispatch() call.
+        if (event == QuestEvent.ZOMBIE_KILLED_BY_PLANT
+            && AppModel.gameSession != null && AppModel.gameSession.gameBoard != null) {
+            AppModel.gameSession.gameBoard.recordKillContext(context);
+        }
+
         boolean progressMade = false;
 
         for (Quest quest : QUESTS) {

@@ -1,10 +1,13 @@
 package com.compileordie.pvz2.views.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.ZomBoss.DarkZomboss;
@@ -18,6 +21,8 @@ import com.compileordie.pvz2.models.entities.zombies.variants.standard.AllStarZo
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.NewspaperZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.standard.StandardZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.TombraiserZombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.BarrelRollerZombie;
+import com.compileordie.pvz2.models.game.levels.ChapterType;
 import pvz.libpvz.pam.PamPlayer;
 
 import java.util.ArrayList;
@@ -25,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 /**
@@ -32,12 +38,22 @@ import java.util.Set;
  */
 final class ZombieDrawer {
 
+    private static final String ICE_BLOCK_PAM =
+        "768/FULL/EFFECTS/FROSTBITE_ICE_BLOCK_ZOMBIE/FROSTBITE_ICE_BLOCK_ZOMBIE.PAM";
+    private static final String ICE_BLOCK_CLIP = "idle";
+
     private final GameRenderStates states;
     private final Set<String> brokenAssets;
     private final DebrisDrawer debris;
     private final ZombieSpecialDrawer special;
     private float effectPulseTime = 0f;
     private boolean isPaused;
+
+    // 🧪 تستی: وقتی true باشه، فشردن کلید "K" یه RaincoatZombie رندوم (ردیف و
+    // ستون تصادفی، همون‌جوری که ZombieTestSpawner برای اسپاون وسط زمین انجام
+    // می‌ده) اسپاون می‌کنه. فعلا true (طبق درخواست).
+    boolean testSunZombie = false;
+    private final Random testSpawnRandom = new Random();
 
     ZombieDrawer(GameRenderStates states, Set<String> brokenAssets, DebrisDrawer debris) {
         this.states = states;
@@ -51,6 +67,7 @@ final class ZombieDrawer {
 
     void drawZombies(SpriteBatch batch, PamPlayer player, float delta) {
         if (AppModel.gameSession == null || player == null) return;
+        handleTestSunZombieSpawnKey();
 
         List<Zombie> currentZombies = new ArrayList<>(AppModel.gameSession.gameBoard.getAllZombies());
         Set<Zombie> aliveSet = new HashSet<>(currentZombies);
@@ -61,7 +78,8 @@ final class ZombieDrawer {
         for (Zombie zombie : currentZombies) {
             GameRenderStates.ZombieRenderState state =
                 states.zombieRenderStates.computeIfAbsent(zombie, z -> new GameRenderStates.ZombieRenderState());
-            boolean isEatingNow = zombie.isEating();
+            boolean isEatingNow = zombie.isEating()
+                || (zombie instanceof GargantuarZombie && ((GargantuarZombie) zombie).isSmashSequenceActive());
             if (isEatingNow != state.wasEating) {
                 state.animTime = 0f;
                 state.wasEating = isEatingNow;
@@ -69,6 +87,36 @@ final class ZombieDrawer {
             drawSingleZombie(batch, player, zombie, state, delta);
         }
     }
+
+    /**
+     * وقتی testSunZombie فعاله، با هر بار فشرده شدن کلید "K"، یک RaincoatZombie
+     * توی یه ردیف/ستون تصادفیِ داخل خودِ زمین (نه لبه‌ی بیرون از صفحه، چون این
+     * زامبی سرعتش صفره و هیچ‌وقت از لبه به داخل نمی‌رسه) اسپاون می‌کنه. مثل
+     * بقیه‌ی اسپاون‌های وسط زمین، ZombieBuilder.build() خودش افکت گردباد رو
+     * خودکار شروع می‌کنه.
+     */
+    private void handleTestSunZombieSpawnKey() {
+        if (!testSunZombie) return;
+        if (!Gdx.input.isKeyJustPressed(Input.Keys.K)) return;
+        if (AppModel.gameSession == null || AppModel.gameSession.gameBoard == null) return;
+
+        int row = testSpawnRandom.nextInt(5);
+        int col = testSpawnRandom.nextInt(9);
+        float spawnX = Constants.Game.PADDING_X_REALITY + (col + 0.5f) * (float) Constants.Game.TILE_WIDTH;
+        float spawnY = (row * (float) Constants.Game.TILE_HEIGHT) + Constants.UI.BOTTOM_LINE_METER;
+
+        try {
+            Zombie zombie = ZombieBuilder.create(ZombieType.RAINCOAT_ZOMBIE, spawnX, spawnY, row);
+            if (zombie != null) {
+                AppModel.gameSession.gameBoard.lanes.get(row).zombies.add(zombie);
+                Gdx.app.log("PVZ-TEST-SUN-ZOMBIE",
+                    "☀️ یک RaincoatZombie تستی در ردیف " + row + "، ستون " + col + " اسپاون شد.");
+            }
+        } catch (Exception e) {
+            Gdx.app.error("PVZ-TEST-SUN-ZOMBIE", "❌ خطا در اسپاون RaincoatZombie تستی: " + e.getMessage());
+        }
+    }
+
 
     private void handleDeaths(Set<Zombie> aliveSet) {
         var iterator = states.zombieRenderStates.entrySet().iterator();
@@ -99,6 +147,9 @@ final class ZombieDrawer {
             (zombie.getType() == ZombieType.PROSPECTOR_ZOMBIE
                 && ((ProspectorZombie) zombie).isReversedDirection)
                 || zombie.isHypnotized();
+        if (zombie.getType()== ZombieType.BARREL_ROLLER && !((BarrelRollerZombie)zombie).isRoller){
+            deadAnim.typeKey = "die2";
+        }
         states.deadZombies.add(deadAnim);
         spawnHeadDebrisIfNeeded(zombie, deadAnim);
     }
@@ -142,7 +193,7 @@ final class ZombieDrawer {
             }
             return;
         }
-        if (zombie.isSandstormSpawning()) {
+        if (zombie.isSandstormSpawning() && AppModel.currentChapter== ChapterType.ANCIENT_EGYPT) {
             special.drawSandstormSpawningZombie(batch, player, zombie, state, delta);
             return;
         }
@@ -164,6 +215,8 @@ final class ZombieDrawer {
         state.lastDrawX = baseX;
         state.lastDrawY = baseY;
         updateDamageFlash(zombie, state, delta);
+        drawFoodedHaloIfNeeded(batch, zombie, baseX, baseY);
+        drawSunZombieHaloIfNeeded(batch, zombie, baseX, baseY);
         AnimChoice choice = chooseAnim(zombie, state, typeKey);
         if (isPaused) {
             choice.animName = (zombie.getType() == ZombieType.NEWSPAPER_ZOMBIE)
@@ -172,7 +225,91 @@ final class ZombieDrawer {
         Map<String, Boolean> visibilityMap = ZombieVisualHelpers.buildArmorVisibilityMap(zombie, def);
         visibilityMap = applyDebrisVisibility(zombie, state, def, choice, baseX, baseY, visibilityMap);
         drawZombieParts(batch, player, zombie, state, def, choice, baseX, baseY, visibilityMap);
+        drawIceBlockIfNeeded(batch, player, zombie, state, delta, baseX, baseY);
     }
+
+    /**
+     * وقتی zombie.isFrozenByIce فعاله، بلوک یخ (FROSTBITE_ICE_BLOCK_ZOMBIE)
+     * رو دقیقا زیر خود زامبی (یعنی قبل از drawZombieParts، چون در SpriteBatch
+     * هر چی زودتر رسم بشه زیرتره) با کلیپ "idle" پخش می‌کنه. به محض false شدن
+     * isFrozenByIce (چه با شکستن یخ توسط دمیج، چه هر دلیل دیگه‌ای)، این متد
+     * دیگه چیزی رسم نمی‌کنه.
+     */
+    private void drawIceBlockIfNeeded(SpriteBatch batch, PamPlayer player, Zombie zombie,
+                                      GameRenderStates.ZombieRenderState state, float delta,
+                                      float baseX, float baseY) {
+        if (!zombie.isFrozenByIce) return;
+        if (brokenAssets.contains(ICE_BLOCK_PAM)) return;
+
+        state.iceAnimTime += delta;
+
+        com.badlogic.gdx.graphics.Color color = batch.getColor();
+        float oldAlpha = color.a;
+
+        try {
+            color.a = oldAlpha * 0.4f;
+            batch.setColor(color);
+
+            player.draw(batch, ICE_BLOCK_PAM, ICE_BLOCK_CLIP, state.iceAnimTime,
+                baseX, baseY, GameScreenConstants.ZOMBIE_SCALE, GameScreenConstants.ZOMBIE_SCALE,
+                state.flip);
+        } catch (Throwable e) {
+            brokenAssets.add(ICE_BLOCK_PAM);
+        } finally {
+            color.a = oldAlpha;
+            batch.setColor(color);
+        }
+    }
+
+    /**
+     * وقتی zombie.isFooded تروئه، یه هاله‌ی نرم زرد+سبز دور زامبی (پشت خودِ
+     * اسپرایتش، چون قبل از drawZombieParts صدا زده می‌شه) رسم می‌کنه؛ فقط
+     * برای اطلاع بازیکن که این زامبی موقع مرگ پلنت‌فود زمین می‌ندازه.
+     * baseX/baseY دقیقا همون مختصاتیه که خودِ بدن زامبی هم باهاش رسم می‌شه
+     * (zombie.getX()/getY() که قبلا پدینگ‌دار شده، ضرب در METER_TO_PIX)، پس
+     * هیچ پدینگ اضافه‌ای اینجا لازم نیست.
+     */
+    private void drawFoodedHaloIfNeeded(SpriteBatch batch, Zombie zombie, float baseX, float baseY) {
+        if (!zombie.isFooded) return;
+
+        Texture halo = ZombieVisualHelpers.getHaloTexture();
+        float pulse = 0.85f + 0.15f * (float) Math.sin(effectPulseTime * 3f);
+
+        float greenSize = 110f * pulse;
+        float yellowSize = 78f * pulse;
+
+        Color oldColor = batch.getColor().cpy();
+        try {
+            batch.setColor(0.45f, 1f, 0.2f, 0.55f); // سبز
+            batch.draw(halo, baseX - greenSize / 2f, baseY - greenSize / 2f, greenSize, greenSize);
+
+            batch.setColor(1f, 0.9f, 0.15f, 0.55f); // زرد
+            batch.draw(halo, baseX - yellowSize / 2f, baseY - yellowSize / 2f, yellowSize, yellowSize);
+        } finally {
+            batch.setColor(oldColor);
+        }
+    }
+
+    /**
+     * هاله‌ی زرد، نسبتا بزرگ و ثابت (بدون پالس) دور RaincoatZombie - برخلاف
+     * drawFoodedHaloIfNeeded که شرطیه، این همیشه برای این تایپ زامبی رسم
+     * می‌شه (یه نشونه‌ی بصری دائمیِ «تولیدکننده‌ی خورشید»).
+     */
+    private void drawSunZombieHaloIfNeeded(SpriteBatch batch, Zombie zombie, float baseX, float baseY) {
+        if (zombie.getType() != ZombieType.RAINCOAT_ZOMBIE) return;
+
+        Texture halo = ZombieVisualHelpers.getHaloTexture();
+        float haloSize = 150f;
+
+        Color oldColor = batch.getColor().cpy();
+        try {
+            batch.setColor(1f, 0.85f, 0.1f, 0.5f); // زرد
+            batch.draw(halo, baseX - haloSize / 2f, baseY - haloSize / 2f, haloSize, haloSize);
+        } finally {
+            batch.setColor(oldColor);
+        }
+    }
+
 
     private void advanceAnimTime(Zombie zombie, GameRenderStates.ZombieRenderState state, float delta) {
         float animSpeedMultiplier;
@@ -227,10 +364,20 @@ final class ZombieDrawer {
             && ((OctopusZombie) zombie).isTossing()) {
             animName = "toss";
             renderAnimTime = (float) ((OctopusZombie) zombie).getTossAnimElapsed();
-        } else if (zombie.isEating()) {
+        } else if (zombie.getType() == ZombieType.ALL_STAR
+            && ((AllStarZombie) zombie).isTackleImpacting()) {
+            // 💥 لحظه‌ی برخورد تکل - قبلا همون تیکی که ضربه می‌خورد بلافاصله
+            // میفتاد رو walk عادی؛ الان تا پایان این تایمر، انیمیشن ضربه رو
+            // کامل (از صفر) نگه می‌داریم.
+            animName = "tackle";
+            renderAnimTime = (float) ((AllStarZombie) zombie).getTackleImpactElapsed();
+        } else if (zombie.isEating()
+            || (typeKey.contains("GARGANTUAR") && ((GargantuarZombie) zombie).isSmashSequenceActive())) {
             return eatingAnim(zombie, state, typeKey);
         } else if ("PIANIST_ZOMBIE".equals(typeKey)) {
             animName = "play";
+        } else if (zombie.getType() == ZombieType.RAINCOAT_ZOMBIE) {
+            animName = "idle";
         } else {
             animName = "walk";
             if (zombie.getType() == ZombieType.NEWSPAPER_ZOMBIE
@@ -240,6 +387,9 @@ final class ZombieDrawer {
             if (zombie.getType() == ZombieType.ALL_STAR
                 && ((AllStarZombie) zombie).isCharging()) {
                 animName = "run";
+            }
+            if (zombie.getType()==ZombieType.BARREL_ROLLER && !((BarrelRollerZombie)zombie).isRoller){
+                animName = "walk2";
             }
         }
         return new AnimChoice(animName, renderAnimTime);

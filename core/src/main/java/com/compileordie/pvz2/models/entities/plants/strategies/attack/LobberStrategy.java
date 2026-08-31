@@ -16,7 +16,7 @@ public class LobberStrategy implements AttackStrategy {
     public void attack(Plant plant, GameBoard board, int tickDelta) {
         int plantRow = (int) Math.floor((plant.getY() - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
         java.util.Optional<Zombie> targetZombie = board.getAllZombies().stream()
-            .filter(z -> !z.isDead() && z.getCurrentRow() == plantRow && z.getX() >= plant.getX())
+            .filter(z -> !z.isDead() && z.occupiesRow(plantRow) && z.getX() >= plant.getX())
             .min((z1, z2) -> Double.compare(z1.getX(), z2.getX()));
         if (targetZombie.isEmpty()) {
             plant.holdAction = true;

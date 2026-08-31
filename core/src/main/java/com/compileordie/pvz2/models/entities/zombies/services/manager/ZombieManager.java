@@ -1,10 +1,8 @@
 package com.compileordie.pvz2.models.entities.zombies.services.manager;
 
 import com.compileordie.pvz2.config.Constants;
-import java.util.Random;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
-import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
 import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
@@ -17,11 +15,14 @@ import com.compileordie.pvz2.models.entities.zombies.variants.boss.GargantuarZom
 import com.compileordie.pvz2.models.entities.zombies.variants.mobility.SnorkelZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.TombraiserZombie;
-import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.Barrel;
+import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.BarrelRollerZombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Tile;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import static com.badlogic.gdx.math.MathUtils.random;
 
 public class ZombieManager {
@@ -54,7 +55,6 @@ public class ZombieManager {
         combatManager.combatTick(myZombies, myPlants);
         combatManager.projectileCollisionTick(myMap);
         combatManager.combatingTwoZombie(myZombies);
-        spawnImpFromBarrel(myZombies, myObstacles);
         handleEgyptZomboss(myMap);
         handleDarkZomboss(myMap);
 
@@ -74,6 +74,13 @@ public class ZombieManager {
             if (z.getHealth() <= 0) {
                 if (z.shouldRemooove) myZombies.remove(i);
                 else z.shouldRemooove = true;
+            }
+            if (z.isHypnotized() && z.getX()>=Constants.Game.LANE_LENGTH){
+                z.setHealth(0);
+            }
+            if (z.getType()==ZombieType.BARREL_ROLLER && !z.isHypnotized() && ((BarrelRollerZombie)z).spawnImp){
+                spawnImpFromBarrel(myMap, ((BarrelRollerZombie) z));
+                ((BarrelRollerZombie) z).spawnImp = false;
             }
         }
     }
@@ -188,26 +195,26 @@ public class ZombieManager {
         AppModel.gameSession.gameBoard.lanes.get(z.getCurrentRow()).zombies.add(imp);
     }
 
-    public void spawnImpFromBarrel(List<Zombie> activeZs, List<Obstacle> myObstacles) {
-        List<Obstacle> obstaclesCopy = new ArrayList<>(myObstacles);
-        for (Obstacle b : obstaclesCopy) {
-            if (b.type == ObstacleType.BARREL) {
-                if (((Barrel) b).isDestroyed() && ((Barrel) b).shouldWeSpawnImp()) {
-                    int row1 = Math.min(((Barrel) b).getRow() + 1, 4);
-                    Zombie imp1 = ZombieBuilder.create(ZombieType.IMP, b.getX(), ((Barrel) b).getRow() == 4 ? b.getY() : b.getY() + tileHeight, row1);
-                    activeZs.add(imp1);
-                    AppModel.gameSession.gameBoard.getAllZombies().add(imp1);
-                    AppModel.gameSession.gameBoard.lanes.get(row1).zombies.add(imp1);
-                    int row2 = Math.max(((Barrel) b).getRow() - 1, 0);
-                    Zombie imp2 = ZombieBuilder.create(ZombieType.IMP, b.getX(), ((Barrel) b).getRow() == 0 ? b.getY() : b.getY() - tileHeight, row2);
-                    activeZs.add(imp2);
-                    AppModel.gameSession.gameBoard.getAllZombies().add(imp2);
-                    AppModel.gameSession.gameBoard.lanes.get(row2).zombies.add(imp2);
-                    ((Barrel) b).stopSpawnImp();
-                }
-            }
+    public void spawnImpFromBarrel(GameBoard map, BarrelRollerZombie z) {
+        int r1;
+        int r2;
+        if (z.getCurrentRow()==0){
+            r1 = -1;
+        }else r1 = z.getCurrentRow()-1;
+        if (z.getCurrentRow()==4){
+            r2 = -1;
+        }else r2 = z.getCurrentRow()+1;
+        //--------
+        if (r1!=-1){
+            Zombie z1 = ZombieBuilder.create(ZombieType.IMP, z.getX()-1, z.getY()-Constants.Game.TILE_HEIGHT, r1);
+            map.getLane(r1).zombies.add(z1);
+        }
+        if (r2!=-1){
+            Zombie z2 = ZombieBuilder.create(ZombieType.IMP, z.getX()-1, z.getY()+Constants.Game.TILE_HEIGHT, r2);
+            map.getLane(r2).zombies.add(z2);
         }
     }
+
 
     public void spawnTomb(GameBoard gb) {
         List<Tile> ts = new ArrayList<>();
@@ -230,20 +237,32 @@ public class ZombieManager {
         }
         Tile randomTile1 = ts.get(index1);
         Tile randomTile2 = ts.get(index2);
-        Tomb tomb1 = new Tomb(700, randomTile1.row, randomTile1.column, (randomTile1.column + 0.5) * tileWidth, (randomTile1.row) * tileHeight);
-        randomTile1.obstacle = tomb1;
-        gb.getLane(randomTile1.row).tombs.add(tomb1);
-        Tomb tomb2 = new Tomb(700, randomTile2.row, randomTile2.column, (randomTile2.column + 0.5) * tileWidth, (randomTile2.row) * tileHeight);
-        randomTile2.obstacle = tomb2;
-        gb.getLane(randomTile2.row).tombs.add(tomb2);
+        randomTile1.obstacle = new Tomb(700,
+            randomTile1.row,
+            randomTile1.column,
+            (randomTile1.column + 0.5f) * Constants.Game.TILE_WIDTH + Constants.Game.PADDING_X,
+            (randomTile1.row + 0.5f) * Constants.Game.TILE_HEIGHT + Constants.Game.PADDING_Y);
+        randomTile2.obstacle = new Tomb(700,
+            randomTile2.row,
+            randomTile2.column,
+            (randomTile2.column + 0.5f) * Constants.Game.TILE_WIDTH + Constants.Game.PADDING_X,
+            (randomTile2.row + 0.5f) * Constants.Game.TILE_HEIGHT + Constants.Game.PADDING_Y);
     }
 
     public void miniTick(List<Zombie> myZombies, GameBoard myMap) {
         List<Zombie> zombiesCopy = new ArrayList<>(myZombies);
         for (Zombie z : zombiesCopy) {
-            processMiniTickSpawns(z, myZombies, myMap);
+            // 🧠 وقتی زامبی هیپنوتایز شده، طبق درخواست، همه‌ی قابلیت‌های خاصش
+            // (اسپاون ایمپ/قبر، دزدی/برگردوندن خورشید، نواختن پیانو و ...) باید
+            // خاموش بشن - فقط رفتار «خوردن زامبی‌های دیگه» (که جای دیگه‌ای، در
+            // combatingTwoZombie، مستقل هندل می‌شه) دست‌نخورده می‌مونه.
+            // processMiniTickMovement عمدا این‌جا شامل نمی‌شه چون صرفا وضعیت
+            // فیزیکی حرکته (مثلا شنای غواص)، نه یه «قابلیت» به معنای واقعی.
+            if (!z.isHypnotized()) {
+                processMiniTickSpawns(z, myZombies, myMap);
+                combatManager.processMiniTickAbilities(z, myZombies, myMap);
+            }
             processMiniTickMovement(z, myMap);
-            combatManager.processMiniTickAbilities(z, myZombies, myMap);
         }
     }
 

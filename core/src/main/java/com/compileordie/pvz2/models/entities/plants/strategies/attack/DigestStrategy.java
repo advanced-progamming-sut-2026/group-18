@@ -29,7 +29,7 @@ public class DigestStrategy implements AttackStrategy {
         double closestFront = Double.MAX_VALUE;
 
         for (Zombie z : board.getAllZombies()) {
-            if (z.isDead() || z.getCurrentRow() != plantRow) continue;
+            if (z.isDead() || !z.occupiesRow(plantRow)) continue;
 
             if (z.getX() >= eatMin && z.getX() <= eatMax) {
                 double dist = z.getX() - plant.getX();

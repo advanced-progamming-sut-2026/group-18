@@ -1,18 +1,17 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.summoner;
 
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
-import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
 import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
 import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
-import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
-import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
+import com.compileordie.pvz2.models.game.board.Tile;
 
 import java.util.EnumSet;
+
 import static com.compileordie.pvz2.models.entities.plants.enums.ProjectileType.*;
 
 public class Tomb extends Obstacle {
@@ -23,6 +22,7 @@ public class Tomb extends Obstacle {
     private final double positionX;
     private final double positionY;
     private boolean isDestroyed;
+    public TombType type = TombType.NORMAL;
     // 👈 مثل zombie.takedDamage: هر بار دمیج واقعی می‌خوره true می‌شه، لایه‌ی
     // رندر (GameScreen) بعد از خوندنش دوباره false می‌کنه تا فلش نور یک‌بار پخش بشه.
     public boolean takedDamage = false;
@@ -37,12 +37,12 @@ public class Tomb extends Obstacle {
     );
 
     public Tomb(double health, int row, int col, double positionX, double positionY) {
-        super(positionX+ Constants.Game.PADDING_X_REALITY, positionY, ObstacleType.TOMB);
+        super(positionX, positionY, ObstacleType.TOMB);
         this.health = health;
         this.maxHealth = health;
         this.row = row;
         this.col = col;
-        this.positionX = positionX+Constants.Game.PADDING_X_REALITY;
+        this.positionX = positionX;
         this.positionY = positionY;
         this.isDestroyed = false;
     }
@@ -55,6 +55,12 @@ public class Tomb extends Obstacle {
         if (this.health <= 0) {
             this.health = 0;
             this.isDestroyed = true;
+            this.type.dieSpawn(this, AppModel.gameSession.gameBoard);
+            for (Tile tile : AppModel.gameSession.gameBoard.getAllTiles()) {
+                if (tile.obstacle == this) {
+                    tile.obstacle = null;
+                }
+            }
         }
     }
 

@@ -32,7 +32,7 @@ public class DirectShootStrategy implements AttackStrategy {
             if (z.isDead() || z.isHypnotized()) return false;
 
             double dx = z.getX() - pX;
-            int rowDiff = z.getCurrentRow() - pRow;
+            int rowDiff = z.closestRowTo(pRow) - pRow;
 
             if (Math.abs(dx) > range || Math.abs(rowDiff * Constants.Game.TILE_HEIGHT) > range) return false;
 

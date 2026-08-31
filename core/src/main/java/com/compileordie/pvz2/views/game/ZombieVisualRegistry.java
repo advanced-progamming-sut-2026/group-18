@@ -66,7 +66,11 @@ public class ZombieVisualRegistry {
 
         public ZombieVisualDef(List<PamSpec> pams, List<String> extraStateFilterTemplates) {
             this.pams = pams != null ? pams : Collections.emptyList();
-            this.extraStateFilterTemplates = extraStateFilterTemplates != null ? extraStateFilterTemplates : Collections.emptyList();
+            if (extraStateFilterTemplates != null) {
+                this.extraStateFilterTemplates = extraStateFilterTemplates;
+            } else {
+                this.extraStateFilterTemplates = Collections.emptyList();
+            }
         }
 
         public List<String> getResolvedStateFilters() {
@@ -142,18 +146,18 @@ public class ZombieVisualRegistry {
     }
 
     public static String getChapterTag() {
-        if (AppModel.currentChapter == null) {
-            return "EGYPT";
-        }
-        String tag;
         if (AppModel.currentChapter == ChapterType.ANCIENT_EGYPT) {
-            tag = "EGYPT";
+            return "EGYPT";
         } else if (AppModel.currentChapter == ChapterType.DARK_AGES) {
-            tag = "DARK";
+            return "DARK";
         } else if (AppModel.currentChapter == ChapterType.FROSTBITE_CAVES) {
-            tag = "ICEAGE";
-        } else tag = "BEACH";
-        return tag;
+            return "ICEAGE";
+        } else if (AppModel.currentChapter == ChapterType.BIG_WAVE_BEACH) {
+            return "BEACH";
+        } else if (AppModel.currentChapter == ChapterType.MINIGAME) {
+            return "MODERN";
+        }
+        return "EGYPT";
     }
 
     public static List<String> describeMissingAssets(String zombieTypeName) {
@@ -251,9 +255,22 @@ public class ZombieVisualRegistry {
         register("GARGANTUAR", gargDef);
         register("GARGANTUAR_ZOMBIE", gargDef);
 
-        String imp_name = (AppModel.currentChapter == ChapterType.ANCIENT_EGYPT) ? "768/INITIAL/ZOMBIE/ZOMBIE_{CH}_IMP/ZOMBIE_{CH}_IMP.PAM" : AppModel.currentChapter == ChapterType.DARK_AGES ? "768/FULL/ZOMBIE/ZOMBIE_{CH}_IMP_MONK/ZOMBIE_{CH}_IMP_MONK.PAM" : AppModel.currentChapter == ChapterType.BIG_WAVE_BEACH ? "768/FULL/ZOMBIE/ZOMBIE_{CH}_IMP_MERMAID/ZOMBIE_{CH}_IMP_MERMAID.PAM" : "768/FULL/ZOMBIE/ZOMBIE_{CH}_IMP/ZOMBIE_{CH}_IMP.PAM";
+        String impName;
+        if (AppModel.currentChapter == ChapterType.ANCIENT_EGYPT) {
+            impName = "768/INITIAL/ZOMBIE/ZOMBIE_{CH}_IMP/ZOMBIE_{CH}_IMP.PAM";
+        } else {
+            if (AppModel.currentChapter == ChapterType.DARK_AGES) {
+                impName = "768/FULL/ZOMBIE/ZOMBIE_{CH}_IMP_MONK/ZOMBIE_{CH}_IMP_MONK.PAM";
+            } else {
+                if (AppModel.currentChapter == ChapterType.BIG_WAVE_BEACH) {
+                    impName = "768/FULL/ZOMBIE/ZOMBIE_{CH}_IMP_MERMAID/ZOMBIE_{CH}_IMP_MERMAID.PAM";
+                } else {
+                    impName = "768/FULL/ZOMBIE/ZOMBIE_{CH}_IMP/ZOMBIE_{CH}_IMP.PAM";
+                }
+            }
+        }
         ZombieVisualDef impDef = new ZombieVisualDef(
-            List.of(new PamSpec(imp_name)),
+            List.of(new PamSpec(impName)),
             Collections.emptyList()
         );
         register("IMP", impDef);
@@ -294,6 +311,12 @@ public class ZombieVisualRegistry {
         );
         register("PROSPECTOR", prospectorDef);
         register("PROSPECTOR_ZOMBIE", prospectorDef);
+
+        ZombieVisualDef raincoatDef = new ZombieVisualDef(
+            List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_BIGHEAD/ZOMBIE_BIGHEAD.PAM")),
+            Collections.emptyList()
+        );
+        register("RAINCOAT_ZOMBIE", raincoatDef);
 
         ZombieVisualDef pianistDef = new ZombieVisualDef(
             List.of(

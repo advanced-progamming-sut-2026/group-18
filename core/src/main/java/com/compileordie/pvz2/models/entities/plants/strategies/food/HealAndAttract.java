@@ -20,7 +20,7 @@ public class HealAndAttract implements PlantFoodEffectStrategy {
             if (zombie.isDead()) continue;
 
             // If they are in any other lane, forcefully snap them into the Sweet Potato's lane
-            if (zombie.getCurrentRow() != plantRow) {
+            if (!zombie.occupiesRow(plantRow)) {
                 zombie.setY(plant.getY());
                 zombie.setCurrentRow(plantRow);
             }

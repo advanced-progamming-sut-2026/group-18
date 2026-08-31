@@ -35,6 +35,7 @@ final class GameRenderStates {
         float lastArmorHealth = Float.NaN;
         float bombAnimTime = 0f;
         boolean wasBooming = false;
+        float iceAnimTime = 0f;
     }
 
     static final class DeadZombieAnim {
@@ -77,6 +78,27 @@ final class GameRenderStates {
         float fadeTimer = 0f;
     }
 
+    public static class PlantFoodRenderState {
+        public boolean isFading = false;
+        public float fadeTimer = 0f;
+    }
+
+    public static class SeedPacketRenderState {
+        public float animTime = 0f;
+        public boolean isFading = false;
+        public float fadeTimer = 0f;
+    }
+
+    static final class ChillWindAnim {
+        final int row;
+        float animTime = 0f;
+        static final float MAX_DURATION = 1.5f; // Duration matching the PAM clip
+
+        ChillWindAnim(int row) {
+            this.row = row;
+        }
+    }
+
     final Map<Plant, PlantRenderState> plantRenderStates = new HashMap<>();
     final Map<Zombie, ZombieRenderState> zombieRenderStates = new HashMap<>();
     final Map<LawnMower, MowerRenderState> mowerRenderStates = new HashMap<>();
@@ -85,6 +107,9 @@ final class GameRenderStates {
     final Map<Tile, Float> fireTileAnimTimes = new HashMap<>();
     final List<DeadZombieAnim> deadZombies = new ArrayList<>();
     final List<FallingDebris> fallingDebris = new ArrayList<>();
+    final List<ChillWindAnim> chillWinds = new ArrayList<>();
+    final Map<Object, PlantFoodRenderState> plantFoodRenderStates = new HashMap<>();
+    final Map<Object, SeedPacketRenderState> seedPacketRenderStates = new HashMap<>();
 
     void clearAll() {
         zombieRenderStates.clear();
@@ -94,6 +119,7 @@ final class GameRenderStates {
         fireTileAnimTimes.clear();
         deadZombies.clear();
         fallingDebris.clear();
+        chillWinds.clear();
         plantRenderStates.clear();
     }
 }

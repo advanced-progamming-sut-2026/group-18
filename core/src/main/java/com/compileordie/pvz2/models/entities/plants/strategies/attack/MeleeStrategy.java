@@ -77,7 +77,7 @@ public class MeleeStrategy implements AttackStrategy {
             int rangeTiles = plant.getName().equals("Wasabi Whip") ? 2 : 1;
 
             for (Zombie z : board.getAllZombies()) {
-                if (z.isDead() || z.getCurrentRow() != plantRow) continue;
+                if (z.isDead() || !z.occupiesRow(plantRow)) continue;
 
                 int zCol = (int) Math.floor((z.getX() - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH);
                 double distPx = z.getX() - plant.getX();

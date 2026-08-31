@@ -14,8 +14,6 @@ import java.util.Queue;
 
 
 public class AppModel {
-    public static Queue<String> beforePrompts = new LinkedList<>();
-    public static Queue<String> afterPrompts = new LinkedList<>();
     public static boolean isRunning = true;
     public static Player player = null;
     public static ChapterType currentChapter = null;
@@ -38,30 +36,6 @@ public class AppModel {
 
     public static void clearPlayer() {
         player = null;
-    }
-
-    public static boolean hasBeforePrompt() {
-        return !beforePrompts.isEmpty();
-    }
-
-    public static String getBeforePrompt() {
-        return beforePrompts.poll();
-    }
-
-    public static void addBeforePrompt(String prompt) {
-        beforePrompts.add(prompt);
-    }
-
-    public static boolean hasAfterPrompt() {
-        return !afterPrompts.isEmpty();
-    }
-
-    public static String getAfterPrompt() {
-        return afterPrompts.poll();
-    }
-
-    public static void addAfterPrompt(String prompt) {
-        afterPrompts.add(prompt);
     }
 
     public static void clearSessionData() {

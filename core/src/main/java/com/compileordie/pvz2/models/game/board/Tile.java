@@ -2,9 +2,11 @@ package com.compileordie.pvz2.models.game.board;
 
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
+import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
+import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,12 +18,11 @@ public class Tile {
     public TileType type;
     public Plant plant;
     public Obstacle obstacle;
-    public Tomb tomb; // Redundant
+    public Vase vase;
     public boolean hasLilyPad;
     public boolean isOnFire;
     public double fireTime = 4;
     public double fireTimer = 0;
-
     // NEW: Puddle memory
     public double puddleTimer = 0;
     public int puddleDamage = 0;
@@ -33,7 +34,6 @@ public class Tile {
         this.type = type;
         this.plant = plant;
         this.obstacle = obstacle;
-        this.tomb = null;
         this.hasLilyPad = false;
         this.isOnFire = false;
     }
@@ -42,6 +42,7 @@ public class Tile {
         type.tick(ticks, this, gameBoard);
         if (plant != null) plant.tick(gameBoard, ticks);
         if (obstacle != null) obstacle.tick(ticks, gameBoard);
+        if (obstacle != null && !obstacle.isAlive()) obstacle = null;
 
         tickPuddle(ticks);
 
@@ -76,7 +77,7 @@ public class Tile {
     }
 
     public boolean isEmpty() {
-        return plant == null && !hasLilyPad && obstacle == null && tomb == null;
+        return plant == null && !hasLilyPad && obstacle == null && getTomb() == null;
     }
 
     public boolean isPlantable() {
@@ -96,7 +97,7 @@ public class Tile {
         return zombies;
     }
 
-    public boolean isHasLilyPad() {
+    public boolean hasLilyPad() {
         return hasLilyPad;
     }
 }

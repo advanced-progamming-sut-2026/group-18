@@ -5,9 +5,9 @@ import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
-import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
-import com.compileordie.pvz2.models.entities.zombies.variants.ZomBoss.EgyptZomboss;
 import com.compileordie.pvz2.models.entities.zombies.variants.ZomBoss.DarkZomboss;
+import com.compileordie.pvz2.models.entities.zombies.variants.ZomBoss.EgyptZomboss;
+import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.levels.ChapterType; // 👈 این ایمپورت اضافه شد
 
 import java.util.ArrayList;
@@ -38,8 +38,12 @@ public class ZombieTestSpawner {
     // لبه‌ی راست نقشه (رفتار پیش‌فرض قبلی)
     private static final float EDGE_SPAWN_X = 18f;
 
-    // وسط زمین: ۹ ستون داریم (0..8)، ستون وسط ۴ ام، مرکزش (4+0.5)*TILE_WIDTH
-    private static final float MIDDLE_SPAWN_X = (7 + 0.5f) * (float) Constants.Game.TILE_WIDTH;
+    // وسط زمین: ۹ ستون داریم (0..8)، ستون وسط ۴ ام، مرکزش هم مثل بقیه‌ی
+    // اسپاون‌های میانی موجود در پروژه (مثلاً ZombieManager) باید علاوه‌بر
+    // آفست نیم‌کاشی، PADDING_X_REALITY رو هم داشته باشه؛ وگرنه با مدل
+    // هماهنگ نیست و به‌جای وسط زمین، سمت چپ صفحه (قبل از شروع تخته) ظاهر می‌شه.
+    private static final float MIDDLE_SPAWN_X =
+        Constants.Game.PADDING_X_REALITY + (4 + 0.5f) * (float) Constants.Game.TILE_WIDTH;
 
     // 👑 حالت تست اختصاصی زامباس: وقتی true باشه، این کلاس هیچ زامبی معمولی‌ای
     // اسپاون نمی‌کنه؛ فقط یک‌بار (اولین فراخوانی update) یک EgyptZomboss می‌سازه.
@@ -96,14 +100,12 @@ public class ZombieTestSpawner {
             return;
         }
 
-        // حالت NORMAL: رفتار قبلی، بدون تغییر.
-        AppModel.currentChapter = ChapterType.ANCIENT_EGYPT;
-
         // جمع‌آوری تمام انواع زامبی‌های تعریف‌شده در Enum
         for (ZombieType type : ZombieType.values()) {
             zombieTypes.add(type);
         }
-        Gdx.app.log("PVZ-TEST-SPAWNER", " تعداد " + zombieTypes.size() + " نوع زامبی برای تست در حالت DARK شناسایی شد.");
+        Gdx.app.log("PVZ-TEST-SPAWNER", " تعداد "
+            + zombieTypes.size() + " نوع زامبی برای تست در حالت DARK شناسایی شد.");
     }
 
     /**
@@ -120,7 +122,7 @@ public class ZombieTestSpawner {
                 try {
                     // سازنده‌ی خودِ EgyptZomboss، خودش این آبجکت رو به لاین‌های
                     // rowDown و rowUp اضافه می‌کنه؛ چیز دیگه‌ای لازم نیست.
-                    new EgyptZomboss();
+                    new EgyptZomboss(AppModel.gameSession.gameBoard);
                     Gdx.app.log("PVZ-TEST-SPAWNER", "👑 [ZOMBOSS TEST] یک EgyptZomboss اسپاون شد.");
                 } catch (Exception e) {
                     Gdx.app.error("PVZ-TEST-SPAWNER", "❌ خطا در اسپاون زامباس: " + e.getMessage());
@@ -135,7 +137,7 @@ public class ZombieTestSpawner {
                 try {
                     // سازنده‌ی خودِ DarkZomboss هم دقیقا مثل EgyptZomboss، خودش
                     // این آبجکت رو به لاین‌های rowDown و rowUp اضافه می‌کنه.
-                    new DarkZomboss();
+                    new DarkZomboss(AppModel.gameSession.gameBoard);
                     Gdx.app.log("PVZ-TEST-SPAWNER", "👑 [DARK ZOMBOSS TEST] یک DarkZomboss اسپاون شد.");
                 } catch (Exception e) {
                     Gdx.app.error("PVZ-TEST-SPAWNER", "❌ خطا در اسپاون زامباس دارک: " + e.getMessage());

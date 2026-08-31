@@ -21,8 +21,7 @@ public class SnorkelZombie extends Zombie {
     }
 
     public static boolean isOceanTile(TileType type) {
-        if (type == TileType.DEEP_BEACH || type == TileType.SHALLOW_BEACH) return true;
-        return false;
+        return type == TileType.SHALLOW_BEACH;
     }
 
 
@@ -59,7 +58,10 @@ public class SnorkelZombie extends Zombie {
     @Override
     public void takeDamage(double amount, DamageType damageType, PlantType plantType) {
         if (isDead()) return;
-        takedDamage = true;
+        boolean wasFrozenByIceBlock = isFrozenByIce;
+        amount = absorbIceDamage(amount);
+        if (wasFrozenByIceBlock && amount <= 0) return;
+        if (damageType!=DamageType.POISON) takedDamage = true;
         if (damageType == DamageType.FIRE){
             this.removeStatusEffect(EffectType.FROZEN);
             this.removeStatusEffect(EffectType.CHILLED);

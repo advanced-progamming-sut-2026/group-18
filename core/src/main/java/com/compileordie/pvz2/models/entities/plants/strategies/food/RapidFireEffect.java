@@ -72,7 +72,7 @@ public class RapidFireEffect implements PlantFoodEffectStrategy {
             else if (name.equals("Snow Pea")) {
                 int plantRow = (int) Math.floor((y - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
                 for (Zombie z : board.getAllZombies()) {
-                    if (!z.isDead() && z.getCurrentRow() == plantRow) {
+                    if (!z.isDead() && z.occupiesRow(plantRow)) {
                         z.addEffect(new StatusEffect(EffectType.FROZEN, 100)); // Frozen for 5 seconds
                     }
                 }
@@ -168,10 +168,6 @@ public class RapidFireEffect implements PlantFoodEffectStrategy {
             giantProj = projectileType.getDeclaredConstructor(double.class, double.class, double.class, int.class)
                 .newInstance(x, y, 6.0, giantDamage);
         }
-
-        // --- GIANT PEA HACK ---
-        // By assigning it a massive damage value, your graphics router can check `if (proj.getDamage() >= 400)`
-        // to render the Giant Pea PAM file instead of the normal one!
 
         giantProj.setSourcePlantType(PlantType.getByName(plant.getName()));
         giantProj.setXSpeed(6.0 * xDir);

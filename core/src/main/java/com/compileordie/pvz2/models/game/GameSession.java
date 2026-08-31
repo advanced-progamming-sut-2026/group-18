@@ -77,7 +77,6 @@ public class GameSession {
     public void afterSession(GameFlow gameResult) {
         switch (gameResult) {
             case WIN -> {
-                AppModel.addAfterPrompt("You won!");
                 AppModel.wonLastGame = true;
 
                 LevelID nextLevelID = levelID.next();
@@ -89,11 +88,9 @@ public class GameSession {
                 new UserDatabase().save(player);
             }
             case LOSS -> {
-                AppModel.addAfterPrompt("You lost!");
                 AppModel.wonLastGame = false;
             }
         }
         AppModel.gameSession = null;
-        // TODO: Expand and add quest event callback here
     }
 }

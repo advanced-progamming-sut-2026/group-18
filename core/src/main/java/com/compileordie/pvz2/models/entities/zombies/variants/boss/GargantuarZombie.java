@@ -25,6 +25,22 @@ public class GargantuarZombie extends Zombie {
     public static final double FIRE_SEQUENCE_DURATION = 1.3;
     private double fireSequenceRemaining = 0;
 
+    // --- برای اطمینان از پخش کامل حداقل یک سیکل انیمیشن eat/smash_left ---
+    // مشکل: توی ZombieCombatManager، isEating هر تیک ریست می‌شه و فقط اگه
+    // گارگانچوار همون لحظه دقیقا کنار یه گیاهِ زنده باشه دوباره true می‌شه.
+    // وقتی دمیج هر ضربه‌ی گارگانچوار (attackPower) از سلامتی گیاه بیشتره،
+    // گیاه همون یک تیک می‌میره و از تخته حذف می‌شه؛ تیک بعدی دیگه هیچ گیاهی
+    // برای eating پیدا نمی‌شه، پس isEating فورا false می‌شه و View
+    // (ZombieDrawer) به‌جای تمومِ سیکل eat(1.3s)+smash_left(1.8s)، همون لحظه
+    // می‌پره رو walk - یعنی انیمیشن حمله عملا اصلا دیده نمی‌شه.
+    // این تایمر دقیقا مثل fireSequenceRemaining بالا، مستقل از isEating واقعیِ
+    // مدله: هر تیکی که گارگانچوار واقعا به یه گیاه دمیج بزنه (چه گیاه بمیره
+    // چه نه) این‌جا رفرش می‌شه به مدت زمانِ کامل یک سیکل eat+smash_left، و از
+    // اونجا خودش می‌شمره پایین - حتی اگه گیاه همون تیک بمیره و isEating مدل
+    // فوری false بشه، View حداقل یک‌بار کامل سیکل رو نشون می‌ده.
+    public static final double SMASH_SEQUENCE_MIN_DURATION = 3.1; // == EAT_DUR(1.3) + SMASH_DUR(1.8) در ZombieDrawer
+    private double smashSequenceRemaining = 0;
+
     public GargantuarZombie(double health, double speed, int attackPower, int row, double startX,
                             double x, double y, double xSpeed, double ySpeed) {
         super(health, speed, attackPower, row, startX, x, y, xSpeed, ySpeed, ZombieType.GARGANTUAR);
@@ -36,7 +52,10 @@ public class GargantuarZombie extends Zombie {
     @Override
     public void takeDamage(double amount, DamageType damageType, PlantType plantType) {
         if (isDead()) return;
-        takedDamage = true;
+        boolean wasFrozenByIceBlock = isFrozenByIce;
+        amount = absorbIceDamage(amount);
+        if (wasFrozenByIceBlock && amount <= 0) return;
+        if (damageType!=DamageType.POISON) takedDamage = true;
 
         if (damageType == DamageType.FIRE){
             this.removeStatusEffect(EffectType.FROZEN);
@@ -73,6 +92,10 @@ public class GargantuarZombie extends Zombie {
             fireSequenceRemaining -= Constants.Game.TIME_COEFFICIENT;
             if (fireSequenceRemaining < 0) fireSequenceRemaining = 0;
         }
+        if (smashSequenceRemaining > 0) {
+            smashSequenceRemaining -= Constants.Game.TIME_COEFFICIENT;
+            if (smashSequenceRemaining < 0) smashSequenceRemaining = 0;
+        }
     }
 
     public boolean shouldWeSpawnImp() {
@@ -99,5 +122,22 @@ public class GargantuarZombie extends Zombie {
      */
     public double getFireSequenceElapsed() {
         return FIRE_SEQUENCE_DURATION - fireSequenceRemaining;
+    }
+
+    /**
+     * باید هر تیکی که این گارگانچوار واقعا به یه گیاه دمیج می‌زنه صدا زده
+     * بشه (چه ضربه‌ی معمولی، چه ضربه‌ای که گیاه رو می‌کشه). سیکل انیمیشن
+     * eat/smash_left رو برای یک دور کامل رفرش/تضمین می‌کنه.
+     */
+    public void notifyAttackedPlant() {
+        smashSequenceRemaining = SMASH_SEQUENCE_MIN_DURATION;
+    }
+
+    /**
+     * آیا هنوز باید سیکل انیمیشن eat/smash_left پخش بشه؟ (حتی اگه isEating
+     * واقعیِ مدل - چون گیاه مرده - همین الان false شده باشه.)
+     */
+    public boolean isSmashSequenceActive() {
+        return smashSequenceRemaining > 0;
     }
 }

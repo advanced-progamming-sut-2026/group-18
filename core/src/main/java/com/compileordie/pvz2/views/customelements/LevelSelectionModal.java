@@ -117,7 +117,7 @@ public class LevelSelectionModal extends BaseModal {
         String subtext;
         if (!isUnlocked) {
             subtext = "Locked";
-        } else if (level.levelType == LevelType.BOSS) {
+        } else if (level.levelType == LevelType.ZOMBOSS) {
             subtext = "Boss Fight";
         } else if (level.waveNumber > 0) {
             subtext = level.waveNumber + " Waves";
@@ -140,7 +140,7 @@ public class LevelSelectionModal extends BaseModal {
 
         return switch (level.levelType) {
             case STANDARD -> "Standard";
-            case BOSS -> "ZomBoss";
+            case ZOMBOSS -> "ZomBoss";
             case SPECIAL -> level.toString();
             case MINIGAME -> level.toString();
         };

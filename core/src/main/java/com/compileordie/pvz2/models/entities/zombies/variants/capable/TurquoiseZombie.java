@@ -45,7 +45,10 @@ public class TurquoiseZombie extends CapableZombie {
     @Override
     public void takeDamage(double amount, DamageType damageType, PlantType plantType) {
         if (isDead()) return;
-        takedDamage = true;
+        boolean wasFrozenByIceBlock = isFrozenByIce;
+        amount = absorbIceDamage(amount);
+        if (wasFrozenByIceBlock && amount <= 0) return;
+        if (damageType!=DamageType.POISON) takedDamage = true;
         this.health -= amount;
         if (damageType == DamageType.FIRE){
             this.removeStatusEffect(EffectType.FROZEN);

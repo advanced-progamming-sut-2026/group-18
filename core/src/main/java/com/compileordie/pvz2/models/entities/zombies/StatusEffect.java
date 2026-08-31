@@ -3,7 +3,9 @@ package com.compileordie.pvz2.models.entities.zombies;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.mobility.ProspectorZombie;
 
 public class StatusEffect {
     private final EffectType effectType;
@@ -50,12 +52,22 @@ public class StatusEffect {
                 break;
             case CHILLED:
                 this.cSpeed = zombie.getXSpeed();
+                if (zombie.getType()== ZombieType.PROSPECTOR_ZOMBIE && ((ProspectorZombie)zombie).isReversedDirection) {
+                    this.cSpeed = -zombie.getStableSpeed();
+                } else {
+                    this.cSpeed = zombie.getStableSpeed();
+                }
                 zombie.setXSpeed(cSpeed * 0.5);
                 this.cAttack = zombie.getAttackPower();
                 zombie.setAttackPower((int)(cAttack * 0.5));
                 break;
             case GOO_SLOW:
                 this.cSpeed = zombie.getXSpeed();
+                if (zombie.getType()== ZombieType.PROSPECTOR_ZOMBIE && ((ProspectorZombie)zombie).isReversedDirection) {
+                    this.cSpeed = -zombie.getStableSpeed();
+                } else {
+                    this.cSpeed = zombie.getStableSpeed();
+                }
                 zombie.setXSpeed(cSpeed * 0.2); // 80% speed reduction!
                 break;
             case HYPNOTIZED:

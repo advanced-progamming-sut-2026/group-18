@@ -51,7 +51,7 @@ public class TangleKelpStrategy implements AttackStrategy {
 
                 for (Zombie z : board.getAllZombies()) {
                     if (z.isDead()) continue;
-                    if (z.getCurrentRow() == plantRow) {
+                    if (z.occupiesRow(plantRow)) {
                         int zCol = (int) Math.floor((z.getX() - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH);
                         if (zCol == plantCol) {
                             z.takeDamage(1300, DamageType.NORMAL, PlantType.getByName(plant.getName()));
