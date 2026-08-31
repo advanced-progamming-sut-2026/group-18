@@ -7,9 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -85,13 +83,9 @@ public class AccountStore {
         return accountsByUsername.get(username);
     }
 
-    /**
-     * لیست username همه‌ی کاربرهای ثبت‌نام‌شده، فارغ از این‌که الان آنلاین هستند یا نه.
-     * یه کپی (نه رفرنس مستقیم به مپ داخلی) برمی‌گردونه تا caller نتونه دیتای داخلی رو
-     * دستکاری کنه.
-     */
-    public Set<String> getAllUsernames() {
-        return new HashSet<>(accountsByUsername.keySet());
+    /** فاز ۳: اسنپ‌شاتی از همه‌ی حساب‌ها، برای پاسخ به LEADERBOARD_REQUEST. */
+    public java.util.List<Account> getAllAccounts() {
+        return new java.util.ArrayList<>(accountsByUsername.values());
     }
 
     /** ثبت‌نام کاربر جدید. فرض بر این است که یکتایی username از قبل (توسط caller) چک شده. */

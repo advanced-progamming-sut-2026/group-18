@@ -56,6 +56,50 @@ public class AuthClient {
         return sendAndWaitFor(request, MessageType.LEADERBOARD_RESULT, MessageType.ERROR);
     }
 
+    /**
+     * فاز ۳ - گام ۳.۱: username های الان آنلاین (یعنی می‌شود همین حالا باهاشان «من، زامبی»
+     * شروع کرد - چالش مستقیم یا صف تصادفی). اگر کاربر فعلی خودش لاگین کرده باشد، در این
+     * لیست نیست (چون نمی‌تواند با خودش بازی کند). در صورت قطعی/timeout شبکه، لیست خالی
+     * برمی‌گردد (نه null) تا کد UI مجبور به چک null نباشد.
+     */
+    public java.util.List<String> fetchOnlineUsernames() {
+        return fetchUserList("ONLINE");
+    }
+
+    /**
+     * فاز ۳ - گام ۳.۱: همه‌ی username های ثبت‌شده روی سرور، فارغ از آنلاین بودن یا نبودن.
+     * در صورت قطعی/timeout شبکه، لیست خالی برمی‌گردد (نه null).
+     */
+    public java.util.List<String> fetchAllUsernames() {
+        return fetchUserList("ALL");
+    }
+
+    private java.util.List<String> fetchUserList(String scope) {
+        Message request = new Message(MessageType.USER_LIST_REQUEST).put("scope", scope);
+        Message result = sendAndWaitFor(request, MessageType.USER_LIST_RESULT, MessageType.ERROR);
+
+        java.util.List<String> usernames = new java.util.ArrayList<>();
+        if (result.getType() != MessageType.USER_LIST_RESULT) {
+            return usernames;
+        }
+        int count = parseCountSafely(result.get("count"));
+        for (int i = 0; i < count; i++) {
+            String username = result.get("user_" + i);
+            if (username != null) {
+                usernames.add(username);
+            }
+        }
+        return usernames;
+    }
+
+    private static int parseCountSafely(String raw) {
+        try {
+            return raw == null ? 0 : Integer.parseInt(raw);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
     /** فاز ۳: تغییر رمز عبور واقعی روی سرور (قبلا این کار فقط محلی/تزئینی انجام می‌شد). */
     public Message changePassword(String session, String oldPassword, String newPassword) {
         Message request = new Message(MessageType.AUTH_CHANGE_PASSWORD)

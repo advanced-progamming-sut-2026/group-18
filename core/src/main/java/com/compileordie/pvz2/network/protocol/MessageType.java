@@ -27,11 +27,12 @@ public enum MessageType {
     LEADERBOARD_REQUEST,
     LEADERBOARD_RESULT,
 
+    // فاز ۳ - گام ۳.۱: لیست کاربران، برای صفحه‌ی انتخاب حریف «من، زامبی»
+    // (scope=ONLINE در payload یعنی فقط آنلاین‌ها، scope=ALL یعنی همه‌ی حساب‌ها)
+    USER_LIST_REQUEST,
+    USER_LIST_RESULT,
+
     // فاز ۳ - تطبیق حریف «من، زامبی»
-    ONLINE_PLAYERS_REQUEST,
-    ONLINE_PLAYERS_RESULT,
-    ALL_PLAYERS_REQUEST,
-    ALL_PLAYERS_RESULT,
     IZOMBIE_CHALLENGE_REQUEST,
     IZOMBIE_CHALLENGE_INCOMING,
     IZOMBIE_CHALLENGE_RESPONSE,
