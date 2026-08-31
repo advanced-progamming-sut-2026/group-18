@@ -1,11 +1,13 @@
 package com.compileordie.pvz2.views.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.ZomBoss.DarkZomboss;
@@ -28,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 /**
@@ -46,6 +49,12 @@ final class ZombieDrawer {
     private float effectPulseTime = 0f;
     private boolean isPaused;
 
+    // 🧪 تستی: وقتی true باشه، فشردن کلید "K" یه RaincoatZombie رندوم (ردیف و
+    // ستون تصادفی، همون‌جوری که ZombieTestSpawner برای اسپاون وسط زمین انجام
+    // می‌ده) اسپاون می‌کنه. فعلا true (طبق درخواست).
+    boolean testSunZombie = false;
+    private final Random testSpawnRandom = new Random();
+
     ZombieDrawer(GameRenderStates states, Set<String> brokenAssets, DebrisDrawer debris) {
         this.states = states;
         this.brokenAssets = brokenAssets;
@@ -58,6 +67,7 @@ final class ZombieDrawer {
 
     void drawZombies(SpriteBatch batch, PamPlayer player, float delta) {
         if (AppModel.gameSession == null || player == null) return;
+        handleTestSunZombieSpawnKey();
 
         List<Zombie> currentZombies = new ArrayList<>(AppModel.gameSession.gameBoard.getAllZombies());
         Set<Zombie> aliveSet = new HashSet<>(currentZombies);
@@ -77,6 +87,36 @@ final class ZombieDrawer {
             drawSingleZombie(batch, player, zombie, state, delta);
         }
     }
+
+    /**
+     * وقتی testSunZombie فعاله، با هر بار فشرده شدن کلید "K"، یک RaincoatZombie
+     * توی یه ردیف/ستون تصادفیِ داخل خودِ زمین (نه لبه‌ی بیرون از صفحه، چون این
+     * زامبی سرعتش صفره و هیچ‌وقت از لبه به داخل نمی‌رسه) اسپاون می‌کنه. مثل
+     * بقیه‌ی اسپاون‌های وسط زمین، ZombieBuilder.build() خودش افکت گردباد رو
+     * خودکار شروع می‌کنه.
+     */
+    private void handleTestSunZombieSpawnKey() {
+        if (!testSunZombie) return;
+        if (!Gdx.input.isKeyJustPressed(Input.Keys.K)) return;
+        if (AppModel.gameSession == null || AppModel.gameSession.gameBoard == null) return;
+
+        int row = testSpawnRandom.nextInt(5);
+        int col = testSpawnRandom.nextInt(9);
+        float spawnX = Constants.Game.PADDING_X_REALITY + (col + 0.5f) * (float) Constants.Game.TILE_WIDTH;
+        float spawnY = (row * (float) Constants.Game.TILE_HEIGHT) + Constants.UI.BOTTOM_LINE_METER;
+
+        try {
+            Zombie zombie = ZombieBuilder.create(ZombieType.RAINCOAT_ZOMBIE, spawnX, spawnY, row);
+            if (zombie != null) {
+                AppModel.gameSession.gameBoard.lanes.get(row).zombies.add(zombie);
+                Gdx.app.log("PVZ-TEST-SUN-ZOMBIE",
+                    "☀️ یک RaincoatZombie تستی در ردیف " + row + "، ستون " + col + " اسپاون شد.");
+            }
+        } catch (Exception e) {
+            Gdx.app.error("PVZ-TEST-SUN-ZOMBIE", "❌ خطا در اسپاون RaincoatZombie تستی: " + e.getMessage());
+        }
+    }
+
 
     private void handleDeaths(Set<Zombie> aliveSet) {
         var iterator = states.zombieRenderStates.entrySet().iterator();
@@ -176,6 +216,7 @@ final class ZombieDrawer {
         state.lastDrawY = baseY;
         updateDamageFlash(zombie, state, delta);
         drawFoodedHaloIfNeeded(batch, zombie, baseX, baseY);
+        drawSunZombieHaloIfNeeded(batch, zombie, baseX, baseY);
         AnimChoice choice = chooseAnim(zombie, state, typeKey);
         if (isPaused) {
             choice.animName = (zombie.getType() == ZombieType.NEWSPAPER_ZOMBIE)
@@ -249,6 +290,27 @@ final class ZombieDrawer {
         }
     }
 
+    /**
+     * هاله‌ی زرد، نسبتا بزرگ و ثابت (بدون پالس) دور RaincoatZombie - برخلاف
+     * drawFoodedHaloIfNeeded که شرطیه، این همیشه برای این تایپ زامبی رسم
+     * می‌شه (یه نشونه‌ی بصری دائمیِ «تولیدکننده‌ی خورشید»).
+     */
+    private void drawSunZombieHaloIfNeeded(SpriteBatch batch, Zombie zombie, float baseX, float baseY) {
+        if (zombie.getType() != ZombieType.RAINCOAT_ZOMBIE) return;
+
+        Texture halo = ZombieVisualHelpers.getHaloTexture();
+        float haloSize = 150f;
+
+        Color oldColor = batch.getColor().cpy();
+        try {
+            batch.setColor(1f, 0.85f, 0.1f, 0.5f); // زرد
+            batch.draw(halo, baseX - haloSize / 2f, baseY - haloSize / 2f, haloSize, haloSize);
+        } finally {
+            batch.setColor(oldColor);
+        }
+    }
+
+
     private void advanceAnimTime(Zombie zombie, GameRenderStates.ZombieRenderState state, float delta) {
         float animSpeedMultiplier;
         if (zombie.isEating()) {
@@ -314,6 +376,8 @@ final class ZombieDrawer {
             return eatingAnim(zombie, state, typeKey);
         } else if ("PIANIST_ZOMBIE".equals(typeKey)) {
             animName = "play";
+        } else if (zombie.getType() == ZombieType.RAINCOAT_ZOMBIE) {
+            animName = "idle";
         } else {
             animName = "walk";
             if (zombie.getType() == ZombieType.NEWSPAPER_ZOMBIE
