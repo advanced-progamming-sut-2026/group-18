@@ -27,7 +27,7 @@ public class BowlingStrategy implements AttackStrategy {
         // STEP 1: If we aren't winding up yet, scan for targets!
         if (!plant.isWindingUp) {
             boolean targetExists = board.getAllZombies().stream()
-                .anyMatch(z -> !z.isDead() && !z.isHypnotized() && z.getCurrentRow() == plantRow && z.getX() > plant.getX());
+                .anyMatch(z -> !z.isDead() && !z.isHypnotized() && z.occupiesRow(plantRow) && z.getX() > plant.getX());
 
             if (!targetExists || plant.bulbs.isEmpty()) {
                 plant.holdAction = true;

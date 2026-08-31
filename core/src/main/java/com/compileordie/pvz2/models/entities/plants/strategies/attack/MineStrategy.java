@@ -41,7 +41,7 @@ public class MineStrategy implements AttackStrategy {
         else {
             for (Zombie z : board.getAllZombies()) {
                 if (z.isDead()) continue;
-                if (z.getCurrentRow() == plantRow) {
+                if (z.occupiesRow(plantRow)) {
                     int zCol = (int) (z.getX() / Constants.Game.TILE_WIDTH);
                     if (zCol == plantCol) {
                         triggered = true;
@@ -76,7 +76,7 @@ public class MineStrategy implements AttackStrategy {
             // --- DAMAGE EXECUTION ---
             if (plant.getName().equals("Jalapeno")) {
                 for (Zombie z : board.getAllZombies()) {
-                    if (!z.isDead() && z.getCurrentRow() == plantRow) {
+                    if (!z.isDead() && z.occupiesRow(plantRow)) {
                         z.takeDamage(plant.getBaseDamage(), DamageType.EXPLOSIVE, PlantType.getByName(plant.getName()));
                         z.removeStatusEffect(EffectType.FROZEN);
                         z.removeStatusEffect(EffectType.CHILLED);
@@ -94,7 +94,7 @@ public class MineStrategy implements AttackStrategy {
                     }
                 } else {
                     for (Zombie z : board.getAllZombies()) {
-                        if (!z.isDead() && z.getCurrentRow() == plantRow) {
+                        if (!z.isDead() && z.occupiesRow(plantRow)) {
                             int zCol = (int) (z.getX() / Constants.Game.TILE_WIDTH);
                             if (zCol == plantCol) {
                                 z.takeDamage(plant.getBaseDamage(), DamageType.EXPLOSIVE, PlantType.getByName(plant.getName()));
@@ -119,7 +119,7 @@ public class MineStrategy implements AttackStrategy {
                 int baseFreezeTicks = 100;
                 int totalFreeze = baseFreezeTicks + (int) plant.getFreezeTimeBonusTicks();
                 for (Zombie z : board.getAllZombies()) {
-                    if (!z.isDead() && z.getCurrentRow() == plantRow) {
+                    if (!z.isDead() && z.occupiesRow(plantRow)) {
                         int zCol = (int) (z.getX() / Constants.Game.TILE_WIDTH);
                         if (zCol == plantCol) {
                             z.addEffect(new StatusEffect(EffectType.FROZEN, totalFreeze));

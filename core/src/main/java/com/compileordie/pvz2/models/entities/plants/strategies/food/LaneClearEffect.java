@@ -22,7 +22,7 @@ public class LaneClearEffect implements PlantFoodEffectStrategy {
         for (Zombie zombie : board.getAllZombies()) {
             if (zombie.isDead()) continue;
 
-            if (zombie.getCurrentRow() == plantRow) {
+            if (zombie.occupiesRow(plantRow)) {
 
                 // --- GARLIC LOGIC (Lane Shifting, NO Damage) ---
                 if (plant.getName().equals("Garlic")) {

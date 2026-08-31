@@ -60,7 +60,7 @@ public class MeleeStrategy implements AttackStrategy {
             double closestBack = Double.MAX_VALUE;
 
             for (Zombie z : board.getAllZombies()) {
-                if (z.isDead() || z.getCurrentRow() != plantRow) continue;
+                if (z.isDead() || !z.occupiesRow(plantRow)) continue;
 
                 double dist = z.getX() - plantX;
 

@@ -21,7 +21,7 @@ public class HealAndAttract implements PlantFoodEffectStrategy {
             if (zombie.isDead()) continue;
 
             // Only pull zombies that are NOT already in our lane!
-            if (zombie.getCurrentRow() != plantRow) {
+            if (!zombie.occupiesRow(plantRow)) {
                 double dist = Math.hypot(zombie.getX() - plant.getX(), zombie.getY() - plant.getY());
 
                 if (dist <= pullRadius) {

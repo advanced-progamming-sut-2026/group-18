@@ -61,6 +61,7 @@ public abstract class Zombie extends GameEntity {
     // اضافه/حذف می‌کنه و HP بلوک یخ رو مدیریت می‌کنه (جدا از health خودِ زامبی).
     public boolean isFrozenByIce = false;
     private boolean wasFrozenByIce = false;
+    public boolean frozenByIcePast = false;
     private double iceHealth = 0;
     public static final double ICE_BLOCK_MAX_HEALTH = 200;
 
@@ -272,7 +273,6 @@ public abstract class Zombie extends GameEntity {
         // به‌صورت خودکار همراهش.
         if (isFrozenByIce && !wasFrozenByIce) {
             iceHealth = ICE_BLOCK_MAX_HEALTH;
-            addEffect(new StatusEffect(EffectType.FROZEN, Integer.MAX_VALUE));
             wasFrozenByIce = true;
         } else if (!isFrozenByIce && wasFrozenByIce) {
             removeStatusEffect(EffectType.FROZEN);
@@ -284,7 +284,9 @@ public abstract class Zombie extends GameEntity {
         // برای جابجایی - اعمال دمیح - اعمال توانایی سرویس ها هستند که پیش می برند
 
         // TODO: Remove if wrong
-        if (isFrozenByIce) this.setXSpeed(0);
+        if (isFrozenByIce) setXSpeed(0);
+        else if (frozenByIcePast) setXSpeed(stableSpeed);
+
     }
 
     public void handleDeath() {
@@ -423,6 +425,31 @@ public abstract class Zombie extends GameEntity {
         this.currentRow = currentRow;
     }
 
+    /**
+     * آیا این زامبی هم‌اکنون در ردیف {@code row} حضور داره؟ همه‌ی
+     * استراتژی‌های حمله/تشخیصِ گیاهان باید برای چک «این زامبی تو لاین منه یا
+     * نه» از این متد استفاده کنن (به‌جای مقایسه‌ی مستقیم با getCurrentRow())،
+     * چون بعضی از زامبی‌ها (مثل EgyptZomboss/DarkZomboss) هم‌زمان دو ردیف رو
+     * اشغال می‌کنن و این متد رو override می‌کنن تا هر دو ردیف رو پوشش بده.
+     * برای بقیه‌ی زامبی‌های معمولی (تک-ردیفه) رفتار پیش‌فرض دقیقا همون
+     * currentRow == row قبلیه، پس هیچ تغییر رفتاری براشون ایجاد نمی‌شه.
+     */
+    public boolean occupiesRow(int row) {
+        return row == currentRow;
+    }
+
+    /**
+     * از بین همه‌ی ردیف‌هایی که این زامبی توشون حضور داره، اونی که به
+     * {@code referenceRow} نزدیک‌تره رو برمی‌گردونه. برای زامبی‌های معمولی
+     * (تک-ردیفه) همیشه دقیقا currentRow برمی‌گرده (یعنی هیچ تغییر رفتاری).
+     * جاهایی مثل DirectShootStrategy که با rowDiff کار می‌کنن (نه فقط تساوی
+     * ساده) باید به‌جای getCurrentRow() از این استفاده کنن تا با زامبی‌های
+     * دو-ردیفه (EgyptZomboss/DarkZomboss) هم درست کار کنن.
+     */
+    public int closestRowTo(int referenceRow) {
+        return currentRow;
+    }
+
     // ==== بسیار خطرناک ولی موقت ====
     public void takeDamage(double amount, DamageType damageType){
 //        this.health -= amount;
@@ -544,5 +571,6 @@ public abstract class Zombie extends GameEntity {
 
     public void setIceBlock(boolean b){
         this.isFrozenByIce = b;
+        if (isFrozenByIce) frozenByIcePast = true;
     }
 }

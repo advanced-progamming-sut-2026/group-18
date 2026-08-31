@@ -67,7 +67,7 @@ public class LobbedProjectile extends Projectile {
 
                 for (Zombie z : board.getAllZombies()) {
                     if (!z.isDead() && Math.abs(z.getX() - this.x) <= 0.77 * Constants.Game.TILE_WIDTH
-                        && z.getCurrentRow() == trueLandingRow) {
+                        && z.occupiesRow(trueLandingRow)) {
 
                         z.takeDamage(this.damage, this.type, this.sourcePlantType);
                         applySpecialEffect(z);
