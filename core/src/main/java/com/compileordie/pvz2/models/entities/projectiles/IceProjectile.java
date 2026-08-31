@@ -30,7 +30,7 @@ public class IceProjectile extends Projectile {
         int tileRow = target.getCurrentRow();
 
         for (Zombie z : board.getAllZombies()) {
-            if (z != target && !z.isDead() && z.getCurrentRow() == tileRow) {
+            if (z != target && !z.isDead() && z.occupiesRow(tileRow)) {
                 int zCol = (int) Math.floor(z.getX() / TILE_WIDTH);
                 if (zCol == tileCol) {
                     z.addEffect(new StatusEffect(EffectType.CHILLED, (int) this.chillDurationTicks));

@@ -29,7 +29,7 @@ public class ChargeShootStrategy implements AttackStrategy {
         double plantWorldX = plant.getX();
 
         boolean targetExists = zombies.stream()
-            .anyMatch(z -> !z.isDead() && !z.isHypnotized() && z.getCurrentRow() == plantRow && z.getX() > plantWorldX);
+            .anyMatch(z -> !z.isDead() && !z.isHypnotized() && z.occupiesRow(plantRow) && z.getX() > plantWorldX);
 
         if (!targetExists) {
             plant.holdAction = true;

@@ -27,7 +27,7 @@ public class DigestStrategy implements AttackStrategy {
         double closestFront = Double.MAX_VALUE;
 
         for (Zombie z : board.getAllZombies()) {
-            if (z.isDead() || z.getCurrentRow() != plantRow) continue;
+            if (z.isDead() || !z.occupiesRow(plantRow)) continue;
 
             // Positive distance means the zombie is in front (right)
             double dist = z.getX() - plantX;

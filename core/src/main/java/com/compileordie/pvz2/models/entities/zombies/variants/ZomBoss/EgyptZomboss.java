@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.models.entities.zombies.variants.ZomBoss;
 
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
@@ -8,7 +9,7 @@ import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 
 public class EgyptZomboss extends Zombie {
-    public double health = 15000;
+    public double health = 2000;
     public boolean death = false;
     public int rowUp;
     public int rowDown;
@@ -44,7 +45,7 @@ public class EgyptZomboss extends Zombie {
 
 
     public EgyptZomboss(GameBoard gameBoard) {
-        super(15000, 0, 0, 2, 15, 15, Constants.Game.PADDING_Y_REALITY+0.1+2*Constants.Game.TILE_HEIGHT, 0, 0, ZombieType.ZOMBOSS_IN_EGYPT);
+        super(2000, 0, 0, 2, 15, 15, Constants.Game.PADDING_Y_REALITY+0.1+2*Constants.Game.TILE_HEIGHT, 0, 0, ZombieType.ZOMBOSS_IN_EGYPT);
         baseX = getX();
         rowDown = 2;
         rowUp = 3;
@@ -53,9 +54,6 @@ public class EgyptZomboss extends Zombie {
     }
 
     public void takeDamage(double amount, DamageType damageType, PlantType plantType) {
-        boolean wasFrozenByIceBlock = isFrozenByIce;
-        amount = absorbIceDamage(amount);
-        if (wasFrozenByIceBlock && amount <= 0) return;
         health -= amount;
         if (health<=0){
             health = 0;
@@ -64,10 +62,35 @@ public class EgyptZomboss extends Zombie {
         }
     }
 
+    /**
+     * زامباس هم‌زمان دو ردیف (rowDown و rowUp) رو اشغال می‌کنه، پس برخلاف
+     * زامبی‌های معمولی، برای هر دوتا این ردیف باید true برگرده - نه فقط
+     * currentRow. این باعث می‌شه گیاهانِ هر دو لاین بتونن ببیننش و بهش شلیک
+     * کنن، صرف‌نظر از این‌که الان کدوم لاینو بیشتر "اصلی" حساب می‌کنیم.
+     */
+    @Override
+    public boolean occupiesRow(int row) {
+        return row == rowUp || row == rowDown;
+    }
+
+    @Override
+    public int closestRowTo(int referenceRow) {
+        return Math.abs(rowUp - referenceRow) <= Math.abs(rowDown - referenceRow) ? rowUp : rowDown;
+    }
+
 
     public void tick(){
         double dt = Constants.Game.TIME_COEFFICIENT;
         this.setY(Constants.Game.PADDING_Y_REALITY+0.1+rowDown*Constants.Game.TILE_HEIGHT);
+        // 🐛 فیکس: currentRow (فیلد پایه‌ی کلاس Zombie) فقط توی constructor
+        // ست می‌شد (روی همون ۲ اولیه) و هیچ‌وقت با جابه‌جایی واقعی زامباس بین
+        // لاین‌ها (rowUp/rowDown پایین‌تر) سینک نمی‌شد. چون تقریبا همه‌ی
+        // استراتژی‌های حمله‌ی گیاهان (DirectShootStrategy، LobberStrategy،
+        // MeleeStrategy، MineStrategy و...) دقیقا از getCurrentRow() برای
+        // تشخیص «این زامبی تو لاین منه یا نه» استفاده می‌کنن، نتیجه‌ش این بود
+        // که زامباس همیشه فقط تو لاین ۲ برای گیاهان قابل‌شناسایی/شلیک بود،
+        // مهم نیست واقعا کجا رفته باشه. اینجا هر تیک با rowDown سینکش می‌کنیم.
+        this.setCurrentRow(rowDown);
         super.move(1);
         if (getX()<=Constants.Game.PADDING_X+1){
             setXSpeed(-speed);
@@ -98,22 +121,31 @@ public class EgyptZomboss extends Zombie {
                 if (rowDown==0){
                     rowDown++;
                     rowUp++;
+                    AppModel.gameSession.gameBoard.lanes.get(rowDown-1).zombies.remove(this);
+                    AppModel.gameSession.gameBoard.lanes.get(rowUp).zombies.add(this);
                 }
                 else if (rowUp==4){
                     rowDown--;
                     rowUp--;
+                    AppModel.gameSession.gameBoard.lanes.get(rowUp+1).zombies.remove(this);
+                    AppModel.gameSession.gameBoard.lanes.get(rowDown).zombies.add(this);
                 }
                 else {
                     if (Math.random() <= 0.5){
                         rowUp++;
                         rowDown++;
+                        AppModel.gameSession.gameBoard.lanes.get(rowDown-1).zombies.remove(this);
+                        AppModel.gameSession.gameBoard.lanes.get(rowUp).zombies.add(this);
                     }
                     else{
                         rowUp --;
                         rowDown --;
+                        AppModel.gameSession.gameBoard.lanes.get(rowUp+1).zombies.remove(this);
+                        AppModel.gameSession.gameBoard.lanes.get(rowDown).zombies.add(this);
                     }
                 }
             }
+            //---
         }
 
         //------------

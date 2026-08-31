@@ -23,7 +23,7 @@ public class LobberStrategy implements AttackStrategy {
 
         // --- 1. Lock onto the first available zombie in the lane ---
         java.util.Optional<Zombie> targetZombie = board.getAllZombies().stream()
-            .filter(z -> !z.isDead() && z.getCurrentRow() == plantRow && z.getX() >= plant.getX())
+            .filter(z -> !z.isDead() && z.occupiesRow(plantRow) && z.getX() >= plant.getX())
             .min((z1, z2) -> Double.compare(z1.getX(), z2.getX())); // Find the closest one
 
         if (targetZombie.isEmpty()) {

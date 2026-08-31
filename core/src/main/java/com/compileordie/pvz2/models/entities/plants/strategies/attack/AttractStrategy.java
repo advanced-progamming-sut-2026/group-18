@@ -18,7 +18,7 @@ public class AttractStrategy implements AttackStrategy {
             if (z.isDead()) continue;
 
             // Only pull zombies that are in adjacent lanes
-            if (z.getCurrentRow() != plantRow) {
+            if (!z.occupiesRow(plantRow)) {
 
                 double dist = Math.hypot(z.getX() - plant.getX(), z.getY() - plant.getY());
 
