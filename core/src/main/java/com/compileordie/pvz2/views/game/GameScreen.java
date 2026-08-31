@@ -329,6 +329,7 @@ public class GameScreen implements Screen {
         specificBoardDrawer.drawWaterLevel(batch, player, worldDelta);
         specificBoardDrawer.drawMaxTideLevel(batch, player, worldDelta);
         boardDrawer.drawMowers(batch, player, worldDelta);
+        specificBoardDrawer.drawBrains(batch, player, worldDelta);
         boardDrawer.drawTombs(batch, player, worldDelta);
         boardDrawer.drawFireTiles(batch, player, worldDelta);
         specificBoardDrawer.drawVases(batch, textureBank);

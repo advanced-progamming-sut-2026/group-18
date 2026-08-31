@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.models.game.board.Lane;
 import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.board.TileType;
 import com.compileordie.pvz2.models.game.levels.ChapterType;
@@ -38,10 +39,18 @@ final class SpecificBoardDrawer {
     private static final String MAX_TIDE_ANIM_CLIP = "idle";
     private static final String CHILL_WIND_PAM = "768/FULL/EFFECTS/FROSTBITE_CHILL_WIND/FROSTBITE_CHILL_WIND.PAM";
     private static final String CHILL_WIND_ANIM_CLIP = "animation";
+    private static final String BRAIN_PAM = "768/FULL/PLANT/BRAINSTEM/BRAINSTEM.PAM";
+    private static final String BRAIN_ANIM_CLIP = "idle";
 
     private final GameRenderStates states;
     private final Set<String> brokenAssets;
-    private final Map<Tile, Float> sliderAnimTimes = new HashMap<>();
+
+    // Independent animation maps & accumulators to prevent cross-method frame resets
+    private final Map<Tile, Float> slipperyAnimTimes = new HashMap<>();
+    private final Map<Tile, Float> shallowBeachAnimTimes = new HashMap<>();
+    private final Map<Tile, Float> protectTileAnimTimes = new HashMap<>();
+    private float brainAnimTime = 0f;
+
     private final ShapeRenderer shapeRenderer = new ShapeRenderer();
 
     SpecificBoardDrawer(GameRenderStates states, Set<String> brokenAssets) {
@@ -67,8 +76,8 @@ final class SpecificBoardDrawer {
                 if (pamPath == null || brokenAssets.contains(pamPath)) continue;
 
                 activeSlipperyTiles.add(tile);
-                float animTime = sliderAnimTimes.getOrDefault(tile, 0f) + delta;
-                sliderAnimTimes.put(tile, animTime);
+                float animTime = slipperyAnimTimes.getOrDefault(tile, 0f) + delta;
+                slipperyAnimTimes.put(tile, animTime);
 
                 float drawX = ((tile.column * Constants.Game.TILE_WIDTH
                     + Constants.Game.PADDING_X + (Constants.Game.TILE_WIDTH / 2f)) * Constants.UI.METER_TO_PIX) + 5f;
@@ -86,7 +95,7 @@ final class SpecificBoardDrawer {
             }
         }
 
-        sliderAnimTimes.keySet().removeIf(tile -> !activeSlipperyTiles.contains(tile));
+        slipperyAnimTimes.keySet().removeIf(tile -> !activeSlipperyTiles.contains(tile));
     }
 
     public void drawShallowBeaches(SpriteBatch batch, PamPlayer player, float delta) {
@@ -105,8 +114,8 @@ final class SpecificBoardDrawer {
                 if (pamPath == null || brokenAssets.contains(pamPath)) continue;
 
                 activeShallowBeachTiles.add(tile);
-                float animTime = sliderAnimTimes.getOrDefault(tile, 0f) + delta;
-                sliderAnimTimes.put(tile, animTime);
+                float animTime = shallowBeachAnimTimes.getOrDefault(tile, 0f) + delta;
+                shallowBeachAnimTimes.put(tile, animTime);
 
                 float drawX = (((tile.column + 0.5f) * Constants.Game.TILE_WIDTH + Constants.Game.PADDING_X)
                     * Constants.UI.METER_TO_PIX);
@@ -124,7 +133,7 @@ final class SpecificBoardDrawer {
             }
         }
 
-        sliderAnimTimes.keySet().removeIf(tile -> !activeShallowBeachTiles.contains(tile));
+        shallowBeachAnimTimes.keySet().removeIf(tile -> !activeShallowBeachTiles.contains(tile));
     }
 
     public void drawProtectTiles(SpriteBatch batch, PamPlayer player, float delta) {
@@ -143,8 +152,8 @@ final class SpecificBoardDrawer {
                 if (pamPath == null || brokenAssets.contains(pamPath)) continue;
 
                 activeProtectTiles.add(tile);
-                float animTime = sliderAnimTimes.getOrDefault(tile, 0f) + delta;
-                sliderAnimTimes.put(tile, animTime);
+                float animTime = protectTileAnimTimes.getOrDefault(tile, 0f) + delta;
+                protectTileAnimTimes.put(tile, animTime);
 
                 float drawX = (((tile.column + 0.5f) * Constants.Game.TILE_WIDTH + Constants.Game.PADDING_X)
                     * Constants.UI.METER_TO_PIX);
@@ -170,7 +179,7 @@ final class SpecificBoardDrawer {
             }
         }
 
-        sliderAnimTimes.keySet().removeIf(tile -> !activeProtectTiles.contains(tile));
+        protectTileAnimTimes.keySet().removeIf(tile -> !activeProtectTiles.contains(tile));
     }
 
     public void drawWaterLevel(SpriteBatch batch, PamPlayer player, float delta) {
@@ -333,5 +342,36 @@ final class SpecificBoardDrawer {
         shapeRenderer.end();
         Gdx.gl.glLineWidth(1.0f); // Reset line thickness back to default
         batch.begin();
+    }
+
+    public void drawBrains(SpriteBatch batch, PamPlayer player, float delta) {
+        if (AppModel.gameSession == null || AppModel.gameSession.gameBoard == null
+            || AppModel.currentLevel != LevelID.I_ZOMBIE || player == null) {
+            return;
+        }
+
+        if (brokenAssets.contains(BRAIN_PAM)) return;
+
+        brainAnimTime += delta;
+
+        var lanes = AppModel.gameSession.gameBoard.lanes;
+        if (lanes == null) return;
+
+        for (int i = 0; i < lanes.size(); i++) {
+            Lane lane = AppModel.gameSession.gameBoard.getLane(i);
+            if (lane == null || lane.isLost) continue;
+
+            float drawX = Constants.Game.BRAINS_X * Constants.UI.METER_TO_PIX;
+            float drawY = ((lane.row + 0.5f) * Constants.Game.TILE_HEIGHT + Constants.Game.PADDING_Y)
+                * Constants.UI.METER_TO_PIX + 50f;
+
+            try {
+                player.draw(batch, BRAIN_PAM, BRAIN_ANIM_CLIP, brainAnimTime, drawX, drawY, true);
+            } catch (Throwable e) {
+                brokenAssets.add(BRAIN_PAM);
+                Gdx.app.error("PVZ-ASSET-MISSING",
+                    "❌ [SpecificBoardDrawer] Failed rendering brain PAM: " + BRAIN_PAM, e);
+            }
+        }
     }
 }
