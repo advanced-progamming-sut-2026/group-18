@@ -15,58 +15,67 @@ public class SquashProjectile extends LobbedProjectile {
     private final int crushesRemaining;
     private final boolean isPlantFood;
 
-    // --- THE BULLETPROOF PHYSICS FIX ---
+    // --- THE MISSING FLAG: Now saved so tick() can use it! ---
+    private final boolean isReturning;
+
+    private final double startY_sq;
+    private final double targetY_sq;
+
     private double currentProgress = 0.0;
     private double jumpTimer = 0.0;
-    // 20 ticks = exactly 1 second jump time. (Increase to 30.0 if you want him to hang in the air longer!)
-    private final double JUMP_DURATION = 20.0;
+    private final double JUMP_DURATION = 20.0; // 20 ticks = fast, aggressive jumps!
 
     public SquashProjectile(Plant owner, double startX, double startY, double targetX, double targetY, boolean isReturning, int crushesRemaining, boolean isPlantFood) {
         super(startX, startY, targetX, 6.0, owner.getBaseDamage(), 0, 0.0);
         this.owner = owner;
         this.crushesRemaining = crushesRemaining;
         this.isPlantFood = isPlantFood;
+        this.isReturning = isReturning;
         this.enumType = ProjectileType.LOBBED;
+
+        this.startY_sq = startY;
+        this.targetY_sq = targetY;
 
         this.setSourcePlantType(PlantType.getByName(owner.getName()));
     }
 
     @Override
     public void tick(GameBoard board, double delta) {
-        // DO NOT CALL super.tick() - We handle movement completely independently so no Area Damage happens!
-
-        // 1. Advance the timer smoothly
         this.jumpTimer += delta;
 
         double p = this.jumpTimer / JUMP_DURATION;
         if (p > 1.0) p = 1.0;
         this.currentProgress = p;
 
-        // 2. PERFECT INTERPOLATION: This one line flawlessly handles both forward AND backward jumps!
+        // Interpolate BOTH X and Y so he physically flies across lanes!
         this.x = this.startX + ((this.targetX - this.startX) * p);
+        this.y = this.startY_sq + ((this.targetY_sq - this.startY_sq) * p);
 
-        // 3. Massive 1.5-tile high vertical jump!
+        // Massive 1.5-tile high vertical jump!
         this.altitude = Math.sin(p * Math.PI) * (Constants.Game.TILE_HEIGHT * 1.5);
 
-// When it lands!
+        // When it lands!
         if (p >= 1.0) {
 
-            // --- THE ROW FIX: Figure out which row the Squash belongs to ---
-            int ownerRow = (int) Math.floor((owner.getY() - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
+            // If this was the final return jump, just unhide the plant and stop!
+            if (this.isReturning) {
+                owner.setHidden(false);
+                this.isDead = true;
+                return;
+            }
 
-            // EXACTLY ONE ZOMBIE
+            // Calculate the row it LANDED in, not the row it Started in
+            int landedRow = (int) Math.floor((this.y - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
+
             Zombie victim = null;
             double closestDist = Double.MAX_VALUE;
 
             for (Zombie z : board.getAllZombies()) {
-                // --- THE ROW FIX: If the zombie is dead OR in a different row, ignore them! ---
-                if (z.isDead() || z.getCurrentRow() != ownerRow) continue;
+                if (z.isDead() || z.getCurrentRow() != landedRow) continue;
 
                 double dist = Math.abs(z.getX() - this.targetX);
 
-                // If they are in the landing zone...
                 if (dist <= Constants.Game.TILE_WIDTH * 0.6) {
-                    // Find the absolute closest one!
                     if (dist < closestDist) {
                         closestDist = dist;
                         victim = z;
@@ -74,25 +83,36 @@ public class SquashProjectile extends LobbedProjectile {
                 }
             }
 
-            // Smash ONLY the single victim!
+            // Deal Damage
             if (victim != null) {
                 victim.takeDamage(this.damage, DamageType.NORMAL, PlantType.getByName(owner.getName()));
             }
 
-            // UPGRADE CHECK & DEATH
+            // Check for next jumps
             if (crushesRemaining > 1) {
                 Zombie nextTarget = findTarget(board);
                 if (nextTarget != null) {
                     SquashProjectile nextJump = new SquashProjectile(owner, this.x, this.y, nextTarget.getX(), nextTarget.getY(), false, crushesRemaining - 1, isPlantFood);
                     board.getActiveProjectiles().add(nextJump);
                 } else {
-                    owner.die(); // No targets left
+                    triggerReturnOrDie(board);
                 }
             } else {
-                owner.die(); // Standard behavior: 1 crush, delete plant
+                triggerReturnOrDie(board);
             }
 
             this.isDead = true;
+        }
+    }
+
+    private void triggerReturnOrDie(GameBoard board) {
+        if (isPlantFood) {
+            // PF always returns to the home tile when finished!
+            SquashProjectile returnJump = new SquashProjectile(owner, this.x, this.y, owner.getX(), owner.getY(), true, 0, true);
+            board.getActiveProjectiles().add(returnJump);
+        } else {
+            // Normal attacks just die.
+            owner.die();
         }
     }
 
@@ -102,9 +122,12 @@ public class SquashProjectile extends LobbedProjectile {
 
         for (Zombie z : zombies) {
             if (z.isDead()) continue;
+
+            // Plant Food grabs any random zombie anywhere!
             if (isPlantFood) return z;
 
-            double dist = Math.abs(z.getX() - owner.getX());
+            // Normal logic only grabs zombies nearby in the same lane
+            double dist = Math.abs(z.getX() - this.x);
             int ownerRow = (int) Math.floor((owner.getY() - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
 
             if (dist <= 1.5 * Constants.Game.TILE_WIDTH && z.getCurrentRow() == ownerRow) {

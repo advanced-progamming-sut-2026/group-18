@@ -60,7 +60,7 @@ public class MineStrategy implements AttackStrategy {
             if (plant.getName().equals("Potato Mine") || plant.getName().equals("Primal Potato Mine")) requiredWindup = 10.0;
             else if (plant.getName().equals("Cherry Bomb") || plant.getName().equals("Grapeshot") || plant.getName().equals("Jalapeno")) requiredWindup = 20.0;
             else if (plant.getName().equals("Doom-shroom")) requiredWindup = 75.0; // Your tweaked death timer!
-            else if (plant.getName().equals("Iceberg Lettuce")) requiredWindup = 15.0;
+            else if (plant.getName().equals("Iceberg Lettuce")) requiredWindup = 11.0;
             boolean executeDamage = false;
             boolean executeDeath = false;
 

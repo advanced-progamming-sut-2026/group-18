@@ -258,6 +258,29 @@ public class PlantMatchManager {
             if (plant.windupTimer == 2.0) return "attack2";
             return "attack";
         }
+
+        if (name.equals("Chomper")) {
+            // 1. IS HE BITING? (The 1-second Windup)
+            if (plant.isWindingUp) {
+                double windupSec = plant.windupTimer / 60.0;
+                if (windupSec < 0.5) return "bite";
+                return "bite_end";
+            }
+
+            // 2. IS HE DIGESTING? (The 40-second Action Timer)
+            double timer = plant.getCurrentActionTimer();
+            double interval = plant.getActionIntervalTicks();
+
+            // If timer has reached 40s, he is ready to bite again!
+            if (plant.holdAction || timer >= interval) return "idle3";
+
+            // He is digesting!
+            double elapsedSec = timer / 60.0;
+
+            if (elapsedSec < 0.5) return "special";
+            if (timer > interval - 63.0) return "special_end";
+            return "special_idle"; // 40 seconds of chewing!
+        }
         if (name.equals("Phat Beet")) {
             if (plant.holdAction) return "idle2";
             if (plant.getCurrentActionTimer() < 25.0) return "attack";
@@ -449,7 +472,7 @@ public class PlantMatchManager {
             PlantType sourcePlant = proj.getSourcePlantType();
 
             // --- FIX 1: ZERO OUT OFFSETS FOR DUMMIES SO THEY ALIGN PERFECTLY! ---
-            if (proj.getDamage() == 0) {
+            if (proj.getDamage() == 0 || sourcePlant == PlantType.SQUASH) {
                 widthOffset = 0f;
                 heightOffset = 0f;
             } else if (sourcePlant == PlantType.PUFF_SHROOM || sourcePlant == PlantType.SEA_SHROOM) {

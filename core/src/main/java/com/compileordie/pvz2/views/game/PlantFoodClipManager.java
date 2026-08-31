@@ -194,6 +194,46 @@ public class PlantFoodClipManager {
             plant.resetFeed();
             return null;
         }
+        // --- 15. SPAWN CLONES (2.5 Seconds Total) ---
+        if (name.equals("Potato Mine")) {
+            if (t < 0.5f) return "plantfood_on";
+            if (t < 2.0f) return "plantfood";
+            if (t < 2.5f) return "plantfood2";
+            plant.resetFeed();
+            return null;
+        }
+
+        if (name.equals("Primal Potato Mine")) {
+            if (t < 0.5f) return "plantfood_on";
+            if (t < 2.0f) return "plantfood";
+            if (t < 2.5f) return "plantfood_off";
+            plant.resetFeed();
+            return null;
+        }
+
+        if (name.equals("Iceberg Lettuce")) {
+            if (t < 1.0f) return "plantfood";
+            plant.resetFeed();
+            return null;
+        }
+
+        if (name.equals("Sweet Potato")) {
+            if (t < 2.0f) return "plantfood";
+            plant.resetFeed();
+            return null;
+        }
+
+        if (name.equals("Chomper")) {
+            if (t < 0.5f) return "plantfood_on";
+            if (t < 1.5f) return "plantfood";
+            if (t < 2.0f) return "plantfood_off";
+            if (t < 9.0f) return "plantfood_burp"; // 7 seconds of glorious burping!
+            if (t < 9.5f) return "plantfood_burp_end";
+
+            // The animation is finished. NOW we reset the plant to normal!
+            plant.resetFeed();
+            return null;
+        }
 
         return null;
     }

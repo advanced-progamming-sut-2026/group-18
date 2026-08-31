@@ -487,20 +487,24 @@ public class Plant extends GameEntity {
                 return 16.6;
             case "Primal Sunflower":
                 return 20.0;
-            case "Fume-shroom" :
+            case "Fume-shroom":
                 return 30.0;
-            case "Sun-shroom", "Fire Peashooter":
+            case "Sun-shroom", "Fire Peashooter", "Iceberg Lettuce":
                 return 10.0;
-            case "Starfruit", "Puff-shroom", "Cactus", "Goo Peashooter":
+            case  "Puff-shroom", "Cactus", "Goo Peashooter":
                 return 15.0;
+            case "Starfruit", "Sea-shroom" :
+                return 12.0;
             case "Snow Pea" :
                 return 7.0;
             case "Peashooter", "Repeater", "Threepeater", "Split Pea", "Mega Gatling Pea", "Phat Beet", "Kiwibeast" :
                 return 3.0;
             case "Citron":
                 return 90.0;
-            case "Wall-nut", "Explode-o-nut", "Sun Bean", "Tall-nut", "Torchwood" :
+            case "Wall-nut", "Explode-o-nut", "Sun Bean", "Tall-nut", "Torchwood", "Potato Mine", "Primal Potato Mine", "Sweet Potato" :
                 return 0.0;
+            case "Chomper" :
+                return 130.0;
             default:
                 return 19.0;
         }

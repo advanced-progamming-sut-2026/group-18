@@ -16,6 +16,8 @@ public class FoodEffectFactory {
         if (type == null) return null;
 
         switch (type) {
+            case CHOMPER:
+                return new ChomperFoodEffect();
             case RAPID_FIRE:
                 return new RapidFireEffect(projectileClass);
             case BURST_SUN:

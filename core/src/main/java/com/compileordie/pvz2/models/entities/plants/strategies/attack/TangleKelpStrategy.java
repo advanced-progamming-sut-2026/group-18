@@ -54,7 +54,7 @@ public class TangleKelpStrategy implements AttackStrategy {
                     if (z.getCurrentRow() == plantRow) {
                         int zCol = (int) Math.floor((z.getX() - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH);
                         if (zCol == plantCol) {
-                            z.takeDamage(800, DamageType.NORMAL, PlantType.getByName(plant.getName()));
+                            z.takeDamage(1300, DamageType.NORMAL, PlantType.getByName(plant.getName()));
                             targetsHit++;
 
                             if (targetsHit >= maxTargets) {
