@@ -19,7 +19,7 @@ public class GrapeProjectile extends Projectile {
         // Pass 0 to super's xSpeed initially, we will override it right below!
         super(startX, startY, 0.0, damage, DamageType.NORMAL);
 
-        double grapeSpeed = 8.0;
+        double grapeSpeed = 0.5;
 
         // Natively use your base class variables!
         this.xSpeed = Math.cos(angle) * grapeSpeed;
@@ -36,15 +36,15 @@ public class GrapeProjectile extends Projectile {
     @Override
     public void tick(GameBoard board, double delta) {
         // 1. Lifespan check
-        this.lifespanTicks -= delta;
+        this.lifespanTicks -= 1.0;
         if (this.lifespanTicks <= 0) {
             this.isDead = true;
             return;
         }
 
         // 2. Move the projectile natively using your delta math
-        this.x += this.xSpeed * delta;
-        this.y += this.ySpeed * delta;
+        this.x += this.xSpeed;
+        this.y += this.ySpeed;
 
         // 3. Screen Edge Bouncing Logic
         boolean bounced = false;
@@ -82,4 +82,6 @@ public class GrapeProjectile extends Projectile {
             }
         }
     }
+    public double getGrapeXSpeed() { return this.xSpeed; }
+    public double getGrapeYSpeed() { return this.ySpeed; }
 }

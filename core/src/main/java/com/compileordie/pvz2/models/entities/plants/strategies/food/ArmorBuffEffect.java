@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.models.entities.plants.strategies.food;
 
 import com.compileordie.pvz2.models.entities.plants.Plant;
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.user.Player;
 
@@ -13,15 +14,14 @@ public class ArmorBuffEffect implements PlantFoodEffectStrategy {
 
     @Override
     public void applyEffect(Plant plant, GameBoard board, Player player) {
-        // Heals the plant to full base HP (including upgrades) AND adds the armor!
-        // This naturally prevents infinite stacking if fed multiple times.
+        // Fully heal and apply armor
         plant.setCurrentHp(plant.getBaseHp() + bonusArmorHp);
 
-        // --- GRAPHICS PHASE HOOK ---
-        // To draw the metal/crystal armor, the UI team just checks:
-        // if (plant.getCurrentHp() > plant.getBaseHp())
-
-        // Effect resolved! Reset the feed flag.
-        plant.resetFeed();
+        // Spawn the shiny overlay visual exclusively for Sun Bean
+        if (plant.getName().equals("Sun Bean")) {
+            com.compileordie.pvz2.models.entities.plants.strategies.food.AreaDamageEffect.spawnVisualHit(
+                board, plant.getX(), plant.getY(), PlantType.SUN_BEAN, true
+            );
+        }
     }
 }

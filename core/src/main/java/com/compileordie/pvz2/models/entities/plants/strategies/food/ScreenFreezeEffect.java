@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.entities.plants.strategies.food;
 
+import com.badlogic.gdx.utils.Timer;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.zombies.StatusEffect;
 import com.compileordie.pvz2.models.entities.zombies.types.EffectType;
@@ -26,7 +27,14 @@ public class ScreenFreezeEffect implements PlantFoodEffectStrategy {
             zombie.addEffect(new StatusEffect(EffectType.FROZEN, totalFreezeTicks));
         }
 
-        // Effect resolved! Reset the feed flag.
-        plant.resetFeed();
+        // --- THE FIX: Sacrifice the plant exactly when the 2-second visual finishes! ---
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                if (!plant.isDead()) {
+                    plant.die(); // Deletes it from the board cleanly!
+                }
+            }
+        }, 0.3f);
     }
 }

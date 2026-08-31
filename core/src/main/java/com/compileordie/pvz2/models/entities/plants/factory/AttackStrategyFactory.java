@@ -19,6 +19,9 @@ public class AttackStrategyFactory {
         boolean isInstantKill) {
 
         switch (type) {
+            case MODIFIER_PASSIVE:
+                return new ModifierPassiveStrategy();
+
             case DIRECT_SHOOT:
                 return new DirectShootStrategy(laneOffsets, shootVectors, projectileClass);
 

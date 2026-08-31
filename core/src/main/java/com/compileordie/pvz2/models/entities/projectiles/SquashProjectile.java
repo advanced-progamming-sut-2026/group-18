@@ -2,6 +2,7 @@ package com.compileordie.pvz2.models.entities.projectiles;
 
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.Plant;
+import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
@@ -11,81 +12,132 @@ import java.util.List;
 
 public class SquashProjectile extends LobbedProjectile {
     private final Plant owner;
-    private final boolean isReturning;
     private final int crushesRemaining;
     private final boolean isPlantFood;
 
+    // --- THE MISSING FLAG: Now saved so tick() can use it! ---
+    private final boolean isReturning;
+
+    private final double startY_sq;
+    private final double targetY_sq;
+
+    private double currentProgress = 0.0;
+    private double jumpTimer = 0.0;
+    private final double JUMP_DURATION = 20.0; // 20 ticks = fast, aggressive jumps!
+
     public SquashProjectile(Plant owner, double startX, double startY, double targetX, double targetY, boolean isReturning, int crushesRemaining, boolean isPlantFood) {
-        // Massive speed (6.0) so it jumps fast!
         super(startX, startY, targetX, 6.0, owner.getBaseDamage(), 0, 0.0);
         this.owner = owner;
-        this.isReturning = isReturning;
         this.crushesRemaining = crushesRemaining;
         this.isPlantFood = isPlantFood;
-        this.enumType = com.compileordie.pvz2.models.entities.plants.enums.ProjectileType.LOBBED;
+        this.isReturning = isReturning;
+        this.enumType = ProjectileType.LOBBED;
+
+        this.startY_sq = startY;
+        this.targetY_sq = targetY;
+
+        this.setSourcePlantType(PlantType.getByName(owner.getName()));
     }
 
     @Override
     public void tick(GameBoard board, double delta) {
-        super.tick(board, delta);
+        this.jumpTimer += delta;
 
-        // --- CALCUALTE P LOCALLY ---
-        double distanceTraveled = Math.abs(this.x - this.startX);
-        double p = this.totalDistance == 0 ? 1.0 : (distanceTraveled / this.totalDistance);
+        double p = this.jumpTimer / JUMP_DURATION;
+        if (p > 1.0) p = 1.0;
+        this.currentProgress = p;
+
+        // Interpolate BOTH X and Y so he physically flies across lanes!
+        this.x = this.startX + ((this.targetX - this.startX) * p);
+        this.y = this.startY_sq + ((this.targetY_sq - this.startY_sq) * p);
+
+        // Massive 1.5-tile high vertical jump!
+        this.altitude = Math.sin(p * Math.PI) * (Constants.Game.TILE_HEIGHT * 1.5);
 
         // When it lands!
         if (p >= 1.0) {
-            if (!isReturning) {
-                // --- 1. CRUSH THE ZOMBIE ---
-                for (Zombie z : board.getAllZombies()) {
-                    if (!z.isDead() && Math.abs(z.getX() - this.targetX) < 10) {
-                        z.takeDamage(this.damage, DamageType.EXPLOSIVE, PlantType.getByName(owner.getName()));
-                    }
-                }
 
-                // --- 2. LAUNCH THE RETURN JUMP BACK TO THE HOME TILE ---
-                SquashProjectile returnJump = new SquashProjectile(owner, this.x, this.y, owner.getX(), owner.getY(), true, crushesRemaining, isPlantFood);
-                board.getActiveProjectiles().add(returnJump);
+            // If this was the final return jump, just unhide the plant and stop!
+            if (this.isReturning) {
+                owner.setHidden(false);
+                this.isDead = true;
+                return;
+            }
 
-            } else {
-                // --- 3. WE MADE IT BACK TO THE TILE ---
-                if (crushesRemaining > 1) {
-                    // Try to find another victim!
-                    Zombie nextTarget = findTarget(board);
-                    if (nextTarget != null) {
-                        SquashProjectile nextJump = new SquashProjectile(owner, this.x, this.y, nextTarget.getX(), nextTarget.getY(), false, crushesRemaining - 1, isPlantFood);
-                        board.getActiveProjectiles().add(nextJump);
-                    } else {
-                        // No targets left, shut down.
-                        owner.setHidden(false);
-                        owner.setExhausted(true);
+            // Calculate the row it LANDED in, not the row it Started in
+            int landedRow = (int) Math.floor((this.y - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
+
+            Zombie victim = null;
+            double closestDist = Double.MAX_VALUE;
+
+            for (Zombie z : board.getAllZombies()) {
+                if (z.isDead() || z.getCurrentRow() != landedRow) continue;
+
+                double dist = Math.abs(z.getX() - this.targetX);
+
+                if (dist <= Constants.Game.TILE_WIDTH * 0.6) {
+                    if (dist < closestDist) {
+                        closestDist = dist;
+                        victim = z;
                     }
-                } else {
-                    // Final crush complete. Unhide the plant and turn it into a meat shield!
-                    owner.setHidden(false);
-                    owner.setExhausted(true);
                 }
             }
-            this.isDead = true; // Delete current projectile phase
+
+            // Deal Damage
+            if (victim != null) {
+                victim.takeDamage(this.damage, DamageType.NORMAL, PlantType.getByName(owner.getName()));
+            }
+
+            // Check for next jumps
+            if (crushesRemaining > 1) {
+                Zombie nextTarget = findTarget(board);
+                if (nextTarget != null) {
+                    SquashProjectile nextJump = new SquashProjectile(owner, this.x, this.y, nextTarget.getX(), nextTarget.getY(), false, crushesRemaining - 1, isPlantFood);
+                    board.getActiveProjectiles().add(nextJump);
+                } else {
+                    triggerReturnOrDie(board);
+                }
+            } else {
+                triggerReturnOrDie(board);
+            }
+
+            this.isDead = true;
+        }
+    }
+
+    private void triggerReturnOrDie(GameBoard board) {
+        if (isPlantFood) {
+            // PF always returns to the home tile when finished!
+            SquashProjectile returnJump = new SquashProjectile(owner, this.x, this.y, owner.getX(), owner.getY(), true, 0, true);
+            board.getActiveProjectiles().add(returnJump);
+        } else {
+            // Normal attacks just die.
+            owner.die();
         }
     }
 
     private Zombie findTarget(GameBoard board) {
         List<Zombie> zombies = board.getAllZombies();
-        java.util.Collections.shuffle(zombies); // Randomize for Plant Food
+        java.util.Collections.shuffle(zombies);
 
         for (Zombie z : zombies) {
             if (z.isDead()) continue;
 
-            // Plant food finds ANY zombie anywhere. Base attack only searches within 1.5 tiles!
+            // Plant Food grabs any random zombie anywhere!
             if (isPlantFood) return z;
 
-            double dist = Math.abs(z.getX() - owner.getX());
-            if (dist <= 1.5 * Constants.Game.TILE_WIDTH
-                && z.occupiesRow((int) (owner.getY() / Constants.Game.TILE_HEIGHT))) {
+            // Normal logic only grabs zombies nearby in the same lane
+            double dist = Math.abs(z.getX() - this.x);
+            int ownerRow = (int) Math.floor((owner.getY() - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
+
+            if (dist <= 1.5 * Constants.Game.TILE_WIDTH && z.occupiesRow((int) (owner.getY() / Constants.Game.TILE_HEIGHT))) {
                 return z;
             }
         }
         return null;
     }
+
+    public double getSqStartX() { return startX; }
+    public double getSqTargetX() { return targetX; }
+    public double getSqProgress() { return currentProgress; }
 }

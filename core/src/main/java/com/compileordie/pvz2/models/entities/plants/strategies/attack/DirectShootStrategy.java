@@ -174,9 +174,10 @@ public class DirectShootStrategy implements AttackStrategy {
                                 proj = projectileType.getDeclaredConstructor(double.class, double.class, double.class, int.class, double.class)
                                     .newInstance(spawnX, finalSpawnY, speed, damage, totalChillTime);
                             } else if (projectileType == PiercingProjectile.class) {
-                                int totalPierces = 3 + plant.getPierceBonus();
+                                int totalPierces = plant.isBlueFlame() ? 9999 : (3 + plant.getPierceBonus());
+                                int finalDmg = plant.isBlueFlame() ? 200 : damage;
                                 proj = projectileType.getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
-                                    .newInstance(spawnX, finalSpawnY, speed, damage, totalPierces);
+                                    .newInstance(spawnX, finalSpawnY, speed, finalDmg, totalPierces);
                             } else if (projectileType == PoisonProjectile.class) {
                                 int totalPoisonDmg = 6 + plant.getPoisonDmgTickBonus();
                                 proj = projectileType.getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)

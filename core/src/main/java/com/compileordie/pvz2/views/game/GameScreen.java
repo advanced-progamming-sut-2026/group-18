@@ -334,6 +334,7 @@ public class GameScreen implements Screen {
         boardDrawer.drawFireTiles(batch, player, worldDelta);
         specificBoardDrawer.drawVases(batch, textureBank);
 
+        boardDrawer.drawCraters(batch, player, worldDelta);
         Tile hoveredTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
         boardDrawer.drawTileHighlight(batch, hoveredTile);
 

@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.models.entities.plants.enums;
 
 public enum PlantFoodEffectType {
+    CHOMPER,
     BURST_SUN,
     RAPID_FIRE,
     LANE_CLEAR,

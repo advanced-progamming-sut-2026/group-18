@@ -8,5 +8,6 @@ public enum DamageType {
     BYPASS_ARMOR, // بدون در نظر گرفتن آرمور
     LOBBER,        // تیر قوسی
     POISON,
+    THUNDER,
     LawnMower
 }

@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.entities.plants.strategies.food;
 
+import com.badlogic.gdx.utils.Timer;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.PlantTemplate;
@@ -22,43 +23,46 @@ public class SpawnClonesEffect implements PlantFoodEffectStrategy {
 
     @Override
     public void applyEffect(Plant plant, GameBoard board, Player player) {
-        // 1. Instantly arm the mine/plant that just received the Plant Food!
+        // 1. Instantly arm the parent mine!
         plant.forceArm();
 
         // 2. Fetch random empty tiles
         List<Tile> emptyTiles = board.getEmptyTiles();
         Collections.shuffle(emptyTiles);
 
-        int spawned = 0;
+        // 3. Delay the actual clone spawning so it matches the "toss" animation frame!
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                if (plant.isDead()) return;
 
-        // 3. Spawn the clones
-        for (Tile tile : emptyTiles) {
-            if (spawned >= cloneCount) break;
+                int spawned = 0;
+                for (Tile tile : emptyTiles) {
+                    if (spawned >= cloneCount) break;
 
-            // --- LILY PAD SPECIFIC LOGIC ---
-            if (plant.getName().equals("Lily Pad")) {
-                // If the plant is Lily Pad, ONLY spawn on water!
-                if (!tile.isUnderWater()) continue;
-            } else {
-                // If it's Potato Mine, ONLY spawn on land!
-                if (tile.isUnderWater()) continue;
+                    if (plant.getName().equals("Lily Pad") && !tile.isUnderWater()) continue;
+                    if (!plant.getName().equals("Lily Pad") && tile.isUnderWater()) continue;
+
+                    double spawnX = Constants.Game.PADDING_X + (tile.column * Constants.Game.TILE_WIDTH) + (Constants.Game.TILE_WIDTH / 2.0);
+                    double spawnY = Constants.Game.PADDING_Y + (tile.row * Constants.Game.TILE_HEIGHT) + (Constants.Game.TILE_HEIGHT / 2.0);
+
+                    Plant clone = PlantFactory.createPlant(baseTemplate, spawnX, spawnY);
+                    if (clone != null) {
+                        clone.applyLevelUpgrade(plant.getLevel());
+                        clone.forceArm(); // Clones are instantly armed!
+                        board.addPlant(clone);
+                        spawned++;
+                    }
+                }
             }
+        }, 1.0f);
 
-            double spawnX = tile.column * Constants.Game.TILE_WIDTH;
-            double spawnY = tile.row * Constants.Game.TILE_HEIGHT;
-
-            // Build the clone
-            Plant clone = PlantFactory.createPlant(baseTemplate, spawnX, spawnY);
-
-            // A. Make sure the clones have the exact same upgrades as the parent!
-            clone.applyLevelUpgrade(plant.getLevel());
-
-            // B. Instantly arm them using the clean API!
-            clone.forceArm();
-            board.addPlant(clone);
-            spawned++;
-        }
-
-        plant.resetFeed();
+        // 4. End the Plant Food state cleanly after the 3-part animation completes
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                plant.resetFeed();
+            }
+        }, 2.5f);
     }
 }

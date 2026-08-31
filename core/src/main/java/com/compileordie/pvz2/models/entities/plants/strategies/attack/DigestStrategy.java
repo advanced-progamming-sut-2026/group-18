@@ -19,9 +19,11 @@ public class DigestStrategy implements AttackStrategy {
     public void attack(Plant plant, GameBoard board, int tickDelta) {
         if (!plant.isArmed()) return;
 
-        int plantRow = (int) (plant.getY() / Constants.Game.TILE_HEIGHT);
-        double plantX = plant.getX();
-        double attackRadiusPixels = rangeTiles * Constants.Game.TILE_HEIGHT;
+        // --- FIX: Bulletproof grid math! ---
+        int plantRow = (int) Math.floor((plant.getY() - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
+
+        double eatMin = plant.getX() - (Constants.Game.TILE_WIDTH * 0.25); // Slight leeway behind
+        double eatMax = plant.getX() + (rangeTiles * Constants.Game.TILE_WIDTH);
 
         Zombie target = null;
         double closestFront = Double.MAX_VALUE;
@@ -29,14 +31,11 @@ public class DigestStrategy implements AttackStrategy {
         for (Zombie z : board.getAllZombies()) {
             if (z.isDead() || !z.occupiesRow(plantRow)) continue;
 
-            // Positive distance means the zombie is in front (right)
-            double dist = z.getX() - plantX;
-
-            // -20 pixel tolerance so it can eat zombies that are currently biting it!
-            if (dist >= -20 && dist <= attackRadiusPixels) {
+            if (z.getX() >= eatMin && z.getX() <= eatMax) {
+                double dist = z.getX() - plant.getX();
                 if (dist < closestFront) {
                     closestFront = dist;
-                    target = z; // Grab the closest one!
+                    target = z;
                 }
             }
         }
@@ -44,10 +43,10 @@ public class DigestStrategy implements AttackStrategy {
         if (target != null) {
             target.takeDamage(99999, DamageType.NORMAL, PlantType.getByName(plant.getName()));
 
-            // Note: I DO NOT set holdAction = true here.
-            // This allows Plant.java to reset the timer to 0, starting the 40-second digest!
+            // Chomper successfully ate! We DO NOT set holdAction=true.
+            // The engine will naturally reset his action timer to 0, starting the 40s digest!
         } else {
-            plant.holdAction = true;
+            plant.holdAction = true; // Stay ready to bite!
         }
     }
 }

@@ -59,12 +59,12 @@ ID,Name,Category,Tags,Cost,Base HP,Damage,Base Ability,Plant Food Effect,Lvl 2,L
 58,Lily Pad,Modifier,"Water, stack",25,300,0,بستر کاشت سایر گیاهان روی آب (ضروری برای ساحل).,ایجاد چند کپی از خود روی خانه‌های خالی آب.,Cost -25,HP +200,Cooldown -2s,-,5,NONE,SPAWN_CLONES
 59,Hot Potato,Explosive,Fire,0,300,0,کاشت روی یخ برای آب کردن فوری آن (ضروری برای غار یخ‌زده).,ندارد (مصرفی آنی),Cooldown -2s,Melt Area 3x3,Explode on Finish,-,5,INSTANT_USE,NONE
 60,Grave Buster,Explosive,-,0,300,0,از بین بردن قبرها. (ضروری برای مراحل مصر باستان و قرون تاریک).,ندارد (مصرفی آنی),Eat Time -1s,Cooldown -2s,Explode on Finish,-,10,INSTANT_USE,NONE
-61,Enlighten-mint,Sun Producer,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,-,85,MINT_ACTIVATE,NONE
-62,Appease-mint,Shooter,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,-,85,MINT_ACTIVATE,NONE
-63,Arma-mint,Lobber,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,-,85,MINT_ACTIVATE,NONE
-64,Bombard-mint,Explosive,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,-,85,MINT_ACTIVATE,NONE
-65,Enforce-mint,Melee,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,-,85,MINT_ACTIVATE,NONE
-66,Reinforce-mint,Wall-nut,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,-,85,MINT_ACTIVATE,NONE
-67,Enchant-mint,Modifier,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,-,85,MINT_ACTIVATE,NONE
-68,Pierce-mint,Strike-through,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,-,85,MINT_ACTIVATE,NONE
-69,catTail-mint,Homing,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,-,85,MINT_ACTIVATE,NONE
+61,Enlighten-mint,Sun Producer,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,3,85,MINT_ACTIVATE,NONE
+62,Appease-mint,Shooter,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,3,85,MINT_ACTIVATE,NONE
+63,Arma-mint,Lobber,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,3,85,MINT_ACTIVATE,NONE
+64,Bombard-mint,Explosive,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,3,85,MINT_ACTIVATE,NONE
+65,Enforce-mint,Melee,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,3,85,MINT_ACTIVATE,NONE
+66,Reinforce-mint,Wall-nut,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,3,85,MINT_ACTIVATE,NONE
+67,Enchant-mint,Modifier,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,3,85,MINT_ACTIVATE,NONE
+68,Pierce-mint,Strike-through,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,3,85,MINT_ACTIVATE,NONE
+69,catTail-mint,Homing,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,3,85,MINT_ACTIVATE,NONE
