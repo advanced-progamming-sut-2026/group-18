@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /**
  * فاز ۰ - گام ۰.۳: یک Thread جداگانه به‌ازای هر اتصال کلاینت (اجرا شده روی thread-pool سرور).
@@ -36,10 +37,10 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         try (
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-                PrintWriter writer = new PrintWriter(
-                        socket.getOutputStream(), true, StandardCharsets.UTF_8)
+            BufferedReader in = new BufferedReader(
+                new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+            PrintWriter writer = new PrintWriter(
+                socket.getOutputStream(), true, StandardCharsets.UTF_8)
         ) {
             this.out = writer;
             String line;
@@ -77,6 +78,12 @@ public class ClientHandler implements Runnable {
             case AUTH_LOGIN:
                 handleLogin(message);
                 break;
+            case AUTH_CHANGE_PASSWORD:
+                handleChangePassword(message);
+                break;
+            case AUTH_CHANGE_USERNAME:
+                handleChangeUsername(message);
+                break;
             case PLAYER_STATE_PUSH:
                 handlePlayerStatePush(message);
                 break;
@@ -93,7 +100,7 @@ public class ClientHandler implements Runnable {
     private void handleRegister(Message message) {
         AccountStore store = server.getAccountStore();
         String username = message.get("username");
-        String password = message.get("password");
+        String password = decodePassword(message.get("password"));
 
         String usernameError = AccountValidator.validateUsername(username);
         if (usernameError != null) {
@@ -117,16 +124,16 @@ public class ClientHandler implements Runnable {
         server.registerOnlineClient(username, this);
 
         send(new Message(MessageType.AUTH_RESULT)
-                .put("status", "SUCCESS")
-                .put("session", username)
-                .put("data", ""));
+            .put("status", "SUCCESS")
+            .put("session", username)
+            .put("data", ""));
     }
 
     /** فاز ۱ - گام ۱.۲ و ۱.۴: ورود؛ اگر موفق بود، آخرین دیتای بازیکن هم همراه پاسخ برگردانده می‌شود. */
     private void handleLogin(Message message) {
         AccountStore store = server.getAccountStore();
         String username = message.get("username");
-        String password = message.get("password");
+        String password = decodePassword(message.get("password"));
 
         Account account = store.get(username);
         if (account == null) {
@@ -134,7 +141,7 @@ public class ClientHandler implements Runnable {
             return;
         }
 
-        String passwordHash = PasswordHasher.sha256Hex(password == null ? "" : password);
+        String passwordHash = PasswordHasher.sha256Hex(password);
         if (!account.getPasswordHashHex().equals(passwordHash)) {
             send(new Message(MessageType.AUTH_RESULT).put("status", "WRONG_PASSWORD"));
             return;
@@ -144,9 +151,95 @@ public class ClientHandler implements Runnable {
         server.registerOnlineClient(username, this);
 
         send(new Message(MessageType.AUTH_RESULT)
-                .put("status", "SUCCESS")
-                .put("session", username)
-                .put("data", account.getPlayerDataBase64()));
+            .put("status", "SUCCESS")
+            .put("session", username)
+            .put("data", account.getPlayerDataBase64()));
+    }
+
+    /**
+     * فاز ۳: تغییر رمز عبور واقعی (قبلا فقط یک فیلد آرگون۲ تزئینی داخل خودِ Player تغییر
+     * می‌کرد که هیچ ربطی به هش واقعی احراز هویت سرور - SHA-256 داخل AccountStore - نداشت).
+     */
+    private void handleChangePassword(Message message) {
+        String session = message.get("session");
+        if (session == null || !session.equals(this.username)) {
+            send(new Message(MessageType.ERROR).put("reason", "invalid_session"));
+            return;
+        }
+
+        AccountStore store = server.getAccountStore();
+        Account account = store.get(session);
+        if (account == null) {
+            send(new Message(MessageType.AUTH_RESULT).put("status", "USER_NOT_FOUND"));
+            return;
+        }
+
+        String oldPassword = decodePassword(message.get("oldPassword"));
+        if (!account.getPasswordHashHex().equals(PasswordHasher.sha256Hex(oldPassword))) {
+            send(new Message(MessageType.AUTH_RESULT).put("status", "WRONG_PASSWORD"));
+            return;
+        }
+
+        String newPassword = decodePassword(message.get("newPassword"));
+        String passwordError = AccountValidator.validatePassword(newPassword);
+        if (passwordError != null) {
+            send(new Message(MessageType.AUTH_RESULT).put("status", "INVALID_PASSWORD").put("error", passwordError));
+            return;
+        }
+
+        store.updatePassword(session, PasswordHasher.sha256Hex(newPassword));
+        send(new Message(MessageType.AUTH_RESULT).put("status", "SUCCESS").put("session", session));
+    }
+
+    /**
+     * فاز ۳: تغییر نام‌کاربری واقعی. چون accounts.tsv با username کلید می‌خورد، این یک
+     * rename واقعی سمت AccountStore است؛ بعد از موفقیت، هویت همین کانکشن هم به‌روز می‌شود
+     * (this.username) و پاسخ session جدید را برمی‌گرداند تا کلاینت هم NetworkSession خودش
+     * را با آن هماهنگ کند - وگرنه فراخوانی‌های بعدی PLAYER_STATE_PUSH/PULL با session قدیمی
+     * رد می‌شدند.
+     */
+    private void handleChangeUsername(Message message) {
+        String session = message.get("session");
+        if (session == null || !session.equals(this.username)) {
+            send(new Message(MessageType.ERROR).put("reason", "invalid_session"));
+            return;
+        }
+
+        String newUsername = message.get("newUsername");
+        String usernameError = AccountValidator.validateUsername(newUsername);
+        if (usernameError != null) {
+            send(new Message(MessageType.AUTH_RESULT).put("status", "INVALID_USERNAME").put("error", usernameError));
+            return;
+        }
+
+        AccountStore store = server.getAccountStore();
+        if (!newUsername.equals(session) && store.exists(newUsername)) {
+            send(new Message(MessageType.AUTH_RESULT).put("status", "USERNAME_TAKEN"));
+            return;
+        }
+
+        if (!store.renameAccount(session, newUsername)) {
+            send(new Message(MessageType.ERROR).put("reason", "rename_failed"));
+            return;
+        }
+
+        server.unregisterOnlineClient(this.username);
+        this.username = newUsername;
+        server.registerOnlineClient(newUsername, this);
+
+        send(new Message(MessageType.AUTH_RESULT).put("status", "SUCCESS").put("session", newUsername));
+    }
+
+    /** فاز ۳: ببینید AuthClient.encodePassword برای دلیل Base64 کردن پسورد در پروتکل سیمی. */
+    private static String decodePassword(String encoded) {
+        if (encoded == null || encoded.isEmpty()) {
+            return "";
+        }
+        try {
+            return new String(Base64.getDecoder().decode(encoded), StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            return "";
+        }
     }
 
     /**

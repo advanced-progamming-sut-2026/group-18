@@ -4,6 +4,8 @@ import com.compileordie.pvz2.network.protocol.Message;
 import com.compileordie.pvz2.network.protocol.MessageType;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /**
  * فاز ۱ - گام ۱.۲: کلاینت را به یک واسط نازک (thin client) تبدیل می‌کنیم.
@@ -35,31 +37,60 @@ public class AuthClient {
     /** فاز ۱ - گام ۱.۱/۱.۲: ثبت‌نام. خروجی AUTH_RESULT خام سرور است (status, error, session, data). */
     public Message register(String username, String password) {
         Message request = new Message(MessageType.AUTH_REGISTER)
-                .put("username", username)
-                .put("password", password);
+            .put("username", username)
+            .put("password", encodePassword(password));
         return sendAndWaitFor(request, MessageType.AUTH_RESULT, MessageType.ERROR);
     }
 
     /** فاز ۱ - گام ۱.۲/۱.۳/۱.۴: ورود. اگر status=SUCCESS باشد، session و data (آخرین دیتای بازیکن) هم برمی‌گردد. */
     public Message login(String username, String password) {
         Message request = new Message(MessageType.AUTH_LOGIN)
-                .put("username", username)
-                .put("password", password);
+            .put("username", username)
+            .put("password", encodePassword(password));
         return sendAndWaitFor(request, MessageType.AUTH_RESULT, MessageType.ERROR);
+    }
+
+    /** فاز ۳: تغییر رمز عبور واقعی روی سرور (قبلا این کار فقط محلی/تزئینی انجام می‌شد). */
+    public Message changePassword(String session, String oldPassword, String newPassword) {
+        Message request = new Message(MessageType.AUTH_CHANGE_PASSWORD)
+            .put("session", session)
+            .put("oldPassword", encodePassword(oldPassword))
+            .put("newPassword", encodePassword(newPassword));
+        return sendAndWaitFor(request, MessageType.AUTH_RESULT, MessageType.ERROR);
+    }
+
+    /** فاز ۳: تغییر نام‌کاربری واقعی روی سرور. موفقیت‌آمیز بودنش یعنی session جدید = newUsername است. */
+    public Message changeUsername(String session, String newUsername) {
+        Message request = new Message(MessageType.AUTH_CHANGE_USERNAME)
+            .put("session", session)
+            .put("newUsername", newUsername);
+        return sendAndWaitFor(request, MessageType.AUTH_RESULT, MessageType.ERROR);
+    }
+
+    /**
+     * پروتکل سیمی فعلی (Message.toWire) با یک جداکننده‌ی متنی ساده (| ; =) کار می‌کند و پسورد
+     * را خام (بدون escape) داخل payload می‌گذارد. چون UserValidator.isPasswordStrong عملا
+     * وجود حداقل یک کاراکتر خاص از جمله =  ;  | را *الزامی* می‌کند، یک پسورد کاملا معتبر
+     * می‌توانست پیام سیمی را خراب کند. برای جلوگیری از این باگ، پسورد را همیشه Base64
+     * می‌کنیم (سرور هم قبل از هش کردن دیکد می‌کند)؛ بقیه‌ی فیلدها (username و ...) نیازی به
+     * این کار ندارند چون UserValidator.isUsernameValid از قبل کاراکترها را به [a-zA-Z0-9-] محدود می‌کند.
+     */
+    private static String encodePassword(String password) {
+        return Base64.getEncoder().encodeToString((password == null ? "" : password).getBytes(StandardCharsets.UTF_8));
     }
 
     /** فاز ۱ - گام ۱.۴: بعد از هر تغییر (خرید و ...)، کل دیتای Player (Base64 شده) را به سرور push می‌کنیم. */
     public Message pushPlayerData(String session, String playerDataBase64) {
         Message request = new Message(MessageType.PLAYER_STATE_PUSH)
-                .put("session", session)
-                .put("data", playerDataBase64);
+            .put("session", session)
+            .put("data", playerDataBase64);
         return sendAndWaitFor(request, MessageType.PLAYER_STATE_RESULT, MessageType.ERROR);
     }
 
     /** درخواست دستی آخرین نسخه‌ی دیتای بازیکن (بیشتر برای دیباگ/تست؛ لاگین خودش data را می‌دهد). */
     public Message pullPlayerData(String session) {
         Message request = new Message(MessageType.PLAYER_STATE_PULL)
-                .put("session", session);
+            .put("session", session);
         return sendAndWaitFor(request, MessageType.PLAYER_STATE_RESULT, MessageType.ERROR);
     }
 
