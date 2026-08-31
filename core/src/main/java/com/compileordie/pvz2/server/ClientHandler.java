@@ -14,6 +14,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
+import java.util.Set;
 
 /**
  * فاز ۰ - گام ۰.۳: یک Thread جداگانه به‌ازای هر اتصال کلاینت (اجرا شده روی thread-pool سرور).
@@ -93,6 +95,12 @@ public class ClientHandler implements Runnable {
             case LEADERBOARD_REQUEST:
                 handleLeaderboardRequest();
                 break;
+            case ONLINE_PLAYERS_REQUEST:
+                handleOnlinePlayersRequest(message);
+                break;
+            case ALL_PLAYERS_REQUEST:
+                handleAllPlayersRequest(message);
+                break;
             default:
                 send(new Message(MessageType.ERROR).put("reason", "not_implemented_yet"));
                 break;
@@ -144,7 +152,7 @@ public class ClientHandler implements Runnable {
             return;
         }
 
-        String passwordHash = PasswordHasher.sha256Hex(password);
+        String passwordHash = PasswordHasher.sha256Hex(password == null ? "" : password);
         if (!account.getPasswordHashHex().equals(passwordHash)) {
             send(new Message(MessageType.AUTH_RESULT).put("status", "WRONG_PASSWORD"));
             return;
@@ -256,13 +264,13 @@ public class ClientHandler implements Runnable {
      * می‌دهد.
      */
     private void handleLeaderboardRequest() {
-        java.util.List<Account> accounts = server.getAccountStore().getAllAccounts();
+        Set<String> usernames = server.getAccountStore().getAllUsernames();
         Message response = new Message(MessageType.LEADERBOARD_RESULT)
-                .put("count", String.valueOf(accounts.size()));
+                .put("count", String.valueOf(usernames.size()));
         int i = 0;
-        for (Account account : accounts) {
-            response.put("user_" + i, account.getUsername());
-            response.put("data_" + i, account.getPlayerDataBase64());
+        for (String username : usernames) {
+            response.put("user_" + i, username);
+            response.put("data_" + i, server.getAccountStore().get(username).getPlayerDataBase64());
             i++;
         }
         send(response);
@@ -293,6 +301,29 @@ public class ClientHandler implements Runnable {
         Account account = server.getAccountStore().get(session);
         String data = account == null ? "" : account.getPlayerDataBase64();
         send(new Message(MessageType.PLAYER_STATE_RESULT).put("status", "SUCCESS").put("data", data));
+    }
+
+    /**
+     * لیست username کاربرهایی که الان آنلاین‌اند و می‌شه باهاشون I-Zombie چالش گذاشت.
+     * طبق درخواست: خودِ کاربری که این درخواست را فرستاده از لیست حذف می‌شود (نباید بتونه
+     * با خودش چالش بذاره). چون هنوز فرمت پیام لیست ندارد، username ها با کاما (,) به هم
+     * وصل می‌شوند (کاما تو username مجاز نیست، پس این جداکننده امن است).
+     */
+    private void handleOnlinePlayersRequest(Message message) {
+        Set<String> online = server.getOnlineUsernames();
+        if (this.username != null) {
+            online.remove(this.username);
+        }
+        send(new Message(MessageType.ONLINE_PLAYERS_RESULT).put("usernames", String.join(",", online)));
+    }
+
+    /** لیست username همه‌ی کاربرهای ثبت‌نام‌شده، فارغ از آنلاین بودن. خودِ کاربر درخواست‌دهنده هم حذف می‌شود. */
+    private void handleAllPlayersRequest(Message message) {
+        Set<String> all = server.getAllUsernames();
+        if (this.username != null) {
+            all.remove(this.username);
+        }
+        send(new Message(MessageType.ALL_PLAYERS_RESULT).put("usernames", String.join(",", all)));
     }
 
     /** ارسال یک پیام به این کلاینت مشخص (بعدا برای relay بین دو کلاینت هم استفاده می‌شود). */
