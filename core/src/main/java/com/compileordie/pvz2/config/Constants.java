@@ -47,6 +47,7 @@ public final class Constants {
         public static final float PROSPECTOR_BOOM_X = 6.5f;
         public static final float EAT_HOME_X = 4.8f;
         public static final float DEADLINE_X = 8.6f;
+        public static final float BRAINS_X = 5.6f;
         public static final float X_OF_MOWER = 5f;
         public static final float PADDING_X = 6.47f;
         public static final float PADDING_Y = 1.05f;

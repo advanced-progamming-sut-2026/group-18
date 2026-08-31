@@ -45,6 +45,8 @@ public class ZombieCombatManager {
         float endLine;
         if (AppModel.currentLevel == LevelID.DEAD_LINE) {
             endLine = Constants.Game.DEADLINE_X;
+        } else if (AppModel.currentLevel == LevelID.I_ZOMBIE) {
+            endLine = Constants.Game.BRAINS_X;
         } else {
             endLine = Constants.Game.EAT_HOME_X;
         }

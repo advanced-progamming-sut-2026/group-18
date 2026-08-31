@@ -18,6 +18,7 @@ import com.compileordie.pvz2.models.entities.zombies.variants.summoner.TombType;
 import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.economy.PlantCard;
 import com.compileordie.pvz2.models.game.levels.ChapterType;
+import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.models.missions.quests.QuestEvent;
 import com.compileordie.pvz2.models.missions.quests.QuestManager;
 import com.compileordie.pvz2.views.game.ui.PlantFoodBank;
@@ -143,7 +144,7 @@ final class BoardEntityDrawer {
     }
 
     void drawMowers(SpriteBatch batch, PamPlayer player, float delta) {
-        if (AppModel.gameSession == null || player == null) return;
+        if (AppModel.gameSession == null || player == null || AppModel.currentLevel == LevelID.I_ZOMBIE) return;
         String resolvedPath = MOWER_PAM_SPEC.getResolvedPath();
         if (brokenAssets.contains(resolvedPath)) return;
 
