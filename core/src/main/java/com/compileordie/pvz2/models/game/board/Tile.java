@@ -66,6 +66,14 @@ public class Tile {
         }
     }
 
+    public Tomb getTomb() {
+        if (obstacle != null && obstacle.type == ObstacleType.TOMB) {
+            return (Tomb) obstacle;
+        } else {
+            return null;
+        }
+    }
+
     public void setOnFire() {
         if (plant != null) {
             plant.die();
