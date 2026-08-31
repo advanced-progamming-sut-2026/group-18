@@ -6,9 +6,7 @@ import com.compileordie.pvz2.server.auth.AccountStore;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -84,18 +82,11 @@ public class Server {
     }
 
     /**
-     * لیست username همه‌ی کاربرهایی که الان آنلاین‌اند (یعنی می‌شه باهاشون I-Zombie
-     * چالش گذاشت). یه کپی از کلیدهای onlineClients برمی‌گردونه، نه رفرنس مستقیم؛
-     * چون این مپ ممکنه هم‌زمان از یه thread دیگه (اتصال/قطع یه کلاینت دیگه) تغییر کنه.
-     * فیلتر کردن خودِ کاربر (که نباید بتونه با خودش چالش بذاره) بر عهده‌ی caller است
-     * (مثلا موقع پیاده‌سازی IZOMBIE_CHALLENGE_REQUEST تو فاز ۳).
+     * فاز ۳ - گام ۳.۱: اسنپ‌شات (کپی، نه رفرنس زنده‌ی مپ داخلی) از username های الان
+     * آنلاین - برای USER_LIST_REQUEST با scope=ONLINE. صرفا خواندنی است، هیچ متد یا
+     * فیلد موجودی را تغییر نمی‌دهد.
      */
-    public Set<String> getOnlineUsernames() {
-        return new HashSet<>(onlineClients.keySet());
-    }
-
-    /** لیست username همه‌ی کاربرهای ثبت‌نام‌شده تو دیتابیس، فارغ از آنلاین بودن یا نبودن. */
-    public Set<String> getAllUsernames() {
-        return accountStore.getAllUsernames();
+    public java.util.Set<String> getOnlineUsernames() {
+        return new java.util.HashSet<>(onlineClients.keySet());
     }
 }

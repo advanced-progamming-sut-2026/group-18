@@ -13,7 +13,6 @@ import java.io.IOException;
 public final class NetworkSession {
 
     private static AuthClient authClient;
-    private static PlayersClient playersClient;
     private static String currentSessionUsername;
 
     private NetworkSession() {
@@ -25,18 +24,6 @@ public final class NetworkSession {
             authClient.connect(NetworkConfig.SERVER_HOST, NetworkConfig.SERVER_PORT);
         }
         return authClient;
-    }
-
-    /**
-     * PlayersClient (لیست آنلاین‌ها/همه‌ی کاربرها) روی همون اتصال مشترک NetworkClient کار می‌کند؛
-     * برای همین قبل از ساختنش باید مطمئن شویم که یک بار وصل شده‌ایم (ensureConnected).
-     */
-    public static synchronized PlayersClient getPlayersClient() throws IOException {
-        ensureConnected();
-        if (playersClient == null) {
-            playersClient = new PlayersClient(NetworkClient.getInstance());
-        }
-        return playersClient;
     }
 
     public static synchronized void setCurrentSession(String username) {
