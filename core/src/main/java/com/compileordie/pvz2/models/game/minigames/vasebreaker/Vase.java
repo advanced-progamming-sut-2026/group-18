@@ -56,13 +56,11 @@ public class Vase extends GameEntity {
                 getX(),
                 getY(),
                 getTileRow()));
-            AppModel.addAfterPrompt("Vase released a " + zombieType + " zombie!");
         } else if (seedPacket != null) {
             gameBoard.seedPackets.add(seedPacket);
         }
         if (type == VaseType.NORMAL) {
             gameBoard.economyManager.suns.add(new Sun(getX(), getY(), SunType.NORMAL, false, 0));
-            AppModel.addAfterPrompt("Vase dropped a sun");
         }
         isBroken = true;
         for (Tile tile : gameBoard.getAllTiles()) {

@@ -203,6 +203,9 @@ public class GameScreenController {
         } else {
             Plant newPlant = PlantSpawner.spawn(selectedCard.plantType, spawnX, spawnY, selectedCard.isBoosted, false);
             tile.plant = newPlant;
+            // Feeds Master Demolisher / Cloudy Day / Night or Morning / Family Slayer /
+            // One Less Column / Defenseless Row / Defenseless Cross.
+            AppModel.gameSession.gameBoard.recordPlanting(selectedCard.plantType, tile);
         }
         QuestManager.dispatch(QuestEvent.PLANT_PLANTED, 1, AppModel.currentChapter.name());
 

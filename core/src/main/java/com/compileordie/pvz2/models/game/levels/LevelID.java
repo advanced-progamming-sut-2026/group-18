@@ -48,6 +48,13 @@ public enum LevelID {
         return !Set.of(CONVEYOR_BELT, VASE_BREAKER, I_ZOMBIE, WALNUT_BOWLING, BEGHOULED, LOCKED_PLANTS).contains(this);
     }
 
+    // Used by the "Night or Morning" quest to detect daytime levels. Follows the same
+    // literal-identifier convention already used elsewhere in this enum/codebase
+    // (e.g. EconomyManager's `gameBoard.levelID == LevelID.WALNUT_BOWLING` check).
+    public boolean isNightLevel() {
+        return this.name().contains("NIGHT");
+    }
+
     public LevelID next() {
         return VALUES[(this.ordinal() + 1) % VALUES.length];
     }

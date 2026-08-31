@@ -148,13 +148,10 @@ public abstract class Zombie extends GameEntity {
     @Override
     public void die() {
         super.die();
-        AppModel.addAfterPrompt("Zombie " + type + " died!");
         if (isGlowing) {
             Player player = AppModel.player;
             player.plantFoodCount++;
             if (player.plantFoodCount > 3) player.plantFoodCount = 3;
-            AppModel.addAfterPrompt("The glowing zombie dropped a plant food; you have "
-                + player.plantFoodCount + " plant foods now.");
         }
         if (isFooded) {
             // 🌱 دقیقا سرجای مرگِ زامبی (getX()/getY() که همین الان، قبل از
@@ -162,9 +159,10 @@ public abstract class Zombie extends GameEntity {
             // همون الگویی که TombType.PLANT_FOOD قبلا برای Tomb استفاده کرده)
             // یک PlantFood روی زمین اسپاون می‌شه که بازیکن باید بره جمعش کنه.
             AppModel.gameSession.gameBoard.plantFoods.add(new PlantFood(getX(), getY()));
-            AppModel.addAfterPrompt("The zombie dropped a plant food on the ground!");
         }
-        QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED, 1, AppModel.currentChapter.toString());
+        // NOTE: must use .name() (e.g. "ANCIENT_EGYPT"), not .toString() (e.g. "Ancient Egypt"),
+        // since that's the exact identifier QuestDatabaseSeeder uses for Chapter Hunter quests.
+        QuestManager.dispatch(QuestEvent.ZOMBIE_KILLED, 1, AppModel.currentChapter.name());
 
         //----
         int tileCol = (int) Math.floor(getX() / Constants.Game.TILE_WIDTH);

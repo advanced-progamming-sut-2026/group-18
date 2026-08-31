@@ -1,9 +1,13 @@
 package com.compileordie.pvz2.models.game.board;
 
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.controllers.PlantSpawner;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.obstacles.ObstacleType;
 import com.compileordie.pvz2.models.entities.plants.Plant;
+import com.compileordie.pvz2.models.entities.plants.PlantTemplate;
+import com.compileordie.pvz2.models.entities.plants.enums.PlantCategory;
+import com.compileordie.pvz2.models.entities.plants.enums.PlantTag;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.entities.zombies.services.manager.ZombieManager;
@@ -19,6 +23,8 @@ import com.compileordie.pvz2.models.game.minigames.vasebreaker.SeedPacket;
 import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
 import com.compileordie.pvz2.models.game.waves.WaveManager;
 import com.compileordie.pvz2.models.game.waves.WaveType;
+import com.compileordie.pvz2.models.missions.quests.QuestEvent;
+import com.compileordie.pvz2.models.missions.quests.QuestManager;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.models.user.Player; // Arsam
@@ -44,6 +50,18 @@ public class GameBoard {
     public int tickCounter;
     public int registeredShapes;
     private List<Plant> plants;
+
+    // --- Quest tracking (scoped to this level/session; read by GameJudge at level-clear time) ---
+    // 1-indexed columns/rows that have had a plant placed on them at any point this level.
+    public Set<Integer> plantedColumns = new HashSet<>();
+    public Set<Integer> plantedRows = new HashSet<>();
+    // Every distinct PlantType placed this level (used for the "NO_FAMILY" check).
+    public Set<PlantType> plantedTypes = new HashSet<>();
+    // Distinct ZOMBIE_KILLED_BY_PLANT contexts this level (e.g. "PEASHOOTER", "MOWER"),
+    // used to check the "ONLY_FAMILY" (Family Slayer) condition.
+    public Set<String> killContexts = new HashSet<>();
+    public int sunProducingPlantsPlanted = 0;
+    public boolean nightPlantPlanted = false;
 
     public GameBoard(LevelID levelID,
                      int totalRows,
@@ -85,7 +103,7 @@ public class GameBoard {
     }
 
     public Lane getLane(float y) {
-        return getLane((int) Math.floor(y / Constants.Game.TILE_HEIGHT));
+        return getLane((int) Math.floor((y - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT));
     }
 
     public void tick(int ticks) {
@@ -214,5 +232,37 @@ public class GameBoard {
 
     public ArrayList<Projectile> getActiveProjectiles() {
         return projectiles;
+    }
+
+    /**
+     * Records the bookkeeping needed for the various level-condition quests (Family Slayer,
+     * Flourishing in Limits, Cloudy Day, Night or Morning, One Less Column, Defenseless Row/Cross,
+     * Master Demolisher) and dispatches EXPLOSIVE_PLANTED where relevant. Called from wherever a
+     * plant is actually placed onto this board.
+     */
+    public void recordPlanting(PlantType plantType, Tile tile) {
+        if (plantType == null || tile == null) return;
+
+        plantedColumns.add(tile.column + 1); // 1-indexed, matching the QuestDatabaseSeeder's EMPTY_COL/ROW values
+        plantedRows.add(tile.row + 1);
+        plantedTypes.add(plantType);
+
+        PlantTemplate template = PlantSpawner.getTemplate(plantType);
+        if (template != null) {
+            if (template.getCategory() == PlantCategory.SUN_PRODUCER) {
+                sunProducingPlantsPlanted++;
+            }
+            if (template.getCategory() == PlantCategory.EXPLOSIVE) {
+                QuestManager.dispatch(QuestEvent.EXPLOSIVE_PLANTED, 1, null);
+            }
+            if (template.getTags() != null && template.getTags().contains(PlantTag.NIGHT)) {
+                nightPlantPlanted = true;
+            }
+        }
+    }
+
+    /** Records which plant (or "MOWER") scored a kill this level, for the Family Slayer quest. */
+    public void recordKillContext(String context) {
+        if (context != null) killContexts.add(context.trim().toUpperCase());
     }
 }

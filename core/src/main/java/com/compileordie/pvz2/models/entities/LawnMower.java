@@ -53,7 +53,6 @@ public class LawnMower extends GameEntity {
                     sb.append(casualties.get(i).getType().toString());
                     if (i < casualties.size() - 1) sb.append(", ");
                 }
-                AppModel.addAfterPrompt(sb.toString());
             }
 
             if (this.getX() >= Constants.Game.LANE_LENGTH) {
