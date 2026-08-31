@@ -104,4 +104,21 @@ public class AccountStore {
             persistToDisk();
         }
     }
+
+    /**
+     * فاز ۳: چون این مپ با username کلید می‌خورد (و Account.username هم final است)، تغییر
+     * نام‌کاربری یعنی رکورد قدیمی برداشته شود و یک Account جدید زیر کلید جدید ساخته شود.
+     * فراخوان (ClientHandler) مسئول است که از قبل مطمئن شده newUsername قبلا وجود نداشته.
+     * true یعنی موفق؛ false یعنی oldUsername پیدا نشد (نباید در عمل پیش بیاید).
+     */
+    public synchronized boolean renameAccount(String oldUsername, String newUsername) {
+        Account account = accountsByUsername.remove(oldUsername);
+        if (account == null) {
+            return false;
+        }
+        Account renamed = new Account(newUsername, account.getPasswordHashHex(), account.getPlayerDataBase64());
+        accountsByUsername.put(newUsername, renamed);
+        persistToDisk();
+        return true;
+    }
 }

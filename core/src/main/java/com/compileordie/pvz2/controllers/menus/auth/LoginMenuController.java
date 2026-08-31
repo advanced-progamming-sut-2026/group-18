@@ -60,7 +60,7 @@ public class LoginMenuController {
         }
 
         if (stay) {
-            PreferencesManager.setDefaultUser(username);
+            PreferencesManager.rememberCredentials(username, password);
         } else {
             PreferencesManager.clearDefaultUser();
         }
