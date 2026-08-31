@@ -37,10 +37,10 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         try (
-            BufferedReader in = new BufferedReader(
-                new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-            PrintWriter writer = new PrintWriter(
-                socket.getOutputStream(), true, StandardCharsets.UTF_8)
+                BufferedReader in = new BufferedReader(
+                        new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+                PrintWriter writer = new PrintWriter(
+                        socket.getOutputStream(), true, StandardCharsets.UTF_8)
         ) {
             this.out = writer;
             String line;
@@ -90,6 +90,9 @@ public class ClientHandler implements Runnable {
             case PLAYER_STATE_PULL:
                 handlePlayerStatePull(message);
                 break;
+            case LEADERBOARD_REQUEST:
+                handleLeaderboardRequest();
+                break;
             default:
                 send(new Message(MessageType.ERROR).put("reason", "not_implemented_yet"));
                 break;
@@ -124,9 +127,9 @@ public class ClientHandler implements Runnable {
         server.registerOnlineClient(username, this);
 
         send(new Message(MessageType.AUTH_RESULT)
-            .put("status", "SUCCESS")
-            .put("session", username)
-            .put("data", ""));
+                .put("status", "SUCCESS")
+                .put("session", username)
+                .put("data", ""));
     }
 
     /** فاز ۱ - گام ۱.۲ و ۱.۴: ورود؛ اگر موفق بود، آخرین دیتای بازیکن هم همراه پاسخ برگردانده می‌شود. */
@@ -151,9 +154,9 @@ public class ClientHandler implements Runnable {
         server.registerOnlineClient(username, this);
 
         send(new Message(MessageType.AUTH_RESULT)
-            .put("status", "SUCCESS")
-            .put("session", username)
-            .put("data", account.getPlayerDataBase64()));
+                .put("status", "SUCCESS")
+                .put("session", username)
+                .put("data", account.getPlayerDataBase64()));
     }
 
     /**
@@ -240,6 +243,29 @@ public class ClientHandler implements Runnable {
         } catch (IllegalArgumentException e) {
             return "";
         }
+    }
+
+    /**
+     * فاز ۳: لیدربورد ("اطلاعات لیدربورد باید از دادههای ذخیرهشده کاربران در سرور دریافت شود
+     * و با تغییر اطلاعات کاربران بهروزرسانی شود"). سرور معنای داخلی Player را نمی‌داند (طبق
+     * تصمیم اولیه‌ی پروژه - نگاه کنید AccountValidator)، پس فقط username و همان Blob ای که
+     * PLAYER_STATE_PUSH آخرین بار فرستاده را برمی‌گرداند؛ کلاینت خودش (که ساختار Player را
+     * می‌شناسد) امتیازها را استخراج، مرتب و رندر می‌کند. چون این داده مستقیما از همان
+     * accountsByUsername زنده خوانده می‌شود (نه یک کپی قدیمی/کش‌شده)، هر بار که این پیام
+     * دوباره درخواست شود (هر بار که کاربر لیدربورد را باز می‌کند) آخرین نسخه‌ی هر کاربر را
+     * می‌دهد.
+     */
+    private void handleLeaderboardRequest() {
+        java.util.List<Account> accounts = server.getAccountStore().getAllAccounts();
+        Message response = new Message(MessageType.LEADERBOARD_RESULT)
+                .put("count", String.valueOf(accounts.size()));
+        int i = 0;
+        for (Account account : accounts) {
+            response.put("user_" + i, account.getUsername());
+            response.put("data_" + i, account.getPlayerDataBase64());
+            i++;
+        }
+        send(response);
     }
 
     /**

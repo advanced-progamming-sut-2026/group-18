@@ -83,6 +83,11 @@ public class AccountStore {
         return accountsByUsername.get(username);
     }
 
+    /** فاز ۳: اسنپ‌شاتی از همه‌ی حساب‌ها، برای پاسخ به LEADERBOARD_REQUEST. */
+    public java.util.List<Account> getAllAccounts() {
+        return new java.util.ArrayList<>(accountsByUsername.values());
+    }
+
     /** ثبت‌نام کاربر جدید. فرض بر این است که یکتایی username از قبل (توسط caller) چک شده. */
     public synchronized void createAccount(String username, String passwordHashHex) {
         accountsByUsername.put(username, new Account(username, passwordHashHex, ""));
