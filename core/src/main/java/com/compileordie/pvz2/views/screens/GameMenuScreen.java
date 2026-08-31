@@ -19,6 +19,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.game.levels.ChapterType;
+import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.views.ScreenManager;
 import com.compileordie.pvz2.views.ScreenType;
 import com.compileordie.pvz2.views.customelements.CurrencyHud;
@@ -32,14 +33,14 @@ public class GameMenuScreen extends MenuScreen {
 
     @Override
     public void showCore() {
-        /*// TODO: For debug purposes. Remove later:
+        // TODO: For debug purposes. Remove later:
         for (LevelID levelID : LevelID.values()) {
             if (!AppModel.player.unlockedLevelIDs.contains(levelID)) {
                 AppModel.player.unlockedLevelIDs.add(levelID);
             }
         }
 
-        for (PlantType plantType : PlantType.values()) {
+        /*for (PlantType plantType : PlantType.values()) {
             if (!AppModel.player.unlockedPlants.contains(plantType)) {
                 AppModel.player.unlockedPlants.add(plantType);
             }
