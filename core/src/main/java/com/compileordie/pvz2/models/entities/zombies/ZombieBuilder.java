@@ -143,6 +143,12 @@ public class ZombieBuilder {
             case BARREL_ROLLER:
                 return new BarrelRollerZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, 0, stats.armorHp);
 
+            case RAINCOAT_ZOMBIE:
+                // 🌧️☀️ زامبی بارونی: طبق درخواست، حرکت نمی‌کنه - xSpeed رو
+                // صریحا صفر پاس می‌دیم، مستقل از هر عددی که تو stats.speed
+                // (کانفیگ JSON) باشه.
+                return new RaincoatZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, 0, 0);
+
             // === ۲. زامبی‌های دنیای مصر باستان (Ancient Egypt) ===
             case RA_ZOMBIE:
                 return new RaZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);

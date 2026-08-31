@@ -35,6 +35,13 @@
       "waveCost": 550,
       "armorHp": 1600.0
     },
+    "RAINCOAT_ZOMBIE": {
+      "hitpoints": 1500,
+      "speed": 0,
+      "eatDps": 100,
+      "waveCost": 200,
+      "armorHp": 0
+    },
     "GARGANTUAR": {
       "hitpoints": 3600.0,
       "speed": 0.24,

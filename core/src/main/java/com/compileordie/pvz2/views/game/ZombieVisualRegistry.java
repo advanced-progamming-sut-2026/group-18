@@ -312,6 +312,12 @@ public class ZombieVisualRegistry {
         register("PROSPECTOR", prospectorDef);
         register("PROSPECTOR_ZOMBIE", prospectorDef);
 
+        ZombieVisualDef raincoatDef = new ZombieVisualDef(
+            List.of(PamSpec.fixed("768/FULL/ZOMBIE/ZOMBIE_BIGHEAD/ZOMBIE_BIGHEAD.PAM")),
+            Collections.emptyList()
+        );
+        register("RAINCOAT_ZOMBIE", raincoatDef);
+
         ZombieVisualDef pianistDef = new ZombieVisualDef(
             List.of(
                 PamSpec.fixed("768/FULL/ZOMBIE/PIANO/PIANO.PAM"),
