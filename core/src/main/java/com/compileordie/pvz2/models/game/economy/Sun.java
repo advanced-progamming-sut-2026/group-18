@@ -55,7 +55,6 @@ public class Sun extends GameEntity {
 
             if (wasInAir && getY() <= groundLevel) {
 //                setX(groundLevel);
-                AppModel.addAfterPrompt(String.format("Sun reached the ground at (%.1f, %.1f)", getX(), groundLevel));
             }
         } else {
 //            double deltaX = (target.getX() - this.getX());

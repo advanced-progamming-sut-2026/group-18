@@ -35,7 +35,6 @@ public enum SunType {
             // If it hits the ground, it safely becomes a NORMAL (25) sun
             if (self.getY() > self.groundLevel || self.target != null) return;
             self.type = SunType.NORMAL;
-            AppModel.addAfterPrompt("RadioActive sun became a normal sun.");
         }
     };
 

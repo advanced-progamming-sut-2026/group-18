@@ -18,6 +18,8 @@ import com.compileordie.pvz2.models.entities.zombies.variants.summoner.TombType;
 import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.economy.PlantCard;
 import com.compileordie.pvz2.models.game.levels.ChapterType;
+import com.compileordie.pvz2.models.missions.quests.QuestEvent;
+import com.compileordie.pvz2.models.missions.quests.QuestManager;
 import com.compileordie.pvz2.views.game.ui.PlantFoodBank;
 import com.compileordie.pvz2.views.helpers.ToastManager;
 import pvz.libpvz.pam.ClipRef;
@@ -306,7 +308,7 @@ final class BoardEntityDrawer {
                     if (sun.type.name().contains("RADIOACTIVE")) {
                         GameScreenController.explodeSun(AppModel.gameSession.gameBoard, sun);
                     }
-
+                    QuestManager.dispatch(QuestEvent.SUN_COLLECTED, sun.type.value, null);
                     AppModel.gameSession.gameBoard.economyManager.sunAmount += sun.type.value;
                     AppModel.gameSession.gameBoard.economyManager.totalSunsGenerated += sun.type.value;
                     iterator.remove();

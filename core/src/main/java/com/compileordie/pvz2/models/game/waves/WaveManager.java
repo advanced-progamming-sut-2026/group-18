@@ -220,7 +220,6 @@ public class WaveManager {
         if (listener != null) {
             listener.onWaveStarted(wave, total, isFinal, message);
         } else {
-            AppModel.addAfterPrompt(message);
         }
     }
 

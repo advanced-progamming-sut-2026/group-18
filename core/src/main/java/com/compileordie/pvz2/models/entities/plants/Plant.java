@@ -436,7 +436,6 @@ public class Plant extends GameEntity {
 
         int xInt = (int) this.getX();
         int yInt = (int) this.getY();
-        AppModel.addAfterPrompt("Plant " + this.name + " at (" + xInt + ", " + yInt + ") is destroyed.");
     }
 
     // --- Bowling Bulb Queue Helpers ---
