@@ -39,8 +39,11 @@ public class GameMenuController {
                 .filter(plantType -> AppModel.player.unlockedPlants.contains(plantType))
                 .collect(Collectors.toCollection(ArrayList::new));
         } else if (levelID == LevelID.WALNUT_BOWLING) {
-            // TODO: Add Bowling Walnut and Giant Bowling Walnut
-            return new ArrayList<>(Arrays.asList(PlantType.EXPLODE_O_NUT));
+            return new ArrayList<>(Arrays.asList(
+                PlantType.BOWLING_WALL_NUT,
+                PlantType.BOWLING_EXPLODE_O_NUT,
+                PlantType.GIANT_WALL_NUT
+            ));
         } else {
             return AppModel.player.unlockedPlants;
         }

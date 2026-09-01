@@ -19,6 +19,9 @@ public class AttackStrategyFactory {
         boolean isInstantKill) {
 
         switch (type) {
+            case BOWLING_LAUNCH:
+                return new BowlingLaunchStrategy();
+
             case MODIFIER_PASSIVE:
                 return new ModifierPassiveStrategy();
 

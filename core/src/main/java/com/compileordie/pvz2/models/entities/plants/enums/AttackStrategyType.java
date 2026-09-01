@@ -1,6 +1,7 @@
 package com.compileordie.pvz2.models.entities.plants.enums;
 
 public enum AttackStrategyType {
+    BOWLING_LAUNCH,
     DIRECT_SHOOT,
     CHARGE_SHOOT,
     MULTI_SHOOT,

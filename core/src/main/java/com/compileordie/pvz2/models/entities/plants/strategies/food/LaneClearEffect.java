@@ -73,12 +73,23 @@ public class LaneClearEffect implements PlantFoodEffectStrategy {
             }, 0f, 0.1f, 54);
         }
         else if (name.equals("Garlic")) {
+            // 1. Spawn the Garlic breath projectile visually!
+            try {
+                Projectile proj = PiercingProjectile.class.getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
+                    .newInstance(plant.getX(), plant.getY(), 4.0, 0, 100);
+                proj.setSourcePlantType(PlantType.GARLIC);
+                proj.setXSpeed(4.0);
+                board.getActiveProjectiles().add(proj);
+            } catch (Exception e) {}
+
+            // 2. Force zombies into adjacent lanes
             for (Zombie zombie : board.getAllZombies()) {
                 if (!zombie.isDead() && zombie.getCurrentRow() == plantRow) {
                     int targetRow = plantRow;
                     if (plantRow == 0) targetRow = 1;
                     else if (plantRow == board.totalRows - 1) targetRow = plantRow - 1;
                     else targetRow = random.nextBoolean() ? plantRow - 1 : plantRow + 1;
+
                     double newY = Constants.Game.PADDING_Y + (targetRow * Constants.Game.TILE_HEIGHT) + (Constants.Game.TILE_HEIGHT / 2.0);
                     zombie.setY(newY);
                 }

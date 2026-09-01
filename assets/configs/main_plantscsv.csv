@@ -68,3 +68,6 @@ ID,Name,Category,Tags,Cost,Base HP,Damage,Base Ability,Plant Food Effect,Lvl 2,L
 67,Enchant-mint,Modifier,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,3,85,MINT_ACTIVATE,NONE
 68,Pierce-mint,Strike-through,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,3,85,MINT_ACTIVATE,NONE
 69,catTail-mint,Homing,-,0,100,0,اعمال موقت پلنت فود به تمامی گیاهان خانواده خود,ندارد (مصرفی آنی),Duration +1s,Cooldown -5s,reset family cooldowns,3,85,MINT_ACTIVATE,NONE
+70,Bowling Wallnut,minigame,-,0,4000,300,بونس,ندارد (مصرفی آنی),HP +1000,-,HP +1500,-,0,BOWLING_LAUNCH,NONE
+71,Bowling Explode-o-nut,minigame,Explosive,0,4000,1800,انفجار,ندارد (مصرفی آنی),HP +1000,Explode Dmg +200,Cost -25,-,0,BOWLING_LAUNCH,NONE
+72,Giant Wallnut,minigame,-,0,8000,99999,له,ندارد (مصرفی آنی),HP +2000,Cooldown -5s,HP +3000,-,0,BOWLING_LAUNCH,NONE

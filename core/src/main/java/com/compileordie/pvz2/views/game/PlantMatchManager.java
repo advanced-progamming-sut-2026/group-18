@@ -14,6 +14,9 @@ import com.compileordie.pvz2.models.game.board.Tile;
 import pvz.libpvz.pam.ClipRef;
 import pvz.libpvz.pam.PamPlayer;
 import java.util.*;
+
+import static com.compileordie.pvz2.models.AppModel.player;
+
 public class PlantMatchManager {
     private final GameRenderStates states;
     private final PlantAssetManager assetManager;
@@ -90,7 +93,7 @@ public class PlantMatchManager {
                     currentExplosives.add(plant);
                 }
 
-                drawSinglePlant(batch, plant, delta);
+                drawSinglePlant(batch, player, plant, delta);
 
                 if (plant.isFed()) {
                     if (plant.getName().equals("Citron")) {
@@ -126,7 +129,7 @@ public class PlantMatchManager {
                     case "Torchwood" -> hitAnims.add(new HitAnim(ex, ey, "768/INITIAL/PLANT/TORCHWOOD/TORCHWOOD.PAM", "explosion"));
                     case "Potato Mine" -> hitAnims.add(new HitAnim(ex, ey, "768/INITIAL/EFFECTS/POTATOMINE_EXPLOSION/POTATOMINE_EXPLOSION.PAM", "animation2"));
                     case "Primal Potato Mine" -> hitAnims.add(new HitAnim(ex, ey, "768/INITIAL/EFFECTS/PRIMAL_POTATOMINE_EXPLOSION/PRIMAL_POTATOMINE_EXPLOSION.PAM", "animation3"));
-                    case "Cherry Bomb", "Explode-o-nut" -> hitAnims.add(new HitAnim(ex, ey, "768/FULL/EFFECTS/CHERRYBOMB_EXPLOSION_REAR/CHERRYBOMB_EXPLOSION_REAR.PAM", "explosion3"));
+                    case "Cherry Bomb", "Explode-o-nut", "Bowling Explode-o-nut" -> hitAnims.add(new HitAnim(ex, ey, "768/FULL/EFFECTS/CHERRYBOMB_EXPLOSION_REAR/CHERRYBOMB_EXPLOSION_REAR.PAM", "explosion3"));
                     case "Grapeshot" -> hitAnims.add(new HitAnim(ex, ey, "768/INITIAL/EFFECTS/ESCAPEROOT_EXPLOSION_GRAPESHOT/ESCAPEROOT_EXPLOSION_GRAPESHOT.PAM", "animation"));
                     case "Jalapeno" -> {
                         for (int i = 0; i < 18; i++) {
@@ -149,7 +152,7 @@ public class PlantMatchManager {
         }
         trackedExplosives.addAll(currentExplosives);
     }
-    private void drawSinglePlant(SpriteBatch batch, Plant plant, float delta) {
+    private void drawSinglePlant(SpriteBatch batch, PamPlayer player, Plant plant, float delta) {
         GameRenderStates.PlantRenderState state = states.plantRenderStates.computeIfAbsent(plant, p -> new GameRenderStates.PlantRenderState());
         if (!isPaused && !plant.isFrozen()) {
             state.animTime += delta;
@@ -176,6 +179,36 @@ public class PlantMatchManager {
             batch.setTransformMatrix(scaled);
             assetManager.drawPlant(batch, currentClipRef, state.animTime, drawX, drawY, true);
             batch.setTransformMatrix(original);
+// --- ICE BLOCK RENDERER ---
+            if (plant.hasActiveCover() && plant.isFrozen()) {
+                Map<String, Boolean> iceVis = new HashMap<>();
+
+                // Hide all damage layers by default to prevent overlapping
+                iceVis.put("ice_block_damage2", false);
+                iceVis.put("ice_block_damage3", false);
+                iceVis.put("ice_block_damage4", false);
+                iceVis.put("ice_block_damage5", false);
+
+                // Calculate the 600 HP ratio and override the correct damage part to true
+                double hpRatio = plant.getCoverHp() / 600.0;
+                if (hpRatio <= 0.25) {
+                    iceVis.put("ice_block_damage5", true);
+                } else if (hpRatio <= 0.50) {
+                    iceVis.put("ice_block_damage4", true);
+                } else if (hpRatio <= 0.75) {
+                    iceVis.put("ice_block_damage3", true);
+                } else if (hpRatio < 1.0) {
+                    iceVis.put("ice_block_damage2", true);
+                }
+
+                float coverX = (float) (plant.getX() * Constants.UI.METER_TO_PIX);
+                float coverY = (float) (plant.getY() * Constants.UI.METER_TO_PIX);
+
+                try {
+                    // Call the overload with per-part show/hide
+                    player.draw(batch, "768/FULL/EFFECTS/FROSTBITE_ICE_BLOCK_PLANT/FROSTBITE_ICE_BLOCK_PLANT.PAM", "freeze_idle", globalAnimTime, coverX, coverY, true, iceVis);
+                } catch (Exception e) {}
+            }
         }
     }
     private String determinePlantClip(Plant plant, GameRenderStates.PlantRenderState state) {
@@ -248,6 +281,20 @@ public class PlantMatchManager {
         if (name.equals("Sun Bean")) {
             if (plant.getCurrentHp() > plant.getBaseHp()) return "plantfood";
             return "idle";
+        }
+        if (name.equals("Garlic")) {
+            double hpRatio = (double) plant.getCurrentHp() / plant.getBaseHp();
+            if (hpRatio > 0.66) return "idle2";
+            if (hpRatio > 0.33) return "idle2_damage";
+            return "idle2_damage2";
+        }
+        if (name.equals("Endurian")) {
+            double hpRatio = (double) plant.getCurrentHp() / plant.getBaseHp();
+            boolean isAttacking = plant.isWindingUp;
+            if (hpRatio > 0.75) return isAttacking ? "attack_loop" : "idle2";
+            if (hpRatio > 0.50) return isAttacking ? "attack_loop_damage" : "damage";
+            if (hpRatio > 0.25) return isAttacking ? "attack_loop_damage2" : "damage2";
+            return isAttacking ? "attack_loop_damage2" : "damage3";
         }
         return "idle";
     }
@@ -552,6 +599,10 @@ public class PlantMatchManager {
         }
         if (source == null) return "768/INITIAL/EFFECTS/T_PEA_PROJECTILE/T_PEA_PROJECTILE.PAM";
         return switch (source) {
+            case BOWLING_WALL_NUT -> "768/FULL/PLANT/TALLNUT/TALLNUT.PAM";
+            case BOWLING_EXPLODE_O_NUT -> "768/INITIAL/PLANT/EXPLODEONUT/EXPLODEONUT.PAM";
+            case GIANT_WALL_NUT -> "768/FULL/PLANT/PRIMAL_WALLNUT/PRIMAL_WALLNUT.PAM";
+            case GARLIC -> "768/INITIAL/EFFECTS/GARLIC_PROJECTILE/GARLIC_PROJECTILE.PAM";
             case SQUASH -> "768/INITIAL/PLANT/SQUASH/SQUASH.PAM";
             case GRAPESHOT -> "768/INITIAL/EFFECTS/GRAPESHOT_PROJECTILE/GRAPESHOT_PROJECTILE.PAM";
             case SNOW_PEA -> "768/INITIAL/EFFECTS/T_SNOW_PEA/T_SNOW_PEA.PAM";
@@ -607,8 +658,13 @@ public class PlantMatchManager {
                 return p < 0.5 ? "jump_up_left" : "jump_down_left";
             }
         }
+        if (source == PlantType.BOWLING_WALL_NUT ||
+            source == PlantType.BOWLING_EXPLODE_O_NUT ||
+            source == PlantType.GIANT_WALL_NUT) {
+            return "idle";
+        }
         if (source == PlantType.CACTUS && proj.getDamage() >= 200) return "idle";
-
+        if (source == PlantType.GARLIC) return "animation";
         if (source == PlantType.FUME_SHROOM) return "special";
         if (source == PlantType.PUFF_SHROOM) {
             if (dist < 2.0) return "animation";
@@ -667,7 +723,8 @@ public class PlantMatchManager {
         }
         return switch (source) {
             case BOWLING_BULB -> tracker.isPlantFood ? "768/FULL/EFFECTS/BOWLINGBULB_PLANTFOOD_PROJECTILE/BOWLINGBULB_PLANTFOOD_PROJECTILE.PAM" : null;
-            case CAULIPOWER, SQUASH -> null;
+            case BOWLING_WALL_NUT, GIANT_WALL_NUT, CAULIPOWER, SQUASH -> null;
+            case BOWLING_EXPLODE_O_NUT -> "768/FULL/EFFECTS/CHERRYBOMB_EXPLOSION_REAR/CHERRYBOMB_EXPLOSION_REAR.PAM";
             case GRAPESHOT -> "768/INITIAL/EFFECTS/GRAPESHOT_HIT/GRAPESHOT_HIT.PAM";
             case PUFF_SHROOM -> "768/INITIAL/EFFECTS/T_PUFFSHROOM_HIT/T_PUFFSHROOM_HIT.PAM";
             case SEA_SHROOM -> "768/FULL/EFFECTS/SEASHOOTER_FX/SEASHOOTER_FX.PAM";
