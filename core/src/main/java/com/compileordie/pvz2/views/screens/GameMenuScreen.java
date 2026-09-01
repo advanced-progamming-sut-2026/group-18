@@ -18,6 +18,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.models.entities.plants.types.PlantType;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.game.levels.ChapterType;
 import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.views.ScreenManager;
@@ -40,7 +42,7 @@ public class GameMenuScreen extends MenuScreen {
             }
         }
 
-        /*for (PlantType plantType : PlantType.values()) {
+        for (PlantType plantType : PlantType.values()) {
             if (!AppModel.player.unlockedPlants.contains(plantType)) {
                 AppModel.player.unlockedPlants.add(plantType);
             }
@@ -50,7 +52,7 @@ public class GameMenuScreen extends MenuScreen {
             if (!AppModel.player.unlockedZombies.contains(zombieType)) {
                 AppModel.player.unlockedZombies.add(zombieType);
             }
-        }*/
+        }
 
         float screenW = stage.getWidth();
         float screenH = stage.getHeight();

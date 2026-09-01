@@ -71,8 +71,10 @@ public enum PlantType {
     REINFORCE_MINT("Reinforce-mint"),
     ENCHANT_MINT("Enchant-mint"),
     PIERCE_MINT("Pierce-mint"),
-    CATTAIL_MINT("catTail-mint");
-
+    CATTAIL_MINT("catTail-mint"),
+    BOWLING_WALL_NUT("Bowling Wallnut"),
+    BOWLING_EXPLODE_O_NUT("Bowling Explode-o-nut"),
+    GIANT_WALL_NUT("Giant Wallnut");
     private final String commercialName;
 
     // Constructor to bind the exact CSV name to the enum constant

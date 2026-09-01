@@ -235,6 +235,36 @@ public class PlantFoodClipManager {
             return null;
         }
 
+        // --- 19. CAULIPOWER (3.0 Seconds) ---
+        if (name.equals("Caulipower")) {
+            if (t < 0.5f) return "plantfood_start";
+            if (t < 2.5f) return "plantfood_loop";
+            if (t < 3.0f) return "plantfood_end";
+            plant.resetFeed();
+            return null;
+        }
+
+        // --- 20. ELECTRIC BLUEBERRY (2.5 Seconds) ---
+        if (name.equals("Electric Blueberry")) {
+            if (t < 2.5f) return "plantfood";
+            plant.resetFeed();
+            return null;
+        }
+
+        // --- 21. ENDURIAN (1.5 Seconds) ---
+        if (name.equals("Endurian")) {
+            if (t < 1.5f) return "Plantfood_on";
+            plant.resetFeed();
+            return null;
+        }
+
+        // --- 22. GARLIC & MAGNET-SHROOM (1.5 Seconds) ---
+        if (name.equals("Garlic") || name.equals("Magnet-shroom")) {
+            if (t < 1.5f) return "plantfood";
+            plant.resetFeed();
+            return null;
+        }
+
         return null;
     }
 }

@@ -138,10 +138,9 @@ public class Plant extends GameEntity {
             }
             return;
         }
-// --- THE PLANT FOOD ENGINE ---
         if (this.isFed) {
             this.plantFoodTimer += tickDelta;
-            return; // Pause normal shooting/sun production while eating Plant Food!
+            return;
         }
         if (isBoosted) {
             feed(board, AppModel.player);
@@ -225,7 +224,6 @@ public class Plant extends GameEntity {
                             } else {
                                 effectiveRadius = 1;
                             }
-
                             if (Math.abs(r - row) <= effectiveRadius && Math.abs(c - col) <= effectiveRadius) {
                                 hasAdjacentFire = true;
                                 break;
@@ -242,18 +240,11 @@ public class Plant extends GameEntity {
         }
     }
     public void feed(GameBoard board, Player player) {
-        if (this.isFed || hasActiveCover()) return; // Can't feed a frozen plant!
-
+        if (this.isFed || hasActiveCover()) return;
         this.isFed = true;
         this.plantFoodTimer = 0;
-
-        // Use the strategy injected from the constructor!
         if (this.foodStrategy != null) {
-
-            // Convert our logical tick delay into exact seconds for the visual sync!
             float delaySeconds = (float) (this.getFoodWindupDelay() * Constants.Game.TIME_COEFFICIENT);
-
-            // LibGDX Timer executes the payload exactly when the animation finishes winding up!
             com.badlogic.gdx.utils.Timer.schedule(new com.badlogic.gdx.utils.Timer.Task() {
                 @Override
                 public void run() {
@@ -262,12 +253,10 @@ public class Plant extends GameEntity {
                     }
                 }
             }, delaySeconds);
-
         } else {
             System.out.println("DEBUG: " + this.name + " has no Plant Food Strategy mapped!");
         }
     }
-
     public void resetFeed() {
         this.isFed = false;
         this.plantFoodTimer = 0;
@@ -352,9 +341,7 @@ public class Plant extends GameEntity {
             }
         }
         if (this.atkSpeedBonusPercentage > 0) {
-            this.actionIntervalTicks = Math.max(
-                1.0, this.actionIntervalTicks * (1.0 - (this.atkSpeedBonusPercentage / 100.0))
-            );
+            this.actionIntervalTicks = Math.max(1.0, this.actionIntervalTicks * (1.0 - (this.atkSpeedBonusPercentage / 100.0)));
         }
         this.level = targetLevel;
     }
@@ -426,6 +413,7 @@ public class Plant extends GameEntity {
     public int getExtraBounces() { return extraBounces; }
     public int getExtraTargets() { return extraTargets; }
     public double getFreezeTimeBonusTicks() { return freezeTimeBonusTicks; }
+    public double getCoverHp() { return this.coverHp; }
     public int getMaxSizeBonus() { return maxSizeBonus; }
     public void setBlueFlame(boolean blueFlame) { this.isBlueFlame = blueFlame; }
     public boolean isBlueFlame() { return isBlueFlame; }
@@ -455,14 +443,6 @@ public class Plant extends GameEntity {
     public void forceMaxGrowth() {
         this.isMaxStageForced = true;
     }
-    /**
-     * دیمیجی که موقع «eating» یک گیاه به‌وسیله‌ی زامبی، برمی‌گرده و به خود زامبی می‌خوره.
-     * Endurian: مقدار پایه‌ش baseDamage است، و اگه currentHp بیشتر از baseHp باشه (یعنی
-     * plant food خورده و بافر گرفته) ۱۵ واحد هم بهش اضافه می‌شه.
-     * Garlic: صرفا baseDamage برمی‌گرده (بدون بونوس)؛ همین مقدار غیرصفر بودن باعث می‌شه
-     * تو ZombieCombatManager.processPlantEating هم دیمیج ریفلکت بخوره هم (چون گارلیکه)
-     * لاینش عوض بشه.
-     */
     public int getReflectDamage() {
         if (this.name.equals("Endurian")) {
             int reflectDmg = this.baseDamage;

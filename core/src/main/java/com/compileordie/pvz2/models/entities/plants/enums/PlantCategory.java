@@ -3,6 +3,7 @@ package com.compileordie.pvz2.models.entities.plants.enums;
 import com.compileordie.pvz2.utils.Toolbox;
 
 public enum PlantCategory {
+    MINIGAME,
     SUN_PRODUCER,
     SHOOTER,
     LOBBER,

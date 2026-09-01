@@ -147,6 +147,10 @@ public class CollectionMenuController {
             case ENCHANT_MINT -> "IMAGE_UI_PACKETS_ENCHANTMINT";
             case PIERCE_MINT -> "IMAGE_UI_PACKETS_SPEARMINT";
             case CATTAIL_MINT -> "IMAGE_UI_PACKETS_WINTERMINT";
+            //TODO :
+            case BOWLING_WALL_NUT -> "IMAGE_UI_PACKETS_TALLNUT";
+            case BOWLING_EXPLODE_O_NUT -> "IMAGE_UI_PACKETS_EXPLODEONUT";
+            case GIANT_WALL_NUT -> "IMAGE_UI_PACKETS_PRIMALWALLNUT";
         };
     }
 
