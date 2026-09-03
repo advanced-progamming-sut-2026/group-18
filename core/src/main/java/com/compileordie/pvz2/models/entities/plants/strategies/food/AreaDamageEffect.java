@@ -128,13 +128,17 @@ public class AreaDamageEffect implements PlantFoodEffectStrategy {
                     if (plant.isDead()) return;
                     if (name.equals("Kiwibeast")) plant.forceMaxGrowth();
 
-                    // SPAWN THE MASSIVE PF PULSE!
+                    // 1. SPAWN THE MASSIVE PF PULSE ON THE PLANT!
                     spawnVisualHit(board, plant.getX(), plant.getY(), PlantType.getByName(name), true);
 
                     double radius = 1.5 * Constants.Game.TILE_HEIGHT;
                     for (Zombie z : board.getAllZombies()) {
                         if (!z.isDead() && Math.hypot(z.getX() - plant.getX(), z.getY() - plant.getY()) <= radius) {
+
                             z.takeDamage(900, DamageType.NORMAL, PlantType.getByName(name));
+
+                            // 2. SPAWN THE TILE_HIT UNIQUELY UNDER THE ZOMBIE!
+                            spawnTileHit(board, z.getX(), z.getY(), PlantType.getByName(name), true);
                         }
                     }
                     plant.resetFeed();
@@ -174,13 +178,19 @@ public class AreaDamageEffect implements PlantFoodEffectStrategy {
             public void run() {
                 if (plant.isDead()) return;
                 try {
-                    Projectile p = plant.template.getProjectileType()
+                    // FIX 1: plant.template is null at runtime! Hardcode BouncingProjectile.class!
+                    // FIX 2: Multiplied the dmg by 10 so the Plasma bulbs deal massive Plant Food damage!
+                    Projectile p = BouncingProjectile.class
                         .getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
-                        .newInstance(plant.getX() + (index * 0.5 * Constants.Game.TILE_WIDTH), plant.getY(), 6.0, dmg, 5);
+                        .newInstance(plant.getX() + (index * 0.5 * Constants.Game.TILE_WIDTH), plant.getY(), 6.0, dmg * 10, 5);
+
                     p.setSourcePlantType(PlantType.BOWLING_BULB);
-                    p.setXSpeed(6.0); // --- FIX: FORCES PLANT FOOD GRAPHICS! ---
+                    p.setXSpeed(6.0); // --- THIS FORCES THE PLANT FOOD GRAPHICS! ---
                     board.getActiveProjectiles().add(p);
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                    System.err.println("❌ ERROR: Could not spawn Bowling Bulb PF Projectile!");
+                    e.printStackTrace();
+                }
             }
         }, delay);
     }
@@ -191,6 +201,21 @@ public class AreaDamageEffect implements PlantFoodEffectStrategy {
             Projectile dummy = new NormalProjectile(x, y, isPF ? 6.0 : 0.0, 0); // 0 damage hides it!
             dummy.setXSpeed(isPF ? 6.0 : 0.0); // --- FIX: FORCES PLANT FOOD GRAPHICS! ---
             dummy.setSourcePlantType(type);
+            board.getActiveProjectiles().add(dummy);
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() { dummy.destroy(); }
+            }, 0.05f);
+        } catch (Exception e) {}
+    }
+
+    // Creates a secondary dummy projectile flagged specifically for localized TILE_HIT graphics!
+    public static void spawnTileHit(GameBoard board, double x, double y, PlantType type, boolean isPF) {
+        try {
+            Projectile dummy = new NormalProjectile(x, y, isPF ? 6.0 : 0.0, 0);
+            dummy.setXSpeed(isPF ? 6.0 : 0.0);
+            dummy.setSourcePlantType(type);
+            dummy.setTileHit(true); // <-- THE DEDICATED FLAG
             board.getActiveProjectiles().add(dummy);
             Timer.schedule(new Timer.Task() {
                 @Override

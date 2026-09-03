@@ -1,7 +1,9 @@
 package com.compileordie.pvz2.models.entities.plants.strategies.attack;
 
+import com.badlogic.gdx.utils.Timer;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.Plant;
+import com.compileordie.pvz2.models.entities.plants.strategies.food.AreaDamageEffect;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
@@ -25,47 +27,52 @@ public class MeleeStrategy implements AttackStrategy {
         int plantCol = (int) Math.floor((plant.getX() - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH);
 
         boolean attacked = false;
-
         int currentDamage = plant.getBaseDamage();
         if (plant.getName().equals("Kiwibeast")) {
             int stage = plant.getGrowthStage();
             currentDamage += (stage - 1) * 15;
         }
 
-// ==========================================
-        // 1. PHAT BEET & KIWIBEAST LOGIC (True 3x3 Continuous Pixel Box)
+        // ==========================================
+        // 1. PHAT BEET & KIWIBEAST LOGIC (Pulse + Dynamic Tile Hits)
         // ==========================================
         if (isAoE && !plant.getName().equals("Wasabi Whip")) {
             double radiusPx = Constants.Game.TILE_WIDTH * 1.5;
 
-            double currentTimer = plant.getCurrentActionTimer();
-            boolean isDamageFrame = (currentTimer >= 12.0 && (currentTimer - tickDelta) < 12.0);
-
-            // --- NEW: SPAWN THE VISUAL PULSE ON THE DAMAGE FRAME! ---
-            if (isDamageFrame) {
-                com.compileordie.pvz2.models.entities.plants.strategies.food.AreaDamageEffect
-                    .spawnVisualHit(board, plant.getX(), plant.getY(), PlantType.getByName(plant.getName()), false);
-            }
-
+            // 1. Scan for valid targets before triggering the attack
+            boolean hasTarget = false;
             for (Zombie z : board.getAllZombies()) {
                 if (z.isDead()) continue;
-
-                int zRow = z.getCurrentRow();
-                double distPx = Math.abs(z.getX() - plant.getX());
-
-                if (Math.abs(zRow - plantRow) <= 1 && distPx <= radiusPx) {
-
-                    attacked = true;
-
-                    if (isDamageFrame) {
-                        z.takeDamage(currentDamage, DamageType.NORMAL, PlantType.getByName(plant.getName()));
-                    }
+                if (Math.abs(z.getCurrentRow() - plantRow) <= 1 && Math.abs(z.getX() - plant.getX()) <= radiusPx) {
+                    hasTarget = true;
+                    break;
                 }
             }
+
+            if (hasTarget) {
+                attacked = true;
+                final int finalDamage = currentDamage;
+                Timer.schedule(new Timer.Task() {
+                    @Override
+                    public void run() {
+                        if (plant.isDead()) return;
+                        AreaDamageEffect.spawnVisualHit(board, plant.getX(), plant.getY(), PlantType.getByName(plant.getName()), false);
+
+                        for (Zombie z : board.getAllZombies()) {
+                            if (z.isDead()) continue;
+
+                            int zRow = z.getCurrentRow();
+                            double distPx = Math.abs(z.getX() - plant.getX());
+
+                            if (Math.abs(zRow - plantRow) <= 1 && distPx <= radiusPx) {
+                                z.takeDamage(finalDamage, DamageType.NORMAL, PlantType.getByName(plant.getName()));
+                                AreaDamageEffect.spawnTileHit(board, z.getX(), z.getY(), PlantType.getByName(plant.getName()), false);
+                            }
+                        }
+                    }
+                }, 0.2f);
+            }
         }
-        // ==========================================
-        // 2. BONK CHOY & WASABI WHIP LOGIC (Directional Radar)
-        // ==========================================
         else if (!isInstantKill || plant.getName().equals("Wasabi Whip")) {
 
             Zombie bestFront = null;

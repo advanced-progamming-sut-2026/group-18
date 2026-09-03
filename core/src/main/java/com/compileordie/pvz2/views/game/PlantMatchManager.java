@@ -33,6 +33,7 @@ public class PlantMatchManager {
         boolean isIgnited = false;
         boolean isBlueFire = false;
         boolean isPlantFood = false;
+        boolean isTileHit = false;
     }
     private static class HitAnim {
         float x, y, animTime;
@@ -505,6 +506,7 @@ public class PlantMatchManager {
             tracker.type = proj.getSourcePlantType();
             tracker.isButter = (proj instanceof ButterProjectile);
             tracker.isIgnited = proj.isIgnited();
+            tracker.isTileHit = proj.isTileHit();
             tracker.isBlueFire = proj.isIgnited() && proj.getDamage() >= 60;
             if (tracker.type == PlantType.CITRON) {
                 tracker.isPlantFood = proj.getDamage() >= 4000;
@@ -563,9 +565,12 @@ public class PlantMatchManager {
             try {
                 player.draw(batch, hit.pamPath, hit.clipName, hit.animTime, hit.x, hit.y, 0.67f, 0.67f, false);
             } catch (Exception e) {}
+            float maxHitTime = 1.0f;
+            if (hit.pamPath != null && (hit.pamPath.contains("TANGLEKELP") || hit.pamPath.contains("PULSE"))) {
+                maxHitTime = 3.0f;
+            }
 
-            // CRITICAL FIX: Increased from 1.0f to 3.0f so Tangle Kelp & Pulses don't vanish early!
-            if (hit.animTime > 3.0f) {
+            if (hit.animTime > maxHitTime) {
                 hitIter.remove();
             }
         }
@@ -607,7 +612,7 @@ public class PlantMatchManager {
             case GRAPESHOT -> "768/INITIAL/EFFECTS/GRAPESHOT_PROJECTILE/GRAPESHOT_PROJECTILE.PAM";
             case SNOW_PEA -> "768/INITIAL/EFFECTS/T_SNOW_PEA/T_SNOW_PEA.PAM";
             case ROTOBAGA -> "768/FULL/EFFECTS/T_ROTORUTABAGA_PROJECTILE1/T_ROTORUTABAGA_PROJECTILE1.PAM";
-            case CITRON ->  "768/FULL/EFFECTS/T_CITRON_CITRUS_ORB_HIT/T_CITRON_CITRUS_ORB_HIT.PAM";
+            case CITRON ->  "768/FULL/EFFECTS/T_CITRON_CITRUS_ORB/T_CITRON_CITRUS_ORB.PAM";
             case CAULIPOWER -> "768/INITIAL/EFFECTS/CAULIPOWER_PROJECTILE/CAULIPOWER_PROJECTILE.PAM";
             case ELECTRIC_BLUEBERRY -> "768/INITIAL/EFFECTS/ELECTRICBLUEBERRY_CLOUD_PROJECTILE/ELECTRICBLUEBERRY_CLOUD_PROJECTILE.PAM";
             case CACTUS -> "768/INITIAL/EFFECTS/T_CACTUS_PROJECTILE/T_CACTUS_PROJECTILE.PAM";
@@ -700,7 +705,13 @@ public class PlantMatchManager {
             if (dist < 6.5) return "animation2";
             return "animation3";
         }
-        if (source == PlantType.PEASHOOTER || source == PlantType.REPEATER || source == PlantType.THREEPEATER || source == PlantType.PEA_POD || source == PlantType.SNOW_PEA || source == PlantType.FIRE_PEASHOOTER || source == PlantType.STARFRUIT) {
+        if (source == PlantType.PEASHOOTER || source == PlantType.REPEATER ||
+            source == PlantType.THREEPEATER || source == PlantType.PEA_POD ||
+            source == PlantType.SNOW_PEA || source == PlantType.FIRE_PEASHOOTER ||
+            source == PlantType.STARFRUIT || source == PlantType.MEGA_GATLING_PEA) {
+            if (tracker.isPlantFood && proj.getDamage() >= 400) {
+                return "animation";
+            }
             if (dist < 3.5) return "animation";
             if (dist < 6.5) return "animation2";
             return "animation3";
@@ -743,9 +754,14 @@ public class PlantMatchManager {
             case PEPPER_PULT -> tracker.isPlantFood ? "768/FULL/EFFECTS/T_PEPPERPULT_PROJECTILE_SPLAT/T_PEPPERPULT_PROJECTILE_SPLAT.PAM" : "768/FULL/EFFECTS/T_PEPPERPULT_PROJECTILE_SPLAT/T_PEPPERPULT_PROJECTILE_SPLAT.PAM";
             case KERNEL_PULT -> tracker.isButter ? "768/INITIAL/EFFECTS/SPLAT_KERNALPULT_BUTTER/SPLAT_KERNALPULT_BUTTER.PAM" : "768/INITIAL/EFFECTS/SPLAT_KERNALPULT_KERNAL/SPLAT_KERNALPULT_KERNAL.PAM";
             case SUN_BEAN -> tracker.isPlantFood ? "768/FULL/EFFECTS/SUNBEAN_PLANTFOOD_EFFECT_OVERLAY1/SUNBEAN_PLANTFOOD_EFFECT_OVERLAY1.PAM" : null;
-            // --- NEW: Dummy Triggers routed perfectly to their animations! ---
-            case PHAT_BEET -> tracker.isPlantFood ? "768/FULL/EFFECTS/PHATBEETS_PF_PULSE/PHATBEETS_PF_PULSE.PAM" : "768/FULL/EFFECTS/PHATBEETS_ATTACK_PULSE/PHATBEETS_ATTACK_PULSE.PAM";
-            case KIWIBEAST -> tracker.isPlantFood ? "768/INITIAL/EFFECTS/KIWIBEAST_PF_PULSE/KIWIBEAST_PF_PULSE.PAM" : "768/INITIAL/EFFECTS/KIWIBEAST_ATTACK_PULSE/KIWIBEAST_ATTACK_PULSE.PAM";
+            case PHAT_BEET -> {
+                if (tracker.isTileHit) yield "768/FULL/EFFECTS/PHATBEETS_TILE_HIT/PHATBEETS_TILE_HIT.PAM";
+                yield tracker.isPlantFood ? "768/FULL/EFFECTS/PHATBEETS_PF_PULSE/PHATBEETS_PF_PULSE.PAM" : "768/FULL/EFFECTS/PHATBEETS_ATTACK_PULSE/PHATBEETS_ATTACK_PULSE.PAM";
+            }
+            case KIWIBEAST -> {
+                if (tracker.isTileHit) yield "768/INITIAL/EFFECTS/KIWIBEAST_TILE_HIT/KIWIBEAST_TILE_HIT.PAM";
+                yield tracker.isPlantFood ? "768/INITIAL/EFFECTS/KIWIBEAST_PF_PULSE/KIWIBEAST_PF_PULSE.PAM" : "768/INITIAL/EFFECTS/KIWIBEAST_ATTACK_PULSE/KIWIBEAST_ATTACK_PULSE.PAM";
+            }
             case TANGLE_KELP -> "768/FULL/PLANT/TANGLEKELP/TANGLEKELP.PAM";
 
             case PEASHOOTER, REPEATER, THREEPEATER, PEA_POD, SPLIT_PEA -> "768/INITIAL/EFFECTS/T_SPLAT_PEA/T_SPLAT_PEA.PAM";

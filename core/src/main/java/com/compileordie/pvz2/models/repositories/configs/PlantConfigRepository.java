@@ -258,5 +258,6 @@ public class PlantConfigRepository {
         if (name.equals("Wall-nut") || name.equals("Explode-o-nut") || name.equals("Pumpkin")) t.setFoodEffectValue(4000);
         if (name.equals("Tall-nut")) t.setFoodEffectValue(8000);
         if (name.equals("Endurian") || name.equals("Sweet Potato")) t.setFoodEffectValue(3000);
+        if (name.equals("Caulipower") || name.equals("Electric Blueberry")) { t.setFoodEffectValue(3); }
     }
 }
