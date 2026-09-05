@@ -15,15 +15,21 @@ import com.compileordie.pvz2.controllers.menus.game.GameScreenController;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
+import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.capable.HunterZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.capable.OctopusZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
+import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
 import com.compileordie.pvz2.models.game.waves.WaveType;
+import com.compileordie.pvz2.network.KryoSerializer;
+import com.compileordie.pvz2.network.NetworkClient;
+import com.compileordie.pvz2.network.protocol.Message;
+import com.compileordie.pvz2.network.protocol.MessageType;
 import com.compileordie.pvz2.views.game.ui.GameScreenUI;
 import com.compileordie.pvz2.views.game.ui.LevelStartDialog;
 import com.compileordie.pvz2.views.helpers.ToastManager;
@@ -441,10 +447,65 @@ public class GameScreen implements Screen {
             return;
         }
         if (AppModel.gameSession == null || GameScreenUI.isPaused) return;
-        simulationAccumulator += delta;
-        while (simulationAccumulator >= GameScreenConstants.SIMULATION_STEP_SECONDS) {
-            AppModel.gameSession.tick(1);
-            simulationAccumulator -= GameScreenConstants.SIMULATION_STEP_SECONDS;
+
+        // Drain network queue and replace GameBoard if state sync arrives
+        processNetworkInput();
+
+        // Only run local tick simulation if this client is NOT the receiver
+        if (!AppModel.isReceiverClient) {
+            simulationAccumulator += delta;
+            boolean ticked = false;
+            while (simulationAccumulator >= GameScreenConstants.SIMULATION_STEP_SECONDS) {
+                AppModel.gameSession.tick(1);
+                simulationAccumulator -= GameScreenConstants.SIMULATION_STEP_SECONDS;
+                ticked = true;
+            }
+
+            // Pack and send GameBoard state to opponent on every tick
+            if (ticked && AppModel.opponentUsername != null
+                && NetworkClient.getInstance().isConnected()
+                && AppModel.gameSession != null) {
+                String encodedBoard = KryoSerializer.serialize(AppModel.gameSession.gameBoard);
+                Message syncMessage = new Message(MessageType.IZOMBIE_STATE_SYNC)
+                    .put("target", AppModel.opponentUsername)
+                    .put("board", encodedBoard);
+                NetworkClient.getInstance().send(syncMessage);
+            }
+        }
+    }
+
+    private void processNetworkInput() {
+        if (!NetworkClient.getInstance().isConnected()) return;
+
+        Message msg;
+        while ((msg = NetworkClient.getInstance().poll()) != null) {
+            if (msg.getType() == MessageType.IZOMBIE_STATE_SYNC) {
+                String encodedBoard = msg.get("board");
+                if (encodedBoard != null && !encodedBoard.isEmpty()) {
+                    GameBoard newBoard = KryoSerializer.deserialize(encodedBoard, GameBoard.class);
+                    if (newBoard != null) {
+                        AppModel.gameSession.gameBoard = newBoard;
+                    }
+                }
+            }
+            if (msg.getType() == MessageType.IZOMBIE_SPAWN_REQUEST) {
+                String zombieTypeStr = msg.get("zombieType");
+                int row = Integer.parseInt(msg.get("row"));
+                int col = Integer.parseInt(msg.get("col"));
+                int cost = Integer.parseInt(msg.get("cost"));
+
+                ZombieType zombieType = ZombieType.valueOf(zombieTypeStr);
+                Tile targetTile = AppModel.gameSession.gameBoard.getTile(row, col);
+
+                // Instantiate zombie on the receiving opponent's local board state
+                float spawnX = targetTile.column * Constants.Game.TILE_WIDTH + Constants.Game.PADDING_X
+                    + (Constants.Game.TILE_WIDTH / 2f);
+                float spawnY = targetTile.row * Constants.Game.TILE_HEIGHT + Constants.Game.PADDING_Y
+                    + (Constants.Game.TILE_HEIGHT / 2f);
+                Zombie newZombie = ZombieBuilder.create(zombieType, spawnX, spawnY, targetTile.row);
+                AppModel.gameSession.gameBoard.getLane(row).zombies.add(newZombie);
+                AppModel.gameSession.gameBoard.economyManager.sunAmount -= cost;
+            }
         }
     }
 

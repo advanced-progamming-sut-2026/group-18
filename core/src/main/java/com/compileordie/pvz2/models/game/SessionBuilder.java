@@ -3,15 +3,18 @@ package com.compileordie.pvz2.models.game;
 import com.badlogic.gdx.math.MathUtils;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.controllers.PlantSpawner;
+import com.compileordie.pvz2.models.entities.LawnMower;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.ZomBoss.DarkZomboss;
 import com.compileordie.pvz2.models.entities.zombies.variants.ZomBoss.EgyptZomboss;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
+import com.compileordie.pvz2.models.entities.zombies.variants.standard.RaincoatZombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.TombType;
 import com.compileordie.pvz2.models.game.board.GameBoard;
+import com.compileordie.pvz2.models.game.board.Lane;
 import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.board.TileType;
 import com.compileordie.pvz2.models.game.economy.EconomyType;
@@ -19,7 +22,6 @@ import com.compileordie.pvz2.models.game.judges.LossCondition;
 import com.compileordie.pvz2.models.game.judges.WinCondition;
 import com.compileordie.pvz2.models.game.levels.ChapterType;
 import com.compileordie.pvz2.models.game.levels.LevelID;
-import com.compileordie.pvz2.models.game.levels.LevelType;
 import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
 import com.compileordie.pvz2.models.game.waves.WaveType;
 
@@ -42,9 +44,6 @@ public class SessionBuilder {
         }
         if (levelID == LevelID.PLANT_WHAT_YOU_GET) {
             return EconomyType.PLANT_WHAT_YOU_GET;
-        }
-        if (levelID == LevelID.I_ZOMBIE) {
-            return EconomyType.I_ZOMBIE;
         }
         return EconomyType.STANDARD;
     }
@@ -243,6 +242,23 @@ public class SessionBuilder {
             gameBoard.getLane(Constants.Game.BOARD_ROWS / 2).zombies.add(new EgyptZomboss(gameBoard));
         } else if (levelID == LevelID.BOSS_DARK_AGES) {
             gameBoard.getLane(Constants.Game.BOARD_ROWS / 2).zombies.add(new DarkZomboss(gameBoard));
+        }
+        if (levelID != LevelID.I_ZOMBIE) {
+            for (Lane lane : gameBoard.lanes) {
+                lane.lawnMower = new LawnMower(lane);
+            }
+        } else {
+            for (Lane lane : gameBoard.lanes) {
+                lane.zombies.add(new RaincoatZombie(1000,
+                    0,
+                    0,
+                    lane.row,
+                    16f,
+                    16f,
+                    (lane.row + 0.5f) * Constants.Game.TILE_HEIGHT + Constants.Game.PADDING_Y,
+                    0,
+                    0));
+            }
         }
     }
 

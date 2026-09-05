@@ -8,8 +8,7 @@ import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Lane;
 import com.compileordie.pvz2.models.game.board.Tile;
-import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
-
+import com.compileordie.pvz2.models.game.levels.LevelType;
 import com.compileordie.pvz2.models.missions.quests.QuestEvent;
 import com.compileordie.pvz2.models.missions.quests.QuestManager;
 
@@ -39,6 +38,8 @@ public class GameJudge {
             }
         }
 
+        if (AppModel.isReceiverClient) return GameFlow.CONTINUE;
+
         if (winCondition.evaluate(gameBoard)) {
             // --- QUEST INJECTION: MATCHING QuestDatabaseSeeder EXACTLY ---
             StringBuilder stats = new StringBuilder();
@@ -48,36 +49,33 @@ public class GameJudge {
                 stats.append(Constants.QuestCallbacks.REMAINING_SUN).append(":")
                     .append(gameBoard.economyManager.sunAmount).append(",");
             }
-
             // 2. Thrifty Herbivore (PLANTS_LOST:<=n tags)
             int lost = gameBoard.lostPlants;
             for (int n = lost; n <= 5; n++) {
                 stats.append(Constants.QuestCallbacks.PLANTS_LOST).append(":<=").append(n).append(",");
             }
-
             // 3. Difficulty Streaks (DIFFICULTY:5)
             if (AppModel.player != null) {
                 stats.append(Constants.QuestCallbacks.DIFFICULTY).append(":")
                     .append(AppModel.player.difficultyLevel).append(",");
             }
-
             // 4. Cloudy Day (SUN_PLANTS_USED:<=n tags), same "append every satisfied threshold"
             //    trick as Thrifty Herbivore above.
             int sunPlantsUsed = gameBoard.sunProducingPlantsPlanted;
             for (int n = sunPlantsUsed; n <= 5; n++) {
                 stats.append(Constants.QuestCallbacks.SUN_PLANTS_USED).append(":<=").append(n).append(",");
             }
-
             // 5. Symmetry & What OCD? (lawn mirrored top-to-bottom, middle row excluded automatically)
             boolean symmetric = isBoardSymmetric();
-            stats.append(Constants.QuestCallbacks.SYMMETRIC).append(":").append(symmetric ? "TRUE" : "FALSE").append(",");
-            stats.append(Constants.QuestCallbacks.ANTI_SYMMETRIC).append(":").append(!symmetric ? "TRUE" : "FALSE").append(",");
-
+            stats.append(Constants.QuestCallbacks.SYMMETRIC).append(":").append(symmetric ? "TRUE" : "FALSE")
+                .append(",");
+            stats.append(Constants.QuestCallbacks.ANTI_SYMMETRIC).append(":").append(!symmetric ? "TRUE" : "FALSE")
+                .append(",");
             // 6. Night or Morning (a night/mushroom plant was used on an otherwise daytime level)
             boolean isDayLevel = AppModel.currentLevel != null && !AppModel.currentLevel.isNightLevel();
             boolean dayWithNight = isDayLevel && gameBoard.nightPlantPlanted;
-            stats.append(Constants.QuestCallbacks.DAY_WITH_NIGHT).append(":").append(dayWithNight ? "TRUE" : "FALSE").append(",");
-
+            stats.append(Constants.QuestCallbacks.DAY_WITH_NIGHT).append(":").append(dayWithNight ? "TRUE" : "FALSE")
+                .append(",");
             // 7. Family Slayer & Flourishing in Limits
             for (String family : PLANT_FAMILIES) {
                 if (onlyKilledWithFamily(family)) {
@@ -87,7 +85,6 @@ public class GameJudge {
                     stats.append(Constants.QuestCallbacks.NO_FAMILY).append(":").append(family).append(",");
                 }
             }
-
             // 8. One Less Column / Defenseless Row / Defenseless Cross
             //    (1-indexed, matching gameBoard.plantedColumns/plantedRows)
             for (int col = 1; col <= gameBoard.totalCols; col++) {
@@ -113,6 +110,9 @@ public class GameJudge {
             QuestManager.dispatch(QuestEvent.LEVEL_CLEARED, 1, stats.toString());
             // -------------------------------------------------------------
 
+            if (AppModel.currentLevel.levelType == LevelType.MINIGAME) {
+                AppModel.player.completedMiniGames++;
+            }
             return GameFlow.WIN;
 
         } else if (lossCondition.evaluate(gameBoard)) {

@@ -29,6 +29,9 @@ public class ClientHandler implements Runnable {
     /** بعد از لاگین موفق (فاز ۱) پر می‌شود؛ تا آن موقع null است. */
     private String username;
 
+    /** نشان‌دهنده‌ی درگیر بودن کاربر در روم/مسابقه «من، زامبی». */
+    private volatile boolean busy = false;
+
     public ClientHandler(Socket socket, Server server) {
         this.socket = socket;
         this.server = server;
@@ -37,10 +40,10 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         try (
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-                PrintWriter writer = new PrintWriter(
-                        socket.getOutputStream(), true, StandardCharsets.UTF_8)
+            BufferedReader in = new BufferedReader(
+                new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+            PrintWriter writer = new PrintWriter(
+                socket.getOutputStream(), true, StandardCharsets.UTF_8)
         ) {
             this.out = writer;
             String line;
@@ -96,9 +99,36 @@ public class ClientHandler implements Runnable {
             case USER_LIST_REQUEST:
                 handleUserListRequest(message);
                 break;
+            case IZOMBIE_STATE_SYNC:
+                handleStateSync(message);
+                break;
+            case IZOMBIE_MATCH_REQUEST:
+                MatchmakingManager.handleMatchRequest(this, message, server);
+                break;
+            case IZOMBIE_ACCEPT:
+                MatchmakingManager.handleAccept(this, message, server);
+                break;
+            case IZOMBIE_REJECT:
+                MatchmakingManager.handleReject(this, message, server);
+                break;
+            case IZOMBIE_CANCEL:
+                MatchmakingManager.handleCancel(this);
+                break;
+            case IZOMBIE_SPAWN_REQUEST:
+                handleSpawnRequest(message);
             default:
                 send(new Message(MessageType.ERROR).put("reason", "not_implemented_yet"));
                 break;
+        }
+    }
+
+    private void handleSpawnRequest(Message message) {
+        String targetUser = message.get("target");
+        if (targetUser == null || targetUser.isEmpty()) return;
+
+        ClientHandler targetHandler = server.getOnlineClient(targetUser);
+        if (targetHandler != null) {
+            targetHandler.send(message);
         }
     }
 
@@ -130,9 +160,9 @@ public class ClientHandler implements Runnable {
         server.registerOnlineClient(username, this);
 
         send(new Message(MessageType.AUTH_RESULT)
-                .put("status", "SUCCESS")
-                .put("session", username)
-                .put("data", ""));
+            .put("status", "SUCCESS")
+            .put("session", username)
+            .put("data", ""));
     }
 
     /** فاز ۱ - گام ۱.۲ و ۱.۴: ورود؛ اگر موفق بود، آخرین دیتای بازیکن هم همراه پاسخ برگردانده می‌شود. */
@@ -157,15 +187,11 @@ public class ClientHandler implements Runnable {
         server.registerOnlineClient(username, this);
 
         send(new Message(MessageType.AUTH_RESULT)
-                .put("status", "SUCCESS")
-                .put("session", username)
-                .put("data", account.getPlayerDataBase64()));
+            .put("status", "SUCCESS")
+            .put("session", username)
+            .put("data", account.getPlayerDataBase64()));
     }
 
-    /**
-     * فاز ۳: تغییر رمز عبور واقعی (قبلا فقط یک فیلد آرگون۲ تزئینی داخل خودِ Player تغییر
-     * می‌کرد که هیچ ربطی به هش واقعی احراز هویت سرور - SHA-256 داخل AccountStore - نداشت).
-     */
     private void handleChangePassword(Message message) {
         String session = message.get("session");
         if (session == null || !session.equals(this.username)) {
@@ -197,13 +223,6 @@ public class ClientHandler implements Runnable {
         send(new Message(MessageType.AUTH_RESULT).put("status", "SUCCESS").put("session", session));
     }
 
-    /**
-     * فاز ۳: تغییر نام‌کاربری واقعی. چون accounts.tsv با username کلید می‌خورد، این یک
-     * rename واقعی سمت AccountStore است؛ بعد از موفقیت، هویت همین کانکشن هم به‌روز می‌شود
-     * (this.username) و پاسخ session جدید را برمی‌گرداند تا کلاینت هم NetworkSession خودش
-     * را با آن هماهنگ کند - وگرنه فراخوانی‌های بعدی PLAYER_STATE_PUSH/PULL با session قدیمی
-     * رد می‌شدند.
-     */
     private void handleChangeUsername(Message message) {
         String session = message.get("session");
         if (session == null || !session.equals(this.username)) {
@@ -236,7 +255,6 @@ public class ClientHandler implements Runnable {
         send(new Message(MessageType.AUTH_RESULT).put("status", "SUCCESS").put("session", newUsername));
     }
 
-    /** فاز ۳: ببینید AuthClient.encodePassword برای دلیل Base64 کردن پسورد در پروتکل سیمی. */
     private static String decodePassword(String encoded) {
         if (encoded == null || encoded.isEmpty()) {
             return "";
@@ -248,20 +266,10 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    /**
-     * فاز ۳: لیدربورد ("اطلاعات لیدربورد باید از دادههای ذخیرهشده کاربران در سرور دریافت شود
-     * و با تغییر اطلاعات کاربران بهروزرسانی شود"). سرور معنای داخلی Player را نمی‌داند (طبق
-     * تصمیم اولیه‌ی پروژه - نگاه کنید AccountValidator)، پس فقط username و همان Blob ای که
-     * PLAYER_STATE_PUSH آخرین بار فرستاده را برمی‌گرداند؛ کلاینت خودش (که ساختار Player را
-     * می‌شناسد) امتیازها را استخراج، مرتب و رندر می‌کند. چون این داده مستقیما از همان
-     * accountsByUsername زنده خوانده می‌شود (نه یک کپی قدیمی/کش‌شده)، هر بار که این پیام
-     * دوباره درخواست شود (هر بار که کاربر لیدربورد را باز می‌کند) آخرین نسخه‌ی هر کاربر را
-     * می‌دهد.
-     */
     private void handleLeaderboardRequest() {
         java.util.List<Account> accounts = server.getAccountStore().getAllAccounts();
         Message response = new Message(MessageType.LEADERBOARD_RESULT)
-                .put("count", String.valueOf(accounts.size()));
+            .put("count", String.valueOf(accounts.size()));
         int i = 0;
         for (Account account : accounts) {
             response.put("user_" + i, account.getUsername());
@@ -271,18 +279,6 @@ public class ClientHandler implements Runnable {
         send(response);
     }
 
-    /**
-     * فاز ۳ - گام ۳.۱: لیست کاربران، برای صفحه‌ی انتخاب حریف «من، زامبی».
-     *   scope=ONLINE -> فقط کسانی که الان یک اتصال فعال به سرور دارند (می‌شود
-     *                   باهاشان چالش/بازی تصادفی «من، زامبی» شروع کرد). اگر همین
-     *                   کلاینت خودش لاگین کرده باشد، از لیست حذف می‌شود (نمی‌تواند
-     *                   با خودش بازی کند).
-     *   scope=ALL    -> همه‌ی حساب‌های ثبت‌شده در AccountStore، فارغ از آنلاین بودن.
-     * دقیقا هم‌الگو با handleLeaderboardRequest (count + user_0, user_1, ...)؛ هیچ
-     * فرمت سیمی جدیدی معرفی نمی‌شود. مثل LEADERBOARD_REQUEST، این پیام نیازی به
-     * session معتبر ندارد (فقط برای scope=ONLINE، اگر لاگین باشیم، خودمان را حذف
-     * می‌کنیم؛ اگر لاگین نباشیم، صرفا چیزی حذف نمی‌شود).
-     */
     private void handleUserListRequest(Message message) {
         String scope = message.get("scope");
         java.util.List<String> usernames;
@@ -301,18 +297,14 @@ public class ClientHandler implements Runnable {
         }
 
         Message response = new Message(MessageType.USER_LIST_RESULT)
-                .put("scope", scope)
-                .put("count", String.valueOf(usernames.size()));
+            .put("scope", scope)
+            .put("count", String.valueOf(usernames.size()));
         for (int i = 0; i < usernames.size(); i++) {
             response.put("user_" + i, usernames.get(i));
         }
         send(response);
     }
 
-    /**
-     * فاز ۱ - گام ۱.۴: کلاینت بعد از هر تغییر مهم (خرید، امتیاز و ...) کل دیتای Player را
-     * (به‌صورت Base64 شده) دوباره push می‌کند تا سرور همیشه آخرین نسخه را داشته باشد.
-     */
     private void handlePlayerStatePush(Message message) {
         String session = message.get("session");
         String data = message.get("data");
@@ -324,7 +316,6 @@ public class ClientHandler implements Runnable {
         send(new Message(MessageType.PLAYER_STATE_RESULT).put("status", "SUCCESS"));
     }
 
-    /** درخواست دستی گرفتن آخرین نسخه‌ی دیتای بازیکن (معمولا لازم نیست چون login خودش data را برمی‌گرداند). */
     private void handlePlayerStatePull(Message message) {
         String session = message.get("session");
         if (session == null || !session.equals(this.username)) {
@@ -336,10 +327,19 @@ public class ClientHandler implements Runnable {
         send(new Message(MessageType.PLAYER_STATE_RESULT).put("status", "SUCCESS").put("data", data));
     }
 
-    /** ارسال یک پیام به این کلاینت مشخص (بعدا برای relay بین دو کلاینت هم استفاده می‌شود). */
     public void send(Message message) {
         if (out != null) {
             out.println(message.toWire());
+        }
+    }
+
+    private void handleStateSync(Message message) {
+        String targetUser = message.get("target");
+        if (targetUser == null || targetUser.isEmpty()) return;
+
+        ClientHandler targetHandler = server.getOnlineClient(targetUser);
+        if (targetHandler != null) {
+            targetHandler.send(message);
         }
     }
 
@@ -349,5 +349,17 @@ public class ClientHandler implements Runnable {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public boolean isBusy() {
+        return busy;
+    }
+
+    public void setBusy(boolean busy) {
+        this.busy = busy;
+    }
+
+    public boolean isConnected() {
+        return socket != null && socket.isConnected() && !socket.isClosed();
     }
 }

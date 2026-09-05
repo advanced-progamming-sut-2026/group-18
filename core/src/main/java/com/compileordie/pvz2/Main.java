@@ -9,6 +9,7 @@ import com.compileordie.pvz2.models.components.Result;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 import com.compileordie.pvz2.views.ScreenManager;
 import com.compileordie.pvz2.views.ScreenType;
+import com.compileordie.pvz2.views.helpers.LeftMessageManager;
 import com.compileordie.pvz2.views.helpers.ToastManager;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -26,9 +27,10 @@ public class Main extends Game {
         ConfigManager.init();
         ScreenManager.init(this);
         ToastManager.init();
+        LeftMessageManager.init();
 
         // Auto-login logic ("Stay logged in"): the account now lives on the server, so a real
-        // device-only file lookup can no longer authenticate anyone. Instead we replay a normal
+        // device-only file lookup can no longer authenticate anyone. Instead, we replay a normal
         // login against the server using the credentials the user asked us to remember locally.
         String savedUsername = PreferencesManager.getRememberedUsername();
         String savedPassword = PreferencesManager.getRememberedPassword();
@@ -86,13 +88,15 @@ public class Main extends Game {
         }
 
         ToastManager.render(Gdx.graphics.getDeltaTime());
+        LeftMessageManager.render(Gdx.graphics.getDeltaTime());
     }
 
-    // Override resize to ensure both the active screen and the toast overlay scale properly
+    // Override resize to ensure both the active screen and the overlays scale properly
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
         ToastManager.resize(width, height);
+        LeftMessageManager.resize(width, height);
     }
 
     @Override

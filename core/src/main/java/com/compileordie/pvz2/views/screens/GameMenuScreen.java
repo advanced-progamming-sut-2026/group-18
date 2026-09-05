@@ -22,9 +22,13 @@ import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.game.levels.ChapterType;
 import com.compileordie.pvz2.models.game.levels.LevelID;
+import com.compileordie.pvz2.network.NetworkClient;
+import com.compileordie.pvz2.network.protocol.Message;
+import com.compileordie.pvz2.network.protocol.MessageType;
 import com.compileordie.pvz2.views.ScreenManager;
 import com.compileordie.pvz2.views.ScreenType;
 import com.compileordie.pvz2.views.customelements.CurrencyHud;
+import com.compileordie.pvz2.views.customelements.IZombieInviteModal;
 import com.compileordie.pvz2.views.customelements.LeaderboardModal;
 import com.compileordie.pvz2.views.customelements.LevelSelectionModal;
 
@@ -356,5 +360,19 @@ public class GameMenuScreen extends MenuScreen {
 
         backgroundImage.setX(-(excessBgWidth * currentPercent));
         islandTable.setX(-(excessIslandWidth * currentPercent));
+
+        checkIncomingNetworkInvites();
+    }
+
+    private void checkIncomingNetworkInvites() {
+        Message msg;
+        while ((msg = NetworkClient.getInstance().poll()) != null) {
+            if (msg.getType() == MessageType.IZOMBIE_INVITE) {
+                String inviter = msg.get("inviter");
+                String role = msg.get("inviterRole");
+                IZombieInviteModal inviteModal = new IZombieInviteModal(skin, textureBank, stage, inviter, role);
+                inviteModal.show(stage);
+            }
+        }
     }
 }

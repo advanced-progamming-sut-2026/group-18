@@ -58,6 +58,7 @@ public enum EconomyType {
         public void tick(int ticks, EconomyManager self, GameBoard gameBoard) {
             if (self.tickCounter == 0) {
                 self.sunAmount += ConfigManager.economy().izStartingSuns;
+                EconomyType.loadSelectionDeckToPlantCards(self);
             }
         }
     },

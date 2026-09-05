@@ -13,6 +13,7 @@ import com.compileordie.pvz2.controllers.menus.game.GameScreenController;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.LawnMower;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
+import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.TombType;
 import com.compileordie.pvz2.models.game.board.Tile;
@@ -377,7 +378,8 @@ final class BoardEntityDrawer {
 
     void drawTileHighlight(SpriteBatch batch, Tile tile) {
         if (tile == null || tileHighlightPatch == null) return;
-        if (GameScreenController.selectedCard == null
+        if (GameScreenController.selectedPlantCard == null
+            && GameScreenController.selectedZombieCard == null
             && !GameScreenController.isShovelSelected
             && !GameScreenController.isPlantFoodSelected) return;
 
@@ -394,9 +396,9 @@ final class BoardEntityDrawer {
             cursorAnimTime += delta;
         }
 
-        // 1. Plant Card Selected: Render Idle Animation under cursor
-        if (GameScreenController.selectedCard != null && plantAssets != null) {
-            PlantType plantType = GameScreenController.selectedCard.plantType;
+        // 1. Plant Card Selected
+        if (GameScreenController.selectedPlantCard != null && plantAssets != null) {
+            PlantType plantType = GameScreenController.selectedPlantCard.plantType;
             ClipRef clip = plantAssets.loadPlantClip(plantType);
             if (clip != null) {
                 float drawX = mousePos.x;
@@ -424,6 +426,38 @@ final class BoardEntityDrawer {
             float w = plantFoodCursorRegion.getRegionWidth() * 0.8f;
             float h = plantFoodCursorRegion.getRegionHeight() * 0.8f;
             batch.draw(plantFoodCursorRegion, mousePos.x - (w / 2f), mousePos.y - (h / 2f), w, h);
+        }
+        // 4. Zombie Card Selected
+        else if (GameScreenController.selectedZombieCard != null && plantAssets != null) {
+            String nameStr = GameScreenController.selectedZombieCard.zombieType.name();
+            ZombieType zombieType = GameScreenController.selectedZombieCard.zombieType;
+            ChapterType previousChapter = AppModel.currentChapter;
+
+            ZombieVisualRegistry.ZombieVisualDef def = ZombieVisualRegistry.get(nameStr);
+            if (def != null && !def.pams.isEmpty()) {
+                float drawX = mousePos.x;
+                float drawY = mousePos.y;
+
+                Matrix4 original = batch.getTransformMatrix().cpy();
+                Matrix4 scaled = original.cpy()
+                    .translate(drawX, drawY, 0)
+                    .scale(0.55f, 0.55f, 1f)
+                    .translate(-drawX, -drawY, 0);
+
+                batch.setTransformMatrix(scaled);
+
+                // Draw all PAM layers (e.g., base zombie + cone)
+                for (ZombieVisualRegistry.PamSpec spec : def.pams) {
+                    String path = spec.getResolvedPath();
+                    try {
+                        plantAssets.getRawPlayer().draw(batch, path, "", cursorAnimTime, drawX, drawY, true);
+                    } catch (Throwable e) {
+                        Gdx.app.error("PVZ-CURSOR", "Missing zombie asset: " + path);
+                    }
+                }
+                batch.setTransformMatrix(original);
+            }
+            AppModel.currentChapter = previousChapter;
         }
     }
 

@@ -16,7 +16,7 @@ public class HomingStrategy implements AttackStrategy {
 
     private final Class<? extends Projectile> projectileType;
     private final TargetingMode baseTargetingMode;
-    private final Random random = new Random();
+    private transient final Random random = new Random();
 
     public HomingStrategy(Class<? extends Projectile> projectileType, TargetingMode baseTargetingMode) {
         this.projectileType = projectileType;

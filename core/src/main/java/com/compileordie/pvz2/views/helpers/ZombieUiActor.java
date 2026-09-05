@@ -1,17 +1,22 @@
 package com.compileordie.pvz2.views.helpers;
 
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Align;
 import pvz.libpvz.pam.PamPlayer;
 
+import java.util.List;
+import java.util.Map;
+
 public class ZombieUiActor extends Actor {
     private final PamPlayer player;
-    private final java.util.List<String> pamPaths;
-    private final java.util.Map<String, Boolean> visibilityMap;
+    private final List<String> pamPaths;
+    private final Map<String, Boolean> visibilityMap;
     private float stateTime = 0f;
     private final float scale;
 
-    public ZombieUiActor(PamPlayer player, java.util.List<String> pamPaths, java.util.Map<String, Boolean> visibilityMap, float scale) {
+    public ZombieUiActor(PamPlayer player, List<String> pamPaths, Map<String, Boolean> visibilityMap, float scale) {
         this.player = player;
         this.pamPaths = pamPaths;
         this.visibilityMap = visibilityMap;
@@ -25,7 +30,7 @@ public class ZombieUiActor extends Actor {
     }
 
     @Override
-    public void draw(com.badlogic.gdx.graphics.g2d.Batch batch, float parentAlpha) {
+    public void draw(Batch batch, float parentAlpha) {
         float drawX = getX(Align.center);
         float drawY = getY(Align.bottom);
 
@@ -37,10 +42,10 @@ public class ZombieUiActor extends Actor {
 
         batch.setTransformMatrix(scaledTransform);
 
-        if (batch instanceof com.badlogic.gdx.graphics.g2d.SpriteBatch) {
+        if (batch instanceof SpriteBatch) {
             // Loop through all parts (e.g., both the piano AND the zombie)
             for (String pamPath : pamPaths) {
-                player.draw((com.badlogic.gdx.graphics.g2d.SpriteBatch) batch, pamPath, "idle", stateTime, drawX, drawY, true, visibilityMap);
+                player.draw(batch, pamPath, "idle", stateTime, drawX, drawY, true, visibilityMap);
             }
         }
 

@@ -6,11 +6,9 @@ import com.compileordie.pvz2.models.game.levels.ChapterType;
 import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.models.user.Player;
 
-
 import java.util.EnumMap;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Queue;
 
 
 public class AppModel {
@@ -19,9 +17,10 @@ public class AppModel {
     public static ChapterType currentChapter = null;
     public static LevelID currentLevel = null;
     public static GameSession gameSession = null;
-    public static Map<PlantType, Boolean> selectionDeck = new EnumMap<>(PlantType.class);
+    public static HashMap<PlantType, Boolean> selectionDeck = new HashMap<>();
     public static Boolean wonLastGame = null;
-
+    public static boolean isReceiverClient = false; // TODO: Initialize
+    public static String opponentUsername = null; // TODO: Initialize
 
     private AppModel() {
     }
@@ -42,6 +41,6 @@ public class AppModel {
         currentChapter = null;
         currentLevel = null;
         gameSession = null;
-        selectionDeck = new EnumMap<>(PlantType.class);
+        selectionDeck = new HashMap<>();
     }
 }

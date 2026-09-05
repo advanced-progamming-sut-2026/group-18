@@ -25,7 +25,6 @@ public class GameSession {
     public GameBoard gameBoard;
     public GameJudge gameJudge;
 
-
     public boolean flagForFirstWave = false;
     public float elapsedTimeFromFirstWave = 99999f;
 

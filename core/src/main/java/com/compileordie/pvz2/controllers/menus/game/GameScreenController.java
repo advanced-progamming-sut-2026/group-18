@@ -8,6 +8,7 @@ import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.PlantTemplate;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
+import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
@@ -16,22 +17,27 @@ import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.economy.EconomyType;
 import com.compileordie.pvz2.models.game.economy.PlantCard;
 import com.compileordie.pvz2.models.game.economy.Sun;
+import com.compileordie.pvz2.models.game.economy.ZombieCard;
 import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
 import com.compileordie.pvz2.models.missions.quests.QuestEvent;
 import com.compileordie.pvz2.models.missions.quests.QuestManager;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 import com.compileordie.pvz2.models.repositories.configs.PlantConfigRepository;
+import com.compileordie.pvz2.network.NetworkClient;
+import com.compileordie.pvz2.network.protocol.Message;
+import com.compileordie.pvz2.network.protocol.MessageType;
 import com.compileordie.pvz2.views.helpers.ToastManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class GameScreenController {
-    public static PlantCard selectedCard = null;
+    public static PlantCard selectedPlantCard = null;
     public static boolean isShovelSelected = false;
     public static boolean isPlantFoodSelected = false;
     private static PlantConfigRepository configRepo;
+    public static ZombieCard selectedZombieCard = null;
 
     private GameScreenController() {
     }
@@ -64,20 +70,20 @@ public class GameScreenController {
         return tile.vase;
     }
 
-    public static void selectCard(PlantCard card) {
+    public static void selectPlantCard(PlantCard card) {
         isShovelSelected = false;
         isPlantFoodSelected = false;
-        if (selectedCard == card) {
-            selectedCard = null;
+        if (selectedPlantCard == card) {
+            selectedPlantCard = null;
         } else {
-            selectedCard = card;
+            selectedPlantCard = card;
         }
     }
 
     public static void toggleShovel() {
         isShovelSelected = !isShovelSelected;
         if (isShovelSelected) {
-            selectedCard = null;
+            selectedPlantCard = null;
             isPlantFoodSelected = false;
         }
     }
@@ -85,13 +91,14 @@ public class GameScreenController {
     public static void togglePlantFood() {
         isPlantFoodSelected = !isPlantFoodSelected;
         if (isPlantFoodSelected) {
-            selectedCard = null;
+            selectedPlantCard = null;
             isShovelSelected = false;
         }
     }
 
     public static void cancelSelection() {
-        selectedCard = null;
+        selectedPlantCard = null;
+        selectedZombieCard = null;
         isShovelSelected = false;
         isPlantFoodSelected = false;
     }
@@ -107,6 +114,11 @@ public class GameScreenController {
         }
         if (AppModel.gameSession == null || AppModel.gameSession.gameBoard == null) return;
 
+        if (AppModel.currentLevel == LevelID.I_ZOMBIE && AppModel.isReceiverClient) {
+            handleIZombieTileClick(tile);
+            return;
+        }
+
         if (isPlantFoodSelected) {
             handlePlantFoodAction(tile);
             return;
@@ -117,9 +129,37 @@ public class GameScreenController {
             return;
         }
 
-        if (selectedCard != null) {
+        if (selectedPlantCard != null) {
             handlePlantAction(tile);
         }
+    }
+
+    public static void handleIZombieTileClick(Tile tile) {
+        if (selectedZombieCard == null) return;
+
+        var economy = AppModel.gameSession.gameBoard.economyManager;
+
+        if (economy.sunAmount < selectedZombieCard.cost) {
+            ToastManager.showError("Not enough sun!");
+            return;
+        }
+
+        if (tile.column < Constants.Game.BOARD_COLS - 3) {
+            ToastManager.showError("Zombies must be placed on the right side of the lawn!");
+            return;
+        }
+
+        // Send targeted spawn request to the opponent
+        Message spawnMessage = new Message(MessageType.IZOMBIE_SPAWN_REQUEST)
+            .put("target", AppModel.opponentUsername)
+            .put("zombieType", selectedZombieCard.zombieType.name())
+            .put("row", String.valueOf(tile.row))
+            .put("col", String.valueOf(tile.column))
+            .put("cost", String.valueOf(selectedZombieCard.cost));
+
+        NetworkClient.getInstance().send(spawnMessage);
+        selectedZombieCard.resetTimer();
+        cancelSelection();
     }
 
     public static void handleVaseClick(Vase vase) {
@@ -151,7 +191,7 @@ public class GameScreenController {
 
     private static void handlePlantAction(Tile tile) {
         // --- 1. SPECIAL EXCEPTION PLANTING RULES ---
-        if (selectedCard.plantType == PlantType.HOT_POTATO) {
+        if (selectedPlantCard.plantType == PlantType.HOT_POTATO) {
             boolean hasIceBlock = tile.obstacle instanceof com.compileordie.pvz2.models.entities.obstacles.IceBlock;
             // FIX: Check ALL slots for the ice cover!
             boolean hasFrozenPlant = (tile.plant != null && tile.plant.isFrozen()) ||
@@ -163,7 +203,7 @@ public class GameScreenController {
                 return;
             }
         }
-        else if (selectedCard.plantType == PlantType.GRAVE_BUSTER) {
+        else if (selectedPlantCard.plantType == PlantType.GRAVE_BUSTER) {
             if (!(tile.obstacle instanceof Tomb)) {
                 ToastManager.showError("Grave Buster can only be planted on Graves!");
                 return;
@@ -175,7 +215,7 @@ public class GameScreenController {
             // Do NOT spawn a Plant object to prevent engine crashes.
             // Just deduct the sun and instantly kill the grave!
             boolean isConveyor = AppModel.gameSession.gameBoard.economyManager.type == EconomyType.CONVEYOR_BELT || AppModel.currentLevel == LevelID.VASE_BREAKER;
-            PlantTemplate template = getConfigRepo().getTemplate(selectedCard.plantType);
+            PlantTemplate template = getConfigRepo().getTemplate(selectedPlantCard.plantType);
             int cost = template != null ? template.getCost() : 0;
 
             if (!isConveyor && AppModel.gameSession.gameBoard.economyManager.sunAmount < cost) {
@@ -185,10 +225,10 @@ public class GameScreenController {
 
             // 1. Deduct Sun / Handle Conveyor
             if (isConveyor) {
-                AppModel.gameSession.gameBoard.economyManager.plantCards.remove(selectedCard);
+                AppModel.gameSession.gameBoard.economyManager.plantCards.remove(selectedPlantCard);
             } else {
                 AppModel.gameSession.gameBoard.economyManager.sunAmount -= cost;
-                selectedCard.setTimer();
+                selectedPlantCard.setTimer();
             }
 
             // 2. Instantly shatter the grave! (Bypasses PlantSpawner entirely)
@@ -200,7 +240,7 @@ public class GameScreenController {
             cancelSelection();
             return; // EXIT COMPLETELY. DO NOT CALL spawnAndDeduct!
         }
-        else if (selectedCard.plantType == PlantType.LILY_PAD) {
+        else if (selectedPlantCard.plantType == PlantType.LILY_PAD) {
             if (!tile.isUnderWater()) {
                 ToastManager.showError("Lily Pad must be planted on Water!");
                 return;
@@ -210,7 +250,7 @@ public class GameScreenController {
                 return;
             }
         }
-        else if (selectedCard.plantType == PlantType.PUMPKIN) {
+        else if (selectedPlantCard.plantType == PlantType.PUMPKIN) {
             if (tile.hasPumpkin()) {
                 ToastManager.showError("Tile already has a Pumpkin!");
                 return;
@@ -218,7 +258,7 @@ public class GameScreenController {
         }
         // --- 2. NORMAL PLANTING RULES ---
         if (!List.of(PlantType.PEA_POD, PlantType.HOT_POTATO,PlantType.GRAVE_BUSTER,PlantType.LILY_PAD, PlantType.PUMPKIN)
-            .contains(selectedCard.plantType)) {
+            .contains(selectedPlantCard.plantType)) {
             if (tile.plant != null && tile.plant.isAlive()) {
                 ToastManager.showError("Tile is already occupied!");
                 return;
@@ -236,7 +276,7 @@ public class GameScreenController {
 
         boolean isConveyor = AppModel.gameSession.gameBoard.economyManager.type == EconomyType.CONVEYOR_BELT
             || AppModel.currentLevel == LevelID.VASE_BREAKER;
-        PlantTemplate template = getConfigRepo().getTemplate(selectedCard.plantType);
+        PlantTemplate template = getConfigRepo().getTemplate(selectedPlantCard.plantType);
         int cost = template != null ? template.getCost() : 0;
 
         if (!isConveyor && AppModel.gameSession.gameBoard.economyManager.sunAmount < cost) {
@@ -253,7 +293,7 @@ public class GameScreenController {
         float spawnY = tile.row * Constants.Game.TILE_HEIGHT + Constants.Game.PADDING_Y
             + (Constants.Game.TILE_HEIGHT / 2f);
 
-        if (selectedCard.plantType == PlantType.PEA_POD
+        if (selectedPlantCard.plantType == PlantType.PEA_POD
             && tile.plant != null
             && tile.plant.getName().equals("Pea Pod")) {
             int currentHeads = tile.plant.getStackCount();
@@ -264,29 +304,29 @@ public class GameScreenController {
             }
         }
 
-            else {
-            Plant newPlant = PlantSpawner.spawn(selectedCard.plantType, spawnX, spawnY, selectedCard.isBoosted, false);
+        else {
+            Plant newPlant = PlantSpawner.spawn(selectedPlantCard.plantType, spawnX, spawnY, selectedPlantCard.isBoosted, false);
 
             tile.plant = newPlant;
-            AppModel.gameSession.gameBoard.recordPlanting(selectedCard.plantType, tile);
+            AppModel.gameSession.gameBoard.recordPlanting(selectedPlantCard.plantType, tile);
             tile.plant = null; // Remove it from the main slot immediately after!
 
             // --- NOW ROUTE TO THE CORRECT SLOT ---
-            if (selectedCard.plantType == PlantType.LILY_PAD) tile.lilyPad = newPlant;
-            else if (selectedCard.plantType == PlantType.PUMPKIN) tile.pumpkin = newPlant;
-            else if (selectedCard.plantType == PlantType.HOT_POTATO || selectedCard.plantType == PlantType.GRAVE_BUSTER) tile.instantPlant = newPlant;
+            if (selectedPlantCard.plantType == PlantType.LILY_PAD) tile.lilyPad = newPlant;
+            else if (selectedPlantCard.plantType == PlantType.PUMPKIN) tile.pumpkin = newPlant;
+            else if (selectedPlantCard.plantType == PlantType.HOT_POTATO || selectedPlantCard.plantType == PlantType.GRAVE_BUSTER) tile.instantPlant = newPlant;
             else tile.plant = newPlant;
             // Feeds Master Demolisher / Cloudy Day / Night or Morning / Family Slayer /
             // One Less Column / Defenseless Row / Defenseless Cross.
-            AppModel.gameSession.gameBoard.recordPlanting(selectedCard.plantType, tile);
+            AppModel.gameSession.gameBoard.recordPlanting(selectedPlantCard.plantType, tile);
         }
         QuestManager.dispatch(QuestEvent.PLANT_PLANTED, 1, AppModel.currentChapter.name());
 
         if (isConveyor) {
-            AppModel.gameSession.gameBoard.economyManager.plantCards.remove(selectedCard);
+            AppModel.gameSession.gameBoard.economyManager.plantCards.remove(selectedPlantCard);
         } else {
             AppModel.gameSession.gameBoard.economyManager.sunAmount -= cost;
-            selectedCard.setTimer();
+            selectedPlantCard.setTimer();
         }
 
         cancelSelection();
