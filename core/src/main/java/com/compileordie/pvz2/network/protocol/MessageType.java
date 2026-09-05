@@ -46,6 +46,10 @@ public enum MessageType {
     IZOMBIE_ACTION,
     IZOMBIE_STATE_SYNC,
     IZOMBIE_GAME_OVER,
+    // I_ZOMBIE only: زامبی‌ساید (isReceiverClient=true) هرگز gameBoard خودش را authoritative
+    // نمی‌داند (۲۰ بار در ثانیه overwrite می‌شود)، پس نمی‌تواند خودش خورشید جمع کند/سان اضافه
+    // کند - فقط درخواست جمع‌آوری برای طرف مقابل (پلنت‌ساید، simulator واقعی) می‌فرستد.
+    IZOMBIE_SUN_COLLECT_REQUEST,
 
     // فاز ۵ / ۷ - واکنش در حین بازی
     REACTION_SEND,

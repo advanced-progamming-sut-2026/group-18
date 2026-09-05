@@ -24,6 +24,8 @@ import com.compileordie.pvz2.models.entities.zombies.variants.capable.OctopusZom
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.board.Tile;
+import com.compileordie.pvz2.models.game.economy.Sun;
+import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.models.game.minigames.vasebreaker.Vase;
 import com.compileordie.pvz2.models.game.waves.WaveType;
 import com.compileordie.pvz2.network.KryoSerializer;
@@ -456,15 +458,23 @@ public class GameScreen implements Screen {
             simulationAccumulator += delta;
             boolean ticked = false;
             while (simulationAccumulator >= GameScreenConstants.SIMULATION_STEP_SECONDS) {
+                if (AppModel.gameSession == null) break; // judge()/afterSession may have ended it below
                 AppModel.gameSession.tick(1);
                 simulationAccumulator -= GameScreenConstants.SIMULATION_STEP_SECONDS;
                 ticked = true;
+                if (AppModel.wonLastGame != null) {
+                    // Game just ended for us (plant/host side, the only side that ever
+                    // ticks/judges - see GameJudge.judge()). Tell the opponent so THEIR
+                    // client shows the exact same end-game modal, from their perspective
+                    // (their win/loss is the opposite of ours). I_ZOMBIE-only, per design.
+                    notifyOpponentGameOver();
+                    break;
+                }
             }
 
             // Pack and send GameBoard state to opponent on every tick
-            if (ticked && AppModel.opponentUsername != null
-                && NetworkClient.getInstance().isConnected()
-                && AppModel.gameSession != null) {
+            if (ticked && AppModel.gameSession != null && AppModel.opponentUsername != null
+                && NetworkClient.getInstance().isConnected()) {
                 String encodedBoard = KryoSerializer.serialize(AppModel.gameSession.gameBoard);
                 Message syncMessage = new Message(MessageType.IZOMBIE_STATE_SYNC)
                     .put("target", AppModel.opponentUsername)
@@ -472,6 +482,23 @@ public class GameScreen implements Screen {
                 NetworkClient.getInstance().send(syncMessage);
             }
         }
+    }
+
+    /**
+     * I_ZOMBIE only: called right after WE (the plant/host side, the only side whose
+     * GameJudge actually runs - see GameJudge.judge()'s early isReceiverClient return)
+     * just decided the match is over. The opponent (zombie/receiver side) never judges
+     * anything itself, so without this it would just keep playing forever with no idea
+     * the match ended. "One's win is the other's loss", so we send them the inverse of
+     * our own AppModel.wonLastGame.
+     */
+    private void notifyOpponentGameOver() {
+        if (AppModel.currentLevel != LevelID.I_ZOMBIE) return;
+        if (AppModel.opponentUsername == null || !NetworkClient.getInstance().isConnected()) return;
+        boolean opponentWon = !AppModel.wonLastGame;
+        NetworkClient.getInstance().send(new Message(MessageType.IZOMBIE_GAME_OVER)
+            .put("target", AppModel.opponentUsername)
+            .put("won", String.valueOf(opponentWon)));
     }
 
     private void processNetworkInput() {
@@ -486,6 +513,22 @@ public class GameScreen implements Screen {
                     if (newBoard != null) {
                         AppModel.gameSession.gameBoard = newBoard;
                     }
+                }
+            }
+            if (msg.getType() == MessageType.IZOMBIE_GAME_OVER) {
+                // Comes from the opponent (plant/host side) telling us (zombie/receiver
+                // side) that the match just ended and what OUR outcome is. This reuses
+                // the exact same GameScreen.advanceSimulation()/GameScreenUI.showGameEndPanel
+                // path/listeners as the host - we just set the same flag it sets itself.
+                AppModel.wonLastGame = Boolean.parseBoolean(msg.get("won"));
+            }
+            if (msg.getType() == MessageType.IZOMBIE_SUN_COLLECT_REQUEST) {
+                // Only meaningful on the plant/host side (the only side with an
+                // authoritative gameBoard); if we're the receiver we shouldn't even be
+                // able to get here since we'd never send ourselves this message, but
+                // guard anyway.
+                if (!AppModel.isReceiverClient && AppModel.gameSession != null) {
+                    applyOpponentSunCollectRequest(msg);
                 }
             }
             if (msg.getType() == MessageType.IZOMBIE_SPAWN_REQUEST) {
@@ -506,6 +549,40 @@ public class GameScreen implements Screen {
                 AppModel.gameSession.gameBoard.getLane(row).zombies.add(newZombie);
                 AppModel.gameSession.gameBoard.economyManager.sunAmount -= cost;
             }
+        }
+    }
+
+    /**
+     * زامبی‌ساید (حریف) یه خورشید رو hover کرده و به‌جای جمع‌آوری محلی (که چون gameBoard
+     * اش authoritative نیست بی‌فایده‌ست)، از ما (پلنت‌ساید، simulator واقعی) خواسته که
+     * خودمون این خورشید رو جمع کنیم. چون Sun شناسه‌ی یکتا نداره، با نزدیک‌ترین تطبیق
+     * مختصات x/y پیداش می‌کنیم (suns هیچ‌وقت دقیقا روی هم نمی‌افتن، پس این کافیه).
+     */
+    private void applyOpponentSunCollectRequest(Message msg) {
+        try {
+            double targetX = Double.parseDouble(msg.get("x"));
+            double targetY = Double.parseDouble(msg.get("y"));
+            var suns = AppModel.gameSession.gameBoard.economyManager.suns;
+            Sun closest = null;
+            double closestDistSq = Double.MAX_VALUE;
+            for (var sun : suns) {
+                double dx = sun.getX() - targetX;
+                double dy = sun.getY() - targetY;
+                double distSq = dx * dx + dy * dy;
+                if (distSq < closestDistSq) {
+                    closestDistSq = distSq;
+                    closest = sun;
+                }
+            }
+            // 0.05 متر (~۵ سانتی‌متر) تلورانس - چون خورشید غیر از پرت‌شدن معمولا ثابته،
+            // فاصله‌ی واقعی باید تقریبا صفر باشه؛ این فقط برای رفع خطای اعشاری/سریالایزه.
+            if (closest != null && closestDistSq <= 0.05 * 0.05) {
+                BoardEntityDrawer.collectSun(AppModel.gameSession.gameBoard, closest);
+                suns.remove(closest);
+                states.sunRenderStates.remove(closest);
+            }
+        } catch (Exception e) {
+            Gdx.app.error("PVZ-SUN-NETWORK", "❌ پردازش درخواست جمع‌آوری خورشید حریف خطا داد: " + e);
         }
     }
 

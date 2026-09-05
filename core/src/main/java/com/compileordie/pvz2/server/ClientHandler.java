@@ -102,6 +102,12 @@ public class ClientHandler implements Runnable {
             case IZOMBIE_STATE_SYNC:
                 handleStateSync(message);
                 break;
+            case IZOMBIE_GAME_OVER:
+                relayToTarget(message);
+                break;
+            case IZOMBIE_SUN_COLLECT_REQUEST:
+                relayToTarget(message);
+                break;
             case IZOMBIE_MATCH_REQUEST:
                 MatchmakingManager.handleMatchRequest(this, message, server);
                 break;
@@ -123,6 +129,22 @@ public class ClientHandler implements Runnable {
     }
 
     private void handleSpawnRequest(Message message) {
+        String targetUser = message.get("target");
+        if (targetUser == null || targetUser.isEmpty()) return;
+
+        ClientHandler targetHandler = server.getOnlineClient(targetUser);
+        if (targetHandler != null) {
+            targetHandler.send(message);
+        }
+    }
+
+    /**
+     * هر پیامی که فقط با یک فیلد "target" (username حریف) باید عیناً به همان یک نفر
+     * relay بشه (بدون این‌که سرور محتوایش رو تفسیر کنه) - دقیقاً همان رفتاری که
+     * handleSpawnRequest/handleStateSync هم از قبل داشتن؛ IZOMBIE_GAME_OVER و
+     * IZOMBIE_SUN_COLLECT_REQUEST هم از همین الگو استفاده می‌کنن.
+     */
+    private void relayToTarget(Message message) {
         String targetUser = message.get("target");
         if (targetUser == null || targetUser.isEmpty()) return;
 
