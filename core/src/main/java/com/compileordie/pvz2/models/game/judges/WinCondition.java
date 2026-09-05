@@ -8,7 +8,7 @@ public enum WinCondition {
     STANDARD {
         @Override
         public boolean evaluate(GameBoard gameBoard) {
-            return gameBoard.tickCounter * Constants.Game.TILE_HEIGHT >= 10
+            return gameBoard.tickCounter * Constants.Game.TIME_COEFFICIENT >= 10
                 && gameBoard.waveManager.pendingZombieQueue.isEmpty()
                 && gameBoard.getAllZombies().isEmpty();
             /*return gameBoard.waveManager.isLastWave()
