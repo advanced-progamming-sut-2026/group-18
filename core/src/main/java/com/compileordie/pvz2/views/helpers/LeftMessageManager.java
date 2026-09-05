@@ -23,7 +23,7 @@ public class LeftMessageManager {
     private static Stage globalStage;
     private static Table container;
     private static TextureBank textureBank;
-    private static PamPlayer pamPlayer;
+    public static PamPlayer pamPlayer;
 
     public static void init() {
         ScreenViewport viewport = new ScreenViewport();
