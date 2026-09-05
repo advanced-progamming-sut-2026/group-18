@@ -17,11 +17,16 @@ import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.TombType;
 import com.compileordie.pvz2.models.game.board.Tile;
+import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.economy.PlantCard;
+import com.compileordie.pvz2.models.game.economy.Sun;
 import com.compileordie.pvz2.models.game.levels.ChapterType;
 import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.models.missions.quests.QuestEvent;
 import com.compileordie.pvz2.models.missions.quests.QuestManager;
+import com.compileordie.pvz2.network.NetworkClient;
+import com.compileordie.pvz2.network.protocol.Message;
+import com.compileordie.pvz2.network.protocol.MessageType;
 import com.compileordie.pvz2.views.game.ui.PlantFoodBank;
 import com.compileordie.pvz2.views.helpers.ToastManager;
 import pvz.libpvz.pam.ClipRef;
@@ -315,6 +320,15 @@ final class BoardEntityDrawer {
         if (AppModel.gameSession == null || player == null) return;
         var sunsList = AppModel.gameSession.gameBoard.economyManager.suns;
         if (sunsList == null || sunsList.isEmpty()) return;
+
+        // I_ZOMBIE فقط: زامبی‌ساید (isReceiverClient=true) هیچ‌وقت authoritative نیست -
+        // gameBoard اش هر ۱/۲۰ ثانیه کامل overwrite می‌شه، پس هر تغییری که خودش مستقیم روی
+        // economyManager.sunAmount/suns بده، همون لحظه‌ی sync بعدی گم می‌شه (خورشید دوباره
+        // "برمی‌گرده"). راه‌حل: به‌جای جمع‌آوری واقعی، فقط درخواست جمع‌آوری برای حریف
+        // (پلنت‌ساید، simulator واقعی) می‌فرسته و همون لحظه (بدون صبر برای fade) محلی حذفش
+        // می‌کنه تا تکراری نفرستد.
+        boolean isReceiverSide = AppModel.currentLevel == LevelID.I_ZOMBIE && AppModel.isReceiverClient;
+
         var iterator = sunsList.iterator();
         while (iterator.hasNext()) {
             var sun = iterator.next();
@@ -324,23 +338,40 @@ final class BoardEntityDrawer {
             // --- FIX: Removed Double-Padding! Sun coordinates are already world coordinates! ---
             float baseX = (float) (sun.getX() * Constants.UI.METER_TO_PIX);
             float baseY = (float) (sun.getY() * Constants.UI.METER_TO_PIX);
+            boolean isHovered = false;
             if (!state.isFading) {
                 float dx = baseX - mousePos.x;
                 float dy = baseY - mousePos.y;
-                if (dx * dx + dy * dy <= 2500) state.isFading = true;
+                if (dx * dx + dy * dy <= 2500) {
+                    isHovered = true;
+                    state.isFading = true;
+                }
             }
+
+            if (isReceiverSide) {
+                if (isHovered) {
+                    requestSunCollectFromOpponent(sun);
+                    iterator.remove();
+                    states.sunRenderStates.remove(sun);
+                    continue;
+                }
+                // فرصت خیلی کوچیک بین اسپاون یه خورشید تازه (که هنوز state.isFading اش
+                // false شده تو همین فریم) و ساینک بعدی: اگه از فریم قبل isFading مونده
+                // (مثلا یه سری از کد قدیمی که هنوز نرسیده sync بشه)، بازم فوراً درخواست بفرست.
+                if (state.isFading) {
+                    requestSunCollectFromOpponent(sun);
+                    iterator.remove();
+                    states.sunRenderStates.remove(sun);
+                    continue;
+                }
+            }
+
             float alpha = 1f;
             if (state.isFading) {
                 state.fadeTimer += delta;
                 alpha = Math.max(0f, 1f - (state.fadeTimer / 0.5f));
                 if (state.fadeTimer >= 0.3f) {
-                    // --- Trigger Radioactive Sun Explosion ---
-                    if (sun.type.name().contains("RADIOACTIVE")) {
-                        GameScreenController.explodeSun(AppModel.gameSession.gameBoard, sun);
-                    }
-                    QuestManager.dispatch(QuestEvent.SUN_COLLECTED, sun.type.value, null);
-                    AppModel.gameSession.gameBoard.economyManager.sunAmount += sun.type.value;
-                    AppModel.gameSession.gameBoard.economyManager.totalSunsGenerated += sun.type.value;
+                    collectSun(AppModel.gameSession.gameBoard, sun);
                     iterator.remove();
                     states.sunRenderStates.remove(sun);
                     continue;
@@ -364,6 +395,37 @@ final class BoardEntityDrawer {
                 batch.setColor(oldColor);
             }
         }
+    }
+
+    /**
+     * منطق واقعی «جمع‌کردن یک خورشید» (افزایش sunAmount، دیسپچ کوئست، و ترکاندن خورشید
+     * رادیواکتیو اگه لازم بود). این متد باید فقط روی gameBoard ای صدا زده بشه که واقعاً
+     * authoritative است - یعنی: خودِ پلنت‌ساید (isReceiverClient=false) وقتی خودش hover
+     * کرده (پایین‌تر، داخل همین حلقه)، یا پلنت‌ساید وقتی یه IZOMBIE_SUN_COLLECT_REQUEST از
+     * حریفش (زامبی‌ساید) می‌گیره (نگاه کنید GameScreen.processNetworkInput).
+     */
+    static void collectSun(GameBoard gameBoard, Sun sun) {
+        if (sun.type.name().contains("RADIOACTIVE")) {
+            GameScreenController.explodeSun(gameBoard, sun);
+        }
+        QuestManager.dispatch(QuestEvent.SUN_COLLECTED, sun.type.value, null);
+        gameBoard.economyManager.sunAmount += sun.type.value;
+        gameBoard.economyManager.totalSunsGenerated += sun.type.value;
+    }
+
+    /**
+     * فقط زامبی‌ساید (isReceiverClient=true) این را صدا می‌زند: به‌جای جمع‌آوری محلی
+     * (که چون gameBoard اش authoritative نیست بی‌فایده‌ست)، از حریفش (پلنت‌ساید، مالک
+     * واقعی simulation) می‌خواهد خودش این خورشید را جمع کند. شناسایی خورشید روی سرور و
+     * پلنت‌ساید صرفاً با مختصات x/y انجام می‌شود (Sun شناسه‌ی یکتا ندارد؛ چون suns هیچ‌وقت
+     * روی هم نمی‌افتن، این کافی است).
+     */
+    private void requestSunCollectFromOpponent(Sun sun) {
+        if (AppModel.opponentUsername == null || !NetworkClient.getInstance().isConnected()) return;
+        NetworkClient.getInstance().send(new Message(MessageType.IZOMBIE_SUN_COLLECT_REQUEST)
+            .put("target", AppModel.opponentUsername)
+            .put("x", String.valueOf(sun.getX()))
+            .put("y", String.valueOf(sun.getY())));
     }
 
     void initSelectionAssets(TextureBank textureBank) {
