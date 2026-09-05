@@ -10,11 +10,9 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.compileordie.pvz2.config.Constants;
-import com.compileordie.pvz2.controllers.PlantSpawner;
 import com.compileordie.pvz2.controllers.menus.game.GameScreenController;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
-import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
@@ -34,6 +32,7 @@ import com.compileordie.pvz2.network.protocol.Message;
 import com.compileordie.pvz2.network.protocol.MessageType;
 import com.compileordie.pvz2.views.game.ui.GameScreenUI;
 import com.compileordie.pvz2.views.game.ui.LevelStartDialog;
+import com.compileordie.pvz2.views.helpers.LeftMessageManager;
 import com.compileordie.pvz2.views.helpers.ToastManager;
 import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.textures.TextureBank;
@@ -223,59 +222,7 @@ public class GameScreen implements Screen {
 
     private void handleInput() {
         if (ui != null && GameScreenUI.isPaused) return;
-
-        // TODO: For debug purposes. Remove later:
-        Tile hoveringTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
-
-        if (hoveringTile != null) {
-            PlantType typeToSpawn = null;
-            if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.A)) typeToSpawn = PlantType.MELON_PULT;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.S)) typeToSpawn = PlantType.WINTER_MELON;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.D)) typeToSpawn = PlantType.SUN_SHROOM;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.F)) typeToSpawn = PlantType.PEPPER_PULT;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.G)) typeToSpawn = PlantType.POTATO_MINE;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Q)) typeToSpawn = PlantType.CHERRY_BOMB;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.W)) typeToSpawn = PlantType.REPEATER;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.E)) typeToSpawn = PlantType.THREEPEATER;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.R)) typeToSpawn = PlantType.SNOW_PEA;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.T)) typeToSpawn = PlantType.ROTOBAGA;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Y)) typeToSpawn = PlantType.PEA_POD;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.U)) typeToSpawn = PlantType.SPLIT_PEA;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.I)) typeToSpawn = PlantType.CITRON;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.O)) typeToSpawn = PlantType.CAULIPOWER;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.P)) typeToSpawn = PlantType.ELECTRIC_BLUEBERRY;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.H)) typeToSpawn = PlantType.BOWLING_BULB;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.J)) typeToSpawn = PlantType.CACTUS;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.K)) typeToSpawn = PlantType.FIRE_PEASHOOTER;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.L)) typeToSpawn = PlantType.STARFRUIT;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Z)) typeToSpawn = PlantType.GOO_PEASHOOTER;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.X)) typeToSpawn = PlantType.MEGA_GATLING_PEA;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.C)) typeToSpawn = PlantType.SEA_SHROOM;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.V)) typeToSpawn = PlantType.PUFF_SHROOM;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.B)) typeToSpawn = PlantType.FUME_SHROOM;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.N)) typeToSpawn = PlantType.CABBAGE_PULT;
-            else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.M)) typeToSpawn = PlantType.KERNEL_PULT;
-            if (typeToSpawn != null) {
-                if (typeToSpawn == PlantType.PEA_POD
-                    && hoveringTile.plant != null
-                    && hoveringTile.plant.getName().equals("Pea Pod")) {
-                    int currentHeads = hoveringTile.plant.getStackCount();
-                    if (currentHeads < 5) {
-                        hoveringTile.plant.addStack();
-                        Gdx.app.log("TEST-SPAWN", "⬆️ Upgraded Pea Pod to " + (currentHeads + 1) + " heads!");
-                    } else {
-                        Gdx.app.log("TEST-SPAWN", "❌ Pea Pod is already at max (5) heads!");
-                    }
-                } else {
-                    float spawnX = hoveringTile.column * Constants.Game.TILE_WIDTH + Constants.Game.PADDING_X
-                        + (Constants.Game.TILE_WIDTH / 2f);
-                    float spawnY = hoveringTile.row * Constants.Game.TILE_HEIGHT + Constants.Game.PADDING_Y
-                        + (Constants.Game.TILE_HEIGHT / 2f);
-                    hoveringTile.plant = PlantSpawner.spawn(typeToSpawn, spawnX, spawnY, false, false);
-                    Gdx.app.log("TEST-SPAWN", "✅ Planted " + typeToSpawn.name() + " at Row: " + hoveringTile.row + ", Col: " + hoveringTile.column);
-                }
-            }
-        }
+        handleMessageKeys();
 
         if (Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
             GameScreenController.cancelSelection();
@@ -309,6 +256,34 @@ public class GameScreen implements Screen {
             touchPoint.x, touchPoint.y, meterX, meterY));
         if ((testPastKommeh && hasWeTestForClickForDamaging) || overrideForceDamageClick) {
             handleClickDamageTest(touchPoint.x, touchPoint.y);
+        }
+    }
+
+    public static void sendReaction(int code) {
+        if (AppModel.opponentUsername != null && NetworkClient.getInstance().isConnected()) {
+            Message message = new Message(MessageType.REACTION_SEND)
+                .put("target", AppModel.opponentUsername)
+                .put("number", String.valueOf(code));
+            NetworkClient.getInstance().send(message);
+        }
+    }
+
+    private void handleMessageKeys() {
+        if (AppModel.currentLevel != LevelID.I_ZOMBIE) return;
+
+        int[] numberKeys = {
+            com.badlogic.gdx.Input.Keys.NUM_1, com.badlogic.gdx.Input.Keys.NUM_2,
+            com.badlogic.gdx.Input.Keys.NUM_3, com.badlogic.gdx.Input.Keys.NUM_4,
+            com.badlogic.gdx.Input.Keys.NUM_5, com.badlogic.gdx.Input.Keys.NUM_6,
+            com.badlogic.gdx.Input.Keys.NUM_7, com.badlogic.gdx.Input.Keys.NUM_8,
+            com.badlogic.gdx.Input.Keys.NUM_9
+        };
+
+        for (int i = 0; i < 9; i++) {
+            if (Gdx.input.isKeyJustPressed(numberKeys[i])) {
+                sendReaction(i + 1);
+                break;
+            }
         }
     }
 
@@ -548,6 +523,10 @@ public class GameScreen implements Screen {
                 Zombie newZombie = ZombieBuilder.create(zombieType, spawnX, spawnY, targetTile.row);
                 AppModel.gameSession.gameBoard.getLane(row).zombies.add(newZombie);
                 AppModel.gameSession.gameBoard.economyManager.sunAmount -= cost;
+            }
+            if (msg.getType() == MessageType.REACTION_SEND) {
+                int number = Integer.parseInt(msg.get("number"));
+                LeftMessageManager.showMessage(number);
             }
         }
     }

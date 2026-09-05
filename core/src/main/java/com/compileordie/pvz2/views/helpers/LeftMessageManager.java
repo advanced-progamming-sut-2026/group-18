@@ -55,27 +55,6 @@ public class LeftMessageManager {
 
             globalStage.act(clampedDelta);
             globalStage.draw();
-
-            // TODO: Enable for debug:
-            /*handleDebugInputs();*/
-        }
-    }
-
-    // NOTE: Debug keybind
-    private static void handleDebugInputs() {
-        int[] numberKeys = {
-            com.badlogic.gdx.Input.Keys.NUM_1, com.badlogic.gdx.Input.Keys.NUM_2,
-            com.badlogic.gdx.Input.Keys.NUM_3, com.badlogic.gdx.Input.Keys.NUM_4,
-            com.badlogic.gdx.Input.Keys.NUM_5, com.badlogic.gdx.Input.Keys.NUM_6,
-            com.badlogic.gdx.Input.Keys.NUM_7, com.badlogic.gdx.Input.Keys.NUM_8,
-            com.badlogic.gdx.Input.Keys.NUM_9
-        };
-
-        for (int i = 0; i < 9; i++) {
-            if (Gdx.input.isKeyJustPressed(numberKeys[i])) {
-                showMessage(i + 1);
-                break;
-            }
         }
     }
 

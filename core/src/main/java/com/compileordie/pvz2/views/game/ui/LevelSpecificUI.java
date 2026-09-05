@@ -19,6 +19,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.game.levels.LevelID;
+import com.compileordie.pvz2.views.game.GameScreen;
 import com.compileordie.pvz2.views.helpers.LeftMessageManager;
 import pvz.libpvz.pam.PamPlayer;
 
@@ -72,34 +73,34 @@ public final class LevelSpecificUI {
         Table panel = new Table();
         panel.setBackground(skin.getDrawable("image_ui_if_bundle_reward_multiplier_bg_10"));
         // Increased outer padding for a taller, roomier legend box
-        panel.pad(40, 18, 40, 18);
+        panel.pad(20, 18, 30, 18);
 
         Label title = new Label("MESSENGER GUIDE", skin, "medium");
         title.setColor(Color.BROWN);
         panel.add(title).colspan(3).padBottom(12).align(Align.center).row();
 
         // 1 - 3: Text Message Previews (added bottom padding between rows)
-        panel.add(createGuideTextItem(skin, "1-", "\"Old age?\"")).padRight(14).padBottom(30).left();
-        panel.add(createGuideTextItem(skin, "2-", "\"Photosynthesis\"")).padRight(14).padBottom(30).left();
-        panel.add(createGuideTextItem(skin, "3-", "\"Brain quality\"")).padBottom(30).left().row();
+        panel.add(createGuideTextItem(skin, "1-", "\"Old age?\"", 1)).padRight(14).padBottom(30).left();
+        panel.add(createGuideTextItem(skin, "2-", "\"Photosynthesis\"", 2)).padRight(14).padBottom(30).left();
+        panel.add(createGuideTextItem(skin, "3-", "\"Brain quality\"", 3)).padBottom(30).left().row();
 
         // 4 - 6: Emoji Previews (added vertical padding)
-        panel.add(createGuideImageItem(skin, "4-", "images/smiling_face_with_tear.png")).padRight(14).padBottom(30)
+        panel.add(createGuideImageItem(skin, "4-", "images/smiling_face_with_tear.png", 4)).padRight(14).padBottom(30)
             .left();
-        panel.add(createGuideImageItem(skin, "5-", "images/sunglasses.png")).padRight(14).padBottom(30).left();
-        panel.add(createGuideImageItem(skin, "6-", "images/expressionless.png")).padBottom(30).left().row();
+        panel.add(createGuideImageItem(skin, "5-", "images/sunglasses.png", 5)).padRight(14).padBottom(30).left();
+        panel.add(createGuideImageItem(skin, "6-", "images/expressionless.png", 6)).padBottom(30).left().row();
 
         // 7 - 9: Animated PAM Previews
         String dinoPam = "768/FULL/ZOMBIE/ZOMBIE_DINO_STEGOSAURUS/ZOMBIE_DINO_STEGOSAURUS.PAM";
-        panel.add(createGuidePamItem(skin, "7-", dinoPam, "idle_head")).padRight(14).left();
-        panel.add(createGuidePamItem(skin, "8-", dinoPam, "annoyed")).padRight(14).left();
-        panel.add(createGuidePamItem(skin, "9-", dinoPam, "head_idle_charmed")).left().row();
+        panel.add(createGuidePamItem(skin, "7-", dinoPam, "idle_head", 7)).padRight(14).left();
+        panel.add(createGuidePamItem(skin, "8-", dinoPam, "annoyed", 8)).padRight(14).left();
+        panel.add(createGuidePamItem(skin, "9-", dinoPam, "head_idle_charmed", 9)).left().row();
 
         panel.pack();
         return panel;
     }
 
-    private static Table createGuideTextItem(Skin skin, String key, String text) {
+    private static Table createGuideTextItem(Skin skin, String key, String text, int code) {
         Table item = new Table();
         Label keyLabel = new Label(key, skin, "medium");
         keyLabel.setColor(Color.BROWN);
@@ -110,10 +111,19 @@ public final class LevelSpecificUI {
 
         item.add(keyLabel).padRight(4);
         item.add(textLabel);
+
+        // CLICK LISTENER
+        item.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                GameScreen.sendReaction(code);
+            }
+        });
+
         return item;
     }
 
-    private static Table createGuideImageItem(Skin skin, String key, String imagePath) {
+    private static Table createGuideImageItem(Skin skin, String key, String imagePath, int code) {
         Table item = new Table();
         Label keyLabel = new Label(key, skin, "medium");
         keyLabel.setColor(Color.BROWN);
@@ -123,10 +133,19 @@ public final class LevelSpecificUI {
 
         item.add(keyLabel).padRight(15);
         item.add(img).size(24, 24);
+
+        // CLICK LISTENER
+        item.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                GameScreen.sendReaction(code);
+            }
+        });
+
         return item;
     }
 
-    private static Table createGuidePamItem(Skin skin, String key, String pamPath, String clipName) {
+    private static Table createGuidePamItem(Skin skin, String key, String pamPath, String clipName, int code) {
         Table item = new Table();
         Label keyLabel = new Label(key, skin, "medium");
         keyLabel.setColor(Color.BROWN);
@@ -141,6 +160,15 @@ public final class LevelSpecificUI {
 
         item.add(keyLabel).padRight(6);
         item.add(pamActor).size(28, 28);
+
+        // CLICK LISTENER
+        item.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                GameScreen.sendReaction(code);
+            }
+        });
+
         return item;
     }
 
