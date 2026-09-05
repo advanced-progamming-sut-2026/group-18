@@ -98,7 +98,8 @@ public class Tile {
     }
 
     public boolean isEmpty() {
-        return plant == null && lilyPad == null && pumpkin == null && instantPlant == null && obstacle == null && getTomb() == null;
+        return plant == null && lilyPad == null && pumpkin == null
+            && instantPlant == null && obstacle == null && getTomb() == null;
     }
 
     public boolean isPlantable() {

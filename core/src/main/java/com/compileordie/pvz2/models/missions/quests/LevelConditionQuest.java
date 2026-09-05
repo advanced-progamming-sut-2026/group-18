@@ -17,7 +17,8 @@ public class LevelConditionQuest extends Quest {
                                String rewardType,
                                int rewardAmount,
                                String requiredContext) {
-        super(id, title, description, category, priority, 1, rewardType, rewardAmount); // Target is always 1 for a level clear
+        super(id, title, description, category, priority, 1, rewardType, rewardAmount);
+        // Target is always 1 for a level clear
         this.requiredContext = requiredContext;
     }
 
