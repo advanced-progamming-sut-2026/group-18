@@ -223,4 +223,19 @@ public class AreaDamageEffect implements PlantFoodEffectStrategy {
             }, 0.05f);
         } catch (Exception e) {}
     }
+
+    public static void spawnPuddle(GameBoard board, double x, double y) {
+        try {
+            Projectile dummy = new NormalProjectile(x, y, 0.0, 0);
+            dummy.setXSpeed(0.0);
+            dummy.setPuddle(true);
+            dummy.setSourcePlantType(PlantType.HOT_POTATO);
+            board.getActiveProjectiles().add(dummy);
+
+            com.badlogic.gdx.utils.Timer.schedule(new com.badlogic.gdx.utils.Timer.Task() {
+                @Override
+                public void run() { dummy.destroy(); }
+            }, 0.05f);
+        } catch (Exception e) {}
+    }
 }

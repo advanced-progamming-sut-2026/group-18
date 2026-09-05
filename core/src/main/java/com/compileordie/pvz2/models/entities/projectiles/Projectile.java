@@ -24,6 +24,7 @@ public abstract class Projectile {
     protected boolean ignoreObstacles = false;
     protected boolean isDead = false;
     protected boolean isReversed = false;
+    protected boolean isPuddle = false;
     protected boolean isIgnited = false;
     protected boolean isTileHit = false;
 
@@ -127,4 +128,6 @@ public abstract class Projectile {
     public void setIgnited(boolean ignited) { this.isIgnited = ignited; }
     public boolean isTileHit() { return isTileHit; }
     public void setTileHit(boolean tileHit) { this.isTileHit = tileHit; }
+    public boolean isPuddle() { return isPuddle; }
+    public void setPuddle(boolean puddle) { this.isPuddle = puddle; }
 }

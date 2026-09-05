@@ -187,12 +187,14 @@ public class Plant extends GameEntity {
         }
     }
     public void addChill() {
-        if (coverState != PlantCoverState.NONE) return;
+        if (hasTag(PlantTag.FIRE) || coverState != PlantCoverState.NONE) return;
+
         chillLevel++;
-        if (chillLevel >= 3) {
+        if (chillLevel >= 1) {
             this.coverState = PlantCoverState.ICE;
             this.coverHp = 600.0;
             this.chillLevel = 0;
+            this.holdAction = true;
         }
     }
     public void applyOctopus(double octopusHp) {
@@ -283,6 +285,8 @@ public class Plant extends GameEntity {
             if (this.coverHp <= 0) {
                 this.coverState = PlantCoverState.NONE;
                 this.coverHp = 0;
+                this.chillLevel = 0;
+                this.holdAction = false;
             }
             return;
         }

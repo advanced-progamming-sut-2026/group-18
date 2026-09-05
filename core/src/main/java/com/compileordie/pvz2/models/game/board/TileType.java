@@ -110,11 +110,12 @@ public enum TileType {
      * Enforces active water rules for Big Wave Beach tiles.
      */
     protected void handleOceanTileLogic(Tile self, GameBoard gameBoard) {
-        Plant plant = self.plant;
-        if (plant != null) {
-            if (!plant.hasTag(PlantTag.WATER) && !self.hasLilyPad) {
-                plant.takeDamage(99999);
-                self.plant = null;
+        if (!self.hasLilyPad()) {
+            if (self.plant != null && !self.plant.hasTag(PlantTag.WATER)) {
+                self.plant.takeDamage(99999);
+            }
+            if (self.pumpkin != null) {
+                self.pumpkin.takeDamage(99999);
             }
         }
     }
