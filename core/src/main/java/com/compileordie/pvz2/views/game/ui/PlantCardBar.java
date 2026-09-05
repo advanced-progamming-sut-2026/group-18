@@ -3,6 +3,7 @@ package com.compileordie.pvz2.views.game.ui;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.game.economy.EconomyManager;
 import com.compileordie.pvz2.models.game.economy.EconomyType;
 import com.compileordie.pvz2.models.game.economy.PlantCard;
@@ -32,18 +33,17 @@ public class PlantCardBar extends Table {
     @Override
     public void act(float delta) {
         super.act(delta);
-        if (economyManager == null) return;
+        EconomyManager activeEconomy = getEconomyManager();
+        if (activeEconomy == null) return;
 
-        // If conveyor belt mode, ConveyorBeltActor handles its own card animations
-        if (economyManager.type == EconomyType.CONVEYOR_BELT || economyManager.type == EconomyType.VASE_BREAKER) {
+        if (activeEconomy.type == EconomyType.CONVEYOR_BELT || activeEconomy.type == EconomyType.VASE_BREAKER) {
             if (getChildren().isEmpty() || !(getChildren().first() instanceof ConveyorBeltActor)) {
                 syncBar();
             }
             return;
         }
 
-        // Auto-refresh standard cards when gameSession or plantCards populate
-        List<PlantCard> modelCards = economyManager.plantCards;
+        List<PlantCard> modelCards = activeEconomy.plantCards;
         if (!currentTrackedCards.equals(modelCards)) {
             syncBar();
         }
@@ -52,15 +52,16 @@ public class PlantCardBar extends Table {
     public void syncBar() {
         clearChildren();
         currentTrackedCards.clear();
-        if (economyManager == null) return;
+        EconomyManager activeEconomy = getEconomyManager();
+        if (activeEconomy == null) return;
 
-        if (economyManager.type == EconomyType.CONVEYOR_BELT || economyManager.type == EconomyType.VASE_BREAKER) {
+        if (activeEconomy.type == EconomyType.CONVEYOR_BELT || activeEconomy.type == EconomyType.VASE_BREAKER) {
             ConveyorBeltActor conveyorBelt = new ConveyorBeltActor(skin, textureBank, configRepo);
             add(conveyorBelt).size(ConveyorBeltActor.BELT_WIDTH, ConveyorBeltActor.BELT_HEIGHT).center().top();
             return;
         }
 
-        List<PlantCard> cards = economyManager.plantCards;
+        List<PlantCard> cards = activeEconomy.plantCards;
         if (cards != null && !cards.isEmpty()) {
             currentTrackedCards.addAll(cards);
             for (PlantCard card : cards) {
@@ -68,5 +69,12 @@ public class PlantCardBar extends Table {
                 add(cardActor).size(PlantCardActor.CARD_WIDTH, PlantCardActor.CARD_HEIGHT).padRight(4f);
             }
         }
+    }
+
+    private EconomyManager getEconomyManager() {
+        if (AppModel.gameSession != null && AppModel.gameSession.gameBoard != null) {
+            return AppModel.gameSession.gameBoard.economyManager;
+        }
+        return this.economyManager;
     }
 }

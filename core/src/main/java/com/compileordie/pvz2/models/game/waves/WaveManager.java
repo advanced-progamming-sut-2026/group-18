@@ -233,7 +233,7 @@ public class WaveManager {
         int consecutiveFails = 0;
         while (spent < waveBudget && consecutiveFails < 64) {
             ZombieType zombieType = getRandomZombieType();
-            int cost = zombieType.waveCost;
+            int cost = ConfigManager.zombies().get(zombieType).waveCost;
 
             if (spent + cost <= waveBudget) {
                 zombiesForWave.add(zombieType);
