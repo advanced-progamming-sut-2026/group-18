@@ -125,6 +125,7 @@ public class ClientHandler implements Runnable {
                 break;
             case REACTION_SEND:
                 handleReaction(message);
+                break;
             default:
                 send(new Message(MessageType.ERROR).put("reason", "not_implemented_yet"));
                 break;
