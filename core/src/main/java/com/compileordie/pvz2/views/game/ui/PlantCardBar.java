@@ -54,19 +54,12 @@ public class PlantCardBar extends Table {
         currentTrackedCards.clear();
         if (economyManager == null) return;
 
-        // 1. Conveyor Belt Mode
         if (economyManager.type == EconomyType.CONVEYOR_BELT || economyManager.type == EconomyType.VASE_BREAKER) {
             ConveyorBeltActor conveyorBelt = new ConveyorBeltActor(skin, textureBank, configRepo);
             add(conveyorBelt).size(ConveyorBeltActor.BELT_WIDTH, ConveyorBeltActor.BELT_HEIGHT).center().top();
             return;
         }
 
-        // 2. No-Planting Minigames
-        if (economyManager.type == EconomyType.I_ZOMBIE) {
-            return;
-        }
-
-        // 3. Standard Deck Mode
         List<PlantCard> cards = economyManager.plantCards;
         if (cards != null && !cards.isEmpty()) {
             currentTrackedCards.addAll(cards);

@@ -12,37 +12,28 @@ import com.badlogic.gdx.utils.Scaling;
 import com.compileordie.pvz2.controllers.menus.game.GameScreenController;
 import com.compileordie.pvz2.controllers.menus.progression.CollectionMenuController;
 import com.compileordie.pvz2.models.AppModel;
-import com.compileordie.pvz2.models.entities.plants.PlantTemplate;
-import com.compileordie.pvz2.models.game.economy.PlantCard;
-import com.compileordie.pvz2.models.repositories.configs.PlantConfigRepository;
+import com.compileordie.pvz2.models.game.economy.ZombieCard;
 import com.compileordie.pvz2.views.helpers.ToastManager;
 import pvz.libpvz.textures.TextureBank;
 
-public class PlantCardActor extends Stack {
+public class ZombieCardActor extends Stack {
     public static final float CARD_WIDTH = 75f;
     public static final float CARD_HEIGHT = 75f;
 
-    private final PlantCard plantCard;
-    private final boolean isConveyorMode;
-    private final PlantTemplate template;
+    private final ZombieCard zombieCard;
     private final Image portraitImage;
     private final Image cooldownDarkOverlay;
     private final Label cooldownTimerLabel;
     private final Label sunCostLabel;
     private final Image selectionOverlay;
 
-    public PlantCardActor(PlantCard plantCard, Skin skin, TextureBank textureBank,
-                          PlantConfigRepository configRepo, boolean isConveyorMode) {
-        this.plantCard = plantCard;
-        this.isConveyorMode = isConveyorMode;
-        this.template = configRepo != null ? configRepo.getTemplate(plantCard.plantType) : null;
-
+    public ZombieCardActor(ZombieCard zombieCard, Skin skin, TextureBank textureBank) {
+        this.zombieCard = zombieCard;
         setSize(CARD_WIDTH, CARD_HEIGHT);
 
-        String bgKey = plantCard.isBoosted ? "IMAGE_UI_PACKETS_BOOST" : "IMAGE_UI_PACKETS_EMPTY_PACKET";
-        TextureRegion bgRegion = textureBank.region(bgKey);
-
+        TextureRegion bgRegion = textureBank.region("IMAGE_UI_PACKETS_EMPTY_PACKET");
         createBackground(bgRegion);
+
         this.portraitImage = createPortrait(textureBank, bgRegion);
         this.cooldownDarkOverlay = createCooldownOverlay(bgRegion);
         this.cooldownTimerLabel = createCooldownTimerLabel(skin);
@@ -60,7 +51,15 @@ public class PlantCardActor extends Stack {
     }
 
     private Image createPortrait(TextureBank textureBank, TextureRegion bgRegion) {
-        String portraitKey = CollectionMenuController.getPlantCardAssetPath(plantCard.plantType);
+        // Use the same asset path as CollectionMenuScreen
+        String portraitKey = switch (zombieCard.zombieType) {
+            case IMP -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_EGYPT_IMP";
+            case STANDARD -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_MUMMY";
+            case CONEHEAD -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_MUMMY_ARMOR1";
+            case BUCKETHEAD -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_MUMMY_ARMOR2";
+            case NEWSPAPER_ZOMBIE -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_MODERN_NEWSPAPER";
+            default -> "IMAGE_UI_ALMANAC_PACKETS_ZOMBIES_EGYPT_IMP";
+        };
         TextureRegion portraitRegion = textureBank.region(portraitKey);
         Image portrait = new Image(portraitRegion != null ? portraitRegion : bgRegion);
         portrait.setScaling(Scaling.fit);
@@ -91,8 +90,7 @@ public class PlantCardActor extends Stack {
     }
 
     private Label createSunCostLabel(Skin skin) {
-        int cost = template != null ? template.getCost() : 0;
-        Label label = new Label(isConveyorMode ? "" : String.valueOf(cost), skin, "medium_outline");
+        Label label = new Label(String.valueOf(zombieCard.cost), skin, "medium_outline");
         label.setFontScale(0.6f);
         label.setColor(Color.GOLD);
         return label;
@@ -107,9 +105,7 @@ public class PlantCardActor extends Stack {
 
         Table bottomTable = new Table();
         bottomTable.bottom().right();
-        if (!isConveyorMode) {
-            bottomTable.add(sunCostLabel).padBottom(4).padRight(6);
-        }
+        bottomTable.add(sunCostLabel).padBottom(4).padRight(6);
 
         overlayTable.add(topTable).expand().fill().row();
         overlayTable.add(bottomTable).fillX().padBottom(2);
@@ -136,56 +132,38 @@ public class PlantCardActor extends Stack {
         addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                handleCardClick();
+                if (!zombieCard.isReady()) return;
+
+                int currentSun = (AppModel.gameSession != null && AppModel.gameSession.gameBoard != null)
+                    ? AppModel.gameSession.gameBoard.economyManager.sunAmount : 0;
+
+                if (currentSun < zombieCard.cost) {
+                    ToastManager.showError("Not enough sun!");
+                    return;
+                }
+
+                GameScreenController.selectedZombieCard = zombieCard;
+                GameScreenController.selectedPlantCard = null; // Clear plant selection
             }
         });
-    }
-
-    private void handleCardClick() {
-        if (isConveyorMode) {
-            GameScreenController.selectPlantCard(plantCard);
-            return;
-        }
-
-        if (!plantCard.isReady()) {
-            return;
-        }
-
-        int currentSun = (AppModel.gameSession != null && AppModel.gameSession.gameBoard != null)
-            ? AppModel.gameSession.gameBoard.economyManager.sunAmount : 0;
-        int cost = template != null ? template.getCost() : 0;
-
-        if (currentSun < cost) {
-            ToastManager.showError("Not enough sun!");
-            return;
-        }
-
-        GameScreenController.selectPlantCard(plantCard);
     }
 
     @Override
     public void act(float delta) {
         super.act(delta);
 
-        if (isConveyorMode) {
-            cooldownDarkOverlay.setVisible(false);
-            cooldownTimerLabel.setVisible(false);
-            return;
-        }
-
-        boolean onCooldown = !plantCard.isReady();
+        boolean onCooldown = !zombieCard.isReady();
         int currentSun = (AppModel.gameSession != null && AppModel.gameSession.gameBoard != null)
             ? AppModel.gameSession.gameBoard.economyManager.sunAmount : 0;
-        int cost = template != null ? template.getCost() : 0;
-        boolean hasEnoughSun = currentSun >= cost;
+        boolean hasEnoughSun = currentSun >= zombieCard.cost;
 
         if (onCooldown) {
             cooldownDarkOverlay.setVisible(true);
             cooldownTimerLabel.setVisible(true);
-            cooldownTimerLabel.setText(String.format("%.1f", plantCard.getRemainingCooldownSeconds()));
+            cooldownTimerLabel.setText(String.format("%.1f", zombieCard.getRemainingCooldownSeconds()));
 
-            float progress = (plantCard.cooldownTicks > 0)
-                ? plantCard.remainingCooldownTicks / plantCard.cooldownTicks
+            float progress = (zombieCard.cooldownTicks > 0)
+                ? zombieCard.remainingCooldownTicks / zombieCard.cooldownTicks
                 : 0f;
             cooldownDarkOverlay.setSize(getWidth(), getHeight() * Math.min(1f, progress));
             cooldownDarkOverlay.setY(getHeight() - cooldownDarkOverlay.getHeight());
@@ -205,11 +183,7 @@ public class PlantCardActor extends Stack {
             }
         }
 
-        boolean isSelected = GameScreenController.selectedPlantCard == plantCard;
+        boolean isSelected = GameScreenController.selectedZombieCard == zombieCard;
         selectionOverlay.setVisible(isSelected);
-    }
-
-    public PlantCard getPlantCard() {
-        return plantCard;
     }
 }

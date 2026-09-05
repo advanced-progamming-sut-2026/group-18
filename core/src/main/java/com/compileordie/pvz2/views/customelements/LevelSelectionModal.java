@@ -93,7 +93,12 @@ public class LevelSelectionModal extends BaseModal {
                 AppModel.currentLevel = level;
                 AppModel.selectionDeck.clear();
                 ArrayList<PlantType> plants = GameMenuController.getPlants(level);
-                if (level.needsPlantSelection()) {
+                if (level == LevelID.I_ZOMBIE) {
+                    IZombieMatchmakingModal iZombieMatchmakingModal = new IZombieMatchmakingModal(skin,
+                        textureBank,
+                        menuStage);
+                    iZombieMatchmakingModal.show(menuStage);
+                } else if (level.needsPlantSelection()) {
                     GamePlantSelectionModal plantSelectionModal = new GamePlantSelectionModal(
                         skin,
                         textureBank,

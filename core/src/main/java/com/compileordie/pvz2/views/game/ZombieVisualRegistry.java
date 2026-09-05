@@ -155,7 +155,7 @@ public class ZombieVisualRegistry {
         } else if (AppModel.currentChapter == ChapterType.BIG_WAVE_BEACH) {
             return "BEACH";
         } else if (AppModel.currentChapter == ChapterType.MINIGAME) {
-            return "MODERN";
+            return "EGYPT";
         }
         return "EGYPT";
     }

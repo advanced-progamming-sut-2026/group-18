@@ -35,7 +35,7 @@ public class ZombieCombatManager {
     double tileWidth = Constants.Game.TILE_WIDTH;
     double tileHeight = Constants.Game.TILE_HEIGHT;
     double smashDamage = 999999;
-    private final Random reflectRandom = new Random();
+    private transient final Random reflectRandom = new Random();
 
     public void combatTick(List<Zombie> myZombies, List<Plant> myPlants) {
         List<Zombie> zombiesCopy = new ArrayList<>(myZombies);

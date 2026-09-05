@@ -17,7 +17,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.compileordie.pvz2.controllers.menus.game.GameScreenController;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.game.SessionBuilder;
-import com.compileordie.pvz2.models.game.levels.LevelType;
+import com.compileordie.pvz2.models.game.levels.LevelID;
 import com.compileordie.pvz2.models.game.waves.WaveManager;
 import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.views.ScreenManager;
@@ -194,8 +194,10 @@ public final class GameScreenUI {
         GameCurrencyHud currencyHud = new GameCurrencyHud(skin, uiStage, textureBank);
         leftUITable.add(currencyHud).pad(15).left().row();
 
-        Table toolsTable = createToolsTable(textureBank);
-        leftUITable.add(toolsTable).padLeft(15).left();
+        if (AppModel.currentLevel != LevelID.I_ZOMBIE || !AppModel.isReceiverClient) {
+            Table toolsTable = createToolsTable(textureBank);
+            leftUITable.add(toolsTable).padLeft(15).left();
+        }
 
         uiStage.addActor(leftUITable);
     }
@@ -224,8 +226,18 @@ public final class GameScreenUI {
         cardBarTable.setFillParent(true);
         cardBarTable.top();
 
-        PlantCardBar cardBar = new PlantCardBar(skin, textureBank, AppModel.gameSession.gameBoard.economyManager);
-        cardBarTable.add(cardBar).padTop(10);
+        // Route UI generation based on the current LevelID
+        if (AppModel.currentLevel == LevelID.I_ZOMBIE && AppModel.isReceiverClient) {
+            // Render the Zombie Card Bar for I, Zombie levels
+            ZombieCardBar zombieCardBar = new ZombieCardBar(skin, textureBank);
+            cardBarTable.add(zombieCardBar).padTop(10);
+        } else {
+            // Render the standard Plant Card Bar for all other levels
+            PlantCardBar plantCardBar = new PlantCardBar(skin,
+                textureBank,
+                AppModel.gameSession.gameBoard.economyManager);
+            cardBarTable.add(plantCardBar).padTop(10);
+        }
 
         uiStage.addActor(cardBarTable);
     }

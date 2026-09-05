@@ -20,7 +20,6 @@ public enum ZombieType {
     PIANIST_ZOMBIE(150, null),
     NEWSPAPER_ZOMBIE(150, null),
     BARREL_ROLLER(150, null),
-    RAINCOAT_ZOMBIE(150, null),
 
 
     // === مصر باستان ===
@@ -48,7 +47,7 @@ public enum ZombieType {
 
     ZOMBOSS_IN_EGYPT(150, null),
     ZOMBOSS_IN_DARK(150, null),
-    ;
+    RAINCOAT_ZOMBIE(150, ChapterType.MINIGAME);
 
     public final int waveCost;
     public final ChapterType chapter;

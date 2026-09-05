@@ -29,8 +29,7 @@ public enum LossCondition {
     I_ZOMBIE {
         @Override
         public boolean evaluate(GameBoard gameBoard) {
-            return super.evaluate(gameBoard)
-                || gameBoard.getAllZombies().isEmpty() && gameBoard.economyManager.sunAmount < 150;
+            return gameBoard.lanes.stream().allMatch(lane -> lane.isLost);
         }
     };
 

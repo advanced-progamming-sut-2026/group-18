@@ -178,7 +178,7 @@ public class RapidFireEffect implements PlantFoodEffectStrategy {
     private void spawnHomingStream(GameBoard board, double startX, double startY, int count, int damage, Plant plant) {
         Timer.schedule(new Timer.Task() {
             int spawned = 0;
-            Random rand = new Random();
+            transient final Random rand = new Random();
             @Override
             public void run() {
                 if (plant.isDead()) { this.cancel(); return; }

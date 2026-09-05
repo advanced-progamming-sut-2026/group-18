@@ -29,16 +29,28 @@ public class GamePlantSelectionModal extends BaseModal {
     private final TextureBank textureBank;
     private final ArrayList<PlantType> availablePlants;
     private final List<PlantCard> selectedCards = new ArrayList<>();
-
+    private final Runnable onConfirm;
+    private final Runnable onCancel;
+    private boolean isConfirmed = false;
     private Table topDeckTable;
     private Table gridTable;
 
     public GamePlantSelectionModal(Skin skin,
                                    TextureBank textureBank,
                                    ArrayList<PlantType> availablePlants) {
+        this(skin, textureBank, availablePlants, null, null);
+    }
+
+    public GamePlantSelectionModal(Skin skin,
+                                   TextureBank textureBank,
+                                   ArrayList<PlantType> availablePlants,
+                                   Runnable onConfirm,
+                                   Runnable onCancel) {
         super("Choose Your Seeds", skin);
         this.skin = skin;
         this.textureBank = textureBank;
+        this.onConfirm = onConfirm;
+        this.onCancel = onCancel;
         this.availablePlants = availablePlants.stream()
             .filter(plantType -> AppModel.player.unlockedPlants.contains(plantType))
             .collect(Collectors.toCollection(ArrayList::new));
@@ -78,8 +90,13 @@ public class GamePlantSelectionModal extends BaseModal {
 
                 Result<Void> result = PlantSelectionMenuController.initializeGame(selectedCards);
                 if (result.isSuccess) {
+                    isConfirmed = true;
                     hide();
-                    ScreenManager.setMenuScreen(ScreenType.GAME_SESSION);
+                    if (onConfirm != null) {
+                        onConfirm.run();
+                    } else {
+                        ScreenManager.setMenuScreen(ScreenType.GAME_SESSION);
+                    }
                 } else {
                     ToastManager.showError(result.errorMessage);
                 }
@@ -87,16 +104,22 @@ public class GamePlantSelectionModal extends BaseModal {
         });
     }
 
+    @Override
+    public void hide() {
+        super.hide();
+        if (!isConfirmed && onCancel != null) {
+            onCancel.run();
+        }
+    }
+
     private void buildLayout() {
         bodyTable.top();
 
-        // 1. Top Deck (8 Selected Slots)
         Label deckTitle = new Label("Selected Plants", skin, "medium_outline");
         deckTitle.setFontScale(0.75f);
         bodyTable.add(deckTitle).left().padBottom(5).row();
         bodyTable.add(topDeckTable).padBottom(15).row();
 
-        // 2. Available Plants Grid wrapped in ScrollPane
         Label gridTitle = new Label(
             "Available Plants (Left Click: Add, Right Click: Boost, Middle Click: Upgrade)", skin, "medium_outline"
         );
@@ -129,7 +152,6 @@ public class GamePlantSelectionModal extends BaseModal {
                 int level = AppModel.player != null ? AppModel.player.plantLevels.getOrDefault(card.plantType, 1) : 1;
                 Stack cardStack = createCardView(card.plantType, level, card.isBoosted, false);
 
-                // Left click removes; Right click toggles boost
                 cardStack.addListener(new ClickListener(-1) {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
@@ -165,7 +187,6 @@ public class GamePlantSelectionModal extends BaseModal {
 
             Stack cardStack = createCardView(type, level, hasBoost, isSelected);
 
-            // Universal mouse button click listener (-1 listens to Left, Right, and Middle clicks)
             cardStack.addListener(new ClickListener(-1) {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
@@ -255,7 +276,6 @@ public class GamePlantSelectionModal extends BaseModal {
         portraitContainer.setScale(0.95f);
         card.add(portraitContainer);
 
-        // Level overlay in top-right
         Table topOverlay = new Table();
         topOverlay.top().right();
         Label levelLbl = new Label("Lvl " + level, skin, "medium_outline");

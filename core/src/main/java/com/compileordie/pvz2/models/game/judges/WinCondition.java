@@ -1,5 +1,6 @@
 package com.compileordie.pvz2.models.game.judges;
 
+import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 
@@ -28,7 +29,7 @@ public enum WinCondition {
     I_ZOMBIE {
         @Override
         public boolean evaluate(GameBoard gameBoard) {
-            return gameBoard.lanes.stream().allMatch(lane -> lane.isLost);
+            return gameBoard.tickCounter * Constants.Game.TIME_COEFFICIENT >= 120;
         }
     },
     BEGHOULED {

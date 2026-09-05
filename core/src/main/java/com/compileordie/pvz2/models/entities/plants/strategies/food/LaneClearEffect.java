@@ -11,7 +11,7 @@ import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.user.Player;
 import java.util.Random;
 public class LaneClearEffect implements PlantFoodEffectStrategy {
-    private final Random random = new Random();
+    private transient final Random random = new Random();
     @Override
     public void applyEffect(Plant plant, GameBoard board, Player player) {
         String name = plant.getName();
