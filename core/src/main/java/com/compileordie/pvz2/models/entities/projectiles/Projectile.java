@@ -20,16 +20,13 @@ public abstract class Projectile {
     protected int damage;
     protected DamageType type;
     protected PlantType sourcePlantType;
-
-    // Natively defaults to NORMAL for Peashooter, Repeater, etc.
     protected ProjectileType enumType = ProjectileType.NORMAL;
-
     protected boolean ignoreObstacles = false;
     protected boolean isDead = false;
     protected boolean isReversed = false;
-
-    // Torchwood Hook ---
+    protected boolean isPuddle = false;
     protected boolean isIgnited = false;
+    protected boolean isTileHit = false;
 
     public Projectile(double x, double y, double xSpeed, int damage, DamageType type) {
         this.x = x;
@@ -127,7 +124,10 @@ public abstract class Projectile {
     public boolean getIgnoreObstacles() { return ignoreObstacles; }
     public double getYSpeed() { return ySpeed; }
     public double getXSpeed() { return xSpeed; }
-    // Ignition Getters & Setters ---
     public boolean isIgnited() { return isIgnited; }
     public void setIgnited(boolean ignited) { this.isIgnited = ignited; }
+    public boolean isTileHit() { return isTileHit; }
+    public void setTileHit(boolean tileHit) { this.isTileHit = tileHit; }
+    public boolean isPuddle() { return isPuddle; }
+    public void setPuddle(boolean puddle) { this.isPuddle = puddle; }
 }

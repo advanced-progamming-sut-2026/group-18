@@ -14,11 +14,8 @@ public class StatusEffect {
     public boolean isApplied;
     private double cSpeed;
     private int cAttack;
-
-    // NEW: The dynamic damage payload for Poison!
     private int tickDamage = 0;
 
-    // Standard Constructor
     public StatusEffect(EffectType effectType, int durationTicks) {
         this.effectType = effectType;
         this.durationTicks = durationTicks;
@@ -26,7 +23,6 @@ public class StatusEffect {
         this.isApplied = false;
     }
 
-    // NEW: Overloaded Constructor specifically for DoT effects like Poison!
     public StatusEffect(EffectType effectType, int durationTicks, int tickDamage) {
         this.effectType = effectType;
         this.durationTicks = durationTicks;
@@ -68,7 +64,7 @@ public class StatusEffect {
                 } else {
                     this.cSpeed = zombie.getStableSpeed();
                 }
-                zombie.setXSpeed(cSpeed * 0.2); // 80% speed reduction!
+                zombie.setXSpeed(cSpeed * 0.2);
                 break;
             case HYPNOTIZED:
                 zombie.setHypnotized(true);
@@ -77,7 +73,6 @@ public class StatusEffect {
                 zombie.setStopZombieNow(true);
                 break;
             case POISON:
-                // It now purely relies on the tick engine.
                 break;
         }
     }
@@ -86,7 +81,6 @@ public class StatusEffect {
         if(!isApplied) return;
 
         this.isApplied = false;
-        this.elapsedTicks = 0;
 
         switch (effectType) {
             case FROZEN, STUNNED:
@@ -103,34 +97,24 @@ public class StatusEffect {
                 zombie.setHypnotized(false);
                 break;
             case POISON:
-
+                break;
         }
     }
-
     public void updateZombieTick(Zombie zombie) {
         if (!isApplied) {
             applyToZombie(zombie);
         }
-
-        // --- NEW: True Damage Over Time Engine ---
-        // this applies DamageType.POISON directly to the zombie's internal logic,
-        // completely ignoring buckets and cones!
         if (effectType == EffectType.POISON) {
             zombie.takeDamage(this.tickDamage, DamageType.POISON);
         }
-
         elapsedTicks++;
-
         if (isExpired()) {
             removeFromZombie(zombie);
         }
     }
-
     public float getRemainingTime() {
         return (durationTicks - elapsedTicks) * Constants.Game.TIME_COEFFICIENT;
     }
-
-    // Getters
     public EffectType getEffectType() { return effectType; }
     public int getDurationTicks() { return durationTicks; }
     public int getElapsedTicks() { return elapsedTicks; }

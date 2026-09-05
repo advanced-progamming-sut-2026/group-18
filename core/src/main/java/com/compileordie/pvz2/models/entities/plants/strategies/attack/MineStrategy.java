@@ -114,8 +114,8 @@ public class MineStrategy implements AttackStrategy {
                 if (plant.getName().equals("Doom-shroom")) {
                     Tile centerTile = board.getTile(plantRow, plantCol);
                     if (centerTile != null) {
-                        if (centerTile.hasLilyPad || centerTile.isUnderWater()) {
-                            centerTile.hasLilyPad = false;
+                        if (centerTile.hasLilyPad() || centerTile.isUnderWater()) {
+                            if (centerTile.lilyPad != null) centerTile.lilyPad.die();
                         } else {
                             centerTile.obstacle = new Crater(plantRow, plantCol, 1800.0);
                         }

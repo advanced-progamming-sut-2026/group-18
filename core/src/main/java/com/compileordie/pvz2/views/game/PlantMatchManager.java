@@ -33,6 +33,8 @@ public class PlantMatchManager {
         boolean isIgnited = false;
         boolean isBlueFire = false;
         boolean isPlantFood = false;
+        boolean isTileHit = false;
+        boolean isPuddle = false;
     }
     private static class HitAnim {
         float x, y, animTime;
@@ -67,58 +69,76 @@ public class PlantMatchManager {
         for (Lane lane : board.lanes) {
             for (Tile tile : lane.tiles) {
 
-// --- FIX: RENDER GOO PUDDLE CARPET AS CONTINUOUS PUZZLE PIECES ---
+                // --- 1. GOO PUDDLE RENDERER ---
                 if (tile.puddleTimer > 0) {
-                    // Elevated slightly to 0.3f so it aligns perfectly with the plant's base
                     float fy = (float) ((Constants.Game.PADDING_Y + (tile.row * Constants.Game.TILE_HEIGHT) + (Constants.Game.TILE_HEIGHT * 0.55f)) * Constants.UI.METER_TO_PIX);
-
                     boolean isBeginning = (tile.column == 0 || lane.tiles.get(tile.column - 1).puddleTimer <= 0);
 
-                    // We draw TWO overlapping segments per tile to completely bridge the 0.67f scale gap!
-                    // Segment 1: Left half of the tile (Gets the round "Head" if it's the start of the puddle)
                     float fx1 = (float) ((Constants.Game.PADDING_X + (tile.column * Constants.Game.TILE_WIDTH) + (Constants.Game.TILE_WIDTH * 0.25f)) * Constants.UI.METER_TO_PIX);
                     String clip1 = isBeginning ? "animation" : "animation2";
                     try { player.draw(batch, "768/INITIAL/EFFECTS/GOOPEASHOOTER_PLANTFOOD_TILE/GOOPEASHOOTER_PLANTFOOD_TILE.PAM", clip1, globalAnimTime, fx1, fy, 0.67f, 0.67f, true); } catch (Exception e) {}
 
-                    // Segment 2: Right half of the tile (Always gets the rectangular "Body" to connect to the next tile)
                     float fx2 = (float) ((Constants.Game.PADDING_X + (tile.column * Constants.Game.TILE_WIDTH) + (Constants.Game.TILE_WIDTH * 0.75f)) * Constants.UI.METER_TO_PIX);
                     try { player.draw(batch, "768/INITIAL/EFFECTS/GOOPEASHOOTER_PLANTFOOD_TILE/GOOPEASHOOTER_PLANTFOOD_TILE.PAM", "animation2", globalAnimTime, fx2, fy, 0.67f, 0.67f, true); } catch (Exception e) {}
                 }
 
-                Plant plant = tile.plant;
-                if (plant == null || !plant.isAlive() || plant.isHidden()) continue;
-                currentAlivePlants.add(plant);
+                // --- 2. Z-ORDER RENDERING (Bottom to Top) ---
 
-                if (plant.getCategory() == PlantCategory.EXPLOSIVE || plant.getName().equals("Explode-o-nut") || (plant.getName().equals("Torchwood") && plant.getLevel() >= 3) || plant.getName().equals("Ice-shroom")) {
-                    currentExplosives.add(plant);
+                // A. Lily Pad (Water base)
+                if (tile.lilyPad != null && tile.lilyPad.isAlive() && !tile.lilyPad.isHidden()) {
+                    currentAlivePlants.add(tile.lilyPad);
+                    drawSinglePlant(batch, player, tile.lilyPad, delta);
                 }
 
-                drawSinglePlant(batch, player, plant, delta);
+                // B. Main Plant
+                if (tile.plant != null && tile.plant.isAlive() && !tile.plant.isHidden()) {
+                    Plant plant = tile.plant;
+                    currentAlivePlants.add(plant);
+                    if (plant.getCategory() == PlantCategory.EXPLOSIVE || plant.getName().equals("Explode-o-nut") || (plant.getName().equals("Torchwood") && plant.getLevel() >= 3) || plant.getName().equals("Ice-shroom")) {
+                        currentExplosives.add(plant);
+                    }
+                    drawSinglePlant(batch, player, plant, delta);
 
-                if (plant.isFed()) {
-                    if (plant.getName().equals("Citron")) {
-                        float t = (float) (plant.plantFoodTimer * Constants.Game.TIME_COEFFICIENT);
-                        if (t < 5.0f) {
-                            float cx = (float) (plant.getX() * Constants.UI.METER_TO_PIX);
-                            float cy = (float) ((plant.getY() + Constants.Game.TILE_HEIGHT * 0.5f) * Constants.UI.METER_TO_PIX);
-                            try { player.draw(batch, "768/FULL/EFFECTS/CITRON_PLANTFOOD_LIGHTNING_CHARGE/CITRON_PLANTFOOD_LIGHTNING_CHARGE.PAM", "Citron_Plantfood_Lightning_Charge", globalAnimTime, cx, cy, 0.67f, 0.67f, true); } catch (Exception e) {}
+                    // Main Plant overlays (Citron / Snow Pea / Fire Peashooter Plant Food)
+                    if (plant.isFed()) {
+                        if (plant.getName().equals("Citron")) {
+                            float t = (float) (plant.plantFoodTimer * Constants.Game.TIME_COEFFICIENT);
+                            if (t < 5.0f) {
+                                float cx = (float) (plant.getX() * Constants.UI.METER_TO_PIX);
+                                float cy = (float) ((plant.getY() + Constants.Game.TILE_HEIGHT * 0.5f) * Constants.UI.METER_TO_PIX);
+                                try { player.draw(batch, "768/FULL/EFFECTS/CITRON_PLANTFOOD_LIGHTNING_CHARGE/CITRON_PLANTFOOD_LIGHTNING_CHARGE.PAM", "Citron_Plantfood_Lightning_Charge", globalAnimTime, cx, cy, 0.67f, 0.67f, true); } catch (Exception e) {}
+                            }
+                        }
+                        if (plant.getName().equals("Snow Pea") || plant.getName().equals("Fire Peashooter")) {
+                            String pam = plant.getName().equals("Snow Pea") ? "768/INITIAL/EFFECTS/SNOWPEA_PLANTFOOD/SNOWPEA_PLANTFOOD.PAM" : "768/INITIAL/EFFECTS/FIREPEASHOOTER_FIRE/FIREPEASHOOTER_FIRE.PAM";
+                            String clip = plant.getName().equals("Snow Pea") ? "plantfood_on" : "idle";
+                            float rowY = (float) ((plant.getY() + (Constants.Game.TILE_HEIGHT * 0.2f)) * Constants.UI.METER_TO_PIX);
+                            int startSegment = (tile.column + 1) * 3;
+                            int totalSegments = board.totalCols * 3;
+                            for (int i = startSegment; i < totalSegments; i++) {
+                                float fx = (float) ((Constants.Game.PADDING_X + 0.5f + (i * (Constants.Game.TILE_WIDTH / 3.0f))) * Constants.UI.METER_TO_PIX);
+                                try { player.draw(batch, pam, clip, globalAnimTime, fx, rowY, 0.67f, 0.67f, true); } catch (Exception e) {}
+                            }
                         }
                     }
-                    if (plant.getName().equals("Snow Pea") || plant.getName().equals("Fire Peashooter")) {
-                        String pam = plant.getName().equals("Snow Pea") ? "768/INITIAL/EFFECTS/SNOWPEA_PLANTFOOD/SNOWPEA_PLANTFOOD.PAM" : "768/INITIAL/EFFECTS/FIREPEASHOOTER_FIRE/FIREPEASHOOTER_FIRE.PAM";
-                        String clip = plant.getName().equals("Snow Pea") ? "plantfood_on" : "idle";
-                        float rowY = (float) ((plant.getY() + (Constants.Game.TILE_HEIGHT * 0.2f)) * Constants.UI.METER_TO_PIX);
-                        int startSegment = (tile.column + 1) * 3;
-                        int totalSegments = board.totalCols * 3;
-                        for (int i = startSegment; i < totalSegments; i++) {
-                            float fx = (float) ((Constants.Game.PADDING_X + 0.5f + (i * (Constants.Game.TILE_WIDTH / 3.0f))) * Constants.UI.METER_TO_PIX);
-                            try { player.draw(batch, pam, clip, globalAnimTime, fx, rowY, 0.67f, 0.67f, true); } catch (Exception e) {}
-                        }
-                    }
+                }
+
+                // C. Pumpkin (Armor layer)
+                if (tile.pumpkin != null && tile.pumpkin.isAlive() && !tile.pumpkin.isHidden()) {
+                    currentAlivePlants.add(tile.pumpkin);
+                    drawSinglePlant(batch, player, tile.pumpkin, delta);
+                }
+
+                // D. Instant Plant (Hot Potato / Grave Buster)
+                if (tile.instantPlant != null && tile.instantPlant.isAlive() && !tile.instantPlant.isHidden()) {
+                    currentAlivePlants.add(tile.instantPlant);
+                    if (tile.instantPlant.getCategory() == PlantCategory.EXPLOSIVE) currentExplosives.add(tile.instantPlant);
+                    drawSinglePlant(batch, player, tile.instantPlant, delta);
                 }
             }
         }
 
+        // --- 3. EXPLOSIVE HIT ANIMATION TRACKER ---
         var explIter = trackedExplosives.iterator();
         while (explIter.hasNext()) {
             Plant p = explIter.next();
@@ -179,33 +199,31 @@ public class PlantMatchManager {
             batch.setTransformMatrix(scaled);
             assetManager.drawPlant(batch, currentClipRef, state.animTime, drawX, drawY, true);
             batch.setTransformMatrix(original);
-// --- ICE BLOCK RENDERER ---
+// --- FLAWLESS ICE BLOCK RENDERER ---
             if (plant.hasActiveCover() && plant.isFrozen()) {
                 Map<String, Boolean> iceVis = new HashMap<>();
 
-                // Hide all damage layers by default to prevent overlapping
+                // Turn ALL OF THEM OFF first to prevent the overlapping ghost bug!
+                iceVis.put("ice_block_damage0", false);
+                iceVis.put("ice_block_damage1", false);
                 iceVis.put("ice_block_damage2", false);
                 iceVis.put("ice_block_damage3", false);
                 iceVis.put("ice_block_damage4", false);
                 iceVis.put("ice_block_damage5", false);
 
-                // Calculate the 600 HP ratio and override the correct damage part to true
+                // Turn exactly ONE on based on current HP!
                 double hpRatio = plant.getCoverHp() / 600.0;
-                if (hpRatio <= 0.25) {
-                    iceVis.put("ice_block_damage5", true);
-                } else if (hpRatio <= 0.50) {
-                    iceVis.put("ice_block_damage4", true);
-                } else if (hpRatio <= 0.75) {
-                    iceVis.put("ice_block_damage3", true);
-                } else if (hpRatio < 1.0) {
-                    iceVis.put("ice_block_damage2", true);
-                }
+                if (hpRatio <= 0.16) iceVis.put("ice_block_damage5", true);
+                else if (hpRatio <= 0.33) iceVis.put("ice_block_damage4", true);
+                else if (hpRatio <= 0.50) iceVis.put("ice_block_damage3", true);
+                else if (hpRatio <= 0.66) iceVis.put("ice_block_damage2", true);
+                else if (hpRatio <= 0.83) iceVis.put("ice_block_damage1", true);
+                else iceVis.put("ice_block_damage0", true);
 
                 float coverX = (float) (plant.getX() * Constants.UI.METER_TO_PIX);
                 float coverY = (float) (plant.getY() * Constants.UI.METER_TO_PIX);
 
                 try {
-                    // Call the overload with per-part show/hide
                     player.draw(batch, "768/FULL/EFFECTS/FROSTBITE_ICE_BLOCK_PLANT/FROSTBITE_ICE_BLOCK_PLANT.PAM", "freeze_idle", globalAnimTime, coverX, coverY, true, iceVis);
                 } catch (Exception e) {}
             }
@@ -239,6 +257,10 @@ public class PlantMatchManager {
         if (plant.getCategory() == PlantCategory.WALL_NUT) {
             return getDefensiveClip(name, plant, state);
         }
+        if (name.equals("Lily Pad")) return plant.isFed() ? "plantfood" : "idle5";
+        if (name.equals("Pumpkin")) return getDefensiveClip(name, plant, state);
+        if (name.equals("Hot Potato")) return plant.windupTimer > 30.0 ? "attack" : "idle";
+        if (name.equals("Grave Buster")) return plant.windupTimer > 30.0 ? "attack1" : "attack";
         return "idle";
     }
     private String getMintClip(String name, Plant plant, GameRenderStates.PlantRenderState state) {
@@ -287,6 +309,12 @@ public class PlantMatchManager {
             if (hpRatio > 0.66) return "idle2";
             if (hpRatio > 0.33) return "idle2_damage";
             return "idle2_damage2";
+        }
+        if (name.equals("Pumpkin")) {
+            double hpRatio = (double) plant.getCurrentHp() / plant.getBaseHp();
+            if (hpRatio > 0.66) return "idle";
+            if (hpRatio > 0.33) return "idle2";
+            return "idle3";
         }
         if (name.equals("Endurian")) {
             double hpRatio = (double) plant.getCurrentHp() / plant.getBaseHp();
@@ -505,6 +533,8 @@ public class PlantMatchManager {
             tracker.type = proj.getSourcePlantType();
             tracker.isButter = (proj instanceof ButterProjectile);
             tracker.isIgnited = proj.isIgnited();
+            tracker.isTileHit = proj.isTileHit();
+            tracker.isPuddle = proj.isPuddle();
             tracker.isBlueFire = proj.isIgnited() && proj.getDamage() >= 60;
             if (tracker.type == PlantType.CITRON) {
                 tracker.isPlantFood = proj.getDamage() >= 4000;
@@ -563,9 +593,12 @@ public class PlantMatchManager {
             try {
                 player.draw(batch, hit.pamPath, hit.clipName, hit.animTime, hit.x, hit.y, 0.67f, 0.67f, false);
             } catch (Exception e) {}
+            float maxHitTime = 1.0f;
+            if (hit.pamPath != null && (hit.pamPath.contains("TANGLEKELP") || hit.pamPath.contains("PULSE"))) {
+                maxHitTime = 3.0f;
+            }
 
-            // CRITICAL FIX: Increased from 1.0f to 3.0f so Tangle Kelp & Pulses don't vanish early!
-            if (hit.animTime > 3.0f) {
+            if (hit.animTime > maxHitTime) {
                 hitIter.remove();
             }
         }
@@ -607,7 +640,7 @@ public class PlantMatchManager {
             case GRAPESHOT -> "768/INITIAL/EFFECTS/GRAPESHOT_PROJECTILE/GRAPESHOT_PROJECTILE.PAM";
             case SNOW_PEA -> "768/INITIAL/EFFECTS/T_SNOW_PEA/T_SNOW_PEA.PAM";
             case ROTOBAGA -> "768/FULL/EFFECTS/T_ROTORUTABAGA_PROJECTILE1/T_ROTORUTABAGA_PROJECTILE1.PAM";
-            case CITRON ->  "768/FULL/EFFECTS/T_CITRON_CITRUS_ORB_HIT/T_CITRON_CITRUS_ORB_HIT.PAM";
+            case CITRON ->  "768/FULL/EFFECTS/T_CITRON_CITRUS_ORB/T_CITRON_CITRUS_ORB.PAM";
             case CAULIPOWER -> "768/INITIAL/EFFECTS/CAULIPOWER_PROJECTILE/CAULIPOWER_PROJECTILE.PAM";
             case ELECTRIC_BLUEBERRY -> "768/INITIAL/EFFECTS/ELECTRICBLUEBERRY_CLOUD_PROJECTILE/ELECTRICBLUEBERRY_CLOUD_PROJECTILE.PAM";
             case CACTUS -> "768/INITIAL/EFFECTS/T_CACTUS_PROJECTILE/T_CACTUS_PROJECTILE.PAM";
@@ -700,7 +733,13 @@ public class PlantMatchManager {
             if (dist < 6.5) return "animation2";
             return "animation3";
         }
-        if (source == PlantType.PEASHOOTER || source == PlantType.REPEATER || source == PlantType.THREEPEATER || source == PlantType.PEA_POD || source == PlantType.SNOW_PEA || source == PlantType.FIRE_PEASHOOTER || source == PlantType.STARFRUIT) {
+        if (source == PlantType.PEASHOOTER || source == PlantType.REPEATER ||
+            source == PlantType.THREEPEATER || source == PlantType.PEA_POD ||
+            source == PlantType.SNOW_PEA || source == PlantType.FIRE_PEASHOOTER ||
+            source == PlantType.STARFRUIT || source == PlantType.MEGA_GATLING_PEA) {
+            if (tracker.isPlantFood && proj.getDamage() >= 400) {
+                return "animation";
+            }
             if (dist < 3.5) return "animation";
             if (dist < 6.5) return "animation2";
             return "animation3";
@@ -716,6 +755,9 @@ public class PlantMatchManager {
     }
     private String getHitAnimPamPath(ProjectileHitTracker tracker) {
         PlantType source = tracker.type;
+        if (tracker.isPuddle) {
+            return "768/FULL/EFFECTS/HOTPOTATO_ICEBLOCK_PUDDLE/HOTPOTATO_ICEBLOCK_PUDDLE.PAM";
+        }
         if (source == null) return "768/INITIAL/EFFECTS/T_SPLAT_PEA/T_SPLAT_PEA.PAM";
         if (tracker.isIgnited) {
             if (source == PlantType.SNOW_PEA) return "768/INITIAL/EFFECTS/T_SPLAT_PEA/T_SPLAT_PEA.PAM";
@@ -743,9 +785,14 @@ public class PlantMatchManager {
             case PEPPER_PULT -> tracker.isPlantFood ? "768/FULL/EFFECTS/T_PEPPERPULT_PROJECTILE_SPLAT/T_PEPPERPULT_PROJECTILE_SPLAT.PAM" : "768/FULL/EFFECTS/T_PEPPERPULT_PROJECTILE_SPLAT/T_PEPPERPULT_PROJECTILE_SPLAT.PAM";
             case KERNEL_PULT -> tracker.isButter ? "768/INITIAL/EFFECTS/SPLAT_KERNALPULT_BUTTER/SPLAT_KERNALPULT_BUTTER.PAM" : "768/INITIAL/EFFECTS/SPLAT_KERNALPULT_KERNAL/SPLAT_KERNALPULT_KERNAL.PAM";
             case SUN_BEAN -> tracker.isPlantFood ? "768/FULL/EFFECTS/SUNBEAN_PLANTFOOD_EFFECT_OVERLAY1/SUNBEAN_PLANTFOOD_EFFECT_OVERLAY1.PAM" : null;
-            // --- NEW: Dummy Triggers routed perfectly to their animations! ---
-            case PHAT_BEET -> tracker.isPlantFood ? "768/FULL/EFFECTS/PHATBEETS_PF_PULSE/PHATBEETS_PF_PULSE.PAM" : "768/FULL/EFFECTS/PHATBEETS_ATTACK_PULSE/PHATBEETS_ATTACK_PULSE.PAM";
-            case KIWIBEAST -> tracker.isPlantFood ? "768/INITIAL/EFFECTS/KIWIBEAST_PF_PULSE/KIWIBEAST_PF_PULSE.PAM" : "768/INITIAL/EFFECTS/KIWIBEAST_ATTACK_PULSE/KIWIBEAST_ATTACK_PULSE.PAM";
+            case PHAT_BEET -> {
+                if (tracker.isTileHit) yield "768/FULL/EFFECTS/PHATBEETS_TILE_HIT/PHATBEETS_TILE_HIT.PAM";
+                yield tracker.isPlantFood ? "768/FULL/EFFECTS/PHATBEETS_PF_PULSE/PHATBEETS_PF_PULSE.PAM" : "768/FULL/EFFECTS/PHATBEETS_ATTACK_PULSE/PHATBEETS_ATTACK_PULSE.PAM";
+            }
+            case KIWIBEAST -> {
+                if (tracker.isTileHit) yield "768/INITIAL/EFFECTS/KIWIBEAST_TILE_HIT/KIWIBEAST_TILE_HIT.PAM";
+                yield tracker.isPlantFood ? "768/INITIAL/EFFECTS/KIWIBEAST_PF_PULSE/KIWIBEAST_PF_PULSE.PAM" : "768/INITIAL/EFFECTS/KIWIBEAST_ATTACK_PULSE/KIWIBEAST_ATTACK_PULSE.PAM";
+            }
             case TANGLE_KELP -> "768/FULL/PLANT/TANGLEKELP/TANGLEKELP.PAM";
 
             case PEASHOOTER, REPEATER, THREEPEATER, PEA_POD, SPLIT_PEA -> "768/INITIAL/EFFECTS/T_SPLAT_PEA/T_SPLAT_PEA.PAM";
@@ -754,6 +801,7 @@ public class PlantMatchManager {
     }
     private String getHitAnimClipName(ProjectileHitTracker tracker) {
         PlantType source = tracker.type;
+        if (tracker.isPuddle) return "animation";
         if (source == null) return "animation";
         double dist = tracker.distanceTraveled;
         if (source == PlantType.PUFF_SHROOM) {

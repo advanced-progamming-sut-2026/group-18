@@ -16,7 +16,6 @@ public class TangleKelpStrategy implements AttackStrategy {
         int plantRow = (int) Math.floor((plant.getY() - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
         int plantCol = (int) Math.floor((plant.getX() - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH);
 
-        // 1. TRIGGER PHASE: Check if a zombie is on the tile
         if (!plant.isWindingUp) {
             boolean zombieInRange = false;
             for (Zombie z : board.getAllZombies()) {
@@ -36,15 +35,13 @@ public class TangleKelpStrategy implements AttackStrategy {
             }
         }
 
-        // 2. ANIMATION & DAMAGE PHASE
         if (plant.isWindingUp) {
             double oldTimer = plant.windupTimer;
             plant.windupTimer += tickDelta;
 
-            double damageTick = 15.0; // Damage hits after it dives!
-            double deathTick = 60.0;  // Total time to play submerge -> attack -> merge
+            double damageTick = 15.0;
+            double deathTick = 60.0;
 
-            // DEAL DAMAGE EXACTLY AT TICK 15
             if (oldTimer < damageTick && plant.windupTimer >= damageTick) {
                 int maxTargets = 1 + plant.getExtraTargets();
                 int targetsHit = 0;
@@ -65,7 +62,6 @@ public class TangleKelpStrategy implements AttackStrategy {
                 }
             }
 
-            // DIE AT TICK 60
             if (plant.windupTimer >= deathTick) {
                 plant.die();
             }

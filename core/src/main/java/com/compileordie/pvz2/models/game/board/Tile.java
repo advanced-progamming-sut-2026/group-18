@@ -16,14 +16,18 @@ public class Tile {
     public int row;
     public int column;
     public TileType type;
-    public Plant plant;
+
+    // --- THE NEW STACKING ARCHITECTURE ---
+    public Plant lilyPad;      // Bottom layer (Water)
+    public Plant plant;        // Middle layer (Main Plant)
+    public Plant pumpkin;      // Top layer (Armor)
+    public Plant instantPlant; // Overlay layer (Hot Potato / Grave Buster)
+
     public Obstacle obstacle;
     public Vase vase;
-    public boolean hasLilyPad;
     public boolean isOnFire;
     public double fireTime = 4;
     public double fireTimer = 0;
-    // NEW: Puddle memory
     public double puddleTimer = 0;
     public int puddleDamage = 0;
 
@@ -34,21 +38,37 @@ public class Tile {
         this.type = type;
         this.plant = plant;
         this.obstacle = obstacle;
-        this.hasLilyPad = false;
         this.isOnFire = false;
     }
 
     public void tick(int ticks) {
         type.tick(ticks, this, gameBoard);
+
+        // Tick all active slots!
+        if (lilyPad != null) lilyPad.tick(gameBoard, ticks);
         if (plant != null) plant.tick(gameBoard, ticks);
+        if (pumpkin != null) pumpkin.tick(gameBoard, ticks);
+        if (instantPlant != null) instantPlant.tick(gameBoard, ticks);
         if (obstacle != null) obstacle.tick(ticks, gameBoard);
+
+        // Clear dead entities
+        if (lilyPad != null && lilyPad.isDead()) lilyPad = null;
+        if (plant != null && plant.isDead()) plant = null;
+        if (pumpkin != null && pumpkin.isDead()) pumpkin = null;
+        if (instantPlant != null && instantPlant.isDead()) instantPlant = null;
         if (obstacle != null && !obstacle.isAlive()) obstacle = null;
 
         tickPuddle(ticks);
 
         if (isOnFire){
+            if (plant != null) plant.die();
+            if (pumpkin != null) pumpkin.die();
+            if (lilyPad != null) lilyPad.die();
             this.plant = null;
-            fireTimer += ticks* Constants.Game.TIME_COEFFICIENT;
+            this.pumpkin = null;
+            this.lilyPad = null;
+
+            fireTimer += ticks * Constants.Game.TIME_COEFFICIENT;
             if (fireTimer >= fireTime){
                 fireTimer = 0;
                 isOnFire = false;
@@ -61,7 +81,7 @@ public class Tile {
             puddleTimer -= delta;
             if (puddleTimer <= 0) {
                 puddleTimer = 0;
-                puddleDamage = 0; // --- FIX: Disables the poison damage when it fades! ---
+                puddleDamage = 0;
             }
         }
     }
@@ -69,28 +89,21 @@ public class Tile {
     public Tomb getTomb() {
         if (obstacle != null && obstacle.type == ObstacleType.TOMB) {
             return (Tomb) obstacle;
-        } else {
-            return null;
         }
+        return null;
     }
 
     public void setOnFire() {
-        if (plant != null) {
-            plant.die();
-            this.plant = null;
-        }
         this.isOnFire = true;
-
-
     }
 
     public boolean isEmpty() {
-        return plant == null && !hasLilyPad && obstacle == null && getTomb() == null;
+        return plant == null && lilyPad == null && pumpkin == null && instantPlant == null && obstacle == null && getTomb() == null;
     }
 
     public boolean isPlantable() {
         return type.isPlantable && plant == null && obstacle == null && !isOnFire
-            && (!isUnderWater() || (isUnderWater() && hasLilyPad));
+            && (!isUnderWater() || (isUnderWater() && hasLilyPad()));
     }
 
     public boolean isUnderWater() {
@@ -106,6 +119,10 @@ public class Tile {
     }
 
     public boolean hasLilyPad() {
-        return hasLilyPad;
+        return lilyPad != null;
+    }
+
+    public boolean hasPumpkin() {
+        return pumpkin != null;
     }
 }
