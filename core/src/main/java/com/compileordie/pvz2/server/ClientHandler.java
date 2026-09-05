@@ -122,9 +122,23 @@ public class ClientHandler implements Runnable {
                 break;
             case IZOMBIE_SPAWN_REQUEST:
                 handleSpawnRequest(message);
+                break;
+            case REACTION_SEND:
+                handleReaction(message);
+                break;
             default:
                 send(new Message(MessageType.ERROR).put("reason", "not_implemented_yet"));
                 break;
+        }
+    }
+
+    private void handleReaction(Message message) {
+        String targetUser = message.get("target");
+        if (targetUser == null || targetUser.isEmpty()) return;
+
+        ClientHandler targetHandler = server.getOnlineClient(targetUser);
+        if (targetHandler != null) {
+            targetHandler.send(message);
         }
     }
 
