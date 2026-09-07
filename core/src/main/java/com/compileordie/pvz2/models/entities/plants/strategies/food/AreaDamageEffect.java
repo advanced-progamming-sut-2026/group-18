@@ -25,151 +25,187 @@ public class AreaDamageEffect implements PlantFoodEffectStrategy {
         String name = plant.getName();
 
         if (name.equals("Bowling Bulb")) {
-            plant.reloadAllBulbs();
-            scheduleBowlingBulb(plant, board, 1.0f, 0, 40);
-            scheduleBowlingBulb(plant, board, 2.0f, 1, 120);
-            scheduleBowlingBulb(plant, board, 3.0f, 2, 180);
-
-            Timer.schedule(new Timer.Task() {
-                @Override
-                public void run() { plant.resetFeed(); }
-            }, 4.0f);
+            handleBowlingBulb(plant, board);
             return;
-        }
-
-        else if (name.equals("Cabbage-pult") || name.equals("Kernel-pult") || name.equals("Melon-pult") || name.equals("Winter Melon") || name.equals("Pepper-pult")) {
-
-            final int pfDamage = plant.getBaseDamage() * (name.equals("Cabbage-pult") ? 4 : 2);
-
-            List<Zombie> zList = board.getAllZombies().stream().filter(z -> !z.isDead()).collect(java.util.stream.Collectors.toList());
-            java.util.Collections.shuffle(zList);
-
-            int maxTargets = zList.size();
-            if (name.equals("Cabbage-pult")) maxTargets = Math.min(7, zList.size());
-            else if (name.equals("Pepper-pult")) maxTargets = Math.min(3, zList.size());
-
-            final int limit = maxTargets;
-            if (limit == 0) {
-                plant.resetFeed();
-                return;
-            }
-
-            final double splashRadius = (name.equals("Melon-pult") || name.equals("Winter Melon") || name.equals("Pepper-pult")) ? 1.5 : 0.0;
-
-            final Class<? extends Projectile> pClass;
-            if (name.equals("Kernel-pult")) pClass = ButterProjectile.class;
-            else if (name.equals("Winter Melon")) pClass = IceLobbedProjectile.class;
-            else if (name.equals("Pepper-pult")) pClass = FireLobbedProjectile.class;
-            else pClass = LobbedProjectile.class;
-
-            Timer.schedule(new Timer.Task() {
-                int fired = 0;
-                @Override
-                public void run() {
-                    if (plant.isDead() || fired >= limit) {
-                        plant.resetFeed();
-                        this.cancel();
-                        return;
-                    }
-
-                    Zombie target = zList.get(fired);
-                    if (!target.isDead()) {
-                        double targetX = target.getX() - (Constants.Game.TILE_WIDTH * 0.45);
-                        try {
-                            Projectile proj = pClass.getDeclaredConstructor(double.class, double.class, double.class, double.class, int.class, int.class, double.class)
-                                .newInstance(plant.getX(), target.getY(), targetX, 3.5, pfDamage, plant.getAoeDamage(), splashRadius);
-                            proj.setSourcePlantType(PlantType.getByName(name));
-                            board.getActiveProjectiles().add(proj);
-                        } catch (Exception e) {}
-                    }
-                    fired++;
-                }
-            }, 0f, 0.3f, limit);
+        } else if (name.equals("Cabbage-pult")
+            || name.equals("Kernel-pult")
+            || name.equals("Melon-pult")
+            || name.equals("Winter Melon")
+            || name.equals("Pepper-pult")) {
+            handleLobbedPlants(plant, board, name);
             return;
-        }
-
-        // --- 2. TANGLE KELP PULL ---
-        else if (name.equals("Tangle Kelp")) {
-            Timer.schedule(new Timer.Task() {
-                @Override
-                public void run() {
-                    if (plant.isDead()) return;
-                    List<Zombie> wZombies = new java.util.ArrayList<>();
-                    for (Zombie z : board.getAllZombies()) {
-                        if (!z.isDead()) {
-                            Tile t = board.getTile((float) z.getX(), (float) z.getY());
-                            if (t != null && t.isUnderWater()) wZombies.add(z);
-                        }
-                    }
-                    // --- NEW: FALLBACK IF YOU ARE TESTING ON LAND ---
-                    if (wZombies.isEmpty()) {
-                        wZombies.addAll(board.getAllZombies().stream().filter(z -> !z.isDead()).toList());
-                    }
-                    java.util.Collections.shuffle(wZombies);
-                    int limit = Math.min(4, wZombies.size());
-                    for (int i = 0; i < limit; i++) {
-                        Zombie z = wZombies.get(i);
-                        z.takeDamage(99999, DamageType.NORMAL, PlantType.TANGLE_KELP);
-
-                        // SPAWN THE TANGLE KELP ATTACK ANIMATION ON TOP OF THE ZOMBIE!
-                        spawnVisualHit(board, z.getX(), z.getY(), PlantType.TANGLE_KELP, true);
-                    }
-                    plant.resetFeed();
-                }
-            }, 1.5f);
+        } else if (name.equals("Tangle Kelp")) {
+            handleTangleKelp(plant, board);
             return;
-        }
-
-        // --- 3. MELEE PULSES ---
-        else if (name.equals("Phat Beet") || name.equals("Kiwibeast")) {
-            Timer.schedule(new Timer.Task() {
-                @Override
-                public void run() {
-                    if (plant.isDead()) return;
-                    if (name.equals("Kiwibeast")) plant.forceMaxGrowth();
-
-                    // 1. SPAWN THE MASSIVE PF PULSE ON THE PLANT!
-                    spawnVisualHit(board, plant.getX(), plant.getY(), PlantType.getByName(name), true);
-
-                    double radius = 1.5 * Constants.Game.TILE_HEIGHT;
-                    for (Zombie z : board.getAllZombies()) {
-                        if (!z.isDead() && Math.hypot(z.getX() - plant.getX(), z.getY() - plant.getY()) <= radius) {
-
-                            z.takeDamage(900, DamageType.NORMAL, PlantType.getByName(name));
-
-                            // 2. SPAWN THE TILE_HIT UNIQUELY UNDER THE ZOMBIE!
-                            spawnTileHit(board, z.getX(), z.getY(), PlantType.getByName(name), true);
-                        }
-                    }
-                    plant.resetFeed();
-                }
-            }, 1.5f);
+        } else if (name.equals("Phat Beet") || name.equals("Kiwibeast")) {
+            handleMeleePulses(plant, board, name);
             return;
-        }
-
-        else if (name.equals("Bonk Choy") || name.equals("Wasabi Whip")) {
-            Timer.schedule(new Timer.Task() {
-                int punches = 0;
-                @Override
-                public void run() {
-                    if (plant.isDead()) { this.cancel(); return; }
-                    double radius = 1.5 * Constants.Game.TILE_HEIGHT;
-                    for (Zombie z : board.getAllZombies()) {
-                        if (!z.isDead() && Math.hypot(z.getX() - plant.getX(), z.getY() - plant.getY()) <= radius) {
-                            z.takeDamage(30, DamageType.NORMAL, PlantType.getByName(name));
-                        }
-                    }
-                    punches++;
-                    if (punches >= 30) {
-                        plant.resetFeed();
-                        this.cancel();
-                    }
-                }
-            }, 0.5f, 0.08f, 30);
+        } else if (name.equals("Bonk Choy") || name.equals("Wasabi Whip")) {
+            handleMeleePunches(plant, board, name);
             return;
         }
 
         plant.resetFeed();
+    }
+
+    private void handleBowlingBulb(Plant plant, GameBoard board) {
+        plant.reloadAllBulbs();
+        scheduleBowlingBulb(plant, board, 1.0f, 0, 40);
+        scheduleBowlingBulb(plant, board, 2.0f, 1, 120);
+        scheduleBowlingBulb(plant, board, 3.0f, 2, 180);
+
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                plant.resetFeed();
+            }
+        }, 4.0f);
+    }
+
+    private void handleLobbedPlants(Plant plant, GameBoard board, String name) {
+        final int pfDamage = plant.getBaseDamage() * (name.equals("Cabbage-pult") ? 4 : 2);
+
+        List<Zombie> zList = board.getAllZombies().stream()
+            .filter(z -> !z.isDead())
+            .collect(java.util.stream.Collectors.toList());
+        java.util.Collections.shuffle(zList);
+
+        int maxTargets = zList.size();
+        if (name.equals("Cabbage-pult")) {
+            maxTargets = Math.min(7, zList.size());
+        } else if (name.equals("Pepper-pult")) {
+            maxTargets = Math.min(3, zList.size());
+        }
+
+        final int limit = maxTargets;
+        if (limit == 0) {
+            plant.resetFeed();
+            return;
+        }
+
+        final double splashRadius = (name.equals("Melon-pult")
+            || name.equals("Winter Melon")
+            || name.equals("Pepper-pult")) ? 1.5 : 0.0;
+
+        final Class<? extends Projectile> pClass;
+        if (name.equals("Kernel-pult")) {
+            pClass = ButterProjectile.class;
+        } else if (name.equals("Winter Melon")) {
+            pClass = IceLobbedProjectile.class;
+        } else if (name.equals("Pepper-pult")) {
+            pClass = FireLobbedProjectile.class;
+        } else {
+            pClass = LobbedProjectile.class;
+        }
+
+        Timer.schedule(new Timer.Task() {
+            int fired = 0;
+
+            @Override
+            public void run() {
+                if (plant.isDead() || fired >= limit) {
+                    plant.resetFeed();
+                    this.cancel();
+                    return;
+                }
+
+                Zombie target = zList.get(fired);
+                if (!target.isDead()) {
+                    double targetX = target.getX() - (Constants.Game.TILE_WIDTH * 0.45);
+                    try {
+                        Projectile proj = pClass.getDeclaredConstructor(
+                            double.class, double.class, double.class, double.class,
+                            int.class, int.class, double.class
+                        ).newInstance(
+                            plant.getX(), target.getY(), targetX, 3.5,
+                            pfDamage, plant.getAoeDamage(), splashRadius
+                        );
+                        proj.setSourcePlantType(PlantType.getByName(name));
+                        board.getActiveProjectiles().add(proj);
+                    } catch (Exception e) {}
+                }
+                fired++;
+            }
+        }, 0f, 0.3f, limit);
+    }
+
+    private void handleTangleKelp(Plant plant, GameBoard board) {
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                if (plant.isDead()) return;
+                List<Zombie> wZombies = new java.util.ArrayList<>();
+                for (Zombie z : board.getAllZombies()) {
+                    if (!z.isDead()) {
+                        Tile t = board.getTile((float) z.getX(), (float) z.getY());
+                        if (t != null && t.isUnderWater()) wZombies.add(z);
+                    }
+                }
+                // --- NEW: FALLBACK IF YOU ARE TESTING ON LAND ---
+                if (wZombies.isEmpty()) {
+                    wZombies.addAll(board.getAllZombies().stream().filter(z -> !z.isDead()).toList());
+                }
+                java.util.Collections.shuffle(wZombies);
+                int limit = Math.min(4, wZombies.size());
+                for (int i = 0; i < limit; i++) {
+                    Zombie z = wZombies.get(i);
+                    z.takeDamage(99999, DamageType.NORMAL, PlantType.TANGLE_KELP);
+
+                    // SPAWN THE TANGLE KELP ATTACK ANIMATION ON TOP OF THE ZOMBIE!
+                    spawnVisualHit(board, z.getX(), z.getY(), PlantType.TANGLE_KELP, true);
+                }
+                plant.resetFeed();
+            }
+        }, 1.5f);
+    }
+
+    private void handleMeleePulses(Plant plant, GameBoard board, String name) {
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                if (plant.isDead()) return;
+                if (name.equals("Kiwibeast")) plant.forceMaxGrowth();
+
+                // 1. SPAWN THE MASSIVE PF PULSE ON THE PLANT!
+                spawnVisualHit(board, plant.getX(), plant.getY(), PlantType.getByName(name), true);
+
+                double radius = 1.5 * Constants.Game.TILE_HEIGHT;
+                for (Zombie z : board.getAllZombies()) {
+                    if (!z.isDead() && Math.hypot(z.getX() - plant.getX(), z.getY() - plant.getY()) <= radius) {
+                        z.takeDamage(900, DamageType.NORMAL, PlantType.getByName(name));
+
+                        // 2. SPAWN THE TILE_HIT UNIQUELY UNDER THE ZOMBIE!
+                        spawnTileHit(board, z.getX(), z.getY(), PlantType.getByName(name), true);
+                    }
+                }
+                plant.resetFeed();
+            }
+        }, 1.5f);
+    }
+
+    private void handleMeleePunches(Plant plant, GameBoard board, String name) {
+        Timer.schedule(new Timer.Task() {
+            int punches = 0;
+
+            @Override
+            public void run() {
+                if (plant.isDead()) {
+                    this.cancel();
+                    return;
+                }
+                double radius = 1.5 * Constants.Game.TILE_HEIGHT;
+                for (Zombie z : board.getAllZombies()) {
+                    if (!z.isDead() && Math.hypot(z.getX() - plant.getX(), z.getY() - plant.getY()) <= radius) {
+                        z.takeDamage(30, DamageType.NORMAL, PlantType.getByName(name));
+                    }
+                }
+                punches++;
+                if (punches >= 30) {
+                    plant.resetFeed();
+                    this.cancel();
+                }
+            }
+        }, 0.5f, 0.08f, 30);
     }
 
     private void scheduleBowlingBulb(Plant plant, GameBoard board, float delay, int index, int dmg) {
@@ -181,8 +217,13 @@ public class AreaDamageEffect implements PlantFoodEffectStrategy {
                     // FIX 1: plant.template is null at runtime! Hardcode BouncingProjectile.class!
                     // FIX 2: Multiplied the dmg by 10 so the Plasma bulbs deal massive Plant Food damage!
                     Projectile p = BouncingProjectile.class
-                        .getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
-                        .newInstance(plant.getX() + (index * 0.5 * Constants.Game.TILE_WIDTH), plant.getY(), 6.0, dmg * 10, 5);
+                        .getDeclaredConstructor(
+                            double.class, double.class, double.class, int.class, int.class
+                        )
+                        .newInstance(
+                            plant.getX() + (index * 0.5 * Constants.Game.TILE_WIDTH),
+                            plant.getY(), 6.0, dmg * 10, 5
+                        );
 
                     p.setSourcePlantType(PlantType.BOWLING_BULB);
                     p.setXSpeed(6.0); // --- THIS FORCES THE PLANT FOOD GRAPHICS! ---
@@ -195,7 +236,8 @@ public class AreaDamageEffect implements PlantFoodEffectStrategy {
         }, delay);
     }
 
-    // Creates an invisible dummy projectile that immediately dies, tricking the graphics engine into rendering an impact effect!
+    // Creates an invisible dummy projectile that immediately dies, tricking the graphics engine into rendering an
+    // impact effect!
     public static void spawnVisualHit(GameBoard board, double x, double y, PlantType type, boolean isPF) {
         try {
             Projectile dummy = new NormalProjectile(x, y, isPF ? 6.0 : 0.0, 0); // 0 damage hides it!

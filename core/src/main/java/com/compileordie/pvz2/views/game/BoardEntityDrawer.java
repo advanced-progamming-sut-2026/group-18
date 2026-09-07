@@ -16,8 +16,8 @@ import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.TombType;
-import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.board.GameBoard;
+import com.compileordie.pvz2.models.game.board.Tile;
 import com.compileordie.pvz2.models.game.economy.PlantCard;
 import com.compileordie.pvz2.models.game.economy.Sun;
 import com.compileordie.pvz2.models.game.levels.ChapterType;
@@ -297,8 +297,10 @@ final class BoardEntityDrawer {
                 if (tile.obstacle instanceof com.compileordie.pvz2.models.entities.obstacles.Crater) {
 
                     // --- POSITION FIX: Added TILE_HEIGHT / 2.0f so it centers vertically! ---
-                    float craterX = (float) ((Constants.Game.PADDING_X + (tile.column * Constants.Game.TILE_WIDTH) + (Constants.Game.TILE_WIDTH / 2.0f)) * Constants.UI.METER_TO_PIX);
-                    float craterY = (float) ((Constants.Game.PADDING_Y + (tile.row * Constants.Game.TILE_HEIGHT) + (Constants.Game.TILE_HEIGHT / 2.0f)) * Constants.UI.METER_TO_PIX);
+                    float craterX = ((Constants.Game.PADDING_X + (tile.column * Constants.Game.TILE_WIDTH)
+                        + (Constants.Game.TILE_WIDTH / 2.0f)) * Constants.UI.METER_TO_PIX);
+                    float craterY = ((Constants.Game.PADDING_Y + (tile.row * Constants.Game.TILE_HEIGHT)
+                        + (Constants.Game.TILE_HEIGHT / 2.0f)) * Constants.UI.METER_TO_PIX);
 
                     // --- SCALE FIX: 0.5f means half size. (Tweak to 0.4f or 0.6f if needed!) ---
                     float scale = 0.8f;

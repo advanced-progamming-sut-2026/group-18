@@ -16,7 +16,7 @@ import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tombraise
 import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.BarrelRollerZombie;
 import com.compileordie.pvz2.models.repositories.configs.ConfigManager;
 import com.compileordie.pvz2.models.repositories.configs.ZombieStatsConfig;
-//
+
 public class ZombieBuilder {
     private ZombieType type;
     private double x;
@@ -99,49 +99,82 @@ public class ZombieBuilder {
             throw new IllegalArgumentException("Stats not found in JSON for type: " + type.name());
         }
 
+        Zombie zombie = constructStandardZombie(stats, startX);
+        if (zombie != null) {
+            return zombie;
+        }
+
+        zombie = constructThemedZombie(stats, startX);
+        if (zombie != null) {
+            return zombie;
+        }
+
+        ZombieStatsConfig defaultStats = ConfigManager.zombies().get(ZombieType.STANDARD);
+        return new BasicZombie(
+            defaultStats.hitpoints, defaultStats.speed, defaultStats.eatDps,
+            row, startX, x, y, defaultStats.speed, defaultStats.armorHp
+        );
+    }
+
+    private Zombie constructStandardZombie(ZombieStatsConfig stats, double startX) {
         switch (type) {
             // === ۱. زامبی‌های استاندارد (Standard Pack) ===
             case STANDARD:
-                return new BasicZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+                return new BasicZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             case CONEHEAD:
-                return new ConeHeadZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, stats.armorHp, x, y, stats.speed, 0);
+                return new ConeHeadZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, stats.armorHp, x, y, stats.speed, 0);
 
             case BUCKETHEAD:
-                return new BucketHeadZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, stats.armorHp, x, y, stats.speed, 0);
+                return new BucketHeadZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, stats.armorHp, x, y, stats.speed, 0);
 
             case KNIGHT:
-                return new KnightZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, stats.armorHp, stats.armorHp, x, y, stats.speed, 0);
+                return new KnightZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX,
+                    stats.armorHp, stats.armorHp, x, y, stats.speed, 0);
 
             case BLOCKHEAD:
-                return new BlockheadZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, stats.armorHp, x, y, stats.speed, 0);
+                return new BlockheadZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, stats.armorHp, x, y, stats.speed, 0);
 
             case GARGANTUAR:
-                return new GargantuarZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+                return new GargantuarZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             case IMP:
-                return new ImpZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+                return new ImpZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             case ALL_STAR:
-                return new AllStarZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, 2.5, x, y, stats.speed, stats.armorHp);
+                return new AllStarZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, 2.5, x, y, stats.speed, stats.armorHp);
 
             case PARASOL_ZOMBIE:
-                return new ParasolZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+                return new ParasolZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             case TURQUOISE_ZOMBIE:
-                return new TurquoiseZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+                return new TurquoiseZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             case PROSPECTOR_ZOMBIE:
-                return new ProspectorZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+                return new ProspectorZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             case PIANIST_ZOMBIE:
-                return new PianistZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+                return new PianistZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             case NEWSPAPER_ZOMBIE:
-                return new NewspaperZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, stats.armorHp, x, y, stats.speed, 0);
+                return new NewspaperZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, stats.armorHp, x, y, stats.speed, 0);
 
             case BARREL_ROLLER:
-                return new BarrelRollerZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, 0, stats.armorHp);
+                return new BarrelRollerZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, 0, stats.armorHp);
 
             case RAINCOAT_ZOMBIE:
                 // 🌧️☀️ زامبی بارونی: طبق درخواست، حرکت نمی‌کنه - xSpeed رو
@@ -149,52 +182,69 @@ public class ZombieBuilder {
                 // (کانفیگ JSON) باشه.
                 return new RaincoatZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, 0, 0);
 
+            default:
+                return null;
+        }
+    }
+
+    private Zombie constructThemedZombie(ZombieStatsConfig stats, double startX) {
+        switch (type) {
             // === ۲. زامبی‌های دنیای مصر باستان (Ancient Egypt) ===
             case RA_ZOMBIE:
-                return new RaZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+                return new RaZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             case EXPLORER_ZOMBIE:
-                return new ExplorerZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+                return new ExplorerZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             case TOMBRAISER:
-                return new TombraiserZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+                return new TombraiserZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             // === ۳. زامبی‌های غارهای یخی (Frostbite Caves) ===
             case DODO_RIDER:
-                return new DodoRiderZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+                return new DodoRiderZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             case HUNTER_ZOMBIE:
-                return new HunterZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+                return new HunterZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             // === ۴. زامبی‌های ساحل (Big Wave Beach) ===
 //            case FISHERMAN_ZOMBIE:
-//                return new FishermanZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+//                return new FishermanZombie(
+//                        stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             case SNORKEL_ZOMBIE:
-                return new SnorkelZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+                return new SnorkelZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             case OCTOPUS_ZOMBIE:
-                return new OctopusZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+                return new OctopusZombie(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             // === ۵. زامبی‌های قرون وسطی (Dark Ages) ===
 //            case JESTER_ZOMBIE:
-//                return new JesterZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+//                return new JesterZombie(
+//                        stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 //
 //            case WIZARD_ZOMBIE:
-//                return new WizardZombie(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+//                return new WizardZombie(
+//                        stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 //
 //            case KING_ZOMBIE:
 //                return new KingZombie(stats.hitpoints, row, startX, x, y, 3, 1, 5.0);
 
             case IMP_DRAGON:
-                return new ImpDragon(stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
+                return new ImpDragon(
+                    stats.hitpoints, stats.speed, stats.eatDps, row, startX, x, y, stats.speed, stats.armorHp);
 
             case ZOMBOSS_IN_EGYPT:
                 return new EgyptZomboss(AppModel.gameSession.gameBoard);
 
             default:
-                ZombieStatsConfig defaultStats = ConfigManager.zombies().get(ZombieType.STANDARD);
-                return new BasicZombie(defaultStats.hitpoints, defaultStats.speed, defaultStats.eatDps, row, startX, x, y, defaultStats.speed, defaultStats.armorHp);
+                return null;
         }
     }
 }

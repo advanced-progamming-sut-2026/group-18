@@ -6,10 +6,72 @@ import com.compileordie.pvz2.models.entities.plants.Plant;
 public class PlantFoodClipManager {
 
     public static String getClip(String name, Plant plant) {
-
         // Convert the logic ticks directly to seconds for easy sequencing!
         float t = (float) (plant.plantFoodTimer * Constants.Game.TIME_COEFFICIENT);
 
+        switch (name) {
+            case "Sunflower":
+            case "Twin Sunflower":
+            case "Primal Sunflower":
+            case "Sun-shroom":
+                return getSunProducerClip(name, plant, t);
+
+            case "Split Pea":
+            case "Threepeater":
+            case "Peashooter":
+            case "Repeater":
+            case "Mega Gatling Pea":
+            case "Fire Peashooter":
+            case "Snow Pea":
+            case "Starfruit":
+            case "Puff-shroom":
+            case "Rotobaga":
+            case "Sea-shroom":
+            case "Pea Pod":
+            case "Bowling Bulb":
+            case "Cactus":
+            case "Goo Peashooter":
+                return getShooterClip(name, plant, t);
+
+            case "Cabbage-pult":
+            case "Kernel-pult":
+            case "Melon-pult":
+            case "Winter Melon":
+            case "Pepper-pult":
+                return getLobberClip(name, plant, t);
+
+            case "Phat Beet":
+            case "Kiwibeast":
+            case "Bonk Choy":
+            case "Wasabi Whip":
+            case "Tangle Kelp":
+            case "Citron":
+            case "Fume-shroom":
+            case "Chomper":
+                return getMeleeAndSpecialClip(name, plant, t);
+
+            case "Wall-nut":
+            case "Explode-o-nut":
+            case "Sun Bean":
+            case "Tall-nut":
+            case "Torchwood":
+            case "Potato Mine":
+            case "Primal Potato Mine":
+            case "Iceberg Lettuce":
+            case "Sweet Potato":
+            case "Caulipower":
+            case "Electric Blueberry":
+            case "Endurian":
+            case "Garlic":
+            case "Magnet-shroom":
+                return getDefenseAndSupportClip(name, plant, t);
+
+            default:
+                return null;
+        }
+    }
+
+    private static String getSunProducerClip(String name, Plant plant, float t) {
         // --- SUNFLOWER & TWIN SUNFLOWER (2.5 Seconds Total) ---
         if (name.equals("Sunflower") || name.equals("Twin Sunflower")) {
             if (t < 0.83f) return "plantfood_on";
@@ -40,6 +102,10 @@ public class PlantFoodClipManager {
             return null;
         }
 
+        return null;
+    }
+
+    private static String getShooterClip(String name, Plant plant, float t) {
         // --- 1. SINGLE-CLIP BARRAGES (3.0 Seconds Total) ---
         // (Peashooter, Split Pea, Threepeater)
         if (name.equals("Split Pea") || name.equals("Threepeater")) {
@@ -47,7 +113,6 @@ public class PlantFoodClipManager {
             plant.resetFeed();
             return null;
         }
-
         // --- 2. REPEATER (4.0 Seconds Total) ---
         // (3s barrage + 1s giant pea recoil)
         if (name.equals("Peashooter") || name.equals("Repeater")) {
@@ -55,7 +120,6 @@ public class PlantFoodClipManager {
             plant.resetFeed();
             return null;
         }
-
         // --- 3. MEGA GATLING PEA (5.5 Seconds Total) ---
         // (4.5s barrage + 1s giant peas recoil)
         if (name.equals("Mega Gatling Pea")) {
@@ -63,7 +127,6 @@ public class PlantFoodClipManager {
             plant.resetFeed();
             return null;
         }
-
         // --- 4. FIRE PEASHOOTER (4.0 Seconds Total) ---
         // (plantfood -> plantfood_loop -> plantfood_end)
         if (name.equals("Fire Peashooter")) {
@@ -73,7 +136,6 @@ public class PlantFoodClipManager {
             plant.resetFeed();
             return null;
         }
-
         // --- 5. 3-PHASE SEQUENCES (4.0 Seconds Total) ---
         // (Snow Pea, Pea Pod, Starfruit, Puff-shroom)
         if (name.equals("Snow Pea")) {
@@ -83,7 +145,6 @@ public class PlantFoodClipManager {
             plant.resetFeed();
             return null;
         }
-
         if (name.equals("Starfruit") || name.equals("Puff-shroom")) {
             if (t < 0.5f) return "plantfood_on";
             if (t < 3.5f) return "plantfood";      // 3 second barrage
@@ -98,14 +159,12 @@ public class PlantFoodClipManager {
             plant.resetFeed();
             return null;
         }
-
         // --- 7. SEA-SHROOM (3.0 Seconds Total) ---
         if (name.equals("Sea-shroom")) {
             if (t < 3.0f) return "pf";
             plant.resetFeed();
             return null;
         }
-
         // --- DYNAMIC PEA POD ---
         if (name.equals("Pea Pod")) {
             // Duration scales exactly with the number of heads (0.8s per head)
@@ -118,7 +177,6 @@ public class PlantFoodClipManager {
             plant.resetFeed();
             return null;
         }
-
         // --- 8. BOWLING BULB (4.0 Seconds Total) ---
         if (name.equals("Bowling Bulb")) {
             if (t < 0.5f) return "plantfood_on";
@@ -129,13 +187,31 @@ public class PlantFoodClipManager {
             plant.resetFeed();
             return null;
         }
+        // --- 13. PROJECTILE ENHANCE (Permanent Transformations) ---
+        if (name.equals("Cactus")) {
+            if (t < 1.0f) return "plantfood";
+            plant.resetFeed();
+            return null;
+        }
+        if (name.equals("Goo Peashooter")) {
+            if (t < 2.0f) return "plantfood";
+            plant.resetFeed();
+            return null;
+        }
+        return null;
+    }
 
-// --- LOBBER BURSTS ---
-        if (name.equals("Cabbage-pult") || name.equals("Kernel-pult") || name.equals("Melon-pult") || name.equals("Winter Melon") || name.equals("Pepper-pult")) {
+    private static String getLobberClip(String name, Plant plant, float t) {
+        // --- LOBBER BURSTS ---
+        if (name.equals("Cabbage-pult") || name.equals("Kernel-pult") || name.equals("Melon-pult")
+            || name.equals("Winter Melon") || name.equals("Pepper-pult")) {
             if (t < 6.0f) return "plantfood";
             return "plantfood";
         }
+        return null;
+    }
 
+    private static String getMeleeAndSpecialClip(String name, Plant plant, float t) {
         // --- 10. PHAT BEET & KIWIBEAST (2.5 Seconds Total) ---
         if (name.equals("Phat Beet") || name.equals("Kiwibeast")) {
             if (t < 2.5f) return name.equals("Kiwibeast") ? "plantfood_stage3" : "plantfood";
@@ -165,7 +241,23 @@ public class PlantFoodClipManager {
             return null;
         }
 
-// --- 12. ARMOR BUFFS (0.5 Seconds Total) ---
+        if (name.equals("Chomper")) {
+            if (t < 0.5f) return "plantfood_on";
+            if (t < 1.5f) return "plantfood";
+            if (t < 2.0f) return "plantfood_off";
+            if (t < 9.0f) return "plantfood_burp"; // 7 seconds of glorious burping!
+            if (t < 9.5f) return "plantfood_burp_end";
+
+            // The animation is finished. NOW we reset the plant to normal!
+            plant.resetFeed();
+            return null;
+        }
+
+        return null;
+    }
+
+    private static String getDefenseAndSupportClip(String name, Plant plant, float t) {
+        // --- 12. ARMOR BUFFS (0.5 Seconds Total) ---
         if (name.equals("Wall-nut") || name.equals("Explode-o-nut") || name.equals("Sun Bean")) {
             if (t < 0.5f) return "plantfood_on";
             plant.resetFeed(); // Animation done, return to normal logic!
@@ -177,23 +269,14 @@ public class PlantFoodClipManager {
             return null;
         }
 
-        // --- 13. PROJECTILE ENHANCE (Permanent Transformations) ---
-        if (name.equals("Cactus")) {
-            if (t < 1.0f) return "plantfood";
-            plant.resetFeed();
-            return null;
-        }
-// --- ARMOR BUFFS & MODIFIERS (0.5 Seconds Total) ---
-        if (name.equals("Wall-nut") || name.equals("Explode-o-nut") || name.equals("Sun Bean") || name.equals("Torchwood")) {
+        // --- ARMOR BUFFS & MODIFIERS (0.5 Seconds Total) ---
+        if (name.equals("Wall-nut") || name.equals("Explode-o-nut") || name.equals("Sun Bean")
+            || name.equals("Torchwood")) {
             if (t < 0.7f) return "plantfood_on";
             plant.resetFeed();
             return null;
         }
-        if (name.equals("Goo Peashooter")) {
-            if (t < 2.0f) return "plantfood";
-            plant.resetFeed();
-            return null;
-        }
+
         // --- 15. SPAWN CLONES (2.5 Seconds Total) ---
         if (name.equals("Potato Mine")) {
             if (t < 0.5f) return "plantfood_on";
@@ -219,18 +302,6 @@ public class PlantFoodClipManager {
 
         if (name.equals("Sweet Potato")) {
             if (t < 2.0f) return "plantfood";
-            plant.resetFeed();
-            return null;
-        }
-
-        if (name.equals("Chomper")) {
-            if (t < 0.5f) return "plantfood_on";
-            if (t < 1.5f) return "plantfood";
-            if (t < 2.0f) return "plantfood_off";
-            if (t < 9.0f) return "plantfood_burp"; // 7 seconds of glorious burping!
-            if (t < 9.5f) return "plantfood_burp_end";
-
-            // The animation is finished. NOW we reset the plant to normal!
             plant.resetFeed();
             return null;
         }

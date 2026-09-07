@@ -7,8 +7,8 @@ import com.compileordie.pvz2.controllers.PlantSpawner;
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.PlantTemplate;
+import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
-import com.compileordie.pvz2.models.entities.zombies.ZombieBuilder;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
@@ -194,16 +194,15 @@ public class GameScreenController {
         if (selectedPlantCard.plantType == PlantType.HOT_POTATO) {
             boolean hasIceBlock = tile.obstacle instanceof com.compileordie.pvz2.models.entities.obstacles.IceBlock;
             // FIX: Check ALL slots for the ice cover!
-            boolean hasFrozenPlant = (tile.plant != null && tile.plant.isFrozen()) ||
-                (tile.pumpkin != null && tile.pumpkin.isFrozen()) ||
-                (tile.lilyPad != null && tile.lilyPad.isFrozen());
+            boolean hasFrozenPlant = (tile.plant != null && tile.plant.isFrozen())
+                || (tile.pumpkin != null && tile.pumpkin.isFrozen())
+                || (tile.lilyPad != null && tile.lilyPad.isFrozen());
 
             if (!hasIceBlock && !hasFrozenPlant) {
                 ToastManager.showError("Hot Potato can only be planted on Ice!");
                 return;
             }
-        }
-        else if (selectedPlantCard.plantType == PlantType.GRAVE_BUSTER) {
+        } else if (selectedPlantCard.plantType == PlantType.GRAVE_BUSTER) {
             if (!(tile.obstacle instanceof Tomb)) {
                 ToastManager.showError("Grave Buster can only be planted on Graves!");
                 return;
@@ -214,7 +213,8 @@ public class GameScreenController {
             // ==========================================
             // Do NOT spawn a Plant object to prevent engine crashes.
             // Just deduct the sun and instantly kill the grave!
-            boolean isConveyor = AppModel.gameSession.gameBoard.economyManager.type == EconomyType.CONVEYOR_BELT || AppModel.currentLevel == LevelID.VASE_BREAKER;
+            boolean isConveyor = AppModel.gameSession.gameBoard.economyManager.type == EconomyType.CONVEYOR_BELT
+                || AppModel.currentLevel == LevelID.VASE_BREAKER;
             PlantTemplate template = getConfigRepo().getTemplate(selectedPlantCard.plantType);
             int cost = template != null ? template.getCost() : 0;
 
@@ -232,15 +232,14 @@ public class GameScreenController {
             }
 
             // 2. Instantly shatter the grave! (Bypasses PlantSpawner entirely)
-            ((Tomb) tile.obstacle).takeDamage(9999, com.compileordie.pvz2.models.entities.plants.enums.ProjectileType.NORMAL);
+            ((Tomb) tile.obstacle).takeDamage(9999, ProjectileType.NORMAL);
 
             // 3. Show a message so it looks intentional!
             ToastManager.showMessage("Grave Buster instantly consumed the tomb!");
 
             cancelSelection();
             return; // EXIT COMPLETELY. DO NOT CALL spawnAndDeduct!
-        }
-        else if (selectedPlantCard.plantType == PlantType.LILY_PAD) {
+        } else if (selectedPlantCard.plantType == PlantType.LILY_PAD) {
             if (!tile.isUnderWater()) {
                 ToastManager.showError("Lily Pad must be planted on Water!");
                 return;
@@ -249,15 +248,19 @@ public class GameScreenController {
                 ToastManager.showError("Tile already has a Lily Pad!");
                 return;
             }
-        }
-        else if (selectedPlantCard.plantType == PlantType.PUMPKIN) {
+        } else if (selectedPlantCard.plantType == PlantType.PUMPKIN) {
             if (tile.hasPumpkin()) {
                 ToastManager.showError("Tile already has a Pumpkin!");
                 return;
             }
         }
+
         // --- 2. NORMAL PLANTING RULES ---
-        if (!List.of(PlantType.PEA_POD, PlantType.HOT_POTATO,PlantType.GRAVE_BUSTER,PlantType.LILY_PAD, PlantType.PUMPKIN)
+        if (!List.of(PlantType.PEA_POD,
+                PlantType.HOT_POTATO,
+                PlantType.GRAVE_BUSTER,
+                PlantType.LILY_PAD,
+                PlantType.PUMPKIN)
             .contains(selectedPlantCard.plantType)) {
             if (tile.plant != null && tile.plant.isAlive()) {
                 ToastManager.showError("Tile is already occupied!");
@@ -302,20 +305,30 @@ public class GameScreenController {
             } else {
                 ToastManager.showError("Pea Pod already had 5 heads!");
             }
-        }
-
-        else {
-            Plant newPlant = PlantSpawner.spawn(selectedPlantCard.plantType, spawnX, spawnY, selectedPlantCard.isBoosted, false);
+        } else {
+            Plant newPlant = PlantSpawner.spawn(
+                selectedPlantCard.plantType,
+                spawnX,
+                spawnY,
+                selectedPlantCard.isBoosted,
+                false
+            );
 
             tile.plant = newPlant;
             AppModel.gameSession.gameBoard.recordPlanting(selectedPlantCard.plantType, tile);
             tile.plant = null; // Remove it from the main slot immediately after!
 
             // --- NOW ROUTE TO THE CORRECT SLOT ---
-            if (selectedPlantCard.plantType == PlantType.LILY_PAD) tile.lilyPad = newPlant;
-            else if (selectedPlantCard.plantType == PlantType.PUMPKIN) tile.pumpkin = newPlant;
-            else if (selectedPlantCard.plantType == PlantType.HOT_POTATO || selectedPlantCard.plantType == PlantType.GRAVE_BUSTER) tile.instantPlant = newPlant;
-            else tile.plant = newPlant;
+            if (selectedPlantCard.plantType == PlantType.LILY_PAD) {
+                tile.lilyPad = newPlant;
+            } else if (selectedPlantCard.plantType == PlantType.PUMPKIN) {
+                tile.pumpkin = newPlant;
+            } else if (selectedPlantCard.plantType == PlantType.HOT_POTATO
+                || selectedPlantCard.plantType == PlantType.GRAVE_BUSTER) {
+                tile.instantPlant = newPlant;
+            } else {
+                tile.plant = newPlant;
+            }
             // Feeds Master Demolisher / Cloudy Day / Night or Morning / Family Slayer /
             // One Less Column / Defenseless Row / Defenseless Cross.
             AppModel.gameSession.gameBoard.recordPlanting(selectedPlantCard.plantType, tile);

@@ -1,15 +1,15 @@
 package com.compileordie.pvz2.models.entities.projectiles;
 
 import com.compileordie.pvz2.config.Constants;
+import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
 import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.zombies.types.DamageType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
-import com.compileordie.pvz2.models.game.board.GameBoard;
-import com.compileordie.pvz2.models.game.board.Tile;
-import com.compileordie.pvz2.models.entities.obstacles.Obstacle;
 import com.compileordie.pvz2.models.entities.zombies.variants.summoner.Tomb;
 import com.compileordie.pvz2.models.entities.zombies.variants.vehicle.Barrel;
+import com.compileordie.pvz2.models.game.board.GameBoard;
+import com.compileordie.pvz2.models.game.board.Tile;
 
 public abstract class Projectile {
     protected double x;
@@ -45,7 +45,8 @@ public abstract class Projectile {
         this.y += this.ySpeed * delta * Constants.Game.TIME_COEFFICIENT;
 
         // --- NEW: Short-Range Spore Evaporation! ---
-        if (this.sourcePlantType == PlantType.SEA_SHROOM || this.sourcePlantType == PlantType.PUFF_SHROOM || this.sourcePlantType == PlantType.FUME_SHROOM) {
+        if (this.sourcePlantType == PlantType.SEA_SHROOM || this.sourcePlantType == PlantType.PUFF_SHROOM
+            || this.sourcePlantType == PlantType.FUME_SHROOM) {
             double maxRangePixels = 6.0 * Constants.Game.TILE_WIDTH; // Dies after exactly 6 tiles!
             if (Math.abs(this.x - this.startX) >= maxRangePixels) {
                 this.destroy(); // Evaporate in midair!

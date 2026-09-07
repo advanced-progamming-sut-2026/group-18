@@ -53,7 +53,8 @@ public class InstantKillEffect implements PlantFoodEffectStrategy {
         } else if (plant.getName().equals("Chomper")) {
             // --- CHOMPER: Lane Vacuum & Board-Wide Repel ---
             int plantRow = (int) Math.floor((plant.getY() - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
-            double maxX = Constants.Game.PADDING_X + (board.totalCols * Constants.Game.TILE_WIDTH) + (Constants.Game.TILE_WIDTH * 2);
+            double maxX = Constants.Game.PADDING_X + (board.totalCols * Constants.Game.TILE_WIDTH)
+                + (Constants.Game.TILE_WIDTH * 2);
 
             // 1. Find all zombies in Chomper's row, directly in front of it, closest first!
             List<Zombie> laneZombies = board.getAllZombies().stream()

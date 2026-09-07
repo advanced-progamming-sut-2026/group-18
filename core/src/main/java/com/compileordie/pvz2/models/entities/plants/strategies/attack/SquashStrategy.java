@@ -34,7 +34,14 @@ public class SquashStrategy implements AttackStrategy {
             plant.setHidden(true);
             int totalCrushes = 1 + plant.getExtraCrushes();
 
-            SquashProjectile jumpOut = new SquashProjectile(plant, plant.getX(), plant.getY(), closestTarget.getX(), closestTarget.getY(), false, totalCrushes, false);
+            SquashProjectile jumpOut = new SquashProjectile(plant,
+                plant.getX(),
+                plant.getY(),
+                closestTarget.getX(),
+                closestTarget.getY(),
+                false,
+                totalCrushes,
+                false);
             board.getActiveProjectiles().add(jumpOut);
         }
     }

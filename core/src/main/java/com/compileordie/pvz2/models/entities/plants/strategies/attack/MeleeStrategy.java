@@ -37,90 +37,9 @@ public class MeleeStrategy implements AttackStrategy {
         // 1. PHAT BEET & KIWIBEAST LOGIC (Pulse + Dynamic Tile Hits)
         // ==========================================
         if (isAoE && !plant.getName().equals("Wasabi Whip")) {
-            double radiusPx = Constants.Game.TILE_WIDTH * 1.5;
-
-            // 1. Scan for valid targets before triggering the attack
-            boolean hasTarget = false;
-            for (Zombie z : board.getAllZombies()) {
-                if (z.isDead()) continue;
-                if (Math.abs(z.getCurrentRow() - plantRow) <= 1 && Math.abs(z.getX() - plant.getX()) <= radiusPx) {
-                    hasTarget = true;
-                    break;
-                }
-            }
-
-            if (hasTarget) {
-                attacked = true;
-                final int finalDamage = currentDamage;
-                Timer.schedule(new Timer.Task() {
-                    @Override
-                    public void run() {
-                        if (plant.isDead()) return;
-                        AreaDamageEffect.spawnVisualHit(board, plant.getX(), plant.getY(), PlantType.getByName(plant.getName()), false);
-
-                        for (Zombie z : board.getAllZombies()) {
-                            if (z.isDead()) continue;
-
-                            int zRow = z.getCurrentRow();
-                            double distPx = Math.abs(z.getX() - plant.getX());
-
-                            if (Math.abs(zRow - plantRow) <= 1 && distPx <= radiusPx) {
-                                z.takeDamage(finalDamage, DamageType.NORMAL, PlantType.getByName(plant.getName()));
-                                AreaDamageEffect.spawnTileHit(board, z.getX(), z.getY(), PlantType.getByName(plant.getName()), false);
-                            }
-                        }
-                    }
-                }, 0.2f);
-            }
-        }
-        else if (!isInstantKill || plant.getName().equals("Wasabi Whip")) {
-
-            Zombie bestFront = null;
-            double closestFrontPx = Double.MAX_VALUE;
-
-            Zombie bestBack = null;
-            double closestBackPx = Double.MAX_VALUE;
-
-            int rangeTiles = plant.getName().equals("Wasabi Whip") ? 2 : 1;
-
-            for (Zombie z : board.getAllZombies()) {
-                if (z.isDead() || !z.occupiesRow(plantRow)) continue;
-
-                int zCol = (int) Math.floor((z.getX() - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH);
-                double distPx = z.getX() - plant.getX();
-
-                if ((zCol >= plantCol && zCol <= plantCol + rangeTiles) && distPx >= 0) {
-                    if (distPx < closestFrontPx) {
-                        closestFrontPx = distPx;
-                        bestFront = z;
-                    }
-                }
-                else if ((zCol <= plantCol && zCol >= plantCol - rangeTiles) && distPx < 0) {
-                    if (Math.abs(distPx) < closestBackPx) {
-                        closestBackPx = Math.abs(distPx);
-                        bestBack = z;
-                    }
-                }
-            }
-
-            Zombie target = null;
-
-            if (bestFront != null && bestBack != null) {
-                plant.windupTimer = 3.0;
-                target = Math.random() > 0.5 ? bestFront : bestBack;
-            } else if (bestFront != null) {
-                plant.windupTimer = 1.0;
-                target = bestFront;
-            } else if (bestBack != null) {
-                plant.windupTimer = 2.0;
-                target = bestBack;
-            }
-
-            if (target != null) {
-                DamageType dmgType = plant.getName().equals("Wasabi Whip") ? DamageType.FIRE : DamageType.NORMAL;
-                target.takeDamage(currentDamage, dmgType, PlantType.getByName(plant.getName()));
-                attacked = true;
-            }
+            attacked = handleAoEAttack(plant, board, plantRow, currentDamage);
+        } else if (!isInstantKill || plant.getName().equals("Wasabi Whip")) {
+            attacked = handleSingleTargetAttack(plant, board, plantRow, plantCol, currentDamage);
         }
 
         if (!attacked) {
@@ -128,5 +47,90 @@ public class MeleeStrategy implements AttackStrategy {
         } else {
             plant.holdAction = false;
         }
+    }
+
+    private boolean handleAoEAttack(Plant plant, GameBoard board, int plantRow, int currentDamage) {
+        double radiusPx = Constants.Game.TILE_WIDTH * 1.5;
+
+        // 1. Scan for valid targets before triggering the attack
+        boolean hasTarget = false;
+        for (Zombie z : board.getAllZombies()) {
+            if (z.isDead()) continue;
+            if (Math.abs(z.getCurrentRow() - plantRow) <= 1 && Math.abs(z.getX() - plant.getX()) <= radiusPx) {
+                hasTarget = true;
+                break;
+            }
+        }
+        if (hasTarget) {
+            final int finalDamage = currentDamage;
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    if (plant.isDead()) return;
+                    AreaDamageEffect.spawnVisualHit(board,
+                        plant.getX(),
+                        plant.getY(),
+                        PlantType.getByName(plant.getName()),
+                        false);
+                    for (Zombie z : board.getAllZombies()) {
+                        if (z.isDead()) continue;
+                        int zRow = z.getCurrentRow();
+                        double distPx = Math.abs(z.getX() - plant.getX());
+                        if (Math.abs(zRow - plantRow) <= 1 && distPx <= radiusPx) {
+                            z.takeDamage(finalDamage, DamageType.NORMAL, PlantType.getByName(plant.getName()));
+                            AreaDamageEffect.spawnTileHit(board,
+                                z.getX(),
+                                z.getY(),
+                                PlantType.getByName(plant.getName()),
+                                false);
+                        }
+                    }
+                }
+            }, 0.2f);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean handleSingleTargetAttack(Plant plant, GameBoard board,
+                                             int plantRow, int plantCol, int currentDamage) {
+        Zombie bestFront = null;
+        double closestFrontPx = Double.MAX_VALUE;
+        Zombie bestBack = null;
+        double closestBackPx = Double.MAX_VALUE;
+        int rangeTiles = plant.getName().equals("Wasabi Whip") ? 2 : 1;
+        for (Zombie z : board.getAllZombies()) {
+            if (z.isDead() || !z.occupiesRow(plantRow)) continue;
+            int zCol = (int) Math.floor((z.getX() - Constants.Game.PADDING_X) / Constants.Game.TILE_WIDTH);
+            double distPx = z.getX() - plant.getX();
+            if ((zCol >= plantCol && zCol <= plantCol + rangeTiles) && distPx >= 0) {
+                if (distPx < closestFrontPx) {
+                    closestFrontPx = distPx;
+                    bestFront = z;
+                }
+            } else if ((zCol <= plantCol && zCol >= plantCol - rangeTiles) && distPx < 0) {
+                if (Math.abs(distPx) < closestBackPx) {
+                    closestBackPx = Math.abs(distPx);
+                    bestBack = z;
+                }
+            }
+        }
+        Zombie target = null;
+        if (bestFront != null && bestBack != null) {
+            plant.windupTimer = 3.0;
+            target = Math.random() > 0.5 ? bestFront : bestBack;
+        } else if (bestFront != null) {
+            plant.windupTimer = 1.0;
+            target = bestFront;
+        } else if (bestBack != null) {
+            plant.windupTimer = 2.0;
+            target = bestBack;
+        }
+        if (target != null) {
+            DamageType dmgType = plant.getName().equals("Wasabi Whip") ? DamageType.FIRE : DamageType.NORMAL;
+            target.takeDamage(currentDamage, dmgType, PlantType.getByName(plant.getName()));
+            return true;
+        }
+        return false;
     }
 }

@@ -1,4 +1,5 @@
 package com.compileordie.pvz2.views.game;
+
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.compileordie.pvz2.config.Constants;
@@ -13,6 +14,7 @@ import com.compileordie.pvz2.models.game.board.Lane;
 import com.compileordie.pvz2.models.game.board.Tile;
 import pvz.libpvz.pam.ClipRef;
 import pvz.libpvz.pam.PamPlayer;
+
 import java.util.*;
 
 import static com.compileordie.pvz2.models.AppModel.player;
@@ -22,6 +24,7 @@ public class PlantMatchManager {
     private final PlantAssetManager assetManager;
     private boolean isPaused;
     private float globalAnimTime = 0f;
+
     private static class ProjectileHitTracker {
         float lastDrawX;
         float lastDrawY;
@@ -36,24 +39,34 @@ public class PlantMatchManager {
         boolean isTileHit = false;
         boolean isPuddle = false;
     }
+
     private static class HitAnim {
         float x, y, animTime;
         String pamPath, clipName;
+
         HitAnim(float x, float y, String pamPath, String clipName) {
-            this.x = x; this.y = y; this.pamPath = pamPath; this.clipName = clipName; this.animTime = 0f;
+            this.x = x;
+            this.y = y;
+            this.pamPath = pamPath;
+            this.clipName = clipName;
+            this.animTime = 0f;
         }
     }
+
     private final Map<Projectile, ProjectileHitTracker> trackedProjectiles = new HashMap<>();
     private final List<HitAnim> hitAnims = new ArrayList<>();
     private final Set<Plant> trackedExplosives = new HashSet<>();
     private final Map<Plant, Double> actionTimerMemory = new HashMap<>();
+
     public PlantMatchManager(GameRenderStates states, PlantAssetManager assetManager) {
         this.states = states;
         this.assetManager = assetManager;
     }
+
     public void setPaused(boolean p) {
         this.isPaused = p;
     }
+
     public void draw(SpriteBatch batch, PamPlayer player, float delta) {
         if (AppModel.gameSession == null || AppModel.gameSession.gameBoard == null) return;
         GameBoard board = AppModel.gameSession.gameBoard;
@@ -63,23 +76,32 @@ public class PlantMatchManager {
         drawPlants(batch, player, board, delta);
         drawProjectiles(batch, player, board, delta);
     }
+
     private void drawPlants(SpriteBatch batch, PamPlayer player, GameBoard board, float delta) {
         Set<Plant> currentExplosives = new HashSet<>();
         Set<Plant> currentAlivePlants = new HashSet<>();
         for (Lane lane : board.lanes) {
             for (Tile tile : lane.tiles) {
-
                 // --- 1. GOO PUDDLE RENDERER ---
                 if (tile.puddleTimer > 0) {
-                    float fy = (float) ((Constants.Game.PADDING_Y + (tile.row * Constants.Game.TILE_HEIGHT) + (Constants.Game.TILE_HEIGHT * 0.55f)) * Constants.UI.METER_TO_PIX);
+                    float fy = (float) ((Constants.Game.PADDING_Y + (tile.row * Constants.Game.TILE_HEIGHT)
+                        + (Constants.Game.TILE_HEIGHT * 0.55f)) * Constants.UI.METER_TO_PIX);
                     boolean isBeginning = (tile.column == 0 || lane.tiles.get(tile.column - 1).puddleTimer <= 0);
-
-                    float fx1 = (float) ((Constants.Game.PADDING_X + (tile.column * Constants.Game.TILE_WIDTH) + (Constants.Game.TILE_WIDTH * 0.25f)) * Constants.UI.METER_TO_PIX);
+                    float fx1 = (float) ((Constants.Game.PADDING_X + (tile.column * Constants.Game.TILE_WIDTH)
+                        + (Constants.Game.TILE_WIDTH * 0.25f)) * Constants.UI.METER_TO_PIX);
                     String clip1 = isBeginning ? "animation" : "animation2";
-                    try { player.draw(batch, "768/INITIAL/EFFECTS/GOOPEASHOOTER_PLANTFOOD_TILE/GOOPEASHOOTER_PLANTFOOD_TILE.PAM", clip1, globalAnimTime, fx1, fy, 0.67f, 0.67f, true); } catch (Exception e) {}
-
-                    float fx2 = (float) ((Constants.Game.PADDING_X + (tile.column * Constants.Game.TILE_WIDTH) + (Constants.Game.TILE_WIDTH * 0.75f)) * Constants.UI.METER_TO_PIX);
-                    try { player.draw(batch, "768/INITIAL/EFFECTS/GOOPEASHOOTER_PLANTFOOD_TILE/GOOPEASHOOTER_PLANTFOOD_TILE.PAM", "animation2", globalAnimTime, fx2, fy, 0.67f, 0.67f, true); } catch (Exception e) {}
+                    try {
+                        player.draw(batch,
+                            "768/INITIAL/EFFECTS/GOOPEASHOOTER_PLANTFOOD_TILE/GOOPEASHOOTER_PLANTFOOD_TILE.PAM",
+                            clip1, globalAnimTime, fx1, fy, 0.67f, 0.67f, true);
+                    } catch (Exception e) {}
+                    float fx2 = (float) ((Constants.Game.PADDING_X + (tile.column * Constants.Game.TILE_WIDTH)
+                        + (Constants.Game.TILE_WIDTH * 0.75f)) * Constants.UI.METER_TO_PIX);
+                    try {
+                        player.draw(batch,
+                            "768/INITIAL/EFFECTS/GOOPEASHOOTER_PLANTFOOD_TILE/GOOPEASHOOTER_PLANTFOOD_TILE.PAM",
+                            "animation2", globalAnimTime, fx2, fy, 0.67f, 0.67f, true);
+                    } catch (Exception e) {}
                 }
 
                 // --- 2. Z-ORDER RENDERING (Bottom to Top) ---
@@ -89,56 +111,74 @@ public class PlantMatchManager {
                     currentAlivePlants.add(tile.lilyPad);
                     drawSinglePlant(batch, player, tile.lilyPad, delta);
                 }
-
                 // B. Main Plant
                 if (tile.plant != null && tile.plant.isAlive() && !tile.plant.isHidden()) {
                     Plant plant = tile.plant;
                     currentAlivePlants.add(plant);
-                    if (plant.getCategory() == PlantCategory.EXPLOSIVE || plant.getName().equals("Explode-o-nut") || (plant.getName().equals("Torchwood") && plant.getLevel() >= 3) || plant.getName().equals("Ice-shroom")) {
+                    if (plant.getCategory() == PlantCategory.EXPLOSIVE
+                        || plant.getName().equals("Explode-o-nut")
+                        || (plant.getName().equals("Torchwood") && plant.getLevel() >= 3)
+                        || plant.getName().equals("Ice-shroom")) {
                         currentExplosives.add(plant);
                     }
                     drawSinglePlant(batch, player, plant, delta);
-
                     // Main Plant overlays (Citron / Snow Pea / Fire Peashooter Plant Food)
                     if (plant.isFed()) {
                         if (plant.getName().equals("Citron")) {
                             float t = (float) (plant.plantFoodTimer * Constants.Game.TIME_COEFFICIENT);
                             if (t < 5.0f) {
                                 float cx = (float) (plant.getX() * Constants.UI.METER_TO_PIX);
-                                float cy = (float) ((plant.getY() + Constants.Game.TILE_HEIGHT * 0.5f) * Constants.UI.METER_TO_PIX);
-                                try { player.draw(batch, "768/FULL/EFFECTS/CITRON_PLANTFOOD_LIGHTNING_CHARGE/CITRON_PLANTFOOD_LIGHTNING_CHARGE.PAM", "Citron_Plantfood_Lightning_Charge", globalAnimTime, cx, cy, 0.67f, 0.67f, true); } catch (Exception e) {}
+                                float cy = (float) ((plant.getY() + Constants.Game.TILE_HEIGHT * 0.5f)
+                                    * Constants.UI.METER_TO_PIX);
+                                try {
+                                    player.draw(batch,
+                                        "768/FULL/EFFECTS/CITRON_PLANTFOOD_LIGHTNING_CHARGE"
+                                            + "/CITRON_PLANTFOOD_LIGHTNING_CHARGE.PAM",
+                                        "Citron_Plantfood_Lightning_Charge", globalAnimTime,
+                                        cx, cy, 0.67f, 0.67f, true);
+                                } catch (Exception e) {}
                             }
                         }
                         if (plant.getName().equals("Snow Pea") || plant.getName().equals("Fire Peashooter")) {
-                            String pam = plant.getName().equals("Snow Pea") ? "768/INITIAL/EFFECTS/SNOWPEA_PLANTFOOD/SNOWPEA_PLANTFOOD.PAM" : "768/INITIAL/EFFECTS/FIREPEASHOOTER_FIRE/FIREPEASHOOTER_FIRE.PAM";
+                            String pam = plant.getName().equals("Snow Pea")
+                                ? "768/INITIAL/EFFECTS/SNOWPEA_PLANTFOOD/SNOWPEA_PLANTFOOD.PAM"
+                                : "768/INITIAL/EFFECTS/FIREPEASHOOTER_FIRE/FIREPEASHOOTER_FIRE.PAM";
                             String clip = plant.getName().equals("Snow Pea") ? "plantfood_on" : "idle";
-                            float rowY = (float) ((plant.getY() + (Constants.Game.TILE_HEIGHT * 0.2f)) * Constants.UI.METER_TO_PIX);
+                            float rowY = (float) ((plant.getY() + (Constants.Game.TILE_HEIGHT * 0.2f))
+                                * Constants.UI.METER_TO_PIX);
                             int startSegment = (tile.column + 1) * 3;
                             int totalSegments = board.totalCols * 3;
                             for (int i = startSegment; i < totalSegments; i++) {
-                                float fx = (float) ((Constants.Game.PADDING_X + 0.5f + (i * (Constants.Game.TILE_WIDTH / 3.0f))) * Constants.UI.METER_TO_PIX);
-                                try { player.draw(batch, pam, clip, globalAnimTime, fx, rowY, 0.67f, 0.67f, true); } catch (Exception e) {}
+                                float fx = (float) ((Constants.Game.PADDING_X + 0.5f
+                                    + (i * (Constants.Game.TILE_WIDTH / 3.0f))) * Constants.UI.METER_TO_PIX);
+                                try {
+                                    player.draw(batch, pam, clip, globalAnimTime, fx, rowY, 0.67f, 0.67f, true);
+                                } catch (Exception e) {}
                             }
                         }
                     }
                 }
-
                 // C. Pumpkin (Armor layer)
                 if (tile.pumpkin != null && tile.pumpkin.isAlive() && !tile.pumpkin.isHidden()) {
                     currentAlivePlants.add(tile.pumpkin);
                     drawSinglePlant(batch, player, tile.pumpkin, delta);
                 }
-
                 // D. Instant Plant (Hot Potato / Grave Buster)
                 if (tile.instantPlant != null && tile.instantPlant.isAlive() && !tile.instantPlant.isHidden()) {
                     currentAlivePlants.add(tile.instantPlant);
-                    if (tile.instantPlant.getCategory() == PlantCategory.EXPLOSIVE) currentExplosives.add(tile.instantPlant);
+                    if (tile.instantPlant.getCategory() == PlantCategory.EXPLOSIVE) {
+                        currentExplosives.add(tile.instantPlant);
+                    }
                     drawSinglePlant(batch, player, tile.instantPlant, delta);
                 }
             }
         }
 
         // --- 3. EXPLOSIVE HIT ANIMATION TRACKER ---
+        handleExplosiveHitAnimations(board, currentExplosives);
+    }
+
+    private void handleExplosiveHitAnimations(GameBoard board, Set<Plant> currentExplosives) {
         var explIter = trackedExplosives.iterator();
         while (explIter.hasNext()) {
             Plant p = explIter.next();
@@ -146,23 +186,38 @@ public class PlantMatchManager {
                 float ex = (float) (p.getX() * Constants.UI.METER_TO_PIX);
                 float ey = (float) ((p.getY() + (Constants.Game.TILE_HEIGHT * 0.2f)) * Constants.UI.METER_TO_PIX);
                 switch (p.getName()) {
-                    case "Torchwood" -> hitAnims.add(new HitAnim(ex, ey, "768/INITIAL/PLANT/TORCHWOOD/TORCHWOOD.PAM", "explosion"));
-                    case "Potato Mine" -> hitAnims.add(new HitAnim(ex, ey, "768/INITIAL/EFFECTS/POTATOMINE_EXPLOSION/POTATOMINE_EXPLOSION.PAM", "animation2"));
-                    case "Primal Potato Mine" -> hitAnims.add(new HitAnim(ex, ey, "768/INITIAL/EFFECTS/PRIMAL_POTATOMINE_EXPLOSION/PRIMAL_POTATOMINE_EXPLOSION.PAM", "animation3"));
-                    case "Cherry Bomb", "Explode-o-nut", "Bowling Explode-o-nut" -> hitAnims.add(new HitAnim(ex, ey, "768/FULL/EFFECTS/CHERRYBOMB_EXPLOSION_REAR/CHERRYBOMB_EXPLOSION_REAR.PAM", "explosion3"));
-                    case "Grapeshot" -> hitAnims.add(new HitAnim(ex, ey, "768/INITIAL/EFFECTS/ESCAPEROOT_EXPLOSION_GRAPESHOT/ESCAPEROOT_EXPLOSION_GRAPESHOT.PAM", "animation"));
+                    case "Torchwood" -> hitAnims.add(new HitAnim(
+                        ex, ey, "768/INITIAL/PLANT/TORCHWOOD/TORCHWOOD.PAM", "explosion"));
+                    case "Potato Mine" -> hitAnims.add(new HitAnim(
+                        ex, ey, "768/INITIAL/EFFECTS/POTATOMINE_EXPLOSION/POTATOMINE_EXPLOSION.PAM",
+                        "animation2"));
+                    case "Primal Potato Mine" -> hitAnims.add(new HitAnim(
+                        ex, ey, "768/INITIAL/EFFECTS/PRIMAL_POTATOMINE_EXPLOSION"
+                        + "/PRIMAL_POTATOMINE_EXPLOSION.PAM", "animation3"));
+                    case "Cherry Bomb", "Explode-o-nut", "Bowling Explode-o-nut" -> hitAnims.add(new HitAnim(
+                        ex, ey, "768/FULL/EFFECTS/CHERRYBOMB_EXPLOSION_REAR/CHERRYBOMB_EXPLOSION_REAR.PAM",
+                        "explosion3"));
+                    case "Grapeshot" -> hitAnims.add(new HitAnim(
+                        ex, ey, "768/INITIAL/EFFECTS/ESCAPEROOT_EXPLOSION_GRAPESHOT"
+                        + "/ESCAPEROOT_EXPLOSION_GRAPESHOT.PAM", "animation"));
                     case "Jalapeno" -> {
                         for (int i = 0; i < 18; i++) {
-                            float fireX = (float) ((Constants.Game.PADDING_X + 0.5f + (i * (Constants.Game.TILE_WIDTH / 2.0f))) * Constants.UI.METER_TO_PIX);
-                            hitAnims.add(new HitAnim(fireX, ey, "768/INITIAL/EFFECTS/JALAPENO_FIRE/JALAPENO_FIRE.PAM", "idle"));
+                            float fireX = (float) ((Constants.Game.PADDING_X + 0.5f
+                                + (i * (Constants.Game.TILE_WIDTH / 2.0f))) * Constants.UI.METER_TO_PIX);
+                            hitAnims.add(new HitAnim(
+                                fireX, ey, "768/INITIAL/EFFECTS/JALAPENO_FIRE/JALAPENO_FIRE.PAM", "idle"));
                         }
                     }
                     case "Ice-shroom" -> {
                         for (int r = 0; r < board.totalRows; r++) {
-                            float rowY = (float) ((Constants.Game.PADDING_Y + (r * Constants.Game.TILE_HEIGHT) + (Constants.Game.TILE_HEIGHT / 2.0f)) * Constants.UI.METER_TO_PIX);
+                            float rowY = (float) ((Constants.Game.PADDING_Y + (r * Constants.Game.TILE_HEIGHT)
+                                + (Constants.Game.TILE_HEIGHT / 2.0f)) * Constants.UI.METER_TO_PIX);
                             for (int c = 0; c < board.totalCols; c++) {
-                                float iceX = (float) ((Constants.Game.PADDING_X + (c * Constants.Game.TILE_WIDTH) + (Constants.Game.TILE_WIDTH / 2.0f)) * Constants.UI.METER_TO_PIX);
-                                hitAnims.add(new HitAnim(iceX, rowY, "768/FULL/EFFECTS/ICESHROOM_MELEE_ATTACK/ICESHROOM_MELEE_ATTACK.PAM", "animation"));
+                                float iceX = (float) ((Constants.Game.PADDING_X + (c * Constants.Game.TILE_WIDTH)
+                                    + (Constants.Game.TILE_WIDTH / 2.0f)) * Constants.UI.METER_TO_PIX);
+                                hitAnims.add(new HitAnim(
+                                    iceX, rowY, "768/FULL/EFFECTS/ICESHROOM_MELEE_ATTACK"
+                                    + "/ICESHROOM_MELEE_ATTACK.PAM", "animation"));
                             }
                         }
                     }
@@ -172,8 +227,10 @@ public class PlantMatchManager {
         }
         trackedExplosives.addAll(currentExplosives);
     }
+
     private void drawSinglePlant(SpriteBatch batch, PamPlayer player, Plant plant, float delta) {
-        GameRenderStates.PlantRenderState state = states.plantRenderStates.computeIfAbsent(plant, p -> new GameRenderStates.PlantRenderState());
+        GameRenderStates.PlantRenderState state = states.plantRenderStates.computeIfAbsent(
+            plant, p -> new GameRenderStates.PlantRenderState());
         if (!isPaused && !plant.isFrozen()) {
             state.animTime += delta;
         }
@@ -195,11 +252,13 @@ public class PlantMatchManager {
             float drawX = (float) (plant.getX() * Constants.UI.METER_TO_PIX);
             float drawY = (float) (plant.getY() * Constants.UI.METER_TO_PIX);
             Matrix4 original = batch.getTransformMatrix().cpy();
-            Matrix4 scaled = original.cpy().translate(drawX, drawY, 0).scale(0.73f, 0.73f, 1f).translate(-drawX, -drawY, 0);
+            Matrix4 scaled = original.cpy().translate(drawX, drawY, 0)
+                .scale(0.73f, 0.73f, 1f).translate(-drawX, -drawY, 0);
             batch.setTransformMatrix(scaled);
             assetManager.drawPlant(batch, currentClipRef, state.animTime, drawX, drawY, true);
             batch.setTransformMatrix(original);
-// --- FLAWLESS ICE BLOCK RENDERER ---
+
+            // --- FLAWLESS ICE BLOCK RENDERER ---
             if (plant.hasActiveCover() && plant.isFrozen()) {
                 Map<String, Boolean> iceVis = new HashMap<>();
 
@@ -224,11 +283,13 @@ public class PlantMatchManager {
                 float coverY = (float) (plant.getY() * Constants.UI.METER_TO_PIX);
 
                 try {
-                    player.draw(batch, "768/FULL/EFFECTS/FROSTBITE_ICE_BLOCK_PLANT/FROSTBITE_ICE_BLOCK_PLANT.PAM", "freeze_idle", globalAnimTime, coverX, coverY, true, iceVis);
+                    player.draw(batch, "768/FULL/EFFECTS/FROSTBITE_ICE_BLOCK_PLANT/FROSTBITE_ICE_BLOCK_PLANT.PAM",
+                        "freeze_idle", globalAnimTime, coverX, coverY, true, iceVis);
                 } catch (Exception e) {}
             }
         }
     }
+
     private String determinePlantClip(Plant plant, GameRenderStates.PlantRenderState state) {
         String name = plant.getName();
         if (plant.isFed()) {
@@ -245,7 +306,10 @@ public class PlantMatchManager {
         if (plant.getCategory() == PlantCategory.SUN_PRODUCER) {
             return getSunProduceClip(name, plant);
         }
-        if (plant.getCategory() == PlantCategory.SHOOTER || plant.getCategory() == PlantCategory.HOMING || plant.getCategory() == PlantCategory.STRIKE_THROUGH || plant.getCategory() == PlantCategory.LOBBER) {
+        if (plant.getCategory() == PlantCategory.SHOOTER
+            || plant.getCategory() == PlantCategory.HOMING
+            || plant.getCategory() == PlantCategory.STRIKE_THROUGH
+            || plant.getCategory() == PlantCategory.LOBBER) {
             return getShooterClip(name, plant, state);
         }
         if (plant.getCategory() == PlantCategory.EXPLOSIVE) {
@@ -263,6 +327,7 @@ public class PlantMatchManager {
         if (name.equals("Grave Buster")) return plant.windupTimer > 30.0 ? "attack1" : "attack";
         return "idle";
     }
+
     private String getMintClip(String name, Plant plant, GameRenderStates.PlantRenderState state) {
         if (plant.windupTimer < 33.0) {
             return "intro";
@@ -272,6 +337,7 @@ public class PlantMatchManager {
         }
         return "outro";
     }
+
     private String getDefensiveClip(String name, Plant plant, GameRenderStates.PlantRenderState state) {
         if (name.equals("Wall-nut")) {
             double hpRatio = (double) plant.getCurrentHp() / plant.getBaseHp();
@@ -326,6 +392,7 @@ public class PlantMatchManager {
         }
         return "idle";
     }
+
     private String getMeleeClip(String name, Plant plant, GameRenderStates.PlantRenderState state) {
         if (name.equals("Bonk Choy") || name.equals("Wasabi Whip")) {
             if (plant.holdAction) return "idle3";
@@ -377,6 +444,7 @@ public class PlantMatchManager {
         }
         return "idle";
     }
+
     private String getSunProduceClip(String name, Plant plant) {
         if (name.equals("Gold Bloom")) return "attack";
         if (plant.isWindingUp) {
@@ -386,6 +454,7 @@ public class PlantMatchManager {
         if (name.equals("Sun-shroom")) return "idle2_stage" + plant.getGrowthStage();
         return "idle";
     }
+
     private String getShooterClip(String name, Plant plant, GameRenderStates.PlantRenderState state) {
         boolean isAttacking = plant.isWindingUp;
         switch (name) {
@@ -412,7 +481,7 @@ public class PlantMatchManager {
                 if (timer < 15.0) return plant.isFiringButter ? "attack2" : "attack";
                 return "idle";
             }
-            case "Starfruit", "Fire Peashooter" , "Sea-shroom" -> { return isAttacking ? "attack" : "idle2"; }
+            case "Starfruit", "Fire Peashooter", "Sea-shroom" -> { return isAttacking ? "attack" : "idle2"; }
             case "Cat-tail" -> {
                 if (isAttacking || plant.getCurrentActionTimer() < 15.0) return "attack";
                 return "idle2";
@@ -439,7 +508,9 @@ public class PlantMatchManager {
                 double timer = plant.getCurrentActionTimer();
                 double maxInterval = plant.getActionIntervalTicks();
                 double age = plant.getAgeTicks();
-                if (age < maxInterval) {if (age < 70.0) return "charge";}
+                if (age < maxInterval) {
+                    if (age < 70.0) return "charge";
+                }
                 if (timer < 7.0) return "attack";
                 if (timer < 20.0) return "recovery";
                 if (timer < maxInterval) return "charge";
@@ -465,6 +536,7 @@ public class PlantMatchManager {
         if (isAttacking) return "attack";
         return "idle";
     }
+
     private String getExplosiveClip(String name, Plant plant, GameRenderStates.PlantRenderState state) {
         if (name.equals("Potato Mine") || name.equals("Primal Potato Mine")) {
             if (plant.isWindingUp) return "attack";
@@ -508,6 +580,7 @@ public class PlantMatchManager {
         }
         return "idle";
     }
+
     private void drawProjectiles(SpriteBatch batch, PamPlayer player, GameBoard board, float delta) {
         Set<Projectile> currentProjs = new HashSet<>(board.getActiveProjectiles());
         var iterator = trackedProjectiles.entrySet().iterator();
@@ -538,7 +611,7 @@ public class PlantMatchManager {
             tracker.isBlueFire = proj.isIgnited() && proj.getDamage() >= 60;
             if (tracker.type == PlantType.CITRON) {
                 tracker.isPlantFood = proj.getDamage() >= 4000;
-            }else if (tracker.type == PlantType.GOO_PEASHOOTER) {
+            } else if (tracker.type == PlantType.GOO_PEASHOOTER) {
                 tracker.isPlantFood = proj.getDamage() >= 600; // Giant Goo Boulder!
             } else {
                 tracker.isPlantFood = Math.abs(proj.getXSpeed()) >= 5.0 || Math.abs(proj.getYSpeed()) >= 5.0;
@@ -554,14 +627,16 @@ public class PlantMatchManager {
                 heightOffset = 0f;
             } else if (sourcePlant == PlantType.PUFF_SHROOM || sourcePlant == PlantType.SEA_SHROOM) {
                 heightOffset = 0.037f;
-            } else if (sourcePlant == PlantType.STARFRUIT || sourcePlant == PlantType.ROTOBAGA || sourcePlant == PlantType.SPLIT_PEA) {
+            } else if (sourcePlant == PlantType.STARFRUIT || sourcePlant == PlantType.ROTOBAGA
+                || sourcePlant == PlantType.SPLIT_PEA) {
                 widthOffset = 0f;
                 heightOffset = 0.05f;
             }
 
             float drawX = (float) ((proj.getX() + widthOffset) * Constants.UI.METER_TO_PIX);
             float lobAltitude = (proj instanceof LobbedProjectile) ? (float) ((LobbedProjectile) proj).altitude : 0f;
-            float drawY = (float) ((proj.getY() + lobAltitude + (Constants.Game.TILE_HEIGHT * heightOffset)) * Constants.UI.METER_TO_PIX);
+            float drawY = (float) ((proj.getY() + lobAltitude + (Constants.Game.TILE_HEIGHT * heightOffset))
+                * Constants.UI.METER_TO_PIX);
 
             // --- FIX 2: TRACK COORDINATES BEFORE NULL CHECK SO PULSES SPAWN CORRECTLY! ---
             tracker.lastDrawX = drawX;
@@ -603,18 +678,26 @@ public class PlantMatchManager {
             }
         }
     }
+
     private String getProjectilePamPath(Projectile proj, ProjectileHitTracker tracker) {
-       // if (proj.getDamage() == 0) return null; // Hides all Dummy Projectiles instantly!
+        // if (proj.getDamage() == 0) return null; // Hides all Dummy Projectiles instantly!
         PlantType source = proj.getSourcePlantType();
         // --- FIX: Restrict Giant Peas ONLY to the Pea Family! ---
-        boolean isPeaPlant = source == PlantType.PEASHOOTER || source == PlantType.REPEATER || source == PlantType.THREEPEATER
-            || source == PlantType.PEA_POD || source == PlantType.SPLIT_PEA || source == PlantType.MEGA_GATLING_PEA
+        boolean isPeaPlant = source == PlantType.PEASHOOTER || source == PlantType.REPEATER
+            || source == PlantType.THREEPEATER || source == PlantType.PEA_POD
+            || source == PlantType.SPLIT_PEA || source == PlantType.MEGA_GATLING_PEA
             || source == PlantType.FIRE_PEASHOOTER || source == PlantType.SNOW_PEA;
 
-        if (tracker.isPlantFood && source == PlantType.CITRON) return "768/FULL/EFFECTS/CITRON_PLANTFOOD_ORB/CITRON_PLANTFOOD_ORB.PAM";
-        if (tracker.isPlantFood && source == PlantType.FUME_SHROOM) return "768/INITIAL/EFFECTS/FUMESHROOM_BUBBLES/FUMESHROOM_BUBBLES.PAM";
+        if (tracker.isPlantFood && source == PlantType.CITRON) {
+            return "768/FULL/EFFECTS/CITRON_PLANTFOOD_ORB/CITRON_PLANTFOOD_ORB.PAM";
+        }
+        if (tracker.isPlantFood && source == PlantType.FUME_SHROOM) {
+            return "768/INITIAL/EFFECTS/FUMESHROOM_BUBBLES/FUMESHROOM_BUBBLES.PAM";
+        }
         if (isPeaPlant && proj.getDamage() >= 400) {
-            if (source == PlantType.PEA_POD || source == PlantType.MEGA_GATLING_PEA) return "768/FULL/EFFECTS/PEAPOD_PLANTFOOD_GIANTPEA/PEAPOD_PLANTFOOD_GIANTPEA.PAM";
+            if (source == PlantType.PEA_POD || source == PlantType.MEGA_GATLING_PEA) {
+                return "768/FULL/EFFECTS/PEAPOD_PLANTFOOD_GIANTPEA/PEAPOD_PLANTFOOD_GIANTPEA.PAM";
+            }
             return "768/INITIAL/EFFECTS/REPEATER_PLANTFOOD_GIANTPEA/REPEATER_PLANTFOOD_GIANTPEA.PAM";
         }
         if (tracker.isPlantFood && source == PlantType.STARFRUIT) {
@@ -624,11 +707,17 @@ public class PlantMatchManager {
             return "768/FULL/EFFECTS/BOWLINGBULB_PLANTFOOD_PROJECTILE/BOWLINGBULB_PLANTFOOD_PROJECTILE.PAM";
         }
         if (proj.isIgnited()) {
-            if (source == PlantType.SNOW_PEA) return "768/INITIAL/EFFECTS/T_PEA_PROJECTILE/T_PEA_PROJECTILE.PAM";
-            return proj.getDamage() >= 60 ? "768/INITIAL/EFFECTS/T_FIRE_PEA_BLUE/T_FIRE_PEA_BLUE.PAM" : "768/INITIAL/EFFECTS/T_FIRE_PEA/T_FIRE_PEA.PAM";
+            if (source == PlantType.SNOW_PEA) {
+                return "768/INITIAL/EFFECTS/T_PEA_PROJECTILE/T_PEA_PROJECTILE.PAM";
+            }
+            return proj.getDamage() >= 60
+                ? "768/INITIAL/EFFECTS/T_FIRE_PEA_BLUE/T_FIRE_PEA_BLUE.PAM"
+                : "768/INITIAL/EFFECTS/T_FIRE_PEA/T_FIRE_PEA.PAM";
         }
         if (source == PlantType.CACTUS) {
-            return proj.getDamage() >= 200 ? "768/INITIAL/EFFECTS/CACTUS_PROJECTILE_PLANTFOOD/CACTUS_PROJECTILE_PLANTFOOD.PAM" : "768/INITIAL/EFFECTS/T_CACTUS_PROJECTILE/T_CACTUS_PROJECTILE.PAM";
+            return proj.getDamage() >= 200
+                ? "768/INITIAL/EFFECTS/CACTUS_PROJECTILE_PLANTFOOD/CACTUS_PROJECTILE_PLANTFOOD.PAM"
+                : "768/INITIAL/EFFECTS/T_CACTUS_PROJECTILE/T_CACTUS_PROJECTILE.PAM";
         }
         if (source == null) return "768/INITIAL/EFFECTS/T_PEA_PROJECTILE/T_PEA_PROJECTILE.PAM";
         return switch (source) {
@@ -640,13 +729,16 @@ public class PlantMatchManager {
             case GRAPESHOT -> "768/INITIAL/EFFECTS/GRAPESHOT_PROJECTILE/GRAPESHOT_PROJECTILE.PAM";
             case SNOW_PEA -> "768/INITIAL/EFFECTS/T_SNOW_PEA/T_SNOW_PEA.PAM";
             case ROTOBAGA -> "768/FULL/EFFECTS/T_ROTORUTABAGA_PROJECTILE1/T_ROTORUTABAGA_PROJECTILE1.PAM";
-            case CITRON ->  "768/FULL/EFFECTS/T_CITRON_CITRUS_ORB/T_CITRON_CITRUS_ORB.PAM";
+            case CITRON -> "768/FULL/EFFECTS/T_CITRON_CITRUS_ORB/T_CITRON_CITRUS_ORB.PAM";
             case CAULIPOWER -> "768/INITIAL/EFFECTS/CAULIPOWER_PROJECTILE/CAULIPOWER_PROJECTILE.PAM";
-            case ELECTRIC_BLUEBERRY -> "768/INITIAL/EFFECTS/ELECTRICBLUEBERRY_CLOUD_PROJECTILE/ELECTRICBLUEBERRY_CLOUD_PROJECTILE.PAM";
+            case ELECTRIC_BLUEBERRY -> "768/INITIAL/EFFECTS/ELECTRICBLUEBERRY_CLOUD_PROJECTILE"
+                + "/ELECTRICBLUEBERRY_CLOUD_PROJECTILE.PAM";
             case CACTUS -> "768/INITIAL/EFFECTS/T_CACTUS_PROJECTILE/T_CACTUS_PROJECTILE.PAM";
             case FIRE_PEASHOOTER -> "768/INITIAL/EFFECTS/T_FIRE_PEA/T_FIRE_PEA.PAM";
             case STARFRUIT -> "768/INITIAL/EFFECTS/T_STARFRUIT_PROJECTILE/T_STARFRUIT_PROJECTILE.PAM";
-            case GOO_PEASHOOTER -> tracker.isPlantFood ? "768/INITIAL/EFFECTS/GOOPEASHOOTER_PLANTFOOD/GOOPEASHOOTER_PLANTFOOD.PAM" : "768/INITIAL/EFFECTS/GOOPEASHOOTER_PROJECTILES/GOOPEASHOOTER_PROJECTILES.PAM";
+            case GOO_PEASHOOTER -> tracker.isPlantFood
+                ? "768/INITIAL/EFFECTS/GOOPEASHOOTER_PLANTFOOD/GOOPEASHOOTER_PLANTFOOD.PAM"
+                : "768/INITIAL/EFFECTS/GOOPEASHOOTER_PROJECTILES/GOOPEASHOOTER_PROJECTILES.PAM";
             case MEGA_GATLING_PEA -> "768/INITIAL/EFFECTS/MEGAGATLING_PROJECTILE/MEGAGATLING_PROJECTILE.PAM";
             case SEA_SHROOM -> "768/FULL/EFFECTS/SEASHROOM_PROJECTILE/SEASHROOM_PROJECTILE.PAM";
             case PUFF_SHROOM -> "768/INITIAL/EFFECTS/T_PUFFSHROOM_PROJECTILE/T_PUFFSHROOM_PROJECTILE.PAM";
@@ -665,6 +757,7 @@ public class PlantMatchManager {
             default -> "768/INITIAL/EFFECTS/T_PEA_PROJECTILE/T_PEA_PROJECTILE.PAM";
         };
     }
+
     private String getProjectileClipName(Projectile proj, ProjectileHitTracker tracker) {
         PlantType source = proj.getSourcePlantType();
         if (tracker.isPlantFood && source == PlantType.CITRON) return "Plantfood_Citron_Plasma_Orb";
@@ -673,7 +766,9 @@ public class PlantMatchManager {
         if (source == null) return "animation";
         double rawDist = tracker != null ? tracker.distanceTraveled : 0;
         double dist = rawDist / Constants.Game.TILE_WIDTH;
-        if (source == PlantType.CABBAGE_PULT || source == PlantType.KERNEL_PULT || source == PlantType.MELON_PULT || source == PlantType.WINTER_MELON || source == PlantType.PEPPER_PULT) {
+        if (source == PlantType.CABBAGE_PULT || source == PlantType.KERNEL_PULT
+            || source == PlantType.MELON_PULT || source == PlantType.WINTER_MELON
+            || source == PlantType.PEPPER_PULT) {
             double p = 0;
             if (proj instanceof LobbedProjectile) p = ((LobbedProjectile) proj).getProgress();
             if (p < 0.33) return "animation";
@@ -691,9 +786,9 @@ public class PlantMatchManager {
                 return p < 0.5 ? "jump_up_left" : "jump_down_left";
             }
         }
-        if (source == PlantType.BOWLING_WALL_NUT ||
-            source == PlantType.BOWLING_EXPLODE_O_NUT ||
-            source == PlantType.GIANT_WALL_NUT) {
+        if (source == PlantType.BOWLING_WALL_NUT
+            || source == PlantType.BOWLING_EXPLODE_O_NUT
+            || source == PlantType.GIANT_WALL_NUT) {
             return "idle";
         }
         if (source == PlantType.CACTUS && proj.getDamage() >= 200) return "idle";
@@ -733,10 +828,10 @@ public class PlantMatchManager {
             if (dist < 6.5) return "animation2";
             return "animation3";
         }
-        if (source == PlantType.PEASHOOTER || source == PlantType.REPEATER ||
-            source == PlantType.THREEPEATER || source == PlantType.PEA_POD ||
-            source == PlantType.SNOW_PEA || source == PlantType.FIRE_PEASHOOTER ||
-            source == PlantType.STARFRUIT || source == PlantType.MEGA_GATLING_PEA) {
+        if (source == PlantType.PEASHOOTER || source == PlantType.REPEATER
+            || source == PlantType.THREEPEATER || source == PlantType.PEA_POD
+            || source == PlantType.SNOW_PEA || source == PlantType.FIRE_PEASHOOTER
+            || source == PlantType.STARFRUIT || source == PlantType.MEGA_GATLING_PEA) {
             if (tracker.isPlantFood && proj.getDamage() >= 400) {
                 return "animation";
             }
@@ -753,6 +848,7 @@ public class PlantMatchManager {
         }
         return "animation";
     }
+
     private String getHitAnimPamPath(ProjectileHitTracker tracker) {
         PlantType source = tracker.type;
         if (tracker.isPuddle) {
@@ -761,44 +857,65 @@ public class PlantMatchManager {
         if (source == null) return "768/INITIAL/EFFECTS/T_SPLAT_PEA/T_SPLAT_PEA.PAM";
         if (tracker.isIgnited) {
             if (source == PlantType.SNOW_PEA) return "768/INITIAL/EFFECTS/T_SPLAT_PEA/T_SPLAT_PEA.PAM";
-            return tracker.isBlueFire ? "768/INITIAL/EFFECTS/SPLAT_FIRE_PEA_BLUE/SPLAT_FIRE_PEA_BLUE.PAM" : "768/INITIAL/EFFECTS/T_SPLAT_FIRE_PEA/T_SPLAT_FIRE_PEA.PAM";
+            return tracker.isBlueFire
+                ? "768/INITIAL/EFFECTS/SPLAT_FIRE_PEA_BLUE/SPLAT_FIRE_PEA_BLUE.PAM"
+                : "768/INITIAL/EFFECTS/T_SPLAT_FIRE_PEA/T_SPLAT_FIRE_PEA.PAM";
         }
         return switch (source) {
-            case BOWLING_BULB -> tracker.isPlantFood ? "768/FULL/EFFECTS/BOWLINGBULB_PLANTFOOD_PROJECTILE/BOWLINGBULB_PLANTFOOD_PROJECTILE.PAM" : null;
+            case BOWLING_BULB -> tracker.isPlantFood
+                ? "768/FULL/EFFECTS/BOWLINGBULB_PLANTFOOD_PROJECTILE/BOWLINGBULB_PLANTFOOD_PROJECTILE.PAM"
+                : null;
             case BOWLING_WALL_NUT, GIANT_WALL_NUT, CAULIPOWER, SQUASH -> null;
             case BOWLING_EXPLODE_O_NUT -> "768/FULL/EFFECTS/CHERRYBOMB_EXPLOSION_REAR/CHERRYBOMB_EXPLOSION_REAR.PAM";
             case GRAPESHOT -> "768/INITIAL/EFFECTS/GRAPESHOT_HIT/GRAPESHOT_HIT.PAM";
             case PUFF_SHROOM -> "768/INITIAL/EFFECTS/T_PUFFSHROOM_HIT/T_PUFFSHROOM_HIT.PAM";
             case SEA_SHROOM -> "768/FULL/EFFECTS/SEASHOOTER_FX/SEASHOOTER_FX.PAM";
             case SNOW_PEA -> "768/INITIAL/EFFECTS/T_SPLAT_SNOW_PEA/T_SPLAT_SNOW_PEA.PAM";
-            case ROTOBAGA -> tracker.isPlantFood ? "768/FULL/EFFECTS/T_ROTORUTABAGA_MUZZLE_BURST/T_ROTORUTABAGA_MUZZLE_BURST.PAM" : "768/FULL/EFFECTS/T_ROTORUTABAGA_PROJECTILE_HIT/T_ROTORUTABAGA_PROJECTILE_HIT.PAM";
-            case CITRON -> tracker.isPlantFood ? "768/FULL/EFFECTS/CITRON_PLANTFOOD_ORB_HIT/CITRON_PLANTFOOD_ORB_HIT.PAM" : "768/FULL/EFFECTS/T_CITRON_CITRUS_ORB_HIT/T_CITRON_CITRUS_ORB_HIT.PAM";
+            case ROTOBAGA -> tracker.isPlantFood
+                ? "768/FULL/EFFECTS/T_ROTORUTABAGA_MUZZLE_BURST/T_ROTORUTABAGA_MUZZLE_BURST.PAM"
+                : "768/FULL/EFFECTS/T_ROTORUTABAGA_PROJECTILE_HIT/T_ROTORUTABAGA_PROJECTILE_HIT.PAM";
+            case CITRON -> tracker.isPlantFood
+                ? "768/FULL/EFFECTS/CITRON_PLANTFOOD_ORB_HIT/CITRON_PLANTFOOD_ORB_HIT.PAM"
+                : "768/FULL/EFFECTS/T_CITRON_CITRUS_ORB_HIT/T_CITRON_CITRUS_ORB_HIT.PAM";
             case CACTUS -> "768/INITIAL/EFFECTS/CACTUS_PROJECTILE_HIT/CACTUS_PROJECTILE_HIT.PAM";
             case FIRE_PEASHOOTER -> "768/INITIAL/EFFECTS/T_SPLAT_FIRE_PEA/T_SPLAT_FIRE_PEA.PAM";
             case STARFRUIT -> "768/INITIAL/EFFECTS/T_STARFRUIT_PROJECTILE_HIT/T_STARFRUIT_PROJECTILE_HIT.PAM";
-            case ELECTRIC_BLUEBERRY -> "768/INITIAL/EFFECTS/ELECTRICBLUEBERRY_CLOUD_PROJECTILE/ELECTRICBLUEBERRY_CLOUD_PROJECTILE.PAM";
+            case ELECTRIC_BLUEBERRY -> "768/INITIAL/EFFECTS/ELECTRICBLUEBERRY_CLOUD_PROJECTILE"
+                + "/ELECTRICBLUEBERRY_CLOUD_PROJECTILE.PAM";
             case GOO_PEASHOOTER -> "768/INITIAL/EFFECTS/GOOPEASHOOTER_PROJECTILES/GOOPEASHOOTER_PROJECTILES.PAM";
             case FUME_SHROOM -> "768/INITIAL/EFFECTS/FUMESHROOM_BUBBLES_HIT/FUMESHROOM_BUBBLES_HIT.PAM";
             case CABBAGE_PULT -> "768/INITIAL/EFFECTS/SPLAT_CABBAGEPULT/SPLAT_CABBAGEPULT.PAM";
             case MELON_PULT -> "768/INITIAL/EFFECTS/T_SPLAT_MELONPULT/T_SPLAT_MELONPULT.PAM";
             case WINTER_MELON -> "768/FULL/EFFECTS/T_SPLAT_WINTERMELON/T_SPLAT_WINTERMELON.PAM";
-            case PEPPER_PULT -> tracker.isPlantFood ? "768/FULL/EFFECTS/T_PEPPERPULT_PROJECTILE_SPLAT/T_PEPPERPULT_PROJECTILE_SPLAT.PAM" : "768/FULL/EFFECTS/T_PEPPERPULT_PROJECTILE_SPLAT/T_PEPPERPULT_PROJECTILE_SPLAT.PAM";
-            case KERNEL_PULT -> tracker.isButter ? "768/INITIAL/EFFECTS/SPLAT_KERNALPULT_BUTTER/SPLAT_KERNALPULT_BUTTER.PAM" : "768/INITIAL/EFFECTS/SPLAT_KERNALPULT_KERNAL/SPLAT_KERNALPULT_KERNAL.PAM";
-            case SUN_BEAN -> tracker.isPlantFood ? "768/FULL/EFFECTS/SUNBEAN_PLANTFOOD_EFFECT_OVERLAY1/SUNBEAN_PLANTFOOD_EFFECT_OVERLAY1.PAM" : null;
+            case PEPPER_PULT -> tracker.isPlantFood
+                ? "768/FULL/EFFECTS/T_PEPPERPULT_PROJECTILE_SPLAT/T_PEPPERPULT_PROJECTILE_SPLAT.PAM"
+                : "768/FULL/EFFECTS/T_PEPPERPULT_PROJECTILE_SPLAT/T_PEPPERPULT_PROJECTILE_SPLAT.PAM";
+            case KERNEL_PULT -> tracker.isButter
+                ? "768/INITIAL/EFFECTS/SPLAT_KERNALPULT_BUTTER/SPLAT_KERNALPULT_BUTTER.PAM"
+                : "768/INITIAL/EFFECTS/SPLAT_KERNALPULT_KERNAL/SPLAT_KERNALPULT_KERNAL.PAM";
+            case SUN_BEAN -> tracker.isPlantFood
+                ? "768/FULL/EFFECTS/SUNBEAN_PLANTFOOD_EFFECT_OVERLAY1/SUNBEAN_PLANTFOOD_EFFECT_OVERLAY1.PAM"
+                : null;
             case PHAT_BEET -> {
                 if (tracker.isTileHit) yield "768/FULL/EFFECTS/PHATBEETS_TILE_HIT/PHATBEETS_TILE_HIT.PAM";
-                yield tracker.isPlantFood ? "768/FULL/EFFECTS/PHATBEETS_PF_PULSE/PHATBEETS_PF_PULSE.PAM" : "768/FULL/EFFECTS/PHATBEETS_ATTACK_PULSE/PHATBEETS_ATTACK_PULSE.PAM";
+                yield tracker.isPlantFood
+                    ? "768/FULL/EFFECTS/PHATBEETS_PF_PULSE/PHATBEETS_PF_PULSE.PAM"
+                    : "768/FULL/EFFECTS/PHATBEETS_ATTACK_PULSE/PHATBEETS_ATTACK_PULSE.PAM";
             }
             case KIWIBEAST -> {
                 if (tracker.isTileHit) yield "768/INITIAL/EFFECTS/KIWIBEAST_TILE_HIT/KIWIBEAST_TILE_HIT.PAM";
-                yield tracker.isPlantFood ? "768/INITIAL/EFFECTS/KIWIBEAST_PF_PULSE/KIWIBEAST_PF_PULSE.PAM" : "768/INITIAL/EFFECTS/KIWIBEAST_ATTACK_PULSE/KIWIBEAST_ATTACK_PULSE.PAM";
+                yield tracker.isPlantFood
+                    ? "768/INITIAL/EFFECTS/KIWIBEAST_PF_PULSE/KIWIBEAST_PF_PULSE.PAM"
+                    : "768/INITIAL/EFFECTS/KIWIBEAST_ATTACK_PULSE/KIWIBEAST_ATTACK_PULSE.PAM";
             }
             case TANGLE_KELP -> "768/FULL/PLANT/TANGLEKELP/TANGLEKELP.PAM";
 
-            case PEASHOOTER, REPEATER, THREEPEATER, PEA_POD, SPLIT_PEA -> "768/INITIAL/EFFECTS/T_SPLAT_PEA/T_SPLAT_PEA.PAM";
+            case PEASHOOTER, REPEATER, THREEPEATER, PEA_POD, SPLIT_PEA ->
+                "768/INITIAL/EFFECTS/T_SPLAT_PEA/T_SPLAT_PEA.PAM";
             default -> "768/INITIAL/EFFECTS/T_SPLAT_PEA/T_SPLAT_PEA.PAM";
         };
     }
+
     private String getHitAnimClipName(ProjectileHitTracker tracker) {
         PlantType source = tracker.type;
         if (tracker.isPuddle) return "animation";
@@ -814,7 +931,8 @@ public class PlantMatchManager {
         if (source == PlantType.PHAT_BEET || source == PlantType.KIWIBEAST) return "animation";
         if (source == PlantType.ELECTRIC_BLUEBERRY) return "attack";
         if (source == PlantType.ROTOBAGA) return tracker.isPlantFood ? "animation3" : "animation";
-        if (source == PlantType.SPLIT_PEA || source == PlantType.SEA_SHROOM || source == PlantType.FUME_SHROOM || source == PlantType.CABBAGE_PULT || source == PlantType.KERNEL_PULT) return "animation";
+        if (source == PlantType.SPLIT_PEA || source == PlantType.SEA_SHROOM || source == PlantType.FUME_SHROOM
+            || source == PlantType.CABBAGE_PULT || source == PlantType.KERNEL_PULT) return "animation";
         if (source == PlantType.STARFRUIT) {
             if (dist < 3.5) return "idle";
             if (dist < 6.5) return "idle2";

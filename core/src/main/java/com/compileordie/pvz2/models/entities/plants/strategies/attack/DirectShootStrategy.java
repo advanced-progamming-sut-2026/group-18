@@ -20,7 +20,9 @@ public class DirectShootStrategy implements AttackStrategy {
                                List<double[]> shootVectors,
                                Class<? extends Projectile> projectileType) {
         this.laneOffsets = laneOffsets;
-        this.shootVectors = (shootVectors != null && !shootVectors.isEmpty()) ? shootVectors : List.of(new double[]{1.0, 0.0, 0.0});
+        this.shootVectors = (shootVectors != null && !shootVectors.isEmpty())
+            ? shootVectors
+            : List.of(new double[]{1.0, 0.0, 0.0});
         this.projectileType = projectileType;
     }
 
@@ -104,6 +106,11 @@ public class DirectShootStrategy implements AttackStrategy {
         plant.isWindingUp = false;
         plant.holdAction = false;
 
+        fireProjectiles(plant, board, vectorTargetMap, isRotobaga, isPeaPod, isStarfruit, isFumeShroom);
+    }
+
+    private void fireProjectiles(Plant plant, GameBoard board, Map<double[], Boolean> vectorTargetMap,
+                                 boolean isRotobaga, boolean isPeaPod, boolean isStarfruit, boolean isFumeShroom) {
         double x = plant.getX();
         double y = plant.getY();
         int damage = plant.getBaseDamage();
@@ -131,73 +138,93 @@ public class DirectShootStrategy implements AttackStrategy {
 
                     // --- FIX 3: Multi-Puff Smoke Stream for Fume-shroom ---
                     if (isFumeShroom && projectileType == FumeProjectile.class) {
-                        double maxRangePixels = plant.getRangeTiles() * Constants.Game.TILE_WIDTH;
-                        int puffCount = 4; // Spawns 4 overlapping puffs
-                        int splitDamage = Math.max(1, damage / puffCount); // Distribute damage evenly
-
-                        for (int p = 0; p < puffCount; p++) {
-                            try {
-                                double puffOffset = p * (Constants.Game.TILE_WIDTH * 0.35);
-                                double spawnX = baseX + puffOffset;
-
-                                Projectile proj = projectileType.getDeclaredConstructor(
-                                    double.class, double.class, double.class, int.class, double.class
-                                ).newInstance(spawnX, spawnY, speed, splitDamage, maxRangePixels);
-
-                                proj.setSourcePlantType(PlantType.FUME_SHROOM);
-                                proj.setXSpeed(speed * vector[0]);
-                                proj.setYSpeed(speed * vector[1]);
-
-                                board.getActiveProjectiles().add(proj);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
+                        spawnFumeStream(plant, board, baseX, spawnY, speed, damage, vector);
                         continue;
                     }
 
                     // Standard projectile spawning for all other plants
-                    for (int s = 0; s < stackMultiplier; s++) {
-                        try {
-                            int orderIndex = vector.length > 2 ? (int) (vector[2] + s) : s;
-                            double spawnX = baseX + (orderIndex * gapMultiplier * Constants.Game.TILE_WIDTH * vector[0]);
-                            double finalSpawnY = spawnY + (orderIndex * gapMultiplier * tileHeight * vector[1]);
-
-                            if (isStarfruit) {
-                                spawnX += (Constants.Game.TILE_WIDTH * 0.25) * vector[0];
-                                finalSpawnY += (Constants.Game.TILE_HEIGHT * 0.25) * vector[1];
-                            }
-
-                            Projectile proj;
-                            if (projectileType == IceProjectile.class) {
-                                double totalChillTime = 100.0 + plant.getChillTimeBonusTicks();
-                                proj = projectileType.getDeclaredConstructor(double.class, double.class, double.class, int.class, double.class)
-                                    .newInstance(spawnX, finalSpawnY, speed, damage, totalChillTime);
-                            } else if (projectileType == PiercingProjectile.class) {
-                                int totalPierces = plant.isBlueFlame() ? 9999 : (3 + plant.getPierceBonus());
-                                int finalDmg = plant.isBlueFlame() ? 200 : damage;
-                                proj = projectileType.getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
-                                    .newInstance(spawnX, finalSpawnY, speed, finalDmg, totalPierces);
-                            } else if (projectileType == PoisonProjectile.class) {
-                                int totalPoisonDmg = 6 + plant.getPoisonDmgTickBonus();
-                                proj = projectileType.getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
-                                    .newInstance(spawnX, finalSpawnY, speed, damage, totalPoisonDmg);
-                            } else {
-                                proj = projectileType.getDeclaredConstructor(double.class, double.class, double.class, int.class)
-                                    .newInstance(spawnX, finalSpawnY, speed, damage);
-                            }
-
-                            proj.setSourcePlantType(PlantType.getByName(plant.getName()));
-                            proj.setXSpeed(speed * vector[0]);
-                            proj.setYSpeed(speed * vector[1]);
-
-                            board.getActiveProjectiles().add(proj);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
+                    spawnStandardProjectiles(plant, board, baseX, spawnY, speed, damage,
+                        stackMultiplier, gapMultiplier, tileHeight, vector, isStarfruit);
                 }
             }
+        }
+    }
+
+    private void spawnFumeStream(Plant plant, GameBoard board, double baseX, double spawnY,
+                                 double speed, int damage, double[] vector) {
+        double maxRangePixels = plant.getRangeTiles() * Constants.Game.TILE_WIDTH;
+        int puffCount = 4; // Spawns 4 overlapping puffs
+        int splitDamage = Math.max(1, damage / puffCount); // Distribute damage evenly
+
+        for (int p = 0; p < puffCount; p++) {
+            try {
+                double puffOffset = p * (Constants.Game.TILE_WIDTH * 0.35);
+                double spawnX = baseX + puffOffset;
+
+                Projectile proj = projectileType.getDeclaredConstructor(
+                    double.class, double.class, double.class, int.class, double.class
+                ).newInstance(spawnX, spawnY, speed, splitDamage, maxRangePixels);
+
+                proj.setSourcePlantType(PlantType.FUME_SHROOM);
+                proj.setXSpeed(speed * vector[0]);
+                proj.setYSpeed(speed * vector[1]);
+
+                board.getActiveProjectiles().add(proj);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void spawnStandardProjectiles(Plant plant, GameBoard board, double baseX, double spawnY,
+                                          double speed, int damage, int stackMultiplier,
+                                          double gapMultiplier, double tileHeight,
+                                          double[] vector, boolean isStarfruit) {
+        for (int s = 0; s < stackMultiplier; s++) {
+            try {
+                int orderIndex = vector.length > 2 ? (int) (vector[2] + s) : s;
+                double spawnX = baseX + (orderIndex * gapMultiplier * Constants.Game.TILE_WIDTH * vector[0]);
+                double finalSpawnY = spawnY + (orderIndex * gapMultiplier * tileHeight * vector[1]);
+
+                if (isStarfruit) {
+                    spawnX += (Constants.Game.TILE_WIDTH * 0.25) * vector[0];
+                    finalSpawnY += (Constants.Game.TILE_HEIGHT * 0.25) * vector[1];
+                }
+
+                Projectile proj = createProjectile(plant, spawnX, finalSpawnY, speed, damage);
+                proj.setSourcePlantType(PlantType.getByName(plant.getName()));
+                proj.setXSpeed(speed * vector[0]);
+                proj.setYSpeed(speed * vector[1]);
+
+                board.getActiveProjectiles().add(proj);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private Projectile createProjectile(Plant plant, double spawnX, double finalSpawnY,
+                                        double speed, int damage) throws Exception {
+        if (projectileType == IceProjectile.class) {
+            double totalChillTime = 100.0 + plant.getChillTimeBonusTicks();
+            return projectileType.getDeclaredConstructor(
+                double.class, double.class, double.class, int.class, double.class
+            ).newInstance(spawnX, finalSpawnY, speed, damage, totalChillTime);
+        } else if (projectileType == PiercingProjectile.class) {
+            int totalPierces = plant.isBlueFlame() ? 9999 : (3 + plant.getPierceBonus());
+            int finalDmg = plant.isBlueFlame() ? 200 : damage;
+            return projectileType.getDeclaredConstructor(
+                double.class, double.class, double.class, int.class, int.class
+            ).newInstance(spawnX, finalSpawnY, speed, finalDmg, totalPierces);
+        } else if (projectileType == PoisonProjectile.class) {
+            int totalPoisonDmg = 6 + plant.getPoisonDmgTickBonus();
+            return projectileType.getDeclaredConstructor(
+                double.class, double.class, double.class, int.class, int.class
+            ).newInstance(spawnX, finalSpawnY, speed, damage, totalPoisonDmg);
+        } else {
+            return projectileType.getDeclaredConstructor(
+                double.class, double.class, double.class, int.class
+            ).newInstance(spawnX, finalSpawnY, speed, damage);
         }
     }
 }

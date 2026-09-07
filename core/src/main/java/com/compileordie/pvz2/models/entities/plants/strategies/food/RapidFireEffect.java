@@ -34,42 +34,52 @@ public class RapidFireEffect implements PlantFoodEffectStrategy {
             if (name.equals("Split Pea")) {
                 spawnStream(board, x, y, 1.0, 0.0, 30, baseDamage, plant);
                 spawnStream(board, x, y, -1.0, 0.0, 30, baseDamage, plant);
-            }
-            else if (name.equals("Repeater")) {
+            } else if (name.equals("Repeater")) {
                 spawnStream(board, x, y, 1.0, 0.0, 60, baseDamage, plant);
                 // Giant Pea fires at the very end of the stream (3 seconds later)
                 Timer.schedule(new Timer.Task() {
                     @Override
-                    public void run() { if (!plant.isDead()) try { spawnGiantPea(board, x, y, 1.0, 0.0, baseDamage * 20, plant); } catch(Exception ignored){} }
+                    public void run() {
+                        if (!plant.isDead()) {
+                            try {
+                                spawnGiantPea(board, x, y, 1.0, 0.0, baseDamage * 20, plant);
+                            } catch (Exception ignored) {
+                            }
+                        }
+                    }
                 }, 3.0f);
-            }
-            else if (name.equals("Threepeater")) {
+            } else if (name.equals("Threepeater")) {
                 spawnStream(board, x, y, 1.0, 0.0, 30, baseDamage, plant);
                 spawnStream(board, x, y, 1.0, 0.5, 30, baseDamage, plant);
                 spawnStream(board, x, y, 1.0, -0.5, 30, baseDamage, plant);
                 spawnStream(board, x, y, 1.0, 1.0, 30, baseDamage, plant);
                 spawnStream(board, x, y, 1.0, -1.0, 30, baseDamage, plant);
-            }
-            else if (name.equals("Pea Pod")) {
+            } else if (name.equals("Pea Pod")) {
                 int stacks = plant.getStackCount();
                 Timer.schedule(new Timer.Task() {
                     int fired = 0;
                     @Override
                     public void run() {
-                        if (plant.isDead()) { this.cancel(); return; }
-                        try { spawnGiantPea(board, x, y, 1.0, 0.0, baseDamage * 20, plant); } catch (Exception ignored){}
+                        if (plant.isDead()) {
+                            this.cancel();
+                            return;
+                        }
+                        try {
+                            spawnGiantPea(board, x, y, 1.0, 0.0, baseDamage * 20, plant);
+                        } catch (Exception ignored) {
+                        }
                         fired++;
-                        if (fired >= stacks) this.cancel();
+                        if (fired >= stacks) {
+                            this.cancel();
+                        }
                     }
                 }, 0f, 0.8f, stacks - 1);
-            }
-            else if (name.equals("Rotobaga")) {
+            } else if (name.equals("Rotobaga")) {
                 spawnStream(board, x, y, 1.0, 1.0, 30, baseDamage, plant);
                 spawnStream(board, x, y, 1.0, -1.0, 30, baseDamage, plant);
                 spawnStream(board, x, y, -1.0, 1.0, 30, baseDamage, plant);
                 spawnStream(board, x, y, -1.0, -1.0, 30, baseDamage, plant);
-            }
-            else if (name.equals("Snow Pea")) {
+            } else if (name.equals("Snow Pea")) {
                 int plantRow = (int) Math.floor((y - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
                 for (Zombie z : board.getAllZombies()) {
                     if (!z.isDead() && z.occupiesRow(plantRow)) {
@@ -77,11 +87,9 @@ public class RapidFireEffect implements PlantFoodEffectStrategy {
                     }
                 }
                 spawnStream(board, x, y, 1.0, 0.0, 60, baseDamage, plant);
-            }
-            else if (name.equals("Mega Gatling Pea")) {
+            } else if (name.equals("Mega Gatling Pea")) {
                 spawnStream(board, x, y, 1.0, 0.0, 90, baseDamage, plant); // 4.5 seconds of firing!
-                // Giant peas follow up after the massive stream
-                Timer.schedule(new Timer.Task() {
+                Timer.schedule(new Timer.Task() { // Giant peas follow up after the massive stream
                     @Override
                     public void run() {
                         if (plant.isDead()) return;
@@ -90,30 +98,26 @@ public class RapidFireEffect implements PlantFoodEffectStrategy {
                             spawnGiantPea(board, x + 0.5, y, 1.0, 0.0, baseDamage * 20, plant);
                             spawnGiantPea(board, x + 1.0, y, 1.0, 0.0, baseDamage * 20, plant);
                             spawnGiantPea(board, x + 1.5, y, 1.0, 0.0, baseDamage * 20, plant);
-                        } catch(Exception ignored){}
+                        } catch (Exception ignored) {
+                        }
                     }
                 }, 4.5f);
-            }
-            else if (name.equals("Puff-shroom") || name.equals("Sea-shroom")) {
+            } else if (name.equals("Puff-shroom") || name.equals("Sea-shroom")) {
                 for (Plant p : board.getAllPlants()) {
                     if (p.getName().equals(name)) p.resetLifespan();
                 }
                 spawnStream(board, x, y, 1.0, 0.0, 40, baseDamage, plant);
-            }
-            else if (name.equals("Starfruit")) {
+            } else if (name.equals("Starfruit")) {
                 spawnStream(board, x, y, -1.0, 0.0, 30, baseDamage, plant);
                 spawnStream(board, x, y, 0.0, -1.0, 30, baseDamage, plant);
                 spawnStream(board, x, y, 0.0, 1.0, 30, baseDamage, plant);
                 spawnStream(board, x, y, 1.0, -0.5, 30, baseDamage, plant);
                 spawnStream(board, x, y, 1.0, 0.5, 30, baseDamage, plant);
-            }
-            else if (name.equals("Cat-tail")) {
+            } else if (name.equals("Cat-tail")) {
                 spawnHomingStream(board, x, y, 30, baseDamage, plant);
-            }
-            else if (name.equals("Fire Peashooter") || name.equals("Peashooter")) {
+            } else if (name.equals("Fire Peashooter") || name.equals("Peashooter")) {
                 spawnStream(board, x, y, 1.0, 0.0, 60, baseDamage, plant);
-            }
-            else {
+            } else {
                 spawnStream(board, x, y, 1.0, 0.0, 30, baseDamage, plant);
             }
         } catch (Exception e) {
@@ -122,10 +126,12 @@ public class RapidFireEffect implements PlantFoodEffectStrategy {
     }
 
     // --- THE NEW BARRAGE ENGINE ---
-    private void spawnStream(GameBoard board, double startX, double startY, double xDir, double yDir, int count, int damage, Plant plant) {
+    private void spawnStream(GameBoard board, double startX, double startY, double xDir, double yDir,
+                             int count, int damage, Plant plant) {
         // Fires 1 pea every 0.05 seconds until 'count' is reached!
         Timer.schedule(new Timer.Task() {
             int spawned = 0;
+
             @Override
             public void run() {
                 if (plant.isDead()) {
@@ -137,17 +143,20 @@ public class RapidFireEffect implements PlantFoodEffectStrategy {
                     Projectile proj;
                     if (projectileType == IceProjectile.class) {
                         double totalChillTime = 100.0 + plant.getChillTimeBonusTicks();
-                        proj = projectileType.getDeclaredConstructor(double.class, double.class, double.class, int.class, double.class)
+                        proj = projectileType.getDeclaredConstructor(
+                                double.class, double.class, double.class, int.class, double.class)
                             .newInstance(startX, startY, 6.0, damage, totalChillTime);
                     } else {
-                        proj = projectileType.getDeclaredConstructor(double.class, double.class, double.class, int.class)
+                        proj = projectileType.getDeclaredConstructor(
+                                double.class, double.class, double.class, int.class)
                             .newInstance(startX, startY, 6.0, damage);
                     }
                     proj.setSourcePlantType(PlantType.getByName(plant.getName()));
                     proj.setXSpeed(6.0 * xDir);
                     proj.setYSpeed(6.0 * yDir);
                     board.getActiveProjectiles().add(proj);
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
 
                 spawned++;
                 if (spawned >= count) {
@@ -158,14 +167,17 @@ public class RapidFireEffect implements PlantFoodEffectStrategy {
         }, 0f, 0.05f, count - 1);
     }
 
-    private void spawnGiantPea(GameBoard board, double x, double y, double xDir, double yDir, int giantDamage, Plant plant) throws Exception {
+    private void spawnGiantPea(GameBoard board, double x, double y, double xDir, double yDir,
+                               int giantDamage, Plant plant) throws Exception {
         Projectile giantProj;
         if (projectileType == IceProjectile.class) {
             double totalChillTime = 100.0 + plant.getChillTimeBonusTicks();
-            giantProj = projectileType.getDeclaredConstructor(double.class, double.class, double.class, int.class, double.class)
+            giantProj = projectileType.getDeclaredConstructor(
+                    double.class, double.class, double.class, int.class, double.class)
                 .newInstance(x, y, 6.0, giantDamage, totalChillTime);
         } else {
-            giantProj = projectileType.getDeclaredConstructor(double.class, double.class, double.class, int.class)
+            giantProj = projectileType.getDeclaredConstructor(
+                    double.class, double.class, double.class, int.class)
                 .newInstance(x, y, 6.0, giantDamage);
         }
 
@@ -175,28 +187,39 @@ public class RapidFireEffect implements PlantFoodEffectStrategy {
         board.getActiveProjectiles().add(giantProj);
     }
 
-    private void spawnHomingStream(GameBoard board, double startX, double startY, int count, int damage, Plant plant) {
+    private void spawnHomingStream(GameBoard board, double startX, double startY,
+                                   int count, int damage, Plant plant) {
         Timer.schedule(new Timer.Task() {
             int spawned = 0;
             transient final Random rand = new Random();
+
             @Override
             public void run() {
-                if (plant.isDead()) { this.cancel(); return; }
+                if (plant.isDead()) {
+                    this.cancel();
+                    return;
+                }
 
                 try {
                     List<Zombie> activeZombies = board.getAllZombies().stream().filter(z -> !z.isDead()).toList();
                     double spawnX = startX + (rand.nextDouble() * 0.5 - 0.25);
                     double spawnY = startY + (rand.nextDouble() * 0.5 - 0.25);
-                    Zombie target = activeZombies.isEmpty() ? null : activeZombies.get(rand.nextInt(activeZombies.size()));
+                    Zombie target = activeZombies.isEmpty()
+                        ? null
+                        : activeZombies.get(rand.nextInt(activeZombies.size()));
 
-                    Projectile proj = projectileType.getDeclaredConstructor(double.class, double.class, double.class, int.class, Zombie.class)
+                    Projectile proj = projectileType.getDeclaredConstructor(
+                            double.class, double.class, double.class, int.class, Zombie.class)
                         .newInstance(spawnX, spawnY, 6.0, damage, target);
                     proj.setSourcePlantType(PlantType.getByName(plant.getName()));
                     board.getActiveProjectiles().add(proj);
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
 
                 spawned++;
-                if (spawned >= count) this.cancel();
+                if (spawned >= count) {
+                    this.cancel();
+                }
             }
         }, 0f, 0.05f, count - 1);
     }

@@ -189,7 +189,6 @@ public abstract class Zombie extends GameEntity {
         }
         // if (takedDamage) takedDamage = false;
         if (skipThisTick) return;
-
         // ⏳ اگه در حال پخش انیمیشن پرتاب (fly-in) هستیم (مثلا ایمپی که تازه از
         // غول پرتاب شده)، شمارش معکوس می‌کنیم و در پایان خودکار آزادش می‌کنیم.
         // تا وقتی flyInRemaining > 0 هست، stopZombieNow=true نگه داشته می‌شه
@@ -202,7 +201,6 @@ public abstract class Zombie extends GameEntity {
                 stopZombieNow = false; // آزاد شدن؛ از این لحظه حرکت عادی زامبی شروع می‌شه
             }
         }
-
         // ⏳ همون منطق بالا ولی برای افکت سندستورمِ اسپاون از وسط زمین.
         if (sandstormRemaining > 0) {
             sandstormRemaining -= Constants.Game.TIME_COEFFICIENT;
@@ -213,7 +211,6 @@ public abstract class Zombie extends GameEntity {
                     "✅ [" + type + "] گردباد تموم شد @ x=" + getX() + " - از این تیک به بعد باید حرکت کنه.");
             }
         }
-
         // 🔎 واچ‌داگ تشخیصی: دقیقا ۳ ثانیه بعد از پایان گردباد، یک‌بار وضعیت
         // واقعی زامبی رو لاگ می‌کنه تا با مدرک مشخص بشه واقعا حرکت کرده یا نه.
         if (midLawnWatchdogTimer >= 0 && !midLawnWatchdogLogged) {
@@ -229,7 +226,6 @@ public abstract class Zombie extends GameEntity {
                         + " | sandstormRemaining=" + sandstormRemaining);
             }
         }
-
         // برای رسیدن به خانه
         float endLine;
         if (AppModel.currentLevel == LevelID.DEAD_LINE) {
@@ -246,18 +242,15 @@ public abstract class Zombie extends GameEntity {
                 succeeded = true;
             }
         }
-
         // بررسی اینکه وارد زمین شده یا ن
-//        if (!fromGarg && !isMidLawnSpawn && !(this.getType()==ZombieType.ALL_STAR)) {
-//            if (getX() >= Constants.Game.TILE_WIDTH * 9 + Constants.Game.PADDING_X + 1) {
-//                if (replacedSpeed == 0) replacedSpeed = getXSpeed();
-//                setXSpeed(replacedSpeed * 3);
-//            } else {
-//                setXSpeed(replacedSpeed);
-//            }
-//        }
-
-
+        /*if (!fromGarg && !isMidLawnSpawn && !(this.getType()==ZombieType.ALL_STAR)) {
+            if (getX() >= Constants.Game.TILE_WIDTH * 9 + Constants.Game.PADDING_X + 1) {
+                if (replacedSpeed == 0) replacedSpeed = getXSpeed();
+                setXSpeed(replacedSpeed * 3);
+            } else {
+                setXSpeed(replacedSpeed);
+            }
+        }*/
         // آپدیت و مدیریت افکت‌ها
         Iterator<StatusEffect> iterator = activeEffects.iterator();
         while (iterator.hasNext()) {
@@ -267,7 +260,6 @@ public abstract class Zombie extends GameEntity {
                 iterator.remove();
             }
         }
-
         // 🧊 مدیریت بلوک یخ: تشخیص لحظه‌ی فعال/غیرفعال شدنِ isFrozenByIce (که
         // ممکنه از هر جای دیگه‌ی کد مستقیم ست شده باشه) و اعمال/حذف افکت FROZEN
         // به‌صورت خودکار همراهش.
@@ -278,12 +270,8 @@ public abstract class Zombie extends GameEntity {
             removeStatusEffect(EffectType.FROZEN);
             wasFrozenByIce = false;
         }
-
         this.setXSpeed(isHypnotized ? -Math.abs(this.getXSpeed()) : Math.abs(this.getXSpeed()));
-
         // برای جابجایی - اعمال دمیح - اعمال توانایی سرویس ها هستند که پیش می برند
-
-        // TODO: Remove if wrong
         if (isFrozenByIce) setXSpeed(0);
         else if (frozenByIcePast) setXSpeed(stableSpeed);
 

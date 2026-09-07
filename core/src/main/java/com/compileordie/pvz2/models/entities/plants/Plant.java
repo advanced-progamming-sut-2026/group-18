@@ -91,7 +91,19 @@ public class Plant extends GameEntity {
     private double mintDurationBonusTicks = 0.0;
     private boolean resetFamilyCooldowns = false;
     private boolean isBoosted;
-    public Plant(String name, PlantCategory category, List<PlantTag> tags, double x, double y, int hp, int damage, int cost, double actionIntervalTicks, AttackStrategy attackStrategy, PlantFoodEffectStrategy foodStrategy, Map<Integer, UpgradeLevel> upgradeMap) {
+
+    public Plant(String name,
+                 PlantCategory category,
+                 List<PlantTag> tags,
+                 double x,
+                 double y,
+                 int hp,
+                 int damage,
+                 int cost,
+                 double actionIntervalTicks,
+                 AttackStrategy attackStrategy,
+                 PlantFoodEffectStrategy foodStrategy,
+                 Map<Integer, UpgradeLevel> upgradeMap) {
         super(x, y, 0, 0);
         this.name = name;
         this.category = category;
@@ -273,9 +285,17 @@ public class Plant extends GameEntity {
                 if (AppModel.gameSession != null && AppModel.gameSession.gameBoard != null) {
                     int sunAmount = 5 + this.getExtraSunYield();
                     if (sunAmount > 5) {
-                        AppModel.gameSession.gameBoard.economyManager.suns.add(new Sun(this.getX(), this.getY(), SunType.SMALL, false, (float)this.getY()));
+                        AppModel.gameSession.gameBoard.economyManager.suns.add(new Sun(this.getX(),
+                            this.getY(),
+                            SunType.SMALL,
+                            false,
+                            (float) this.getY()));
                     }
-                    AppModel.gameSession.gameBoard.economyManager.suns.add(new Sun(this.getX(), this.getY(), SunType.TINY, false, (float)this.getY()));
+                    AppModel.gameSession.gameBoard.economyManager.suns.add(new Sun(this.getX(),
+                        this.getY(),
+                        SunType.TINY,
+                        false,
+                        (float) this.getY()));
                 }
                 this.sunDropCooldown = 10.0;
             }
@@ -345,7 +365,8 @@ public class Plant extends GameEntity {
             }
         }
         if (this.atkSpeedBonusPercentage > 0) {
-            this.actionIntervalTicks = Math.max(1.0, this.actionIntervalTicks * (1.0 - (this.atkSpeedBonusPercentage / 100.0)));
+            this.actionIntervalTicks
+                = Math.max(1.0, this.actionIntervalTicks * (1.0 - (this.atkSpeedBonusPercentage / 100.0)));
         }
         this.level = targetLevel;
     }
@@ -406,7 +427,11 @@ public class Plant extends GameEntity {
     }
     public double getButterChance() { return butterChance; }
     public int getAoeDamage() { return (this.baseDamage / 2) + this.aoeDamageBonus; }
-    public int getWarmthRadius() { return (this.name.equals("Pepper-pult") || this.name.equals("Wasabi Whip") ? 1 : 0) + this.warmthRadiusBonus; }
+
+    public int getWarmthRadius() {
+        return (this.name.equals("Pepper-pult") || this.name.equals("Wasabi Whip") ? 1 : 0)
+            + this.warmthRadiusBonus;
+    }
     public boolean isArmed() { return isArmed; }
     public void forceArm() { this.isArmed = true; }
     public boolean isHidden() { return isHidden; }
@@ -504,7 +529,14 @@ public class Plant extends GameEntity {
                 return 3.0;
             case "Citron":
                 return 90.0;
-            case "Wall-nut", "Explode-o-nut", "Sun Bean", "Tall-nut", "Torchwood", "Potato Mine", "Primal Potato Mine", "Sweet Potato" :
+            case "Wall-nut",
+                 "Explode-o-nut",
+                 "Sun Bean",
+                 "Tall-nut",
+                 "Torchwood",
+                 "Potato Mine",
+                 "Primal Potato Mine",
+                 "Sweet Potato":
                 return 0.0;
             case "Chomper" :
                 return 130.0;

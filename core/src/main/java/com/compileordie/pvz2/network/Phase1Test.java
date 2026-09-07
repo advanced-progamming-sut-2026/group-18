@@ -2,8 +2,8 @@ package com.compileordie.pvz2.network;
 
 import com.compileordie.pvz2.network.protocol.Message;
 
-import java.util.Base64;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /**
  * تست کامل و خودکار فاز ۱.
@@ -65,7 +65,8 @@ public class Phase1Test {
                 loginResult);
 
         String returnedData = loginResult.get("data");
-        String decoded = returnedData == null ? "" : new String(Base64.getDecoder().decode(returnedData), StandardCharsets.UTF_8);
+        String decoded = returnedData == null ? "" : new String(Base64.getDecoder().decode(returnedData),
+            StandardCharsets.UTF_8);
         check("۳.۱) دیتای بازگشتی از دستگاه دوم دقیقا همان چیزیه که دستگاه اول push کرده بود",
                 fakePlayerJson.equals(decoded),
                 "expected=" + fakePlayerJson + " | actual=" + decoded);

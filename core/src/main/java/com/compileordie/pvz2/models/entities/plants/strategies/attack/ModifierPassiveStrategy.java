@@ -12,13 +12,13 @@ import java.util.Set;
 
 public class ModifierPassiveStrategy implements AttackStrategy {
 
-    private static final Set<Projectile> blueProcessed = new HashSet<>();
+    private static final Set<Projectile> BLUE_PROCESSED = new HashSet<>();
 
     @Override
     public void attack(Plant plant, GameBoard board, int tickDelta) {
         if (!plant.isAlive() || !plant.getName().equals("Torchwood")) return;
 
-        blueProcessed.removeIf(proj -> !board.getActiveProjectiles().contains(proj));
+        BLUE_PROCESSED.removeIf(proj -> !board.getActiveProjectiles().contains(proj));
 
         int plantRow = (int) Math.round((plant.getY() - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
         boolean isBlueTorchwood = plant.isBlueFlame() || plant.getLevel() >= 3;
@@ -44,7 +44,7 @@ public class ModifierPassiveStrategy implements AttackStrategy {
 
             // --- FIX 2: STRICT ENGINE LOCKS ---
             if (isBlueTorchwood) {
-                if (blueProcessed.contains(p)) continue;
+                if (BLUE_PROCESSED.contains(p)) continue;
             } else {
                 // Normal Torchwood MUST completely ignore peas that are already on fire!
                 // This stops the 40 damage from multiplying to 80!
@@ -66,7 +66,7 @@ public class ModifierPassiveStrategy implements AttackStrategy {
                     p.setType(DamageType.FIRE);
 
                     if (isBlueTorchwood) {
-                        blueProcessed.add(p);
+                        BLUE_PROCESSED.add(p);
 
                         // Fire Pea (40) -> 120! Normal Pea (20) -> 60!
                         p.setDamage(p.getDamage() * 3);

@@ -25,7 +25,14 @@ public class FlattenEffect implements PlantFoodEffectStrategy {
             plant.setExhausted(false); // Plant food resets exhaustion!
 
             // Launch the first jump! 2 crushes remaining, and isPlantFood = true
-            SquashProjectile jumpOut = new SquashProjectile(plant, plant.getX(), plant.getY(), target.getX(), target.getY(), false, 2, true);
+            SquashProjectile jumpOut = new SquashProjectile(plant,
+                plant.getX(),
+                plant.getY(),
+                target.getX(),
+                target.getY(),
+                false,
+                2,
+                true);
             board.getActiveProjectiles().add(jumpOut);
         }
 

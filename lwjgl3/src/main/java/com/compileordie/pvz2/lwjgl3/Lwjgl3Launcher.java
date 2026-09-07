@@ -32,7 +32,11 @@ public class Lwjgl3Launcher {
         configuration.setWindowedMode(Constants.UI.DEFAULT_WIDTH, Constants.UI.DEFAULT_HEIGHT);
         //// You can change these files; they are in lwjgl3/src/main/resources/ .
         //// They can also be loaded from the root of assets/ .
-        configuration.setWindowIcon("PVZ2Icon1-256.png", "PVZ2Icon1-128.png", "PVZ2Icon1-64.png", "PVZ2Icon1-48.png", "PVZ2Icon1-32.png");
+        configuration.setWindowIcon("PVZ2Icon1-256.png",
+            "PVZ2Icon1-128.png",
+            "PVZ2Icon1-64.png",
+            "PVZ2Icon1-48.png",
+            "PVZ2Icon1-32.png");
 
         //// This could improve compatibility with Windows machines with buggy OpenGL drivers, Macs
         //// with Apple Silicon that have to emulate compatibility with OpenGL anyway, and more.

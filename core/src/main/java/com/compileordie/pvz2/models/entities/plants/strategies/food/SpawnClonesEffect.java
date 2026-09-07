@@ -43,8 +43,10 @@ public class SpawnClonesEffect implements PlantFoodEffectStrategy {
                     if (plant.getName().equals("Lily Pad") && !tile.isUnderWater()) continue;
                     if (!plant.getName().equals("Lily Pad") && tile.isUnderWater()) continue;
 
-                    double spawnX = Constants.Game.PADDING_X + (tile.column * Constants.Game.TILE_WIDTH) + (Constants.Game.TILE_WIDTH / 2.0);
-                    double spawnY = Constants.Game.PADDING_Y + (tile.row * Constants.Game.TILE_HEIGHT) + (Constants.Game.TILE_HEIGHT / 2.0);
+                    double spawnX = Constants.Game.PADDING_X + (tile.column * Constants.Game.TILE_WIDTH)
+                        + (Constants.Game.TILE_WIDTH / 2.0);
+                    double spawnY = Constants.Game.PADDING_Y + (tile.row * Constants.Game.TILE_HEIGHT)
+                        + (Constants.Game.TILE_HEIGHT / 2.0);
 
                     Plant clone = PlantFactory.createPlant(baseTemplate, spawnX, spawnY);
                     if (clone != null) {

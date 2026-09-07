@@ -13,7 +13,13 @@ import java.util.stream.Stream;
 public class QuestDatabaseSeeder {
     public static ArrayList<Quest> getQuests() {
         ArrayList<Quest> quests = new ArrayList<>();
+        addEventAndChapterQuests(quests);
+        addConditionAndFamilyQuests(quests);
+        addRestrictionAndMilestoneQuests(quests);
+        return quests;
+    }
 
+    private static void addEventAndChapterQuests(ArrayList<Quest> quests) {
         // 1. Daily Sun Catcher (Low Priority)
         IntStream.of(3000, 4000, 5000).forEach(sun ->
             quests.add(new BasicEventQuest("daily_sun_" + sun,
@@ -46,7 +52,9 @@ public class QuestDatabaseSeeder {
                 "Thrifty Herbivore", "Win a level without losing more than " + n + " plants.",
                 QuestCategory.CRITICAL, 4, "RANDOM_SEED", 20 - n, "PLANTS_LOST:<=" + n))
         );
+    }
 
+    private static void addConditionAndFamilyQuests(ArrayList<Quest> quests) {
         // 6. Defense Master (Epic Priority)
         quests.add(new LevelConditionQuest("epic_defense_master",
             "Defense Master", "Complete a level with exactly zero sun.",
@@ -79,7 +87,9 @@ public class QuestDatabaseSeeder {
                 "Flourishing in Limits", "Do not use any plants from the " + family + " family.",
                 QuestCategory.DAILY, 2, "DIAMONDS", 100, "NO_FAMILY:" + family));
         });
+    }
 
+    private static void addRestrictionAndMilestoneQuests(ArrayList<Quest> quests) {
         // 11. Night or Morning (Epic Priority)
         quests.add(new LevelConditionQuest("epic_night_morning",
             "Night or Morning", "Complete a daytime level using night plants (mushrooms).",
@@ -121,8 +131,6 @@ public class QuestDatabaseSeeder {
                 "Mowing Time", "Kill at least " + n + " zombies with lawn mowers.",
                 QuestCategory.EPIC, 3, n, "DIAMONDS", n, QuestEvent.ZOMBIE_KILLED_BY_PLANT, "MOWER"))
         );
-
-        return quests;
     }
 
     public static void seed() {

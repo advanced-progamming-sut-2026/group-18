@@ -94,7 +94,11 @@ public class TurquoiseZombie extends CapableZombie {
     @Override
     public void handleDeath() {
         for (int i = 0; i < totalStolenSuns / 50; i++) {
-            AppModel.gameSession.gameBoard.economyManager.suns.add(new Sun(getX(), getY(), SunType.NORMAL, false, (float) getY()));
+            AppModel.gameSession.gameBoard.economyManager.suns.add(new Sun(getX(),
+                getY(),
+                SunType.NORMAL,
+                false,
+                (float) getY()));
         }
 //        shouldBackSun = true;
     }

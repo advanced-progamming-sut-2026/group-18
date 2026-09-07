@@ -1,10 +1,15 @@
 package com.compileordie.pvz2.models.entities.plants.strategies.attack;
+
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
-import com.compileordie.pvz2.models.entities.projectiles.*;
+import com.compileordie.pvz2.models.entities.projectiles.ButterProjectile;
+import com.compileordie.pvz2.models.entities.projectiles.FireLobbedProjectile;
+import com.compileordie.pvz2.models.entities.projectiles.IceLobbedProjectile;
+import com.compileordie.pvz2.models.entities.projectiles.Projectile;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
+
 public class LobberStrategy implements AttackStrategy {
     private final Class<? extends Projectile> projectileType;
     private final double splashRadiusTiles;
@@ -58,8 +63,20 @@ public class LobberStrategy implements AttackStrategy {
                 currentProjClass = FireLobbedProjectile.class;
             }
             Projectile proj = currentProjClass
-                .getDeclaredConstructor(double.class, double.class, double.class, double.class, int.class, int.class, double.class)
-                .newInstance(plant.getX(), plant.getY(), targetX, 3.5, finalDamage, plant.getAoeDamage(), splashRadiusTiles);
+                .getDeclaredConstructor(double.class,
+                    double.class,
+                    double.class,
+                    double.class,
+                    int.class,
+                    int.class,
+                    double.class)
+                .newInstance(plant.getX(),
+                    plant.getY(),
+                    targetX,
+                    3.5,
+                    finalDamage,
+                    plant.getAoeDamage(),
+                    splashRadiusTiles);
             proj.setSourcePlantType(PlantType.getByName(plant.getName()));
             board.getActiveProjectiles().add(proj);
         } catch (Exception e) {}
