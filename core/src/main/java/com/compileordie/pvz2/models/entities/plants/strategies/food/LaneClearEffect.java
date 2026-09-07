@@ -16,10 +16,15 @@ public class LaneClearEffect implements PlantFoodEffectStrategy {
     public void applyEffect(Plant plant, GameBoard board, Player player) {
         String name = plant.getName();
         int plantRow = (int) Math.floor((plant.getY() - Constants.Game.PADDING_Y) / Constants.Game.TILE_HEIGHT);
-        double maxX = Constants.Game.PADDING_X + (board.totalCols * Constants.Game.TILE_WIDTH) + (Constants.Game.TILE_WIDTH * 2);
+        double maxX = Constants.Game.PADDING_X + (board.totalCols * Constants.Game.TILE_WIDTH)
+            + (Constants.Game.TILE_WIDTH * 2);
         if (name.equals("Citron")) {
             try {
-                Projectile proj = PiercingProjectile.class.getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
+                Projectile proj = PiercingProjectile.class.getDeclaredConstructor(double.class,
+                        double.class,
+                        double.class,
+                        int.class,
+                        int.class)
                     .newInstance(plant.getX(), plant.getY(), 6.0, 4500, 100);
                 proj.setSourcePlantType(PlantType.CITRON);
                 proj.setXSpeed(6.0);
@@ -55,7 +60,11 @@ public class LaneClearEffect implements PlantFoodEffectStrategy {
                                 double offsetX = (Math.random() * 0.4) * Constants.Game.TILE_WIDTH;
                                 double offsetY = (Math.random() * 0.4 - 0.2) * Constants.Game.TILE_HEIGHT;
 
-                                Projectile proj = PiercingProjectile.class.getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
+                                Projectile proj = PiercingProjectile.class.getDeclaredConstructor(double.class,
+                                        double.class,
+                                        double.class,
+                                        int.class,
+                                        int.class)
                                     .newInstance(plant.getX() + offsetX, plant.getY() + offsetY, 6.0, 0, 100);
                                 proj.setSourcePlantType(PlantType.FUME_SHROOM);
                                 proj.setXSpeed(6.0); // Fast enough to clear out smoothly
@@ -75,7 +84,11 @@ public class LaneClearEffect implements PlantFoodEffectStrategy {
         else if (name.equals("Garlic")) {
             // 1. Spawn the Garlic breath projectile visually!
             try {
-                Projectile proj = PiercingProjectile.class.getDeclaredConstructor(double.class, double.class, double.class, int.class, int.class)
+                Projectile proj = PiercingProjectile.class.getDeclaredConstructor(double.class,
+                        double.class,
+                        double.class,
+                        int.class,
+                        int.class)
                     .newInstance(plant.getX(), plant.getY(), 4.0, 0, 100);
                 proj.setSourcePlantType(PlantType.GARLIC);
                 proj.setXSpeed(4.0);
@@ -90,7 +103,8 @@ public class LaneClearEffect implements PlantFoodEffectStrategy {
                     else if (plantRow == board.totalRows - 1) targetRow = plantRow - 1;
                     else targetRow = random.nextBoolean() ? plantRow - 1 : plantRow + 1;
 
-                    double newY = Constants.Game.PADDING_Y + (targetRow * Constants.Game.TILE_HEIGHT) + (Constants.Game.TILE_HEIGHT / 2.0);
+                    double newY = Constants.Game.PADDING_Y + (targetRow * Constants.Game.TILE_HEIGHT)
+                        + (Constants.Game.TILE_HEIGHT / 2.0);
                     zombie.setY(newY);
                 }
             }

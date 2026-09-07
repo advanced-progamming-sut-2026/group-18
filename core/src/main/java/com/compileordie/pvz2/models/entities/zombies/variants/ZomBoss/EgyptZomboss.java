@@ -45,7 +45,16 @@ public class EgyptZomboss extends Zombie {
 
 
     public EgyptZomboss(GameBoard gameBoard) {
-        super(2000, 0, 0, 2, 15, 15, Constants.Game.PADDING_Y_REALITY+0.1+2*Constants.Game.TILE_HEIGHT, 0, 0, ZombieType.ZOMBOSS_IN_EGYPT);
+        super(2000,
+            0,
+            0,
+            2,
+            15,
+            15,
+            Constants.Game.PADDING_Y_REALITY + 0.1 + 2 * Constants.Game.TILE_HEIGHT,
+            0,
+            0,
+            ZombieType.ZOMBOSS_IN_EGYPT);
         baseX = getX();
         rowDown = 2;
         rowUp = 3;

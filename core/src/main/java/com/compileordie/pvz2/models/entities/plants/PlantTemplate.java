@@ -46,7 +46,9 @@ public class PlantTemplate {
     public Map<Integer, UpgradeLevel> getUpgradeMap() { return upgradeMap; }
     public void setUpgradeMap(Map<Integer, UpgradeLevel> upgradeMap) { this.upgradeMap = upgradeMap; }
     public AttackStrategyType getAttackStrategyType() { return attackStrategyType; }
-    public void setAttackStrategyType(AttackStrategyType attackStrategyType) { this.attackStrategyType = attackStrategyType; }
+    public void setAttackStrategyType(AttackStrategyType attackStrategyType) {
+        this.attackStrategyType = attackStrategyType;
+    }
     public Class<? extends Projectile> getProjectileType() { return projectileType; }
     public void setProjectileType(Class<? extends Projectile> projectileType) { this.projectileType = projectileType; }
     public List<Integer> getLaneOffsets() { return laneOffsets; }

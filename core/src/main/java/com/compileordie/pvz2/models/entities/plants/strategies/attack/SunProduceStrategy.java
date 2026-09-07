@@ -1,6 +1,5 @@
 package com.compileordie.pvz2.models.entities.plants.strategies.attack;
 
-import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 import com.compileordie.pvz2.models.game.economy.Sun;
@@ -64,7 +63,11 @@ public class SunProduceStrategy implements AttackStrategy {
                 board.economyManager.suns.add(new Sun(spawnX, spawnY, SunType.SPECIAL, false, ground));
                 board.economyManager.suns.add(new Sun(spawnX + 0.3, spawnY, SunType.SPECIAL, false, ground));
                 board.economyManager.suns.add(new Sun(spawnX, spawnY + 0.3, SunType.LARGE, false, ground));
-                if(plant.getExtraSunYield() >= 50) board.economyManager.suns.add(new Sun(spawnX + 0.3, spawnY + 0.3, SunType.MEDIUM, false, ground));
+                if (plant.getExtraSunYield() >= 50) board.economyManager.suns.add(new Sun(spawnX + 0.3,
+                    spawnY + 0.3,
+                    SunType.MEDIUM,
+                    false,
+                    ground));
             }
             // 5. Default / Standard Sunflower (50 Suns)
             else {

@@ -100,7 +100,8 @@ public class ZombieCombatManager {
 
         if (Math.abs(z.getY() - pWorldY) <= tileHeight / 6) {
             if (Math.abs(z.getX() - pWorldX) <= tileWidth / 6) {
-                if ((z.getType() == ZombieType.DODO_RIDER && ((DodoRiderZombie) z).getState() == MovementState.FLYING) || !isEatable(p)) {
+                if ((z.getType() == ZombieType.DODO_RIDER
+                    && ((DodoRiderZombie) z).getState() == MovementState.FLYING) || !isEatable(p)) {
                 } else {
                     z.isEating = true;
                     p.takeDamage((int) (z.getAttackPower() * dt));
@@ -126,9 +127,9 @@ public class ZombieCombatManager {
                         // گیاهی برای eating پیدا نمی‌شه).
                         ((GargantuarZombie) z).notifyAttackedPlant();
                     }
-                    if (z.getType()==ZombieType.ALL_STAR && ((AllStarZombie)z).isCharging()){
+                    if (z.getType() == ZombieType.ALL_STAR && ((AllStarZombie) z).isCharging()) {
                         p.takeDamage((int) smashDamage);
-                        ((AllStarZombie)z).stopCharge();
+                        ((AllStarZombie) z).stopCharge();
                     }
                 }
             }
@@ -140,20 +141,32 @@ public class ZombieCombatManager {
         double pWorldX = p.getX();
         double pWorldY = p.getY() + 0.2;
 
-        if (z.getType() == ZombieType.DODO_RIDER && (Math.abs(z.getY() - pWorldY) <= tileHeight / 6 && Math.abs(z.getX() - pWorldX) <= tileWidth / 1.7) && isVisible(p) && !p.hasActiveCover()) {
+        if (z.getType() == ZombieType.DODO_RIDER
+            && (Math.abs(z.getY() - pWorldY) <= tileHeight / 6
+            && Math.abs(z.getX() - pWorldX) <= tileWidth / 1.7)
+            && isVisible(p) && !p.hasActiveCover()) {
             ((DodoRiderZombie) z).onPlantCollisionWithHalfOfTileWidth(PlantType.getByName(p.getName()));
         }
-        if (z.getType() == ZombieType.TURQUOISE_ZOMBIE && (Math.abs(z.getY() - pWorldY) <= tileHeight / 6 && Math.abs(z.getX() - pWorldX) <= tileWidth * 3.7) && isVisible(p) && !p.hasActiveCover()) {
+        if (z.getType() == ZombieType.TURQUOISE_ZOMBIE
+            && (Math.abs(z.getY() - pWorldY) <= tileHeight / 6
+            && Math.abs(z.getX() - pWorldX) <= tileWidth * 3.7)
+            && isVisible(p) && !p.hasActiveCover()) {
             ((TurquoiseZombie) z).startStealing();
             if (((TurquoiseZombie) z).shouldWeLaser()) {
                 p.takeDamage((int) smashDamage);
                 ((TurquoiseZombie) z).stopLaser();
             }
         }
-        if (z.getType() == ZombieType.EXPLORER_ZOMBIE && (Math.abs(z.getY() - pWorldY) <= tileHeight / 6 && Math.abs(z.getX() - pWorldX) <= tileWidth * 3) && isVisible(p)) {
+        if (z.getType() == ZombieType.EXPLORER_ZOMBIE
+            && (Math.abs(z.getY() - pWorldY) <= tileHeight / 6
+            && Math.abs(z.getX() - pWorldX) <= tileWidth * 3)
+            && isVisible(p)) {
             p.takeDamage((int) smashDamage);
         }
-        if (z.getType() == ZombieType.HUNTER_ZOMBIE && (Math.abs(z.getY() - pWorldY) <= tileHeight / 6 && Math.abs(z.getX() - pWorldX) <= HunterZombie.ABILITY_RANGE) && isVisible(p) && !p.hasActiveCover()) {
+        if (z.getType() == ZombieType.HUNTER_ZOMBIE
+            && (Math.abs(z.getY() - pWorldY) <= tileHeight / 6
+            && Math.abs(z.getX() - pWorldX) <= HunterZombie.ABILITY_RANGE)
+            && isVisible(p) && !p.hasActiveCover()) {
             ((HunterZombie) z).setShouldAttack(true);
             if (((HunterZombie) z).getShouldShut()) {
                 p.addChill();
@@ -161,7 +174,10 @@ public class ZombieCombatManager {
                 ((HunterZombie) z).startThrowAnimation();
             }
         }
-        if (z.getType() == ZombieType.OCTOPUS_ZOMBIE && (Math.abs(z.getY() - pWorldY) <= tileHeight / 6 && Math.abs(z.getX() - pWorldX) <= OctopusZombie.ABILITY_RANGE) && isVisible(p) && !p.hasActiveCover()) {
+        if (z.getType() == ZombieType.OCTOPUS_ZOMBIE
+            && (Math.abs(z.getY() - pWorldY) <= tileHeight / 6
+            && Math.abs(z.getX() - pWorldX) <= OctopusZombie.ABILITY_RANGE)
+            && isVisible(p) && !p.hasActiveCover()) {
             p.applyOctopus(400.0);
             ((OctopusZombie) z).startTossAnimation();
         }
@@ -208,25 +224,25 @@ public class ZombieCombatManager {
         List<Zombie> zombiesCopy = new ArrayList<>(myZombies);
         for (Zombie z : zombiesCopy) {
             for (Zombie z1 : zombiesCopy) {
-                if (z == z1 || !(Math.abs(z.getY() - z1.getY()) <= tileHeight / 6 && Math.abs(z.getX() - z1.getX()) <= tileWidth / 6)) continue;
+                if (z == z1 || !(Math.abs(z.getY() - z1.getY()) <= tileHeight / 6
+                    && Math.abs(z.getX() - z1.getX()) <= tileWidth / 6)) {
+                    continue;
+                }
                 if ((z.isHypnotized() && !z1.isHypnotized()) || (z1.isHypnotized() && !z.isHypnotized())) {
                     z.isEating = true;
                     z1.isEating = true;
 
-//                    z.takeDamage((z1.getType() == ZombieType.ALL_STAR ? smashDamage : z1.getAttackPower() * dt), DamageType.NORMAL, null);
                     z.takeDamage((int) (z1.getAttackPower() * dt), DamageType.NORMAL, null);
-                    if (z1.getType()==ZombieType.ALL_STAR && ((AllStarZombie)z1).isCharging()){
+                    if (z1.getType() == ZombieType.ALL_STAR && ((AllStarZombie) z1).isCharging()) {
                         z.takeDamage((int) smashDamage, DamageType.NORMAL, null);
-                        ((AllStarZombie)z1).stopCharge();
+                        ((AllStarZombie) z1).stopCharge();
                     }
 
                     z1.takeDamage((int) (z.getAttackPower() * dt), DamageType.NORMAL, null);
-                    if (z.getType()==ZombieType.ALL_STAR && ((AllStarZombie)z).isCharging()){
+                    if (z.getType() == ZombieType.ALL_STAR && ((AllStarZombie) z).isCharging()) {
                         z1.takeDamage((int) smashDamage, DamageType.NORMAL, null);
-                        ((AllStarZombie)z).stopCharge();
+                        ((AllStarZombie) z).stopCharge();
                     }
-
-//                    z1.takeDamage((z.getType() == ZombieType.ALL_STAR ? smashDamage : z.getAttackPower() * dt), DamageType.NORMAL, null);
                 }
             }
         }
@@ -241,7 +257,8 @@ public class ZombieCombatManager {
             }
             if (((TurquoiseZombie) z).shouldWeBackSun()) {
                 for (int i = 0; i < ((TurquoiseZombie) z).totalStolenSuns / 50; i++) {
-                    myMap.economyManager.suns.add(new Sun(z.getX(), z.getY(), SunType.NORMAL, false, (float) z.getY()));
+                    myMap.economyManager.suns.add(
+                        new Sun(z.getX(), z.getY(), SunType.NORMAL, false, (float) z.getY()));
                 }
                 ((TurquoiseZombie) z).stopBackSun();
             }
@@ -249,7 +266,8 @@ public class ZombieCombatManager {
         if (z.getType() == ZombieType.RA_ZOMBIE) {
             if (((RaZombie) z).shouldWeBackSun()) {
                 for (int i = 0; i < ((RaZombie) z).stolenSunCount / 25; i++) {
-                    myMap.economyManager.suns.add(new Sun(z.getX(), z.getY(), SunType.NORMAL, false, (float) z.getY()));
+                    myMap.economyManager.suns.add(
+                        new Sun(z.getX(), z.getY(), SunType.NORMAL, false, (float) z.getY()));
                 }
                 ((RaZombie) z).stopBackSun();
             }
@@ -258,18 +276,22 @@ public class ZombieCombatManager {
             playingPiano(z, myZombies);
             ((PianistZombie) z).stopPlaying();
         }
-        if (z.getType() == ZombieType.RA_ZOMBIE && ((RaZombie) z).shouldWeSteal()) stealingByRaZombie(z, myMap);
+        if (z.getType() == ZombieType.RA_ZOMBIE && ((RaZombie) z).shouldWeSteal()) {
+            stealingByRaZombie(z, myMap);
+        }
     }
 
     private void stealingByRaZombie(Zombie z, GameBoard map) {
         Iterator<Sun> iterator = map.economyManager.suns.iterator();
         while (iterator.hasNext()) {
             Sun sun = iterator.next();
-            if (sun.type == SunType.NORMAL && sun.target == z && Math.abs(sun.getX() - (z.getX()-0.2)) <= tileWidth / 3 && Math.abs(sun.getY() - (z.getY()+1.3)) <= tileHeight / 3) {
+            if (sun.type == SunType.NORMAL && sun.target == z
+                && Math.abs(sun.getX() - (z.getX() - 0.2)) <= tileWidth / 3
+                && Math.abs(sun.getY() - (z.getY() + 1.3)) <= tileHeight / 3) {
                 ((RaZombie) z).addStolen(25);
                 sun.target = null;
                 iterator.remove();
-            } else if (sun.target == null && sun.type==SunType.NORMAL) {
+            } else if (sun.target == null && sun.type == SunType.NORMAL) {
                 sun.target = z;
             }
         }
@@ -279,18 +301,20 @@ public class ZombieCombatManager {
         int i = 0;
         List<Zombie> zombiesCopy = new ArrayList<>(myZombies);
         for (Zombie pied : zombiesCopy) {
-            if (!PIANOABLE_ZOMBIES.contains(pied.getType()) && !pied.isEating && !pied.isCombatingWithHypnotized && !pied.isHypnotized() && Math.abs(z.getX()-pied.getX())<=4*tileWidth) {
+            if (!PIANOABLE_ZOMBIES.contains(pied.getType()) && !pied.isEating
+                && !pied.isCombatingWithHypnotized && !pied.isHypnotized()
+                && Math.abs(z.getX() - pied.getX()) <= 4 * tileWidth) {
                 int currentRow = pied.getCurrentRow();
                 int targetRow;
                 float newY;
                 if (Math.random() <= 0.5) {
-                    int a = (currentRow>=1? -1 : +1);
+                    int a = (currentRow >= 1 ? -1 : +1);
                     targetRow = currentRow + a;
-                    newY = (float) (pied.getY() + a*tileHeight);
-                } else{
-                    int a = (currentRow<=3? +1 : -1);
+                    newY = (float) (pied.getY() + a * tileHeight);
+                } else {
+                    int a = (currentRow <= 3 ? +1 : -1);
                     targetRow = currentRow + a;
-                    newY = (float) (pied.getY() + a*tileHeight);
+                    newY = (float) (pied.getY() + a * tileHeight);
                 }
                 var lanes = AppModel.gameSession.gameBoard.lanes;
                 if (targetRow >= 0 && targetRow < lanes.size()) {
@@ -304,7 +328,7 @@ public class ZombieCombatManager {
                         i++;
                     }
                 }
-                if (i>=6) break;
+                if (i >= 6) break;
             }
         }
     }

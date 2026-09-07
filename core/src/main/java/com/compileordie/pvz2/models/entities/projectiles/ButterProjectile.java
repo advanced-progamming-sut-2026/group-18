@@ -8,7 +8,13 @@ import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 public class ButterProjectile extends LobbedProjectile {
 
     // FIXED: Added aoeDamage to match LobbedProjectile!
-    public ButterProjectile(double x, double y, double targetX, double speed, int damage, int aoeDamage, double splashRadius) {
+    public ButterProjectile(double x,
+                            double y,
+                            double targetX,
+                            double speed,
+                            int damage,
+                            int aoeDamage,
+                            double splashRadius) {
         super(x, y, targetX, speed, damage, aoeDamage, splashRadius);
         this.enumType = ProjectileType.BUTTER;
     }

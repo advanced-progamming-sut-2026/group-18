@@ -6,7 +6,13 @@ import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
 public class FireLobbedProjectile extends LobbedProjectile {
 
-    public FireLobbedProjectile(double x, double y, double targetX, double speed, int damage, int aoeDamage, double splashRadius) {
+    public FireLobbedProjectile(double x,
+                                double y,
+                                double targetX,
+                                double speed,
+                                int damage,
+                                int aoeDamage,
+                                double splashRadius) {
         super(x, y, targetX, speed, damage, aoeDamage, splashRadius);
 
         // Tag as FIRE so it instantly melts ice blocks and un-freezes zombies!

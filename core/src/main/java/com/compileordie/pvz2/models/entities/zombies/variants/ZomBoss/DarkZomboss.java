@@ -8,8 +8,6 @@ import com.compileordie.pvz2.models.entities.zombies.types.ZombieType;
 import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 import com.compileordie.pvz2.models.game.board.GameBoard;
 
-import java.awt.*;
-
 public class DarkZomboss extends Zombie {
     public double health = 2000;
     public boolean death = false;
@@ -50,7 +48,16 @@ public class DarkZomboss extends Zombie {
 
 
     public DarkZomboss(GameBoard gameBoard) {
-        super(2000, 0, 0, 2, 15, 15, Constants.Game.PADDING_Y_REALITY+0.1+2*Constants.Game.TILE_HEIGHT, 0, 0, ZombieType.ZOMBOSS_IN_DARK);
+        super(2000,
+            0,
+            0,
+            2,
+            15,
+            15,
+            Constants.Game.PADDING_Y_REALITY + 0.1 + 2 * Constants.Game.TILE_HEIGHT,
+            0,
+            0,
+            ZombieType.ZOMBOSS_IN_DARK);
         baseX = getX();
         rowDown = 2;
         rowUp = 3;

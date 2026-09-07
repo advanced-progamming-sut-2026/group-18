@@ -15,7 +15,13 @@ public class LobbedProjectile extends Projectile {
     protected final int aoeDamage;
     public double altitude = 0;
 
-    public LobbedProjectile(double x, double y, double targetX, double speed, int damage, int aoeDamage, double splashRadius) {
+    public LobbedProjectile(double x,
+                            double y,
+                            double targetX,
+                            double speed,
+                            int damage,
+                            int aoeDamage,
+                            double splashRadius) {
         super(x, y, speed, damage, DamageType.LOBBER);
         this.aoeDamage = aoeDamage;
         this.splashRadius = splashRadius;

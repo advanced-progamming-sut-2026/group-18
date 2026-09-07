@@ -7,7 +7,13 @@ import com.compileordie.pvz2.models.entities.zombies.variants.Zombie;
 
 public class IceLobbedProjectile extends LobbedProjectile {
 
-    public IceLobbedProjectile(double x, double y, double targetX, double speed, int damage, int aoeDamage, double splashRadius) {
+    public IceLobbedProjectile(double x,
+                               double y,
+                               double targetX,
+                               double speed,
+                               int damage,
+                               int aoeDamage,
+                               double splashRadius) {
         super(x, y, targetX, speed, damage, aoeDamage, splashRadius);
 
         // Tag as ICE so fire/ice interactions trigger correctly!

@@ -100,7 +100,11 @@ public class RaZombie extends CapableZombie {
     @Override
     public void handleDeath() {
         for (int i = 0; i < stolenSunCount / 25; i++) {
-            AppModel.gameSession.gameBoard.economyManager.suns.add(new Sun(getX(), getY(), SunType.NORMAL, false, (float) getY()));
+            AppModel.gameSession.gameBoard.economyManager.suns.add(new Sun(getX(),
+                getY(),
+                SunType.NORMAL,
+                false,
+                (float) getY()));
         }
 //        shouldBackSun = true;
     }

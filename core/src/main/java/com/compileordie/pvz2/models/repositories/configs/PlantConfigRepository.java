@@ -1,4 +1,5 @@
 package com.compileordie.pvz2.models.repositories.configs;
+
 import com.badlogic.gdx.Gdx;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.models.entities.plants.PlantTemplate;
@@ -9,11 +10,14 @@ import com.compileordie.pvz2.models.entities.plants.enums.PlantFoodEffectType;
 import com.compileordie.pvz2.models.entities.plants.enums.PlantTag;
 import com.compileordie.pvz2.models.entities.plants.types.PlantType;
 import com.compileordie.pvz2.models.entities.projectiles.*;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.*;
+
 public class PlantConfigRepository {
     private final Map<String, PlantTemplate> plantDatabase = new HashMap<>();
+
     public void loadFromCSV(String filePath) {
         try (BufferedReader br = new BufferedReader(Gdx.files.internal(filePath).reader())) {
             String line;
@@ -24,13 +28,16 @@ public class PlantConfigRepository {
                     continue;
                 }
                 String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
-                if (parts.length < 16) continue;
+                if (parts.length < 16) {
+                    continue;
+                }
                 processCsvRow(parts);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
     private void processCsvRow(String[] parts) {
         try {
             PlantTemplate template = new PlantTemplate();
@@ -47,10 +54,13 @@ public class PlantConfigRepository {
             e.printStackTrace();
         }
     }
+
     private void parseBasicInfo(PlantTemplate template, String[] parts) {
         template.setName(parts[1].trim());
-        template.setCategory(PlantCategory.valueOf(parts[2].trim().toUpperCase().replace(" ", "_").replace("-", "_")));
+        String categoryStr = parts[2].trim().toUpperCase().replace(" ", "_").replace("-", "_");
+        template.setCategory(PlantCategory.valueOf(categoryStr));
     }
+
     private List<PlantTag> parseTags(String rawTags) {
         List<PlantTag> tags = new ArrayList<>();
         if (!rawTags.equals("-") && !rawTags.isEmpty()) {
@@ -58,11 +68,13 @@ public class PlantConfigRepository {
             for (String t : rawTags.split(",")) {
                 try {
                     tags.add(PlantTag.valueOf(t.trim().toUpperCase().replace(" ", "_")));
-                } catch (IllegalArgumentException ignored) {}
+                } catch (IllegalArgumentException ignored) {
+                }
             }
         }
         return tags;
     }
+
     private void parseStats(PlantTemplate template, String[] parts) {
         template.setCost(Integer.parseInt(parts[4].trim()));
         template.setBaseHp(Integer.parseInt(parts[5].trim()));
@@ -82,11 +94,14 @@ public class PlantConfigRepository {
         if (intervalStr.equals("-")) {
             template.setActionIntervalTicks(0);
         } else {
-            template.setActionIntervalTicks((int) Math.floor(Double.parseDouble(intervalStr) / Constants.Game.TIME_COEFFICIENT));
+            template.setActionIntervalTicks(
+                (int) Math.floor(Double.parseDouble(intervalStr) / Constants.Game.TIME_COEFFICIENT));
         }
         String rechargeStr = parts[13].trim();
-        template.setRechargeTicks((int) Math.floor(Double.parseDouble(rechargeStr) / Constants.Game.TIME_COEFFICIENT));
+        template.setRechargeTicks(
+            (int) Math.floor(Double.parseDouble(rechargeStr) / Constants.Game.TIME_COEFFICIENT));
     }
+
     private Map<Integer, UpgradeLevel> parseUpgradeMap(String[] parts) {
         Map<Integer, UpgradeLevel> upgradeMap = new HashMap<>();
         upgradeMap.put(2, parseUpgradeString(parts[9].trim()));
@@ -94,6 +109,7 @@ public class PlantConfigRepository {
         upgradeMap.put(4, parseUpgradeString(parts[11].trim()));
         return upgradeMap;
     }
+
     private void parseStrategies(PlantTemplate template, String[] parts) {
         String attackStr = parts[14].trim().toUpperCase();
         if (!attackStr.equals("NONE")) {
@@ -108,6 +124,7 @@ public class PlantConfigRepository {
             template.setFoodEffectType(PlantFoodEffectType.NONE);
         }
     }
+
     private void applyDefaultValues(PlantTemplate template) {
         template.setProjectileType(NormalProjectile.class);
         template.setLaneOffsets(Collections.singletonList(0));
@@ -115,80 +132,86 @@ public class PlantConfigRepository {
         template.setRangeTiles(10.0);
         template.setFoodEffectValue(1);
     }
+
     public PlantTemplate getTemplate(String plantName) {
         return plantDatabase.get(plantName);
     }
+
     public PlantTemplate getTemplate(PlantType plantType) {
         return plantDatabase.get(plantType.getCommercialName());
     }
+
     private UpgradeLevel parseUpgradeString(String upgradeStr) {
-        int hpBonus = 0;
-        int damageBonus = 0;
-        int costReduction = 0;
-        double actionIntervalReductionTicks = 0.0;
-        double growTimeReductionTicks = 0.0;
-        double rechargeReductionTicks = 0.0;
-        double chillTimeBonusTicks = 0.0;
-        boolean doubleSun = false;
-        boolean targetPriorityUp = false;
-        int extraSunYield = 0;
-        int pierceBonus = 0;
-        double atkSpeedBonusPercentage = 0.0;
-        int poisonDmgTickBonus = 0;
-        double plantFoodChanceBonus = 0.0;
-        double rangeBonus = 0.0;
-        double lifespanBonusTicks = 0.0;
-        double butterChanceBonus = 0.0;
-        int aoeDamageBonus = 0;
-        int warmthRadiusBonus = 0;
-        double armTimeReductionTicks = 0.0;
-        int extraCrushes = 0;
-        int extraBounces = 0;
-        int extraTargets = 0;
-        double freezeTimeBonusTicks = 0.0;
-        int maxSizeBonus = 0;
-        boolean explodesOnDeath = false;
-        boolean zombieHpBuff = false;
-        boolean zombieDmgBuff = false;
-        boolean plantFoodOnSpawn = false;
-        boolean meltArea3x3 = false;
-        double mintDurationBonusTicks = 0.0;
-        boolean resetFamilyCooldowns = false;
-        upgradeStr = upgradeStr.toLowerCase();
-        if (upgradeStr.contains("dmg +") || upgradeStr.contains("explode dmg +")) damageBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
-        if (upgradeStr.contains("target priority up")) targetPriorityUp = true;
-        if (upgradeStr.contains("hp +")) hpBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
-        if (upgradeStr.contains("cost -")) costReduction = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
-        if (upgradeStr.contains("double sun")) doubleSun = true;
-        if (upgradeStr.contains("sun +") || upgradeStr.contains("sun drop +")) extraSunYield = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
-        if (upgradeStr.contains("dmg/tick +")) poisonDmgTickBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
-        if (upgradeStr.contains("atk speed +")) atkSpeedBonusPercentage = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", ""));
-        if (upgradeStr.contains("pierce +")) pierceBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
-        if (upgradeStr.contains("plant food chance +")) plantFoodChanceBonus = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", ""));
-        if (upgradeStr.contains("range +")) rangeBonus = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", ""));
-        if (upgradeStr.contains("lifespan +")) lifespanBonusTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) / Constants.Game.TIME_COEFFICIENT;
-        if (upgradeStr.contains("butter +")) butterChanceBonus = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", ""));
-        if (upgradeStr.contains("cooldown -")) rechargeReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) / Constants.Game.TIME_COEFFICIENT;
-        if (upgradeStr.contains("eat time -") || upgradeStr.contains("prod. time -") || upgradeStr.contains("charge time -") || upgradeStr.contains("regen -") || upgradeStr.contains("digest -")) actionIntervalReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) / Constants.Game.TIME_COEFFICIENT;
-        if (upgradeStr.contains("grow time -")) growTimeReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) / Constants.Game.TIME_COEFFICIENT;
-        if (upgradeStr.contains("chill time +")) chillTimeBonusTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) / Constants.Game.TIME_COEFFICIENT;
-        if (upgradeStr.contains("aoe dmg +")) aoeDamageBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
-        if (upgradeStr.contains("warmth radius +")) warmthRadiusBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
-        if (upgradeStr.contains("arm time -")) armTimeReductionTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) / Constants.Game.TIME_COEFFICIENT;
-        if (upgradeStr.contains("crush 2x")) extraCrushes = 1;
-        if (upgradeStr.contains("bounces +")) extraBounces = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
-        if (upgradeStr.contains("targets +")) extraTargets = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
-        if (upgradeStr.contains("freeze time +")) freezeTimeBonusTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) / Constants.Game.TIME_COEFFICIENT;
-        if (upgradeStr.contains("max size +")) maxSizeBonus = Integer.parseInt(upgradeStr.replaceAll("[^0-9]", ""));
-        if (upgradeStr.contains("aoe on death") || upgradeStr.contains("explode on finish")) explodesOnDeath = true;
-        if (upgradeStr.contains("zombie hp buff")) zombieHpBuff = true;
-        if (upgradeStr.contains("zombie dmg buff")) zombieDmgBuff = true;
-        if (upgradeStr.contains("plant food on enter")) plantFoodOnSpawn = true;
-        if (upgradeStr.contains("melt area")) meltArea3x3 = true;
-        if (upgradeStr.contains("duration +")) mintDurationBonusTicks = Double.parseDouble(upgradeStr.replaceAll("[^0-9.]", "")) * 60.0;
-        if (upgradeStr.contains("reset family")) resetFamilyCooldowns = true;
-        return new UpgradeLevel(hpBonus, damageBonus, costReduction, actionIntervalReductionTicks, rechargeReductionTicks, doubleSun, growTimeReductionTicks, extraSunYield, chillTimeBonusTicks, targetPriorityUp, pierceBonus, atkSpeedBonusPercentage, poisonDmgTickBonus, plantFoodChanceBonus, rangeBonus, lifespanBonusTicks, butterChanceBonus, aoeDamageBonus, warmthRadiusBonus, armTimeReductionTicks,extraCrushes, extraBounces, extraTargets, freezeTimeBonusTicks, maxSizeBonus, explodesOnDeath, zombieHpBuff, zombieDmgBuff, plantFoodOnSpawn, meltArea3x3, mintDurationBonusTicks, resetFamilyCooldowns);
+        int hpBonus = 0, damageBonus = 0, costReduction = 0, extraSunYield = 0, pierceBonus = 0;
+        int poisonDmgTickBonus = 0, aoeDamageBonus = 0, warmthRadiusBonus = 0, extraCrushes = 0;
+        int extraBounces = 0, extraTargets = 0, maxSizeBonus = 0;
+        double actionIntervalReductionTicks = 0.0, growTimeReductionTicks = 0.0, rechargeReductionTicks = 0.0;
+        double chillTimeBonusTicks = 0.0, atkSpeedBonusPercentage = 0.0, plantFoodChanceBonus = 0.0;
+        double rangeBonus = 0.0, lifespanBonusTicks = 0.0, butterChanceBonus = 0.0, armTimeReductionTicks = 0.0;
+        double freezeTimeBonusTicks = 0.0, mintDurationBonusTicks = 0.0;
+        boolean doubleSun = false, targetPriorityUp = false, explodesOnDeath = false, zombieHpBuff = false;
+        boolean zombieDmgBuff = false, plantFoodOnSpawn = false, meltArea3x3 = false, resetFamilyCooldowns = false;
+
+        String s = upgradeStr.toLowerCase();
+        if (s.contains("dmg +") || s.contains("explode dmg +")) damageBonus = extractInt(s);
+        if (s.contains("target priority up")) targetPriorityUp = true;
+        if (s.contains("hp +")) hpBonus = extractInt(s);
+        if (s.contains("cost -")) costReduction = extractInt(s);
+        if (s.contains("double sun")) doubleSun = true;
+        if (s.contains("sun +") || s.contains("sun drop +")) extraSunYield = extractInt(s);
+        if (s.contains("dmg/tick +")) poisonDmgTickBonus = extractInt(s);
+        if (s.contains("atk speed +")) atkSpeedBonusPercentage = extractDouble(s);
+        if (s.contains("pierce +")) pierceBonus = extractInt(s);
+        if (s.contains("plant food chance +")) plantFoodChanceBonus = extractDouble(s);
+        if (s.contains("range +")) rangeBonus = extractDouble(s);
+        if (s.contains("lifespan +")) lifespanBonusTicks = extractTimeInTicks(s);
+        if (s.contains("butter +")) butterChanceBonus = extractDouble(s);
+        if (s.contains("cooldown -")) rechargeReductionTicks = extractTimeInTicks(s);
+        if (s.contains("eat time -") || s.contains("prod. time -") || s.contains("charge time -")
+            || s.contains("regen -") || s.contains("digest -")) {
+            actionIntervalReductionTicks = extractTimeInTicks(s);
+        }
+        if (s.contains("grow time -")) growTimeReductionTicks = extractTimeInTicks(s);
+        if (s.contains("chill time +")) chillTimeBonusTicks = extractTimeInTicks(s);
+        if (s.contains("aoe dmg +")) aoeDamageBonus = extractInt(s);
+        if (s.contains("warmth radius +")) warmthRadiusBonus = extractInt(s);
+        if (s.contains("arm time -")) armTimeReductionTicks = extractTimeInTicks(s);
+        if (s.contains("crush 2x")) extraCrushes = 1;
+        if (s.contains("bounces +")) extraBounces = extractInt(s);
+        if (s.contains("targets +")) extraTargets = extractInt(s);
+        if (s.contains("freeze time +")) freezeTimeBonusTicks = extractTimeInTicks(s);
+        if (s.contains("max size +")) maxSizeBonus = extractInt(s);
+        if (s.contains("aoe on death") || s.contains("explode on finish")) explodesOnDeath = true;
+        if (s.contains("zombie hp buff")) zombieHpBuff = true;
+        if (s.contains("zombie dmg buff")) zombieDmgBuff = true;
+        if (s.contains("plant food on enter")) plantFoodOnSpawn = true;
+        if (s.contains("melt area")) meltArea3x3 = true;
+        if (s.contains("duration +")) mintDurationBonusTicks = extractDouble(s) * 60.0;
+        if (s.contains("reset family")) resetFamilyCooldowns = true;
+
+        return new UpgradeLevel(
+            hpBonus, damageBonus, costReduction, actionIntervalReductionTicks, rechargeReductionTicks,
+            doubleSun, growTimeReductionTicks, extraSunYield, chillTimeBonusTicks, targetPriorityUp,
+            pierceBonus, atkSpeedBonusPercentage, poisonDmgTickBonus, plantFoodChanceBonus, rangeBonus,
+            lifespanBonusTicks, butterChanceBonus, aoeDamageBonus, warmthRadiusBonus, armTimeReductionTicks,
+            extraCrushes, extraBounces, extraTargets, freezeTimeBonusTicks, maxSizeBonus, explodesOnDeath,
+            zombieHpBuff, zombieDmgBuff, plantFoodOnSpawn, meltArea3x3, mintDurationBonusTicks,
+            resetFamilyCooldowns
+        );
     }
+
+    private int extractInt(String s) {
+        return Integer.parseInt(s.replaceAll("[^0-9]", ""));
+    }
+
+    private double extractDouble(String s) {
+        return Double.parseDouble(s.replaceAll("[^0-9.]", ""));
+    }
+
+    private double extractTimeInTicks(String s) {
+        return extractDouble(s) / Constants.Game.TIME_COEFFICIENT;
+    }
+
     private void assignSpecificParameters(PlantTemplate t) {
         String name = t.getName();
         if (name.equals("Snow Pea") || name.equals("Ice-shroom")) {
@@ -197,7 +220,8 @@ public class PlantConfigRepository {
             t.setProjectileType(FireProjectile.class);
         } else if (name.equals("Goo Peashooter")) {
             t.setProjectileType(PoisonProjectile.class);
-        } else if (name.equals("Cabbage-pult") || name.equals("Melon-pult") || name.equals("Winter Melon") || name.equals("Pepper-pult") || name.equals("Kernel-pult")) {
+        } else if (name.equals("Cabbage-pult") || name.equals("Melon-pult") || name.equals("Winter Melon")
+            || name.equals("Pepper-pult") || name.equals("Kernel-pult")) {
             if (name.equals("Winter Melon")) {
                 t.setProjectileType(IceLobbedProjectile.class);
             } else if (name.equals("Pepper-pult")) {
@@ -205,25 +229,32 @@ public class PlantConfigRepository {
             } else {
                 t.setProjectileType(LobbedProjectile.class);
             }
-            t.setRangeTiles(name.equals("Melon-pult") || name.equals("Winter Melon")  || name.equals("Pepper-pult") ? 1.5 : 0.0);
-        } else if (name.equals("Potato Mine") || name.equals("Primal Potato Mine") || name.equals("Iceberg Lettuce")) {
+            t.setRangeTiles(name.equals("Melon-pult") || name.equals("Winter Melon")
+                || name.equals("Pepper-pult") ? 1.5 : 0.0);
+        } else if (name.equals("Potato Mine") || name.equals("Primal Potato Mine")
+            || name.equals("Iceberg Lettuce")) {
             t.setRangeTiles(name.equals("Primal Potato Mine") ? 1.5 : 0.0);
             if (!name.equals("Iceberg Lettuce")) {
                 t.setFoodEffectValue(2);
             } else {
                 t.setFoodEffectValue(150);
             }
-        } else if (name.equals("Cherry Bomb") || name.equals("Grapeshot")) {t.setRangeTiles(1.5);}
-        if (name.equals("Doom-shroom")) { t.setRangeTiles(2.5); }
-        else if (name.equals("Jalapeno")) { t.setRangeTiles(0.0); }
-        else if (name.equals("Cactus")) {
+        } else if (name.equals("Cherry Bomb") || name.equals("Grapeshot")) {
+            t.setRangeTiles(1.5);
+        }
+        if (name.equals("Doom-shroom")) {
+            t.setRangeTiles(2.5);
+        } else if (name.equals("Jalapeno")) {
+            t.setRangeTiles(0.0);
+        } else if (name.equals("Cactus")) {
             t.setProjectileType(PiercingProjectile.class);
         } else if (name.equals("Fume-shroom")) {
             t.setProjectileType(FumeProjectile.class);
             t.setRangeTiles(5.0);
         } else if (name.equals("Bowling Bulb")) {
             t.setProjectileType(BouncingProjectile.class);
-        } else if (name.equals("Caulipower") || name.equals("Electric Blueberry") || name.equals("Electric Redberry") || name.equals("Cat-tail")) {
+        } else if (name.equals("Caulipower") || name.equals("Electric Blueberry")
+            || name.equals("Electric Redberry") || name.equals("Cat-tail")) {
             t.setProjectileType(HomingProjectile.class);
         }
         if (name.equals("Puff-shroom") || name.equals("Sea-shroom")) {
@@ -232,9 +263,12 @@ public class PlantConfigRepository {
         if (name.equals("Repeater")) {
             t.setShootVectors(Arrays.asList(new double[]{1.0, 0.0, 0.0}, new double[]{1.0, 0.0, 1.0}));
         } else if (name.equals("Split Pea")) {
-            t.setShootVectors(Arrays.asList(new double[]{1.0, 0.0, 0.0}, new double[]{-1.0, 0.0, 0.0}, new double[]{-1.0, 0.0, 1.0}));
+            t.setShootVectors(Arrays.asList(
+                new double[]{1.0, 0.0, 0.0}, new double[]{-1.0, 0.0, 0.0}, new double[]{-1.0, 0.0, 1.0}));
         } else if (name.equals("Mega Gatling Pea")) {
-            t.setShootVectors(Arrays.asList(new double[]{1.0, 0.0, 0.0}, new double[]{1.0, 0.0, 1.0}, new double[]{1.0, 0.0, 2.0}, new double[]{1.0, 0.0, 3.0}));
+            t.setShootVectors(Arrays.asList(
+                new double[]{1.0, 0.0, 0.0}, new double[]{1.0, 0.0, 1.0},
+                new double[]{1.0, 0.0, 2.0}, new double[]{1.0, 0.0, 3.0}));
         } else if (name.equals("Threepeater")) {
             t.setLaneOffsets(Arrays.asList(1, 0, -1));
             t.setShootVectors(Collections.singletonList(new double[]{1.0, 0.0, 0.0}));
@@ -248,16 +282,29 @@ public class PlantConfigRepository {
             }
             t.setShootVectors(rotoVectors);
         } else if (name.equals("Starfruit")) {
-            t.setShootVectors(Arrays.asList(new double[]{-1.0, 0.0, 0.0}, new double[]{0.0, -1.0, 0.0}, new double[]{0.0, 1.0, 0.0}, new double[]{1.0, -0.5, 0.0}, new double[]{1.0, 0.5, 0.0}));
+            t.setShootVectors(Arrays.asList(
+                new double[]{-1.0, 0.0, 0.0}, new double[]{0.0, -1.0, 0.0},
+                new double[]{0.0, 1.0, 0.0}, new double[]{1.0, -0.5, 0.0}, new double[]{1.0, 0.5, 0.0}));
         }
-        if (name.equals("Bonk Choy") || name.equals("Phat Beet") || name.equals("Wasabi Whip") || name.equals("Kiwibeast")) t.setRangeTiles(1.5);
+        if (name.equals("Bonk Choy") || name.equals("Phat Beet")
+            || name.equals("Wasabi Whip") || name.equals("Kiwibeast")) {
+            t.setRangeTiles(1.5);
+        }
         if (name.equals("Chomper")) {
             t.setRangeTiles(0.7);
             t.setFoodEffectValue(3);
         }
-        if (name.equals("Wall-nut") || name.equals("Explode-o-nut") || name.equals("Pumpkin")) t.setFoodEffectValue(4000);
-        if (name.equals("Tall-nut")) t.setFoodEffectValue(8000);
-        if (name.equals("Endurian") || name.equals("Sweet Potato")) t.setFoodEffectValue(3000);
-        if (name.equals("Caulipower") || name.equals("Electric Blueberry")) { t.setFoodEffectValue(3); }
+        if (name.equals("Wall-nut") || name.equals("Explode-o-nut") || name.equals("Pumpkin")) {
+            t.setFoodEffectValue(4000);
+        }
+        if (name.equals("Tall-nut")) {
+            t.setFoodEffectValue(8000);
+        }
+        if (name.equals("Endurian") || name.equals("Sweet Potato")) {
+            t.setFoodEffectValue(3000);
+        }
+        if (name.equals("Caulipower") || name.equals("Electric Blueberry")) {
+            t.setFoodEffectValue(3);
+        }
     }
 }
