@@ -39,7 +39,7 @@ public class GameMenuScreen extends MenuScreen {
 
     @Override
     public void showCore() {
-        // TODO: For debug purposes. Remove later:
+        /*// TODO: For debug purposes. Remove later:
         for (LevelID levelID : LevelID.values()) {
             if (!AppModel.player.unlockedLevelIDs.contains(levelID)) {
                 AppModel.player.unlockedLevelIDs.add(levelID);
@@ -56,7 +56,7 @@ public class GameMenuScreen extends MenuScreen {
             if (!AppModel.player.unlockedZombies.contains(zombieType)) {
                 AppModel.player.unlockedZombies.add(zombieType);
             }
-        }
+        }*/
 
         float screenW = stage.getWidth();
         float screenH = stage.getHeight();

@@ -31,7 +31,6 @@ import com.compileordie.pvz2.network.protocol.MessageType;
 import com.compileordie.pvz2.views.helpers.ToastManager;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class GameScreenController {
     public static PlantCard selectedPlantCard = null;
@@ -191,110 +190,150 @@ public class GameScreenController {
     }
 
     private static void handlePlantAction(Tile tile) {
-        // --- 1. SPECIAL EXCEPTION PLANTING RULES ---
-        if (selectedPlantCard.plantType == PlantType.HOT_POTATO) {
-            boolean hasIceBlock = tile.obstacle instanceof IceBlock;
-            // FIX: Check ALL slots for the ice cover!
-            boolean hasFrozenPlant = (tile.plant != null && tile.plant.isFrozen())
-                || (tile.pumpkin != null && tile.pumpkin.isFrozen())
-                || (tile.lilyPad != null && tile.lilyPad.isFrozen());
+        PlantType plantType = selectedPlantCard.plantType;
+        boolean isConveyor = isConveyorMode();
+        int cost = getPlantCost(plantType);
 
-            if (!hasIceBlock && !hasFrozenPlant) {
-                ToastManager.showError("Hot Potato can only be planted on Ice!");
-                return;
-            }
-        } else if (selectedPlantCard.plantType == PlantType.GRAVE_BUSTER) {
-            if (!(tile.obstacle instanceof Tomb)) {
-                ToastManager.showError("Grave Buster can only be planted on Graves!");
-                return;
-            }
-            boolean isConveyor = AppModel.gameSession.gameBoard.economyManager.type == EconomyType.CONVEYOR_BELT
-                || AppModel.currentLevel == LevelID.VASE_BREAKER;
-            PlantTemplate template = getConfigRepo().getTemplate(selectedPlantCard.plantType);
-            int cost = template != null ? template.getCost() : 0;
-
-            if (!isConveyor && AppModel.gameSession.gameBoard.economyManager.sunAmount < cost) {
-                ToastManager.showError("Not enough sun!");
-                return;
-            }
-
-            // 1. Deduct Sun / Handle Conveyor
-            if (isConveyor) {
-                AppModel.gameSession.gameBoard.economyManager.plantCards.remove(selectedPlantCard);
-            } else {
-                AppModel.gameSession.gameBoard.economyManager.sunAmount -= cost;
-                selectedPlantCard.setTimer();
-            }
-            ((Tomb) tile.obstacle).takeDamage(9999, ProjectileType.NORMAL);
-            ToastManager.showMessage("Grave Buster instantly consumed the tomb!");
-
-            cancelSelection();
-            return; // EXIT COMPLETELY. DO NOT CALL spawnAndDeduct!
-        } else if (selectedPlantCard.plantType == PlantType.LILY_PAD) {
-            if (!tile.isUnderWater()) {
-                ToastManager.showError("Lily Pad must be planted on Water!");
-                return;
-            }
-            if (tile.hasLilyPad()) {
-                ToastManager.showError("Tile already has a Lily Pad!");
-                return;
-            }
-        } else if (selectedPlantCard.plantType == PlantType.PUMPKIN) {
-            if (tile.hasPumpkin()) {
-                ToastManager.showError("Tile already has a Pumpkin!");
-                return;
-            }
-        }
-        else if (selectedPlantCard.plantType == PlantType.SEA_SHROOM || selectedPlantCard.plantType == PlantType.TANGLE_KELP) {
-            if (!tile.isUnderWater()) {
-                ToastManager.showError("This plant can only be planted in water!");
-                return;
-            }
-            if (tile.hasLilyPad()) {
-                ToastManager.showError("Aquatic plants don't need a Lily Pad!");
-                return;
-            }
-            if (tile.plant != null && tile.plant.isAlive()) {
-                ToastManager.showError("Tile is already occupied!");
-                return;
-            }
-        }
-
-        // --- 2. NORMAL PLANTING RULES ---
-        if (!List.of(PlantType.PEA_POD,
-                PlantType.HOT_POTATO,
-                PlantType.GRAVE_BUSTER,
-                PlantType.LILY_PAD,
-                PlantType.SEA_SHROOM,
-                PlantType.TANGLE_KELP,
-                PlantType.PUMPKIN)
-            .contains(selectedPlantCard.plantType)) {
-            if (tile.plant != null && tile.plant.isAlive()) {
-                ToastManager.showError("Tile is already occupied!");
-                return;
-            }
-            if (!tile.isPlantable()) {
-                ToastManager.showError("Tile is not plantable!");
-                return;
-            }
-        }
-        if (AppModel.currentLevel == LevelID.WALNUT_BOWLING
-            && tile.column >= Constants.Game.BOARD_COLS - ConfigManager.gameplay().bowlingLine) {
-            ToastManager.showError("You can't plant past the line!");
+        if (plantType == PlantType.GRAVE_BUSTER) {
+            handleGraveBuster(tile, cost, isConveyor);
             return;
         }
 
-        boolean isConveyor = AppModel.gameSession.gameBoard.economyManager.type == EconomyType.CONVEYOR_BELT
-            || AppModel.currentLevel == LevelID.VASE_BREAKER;
-        PlantTemplate template = getConfigRepo().getTemplate(selectedPlantCard.plantType);
-        int cost = template != null ? template.getCost() : 0;
-
-        if (!isConveyor && AppModel.gameSession.gameBoard.economyManager.sunAmount < cost) {
-            ToastManager.showError("Not enough sun!");
+        if (!isValidPlanting(tile, plantType) || !canAffordSun(cost, isConveyor)) {
             return;
         }
 
         spawnAndDeduct(tile, cost, isConveyor);
+    }
+
+    private static boolean isValidPlanting(Tile tile, PlantType plantType) {
+        if (!validatePlantPlacement(tile, plantType)) {
+            return false;
+        }
+
+        if (isPastBowlingLine(tile)) {
+            ToastManager.showError("You can't plant past the line!");
+            return false;
+        }
+
+        return true;
+    }
+
+    private static boolean validatePlantPlacement(Tile tile, PlantType plantType) {
+        return switch (plantType) {
+            case HOT_POTATO -> validateHotPotato(tile);
+            case LILY_PAD -> validateLilyPad(tile);
+            case PUMPKIN -> validatePumpkin(tile);
+            case SEA_SHROOM, TANGLE_KELP -> validateAquaticPlant(tile);
+            case PEA_POD -> true;
+            default -> validateStandardPlant(tile);
+        };
+    }
+
+    private static boolean validateHotPotato(Tile tile) {
+        boolean hasIceBlock = tile.obstacle instanceof IceBlock;
+        boolean hasFrozenPlant = (tile.plant != null && tile.plant.isFrozen())
+            || (tile.pumpkin != null && tile.pumpkin.isFrozen())
+            || (tile.lilyPad != null && tile.lilyPad.isFrozen());
+
+        if (!hasIceBlock && !hasFrozenPlant) {
+            ToastManager.showError("Hot Potato can only be planted on Ice!");
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean validateLilyPad(Tile tile) {
+        if (!tile.isUnderWater()) {
+            ToastManager.showError("Lily Pad must be planted on Water!");
+            return false;
+        }
+        if (tile.hasLilyPad()) {
+            ToastManager.showError("Tile already has a Lily Pad!");
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean validatePumpkin(Tile tile) {
+        if (tile.hasPumpkin()) {
+            ToastManager.showError("Tile already has a Pumpkin!");
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean validateAquaticPlant(Tile tile) {
+        if (!tile.isUnderWater()) {
+            ToastManager.showError("This plant can only be planted in water!");
+            return false;
+        }
+        if (tile.hasLilyPad()) {
+            ToastManager.showError("Aquatic plants don't need a Lily Pad!");
+            return false;
+        }
+        if (tile.plant != null && tile.plant.isAlive()) {
+            ToastManager.showError("Tile is already occupied!");
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean validateStandardPlant(Tile tile) {
+        if (tile.plant != null && tile.plant.isAlive()) {
+            ToastManager.showError("Tile is already occupied!");
+            return false;
+        }
+        if (!tile.isPlantable()) {
+            ToastManager.showError("Tile is not plantable!");
+            return false;
+        }
+        return true;
+    }
+
+    private static void handleGraveBuster(Tile tile, int cost, boolean isConveyor) {
+        if (!(tile.obstacle instanceof Tomb)) {
+            ToastManager.showError("Grave Buster can only be planted on Graves!");
+            return;
+        }
+        if (!canAffordSun(cost, isConveyor)) {
+            return;
+        }
+
+        var economy = AppModel.gameSession.gameBoard.economyManager;
+        if (isConveyor) {
+            economy.plantCards.remove(selectedPlantCard);
+        } else {
+            economy.sunAmount -= cost;
+            selectedPlantCard.setTimer();
+        }
+
+        ((Tomb) tile.obstacle).takeDamage(9999, ProjectileType.NORMAL);
+        ToastManager.showMessage("Grave Buster instantly consumed the tomb!");
+        cancelSelection();
+    }
+
+    private static boolean canAffordSun(int cost, boolean isConveyor) {
+        if (!isConveyor && AppModel.gameSession.gameBoard.economyManager.sunAmount < cost) {
+            ToastManager.showError("Not enough sun!");
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean isConveyorMode() {
+        return AppModel.gameSession.gameBoard.economyManager.type == EconomyType.CONVEYOR_BELT
+            || AppModel.currentLevel == LevelID.VASE_BREAKER;
+    }
+
+    private static int getPlantCost(PlantType plantType) {
+        PlantTemplate template = getConfigRepo().getTemplate(plantType);
+        return template != null ? template.getCost() : 0;
+    }
+
+    private static boolean isPastBowlingLine(Tile tile) {
+        return AppModel.currentLevel == LevelID.WALNUT_BOWLING
+            && tile.column >= Constants.Game.BOARD_COLS - ConfigManager.gameplay().bowlingLine;
     }
 
     private static void spawnAndDeduct(Tile tile, int cost, boolean isConveyor) {
@@ -323,9 +362,8 @@ public class GameScreenController {
 
             tile.plant = newPlant;
             AppModel.gameSession.gameBoard.recordPlanting(selectedPlantCard.plantType, tile);
-            tile.plant = null; // Remove it from the main slot immediately after!
+            tile.plant = null;
 
-            // --- NOW ROUTE TO THE CORRECT SLOT ---
             if (selectedPlantCard.plantType == PlantType.LILY_PAD) {
                 tile.lilyPad = newPlant;
             } else if (selectedPlantCard.plantType == PlantType.PUMPKIN) {
@@ -336,8 +374,7 @@ public class GameScreenController {
             } else {
                 tile.plant = newPlant;
             }
-            // Feeds Master Demolisher / Cloudy Day / Night or Morning / Family Slayer /
-            // One Less Column / Defenseless Row / Defenseless Cross.
+
             AppModel.gameSession.gameBoard.recordPlanting(selectedPlantCard.plantType, tile);
         }
         QuestManager.dispatch(QuestEvent.PLANT_PLANTED, 1, AppModel.currentChapter.name());

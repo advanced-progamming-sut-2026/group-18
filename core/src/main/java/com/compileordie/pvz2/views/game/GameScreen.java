@@ -239,13 +239,7 @@ public class GameScreen implements Screen {
             return;
         }
 
-        Tile clickedTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
-        if (clickedTile != null) {
-            GameScreenController.handleTileClick(clickedTile);
-            return;
-        }
-
-        // TODO: For debug purposes. Remove later:
+        /*// TODO: For debug purposes. Remove later:
         if (!Gdx.input.justTouched()) return;
         touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0);
         viewport.unproject(touchPoint);
@@ -256,6 +250,12 @@ public class GameScreen implements Screen {
             touchPoint.x, touchPoint.y, meterX, meterY));
         if ((testPastKommeh && hasWeTestForClickForDamaging) || overrideForceDamageClick) {
             handleClickDamageTest(touchPoint.x, touchPoint.y);
+        }*/
+
+        Tile clickedTile = GameScreenController.getTileAt(Gdx.input.getX(), Gdx.input.getY(), viewport);
+        if (clickedTile != null) {
+            GameScreenController.handleTileClick(clickedTile);
+            return;
         }
     }
 

@@ -10,7 +10,6 @@ import com.compileordie.pvz2.models.missions.quests.QuestManager;
 
 public class ExplorerZombie extends CapableZombie {
     public static final int WAVE_COST = 250;
-    // TODO : در فاز گرافیک باید اصلاح دقیق بشود
     public static double enoghDistance = Constants.Game.TILE_WIDTH * 1.5;
     private boolean isTorchOn;
 
