@@ -13,9 +13,6 @@ dependencies {
   implementation "de.mkammerer:argon2-jvm:$argon2Version"
   implementation "com.github.pizpizi:pvz-skin:$pvzSkinVersion"
   implementation "com.github.pizpizi:libPVZ:$libPvzVersion"
-  implementation "com.esotericsoftware:kryo:$kryoVersion"
-
-  // Used in utility scripts/headless tools
   implementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
 
   if (enableGraalNative == 'true') {
@@ -23,12 +20,46 @@ dependencies {
   }
 }
 
+// 1. Standard thin jar (required by :lwjgl3 for core class dependencies)
 jar {
+  archiveFileName.set("core-${projectVersion}.jar")
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
-sourceSets {
-  main {
-    resources.srcDirs += [ '../assets' ]
+// 2. Dedicated runnable Server Fat JAR + Terminal Launcher
+tasks.register('serverJar', Jar) {
+  archiveFileName.set("${appName}-server-${projectVersion}.jar")
+  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+  dependsOn configurations.runtimeClasspath
+  from {
+    configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+  }
+  from sourceSets.main.output
+
+  exclude('META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA')
+  dependencies {
+    exclude('META-INF/INDEX.LIST', 'META-INF/maven/**')
+  }
+
+  manifest {
+    attributes(
+      'Main-Class': 'com.compileordie.pvz2.server.Server',
+      'Enable-Native-Access': 'ALL-UNNAMED',
+      'Multi-Release': 'true'
+    )
+  }
+
+  doLast {
+    File batFile = new File(destinationDirectory.get().asFile, "run-server.bat")
+    batFile.text = """@echo off
+title PVZ2 Dedicated Server
+java --enable-native-access=ALL-UNNAMED -jar "${archiveFileName.get()}"
+echo.
+echo ========================================================
+echo Server process has stopped.
+echo ========================================================
+pause
+"""
   }
 }

@@ -19,8 +19,8 @@ public class AppModel {
     public static GameSession gameSession = null;
     public static HashMap<PlantType, Boolean> selectionDeck = new HashMap<>();
     public static Boolean wonLastGame = null;
-    public static boolean isReceiverClient = false; // TODO: Initialize
-    public static String opponentUsername = null; // TODO: Initialize
+    public static boolean isReceiverClient = false;
+    public static String opponentUsername = null;
 
     private AppModel() {
     }
