@@ -5,6 +5,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.compileordie.pvz2.config.Constants;
 import com.compileordie.pvz2.controllers.PlantSpawner;
 import com.compileordie.pvz2.models.AppModel;
+import com.compileordie.pvz2.models.entities.obstacles.IceBlock;
 import com.compileordie.pvz2.models.entities.plants.Plant;
 import com.compileordie.pvz2.models.entities.plants.PlantTemplate;
 import com.compileordie.pvz2.models.entities.plants.enums.ProjectileType;
@@ -192,7 +193,7 @@ public class GameScreenController {
     private static void handlePlantAction(Tile tile) {
         // --- 1. SPECIAL EXCEPTION PLANTING RULES ---
         if (selectedPlantCard.plantType == PlantType.HOT_POTATO) {
-            boolean hasIceBlock = tile.obstacle instanceof com.compileordie.pvz2.models.entities.obstacles.IceBlock;
+            boolean hasIceBlock = tile.obstacle instanceof IceBlock;
             // FIX: Check ALL slots for the ice cover!
             boolean hasFrozenPlant = (tile.plant != null && tile.plant.isFrozen())
                 || (tile.pumpkin != null && tile.pumpkin.isFrozen())
@@ -207,12 +208,6 @@ public class GameScreenController {
                 ToastManager.showError("Grave Buster can only be planted on Graves!");
                 return;
             }
-
-            // ==========================================
-            // 🚨 EMERGENCY PRESENTATION NIGHT HACK 🚨
-            // ==========================================
-            // Do NOT spawn a Plant object to prevent engine crashes.
-            // Just deduct the sun and instantly kill the grave!
             boolean isConveyor = AppModel.gameSession.gameBoard.economyManager.type == EconomyType.CONVEYOR_BELT
                 || AppModel.currentLevel == LevelID.VASE_BREAKER;
             PlantTemplate template = getConfigRepo().getTemplate(selectedPlantCard.plantType);
@@ -230,11 +225,7 @@ public class GameScreenController {
                 AppModel.gameSession.gameBoard.economyManager.sunAmount -= cost;
                 selectedPlantCard.setTimer();
             }
-
-            // 2. Instantly shatter the grave! (Bypasses PlantSpawner entirely)
             ((Tomb) tile.obstacle).takeDamage(9999, ProjectileType.NORMAL);
-
-            // 3. Show a message so it looks intentional!
             ToastManager.showMessage("Grave Buster instantly consumed the tomb!");
 
             cancelSelection();
@@ -254,12 +245,28 @@ public class GameScreenController {
                 return;
             }
         }
+        else if (selectedPlantCard.plantType == PlantType.SEA_SHROOM || selectedPlantCard.plantType == PlantType.TANGLE_KELP) {
+            if (!tile.isUnderWater()) {
+                ToastManager.showError("This plant can only be planted in water!");
+                return;
+            }
+            if (tile.hasLilyPad()) {
+                ToastManager.showError("Aquatic plants don't need a Lily Pad!");
+                return;
+            }
+            if (tile.plant != null && tile.plant.isAlive()) {
+                ToastManager.showError("Tile is already occupied!");
+                return;
+            }
+        }
 
         // --- 2. NORMAL PLANTING RULES ---
         if (!List.of(PlantType.PEA_POD,
                 PlantType.HOT_POTATO,
                 PlantType.GRAVE_BUSTER,
                 PlantType.LILY_PAD,
+                PlantType.SEA_SHROOM,
+                PlantType.TANGLE_KELP,
                 PlantType.PUMPKIN)
             .contains(selectedPlantCard.plantType)) {
             if (tile.plant != null && tile.plant.isAlive()) {
