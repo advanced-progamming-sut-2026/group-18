@@ -55,7 +55,7 @@ public class Vase extends GameEntity {
             gameBoard.getLane((float) getY()).zombies.add(ZombieBuilder.create(zombieType,
                 getX(),
                 getY(),
-                getTileRow()));
+                getTileRow() + 1)); // XXX: loose patch!
         } else if (seedPacket != null) {
             gameBoard.seedPackets.add(seedPacket);
         }
