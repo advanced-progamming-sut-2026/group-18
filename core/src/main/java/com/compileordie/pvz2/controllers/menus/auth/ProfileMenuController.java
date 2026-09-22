@@ -57,6 +57,9 @@ public class ProfileMenuController {
 
     /** یکتایی نهایی username را حالا سرور چک می‌کند، نه UserValidator.isUsernameUnique محلی (که همیشه true بود). */
     private static Result<Void> changeUsername(String newUsername) {
+        if (!AppModel.isOnline) {
+            return Result.failure("Username cannot be changed while offline to prevent conflicts.");
+        }
         String session = NetworkSession.getCurrentSession();
         Message result;
         try {
@@ -92,6 +95,9 @@ public class ProfileMenuController {
     }
 
     public static Result<Void> changePassword(String oldPassword, String newPassword) {
+        if (!AppModel.isOnline) {
+            return Result.failure("Password cannot be changed while offline.");
+        }
         if (oldPassword.equals(newPassword)) {
             return Result.failure("New password cannot be the same as the current password");
         }

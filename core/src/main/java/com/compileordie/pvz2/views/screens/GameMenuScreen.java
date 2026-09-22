@@ -31,6 +31,7 @@ import com.compileordie.pvz2.views.customelements.CurrencyHud;
 import com.compileordie.pvz2.views.customelements.IZombieInviteModal;
 import com.compileordie.pvz2.views.customelements.LeaderboardModal;
 import com.compileordie.pvz2.views.customelements.LevelSelectionModal;
+import com.compileordie.pvz2.views.helpers.ToastManager;
 
 public class GameMenuScreen extends MenuScreen {
     private Image backgroundImage;
@@ -273,6 +274,10 @@ public class GameMenuScreen extends MenuScreen {
 
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                if (!AppModel.isOnline) {
+                    ToastManager.showError("This feature is unavailable in offline mode.");
+                    return;
+                }
                 LeaderboardModal modal = new LeaderboardModal(skin);
                 modal.show(stage);
             }

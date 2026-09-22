@@ -49,6 +49,7 @@ public class Player implements Json.Serializable {
     public int gameSpeedCoefficient = 1;
     public boolean showGridBox = false;
     public boolean debugMode = false;
+    public boolean pendingServerSync = false;
 
     public Player() {
     }
@@ -68,6 +69,7 @@ public class Player implements Json.Serializable {
         this.passwordHash = passwordHash;
         this.securityQuestion = securityQuestion;
         this.securityAnswer = securityAnswer;
+        this.pendingServerSync = pendingServerSync;
         // Call the setup method for BRAND-NEW players
         initializeMissingData();
         // Setup new-player-only things (like unlocking starting levels)

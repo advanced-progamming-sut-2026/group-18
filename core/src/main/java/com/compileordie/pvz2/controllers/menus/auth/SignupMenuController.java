@@ -2,6 +2,7 @@ package com.compileordie.pvz2.controllers.menus.auth;
 
 import com.compileordie.pvz2.models.AppModel;
 import com.compileordie.pvz2.models.components.Result;
+import com.compileordie.pvz2.models.repositories.databases.UserDatabase;
 import com.compileordie.pvz2.models.user.Gender;
 import com.compileordie.pvz2.models.user.Player;
 import com.compileordie.pvz2.models.user.UserValidator;
@@ -65,54 +66,57 @@ public class SignupMenuController {
             return Result.failure("Please fill the security answer");
         }
 
-        Message registerResult;
+        Message registerResult = null;
         try {
             AuthClient authClient = NetworkSession.ensureConnected();
             registerResult = authClient.register(username, password);
+            AppModel.isOnline = true;
         } catch (IOException e) {
-            return Result.failure("Could not connect to the server. Please check your connection.");
+            AppModel.isOnline = false;
+            if (AuthManager.getUserByUsername(username) != null) {
+                return Result.failure("Username already exists locally. Connect to server to verify.");
+            }
         }
 
-        String status = registerResult.get("status");
-        if (status == null) {
-            return Result.failure("Server did not respond. Please try again.");
+        if (AppModel.isOnline) {
+            String status = registerResult.get("status");
+            if (status == null) return Result.failure("Server did not respond. Please try again.");
+
+            switch (status) {
+                case "USERNAME_TAKEN":
+                    return Result.failure("This username is already taken");
+                case "INVALID_USERNAME":
+                    return Result.failure(orDefault(registerResult.get("error"), "Invalid username"));
+                case "INVALID_PASSWORD":
+                    return Result.failure(orDefault(registerResult.get("error"), "Invalid password"));
+                case "SUCCESS":
+                    break;
+                default:
+                    return Result.failure("Could not reach the server. Please try again.");
+            }
+
+            NetworkSession.setCurrentSession(registerResult.get("session"));
         }
 
-        switch (status) {
-            case "USERNAME_TAKEN":
-                return Result.failure("This username is already taken");
-            case "INVALID_USERNAME":
-                return Result.failure(orDefault(registerResult.get("error"), "Invalid username"));
-            case "INVALID_PASSWORD":
-                return Result.failure(orDefault(registerResult.get("error"), "Invalid password"));
-            case "SUCCESS":
-                break;
-            default:
-                return Result.failure("Could not reach the server. Please try again.");
-        }
-
-        String session = registerResult.get("session");
-
-        // پسورد آرگون۲ فقط برای نگه‌داری محلی/نمایشی داخل خود Player است؛ سرور جدا و با
-        // SHA-256 پسورد واقعی احراز هویت را نگه می‌دارد (نه این فیلد).
         String localPasswordHash = AuthManager.hashPassword(password.toCharArray());
         Player player = new Player(username, localPasswordHash, nickname, email, genderType, question, answer);
 
-        String serializedPlayer = PlayerSerializer.serialize(player);
-        Message pushResult;
-        try {
-            pushResult = NetworkSession.ensureConnected().pushPlayerData(session, serializedPlayer);
-        } catch (IOException e) {
-            return Result.failure("Registered, but could not save initial player data. Please try logging in again.");
-        }
-
-        if (!"SUCCESS".equals(pushResult.get("status"))) {
-            return Result.failure("Registered, but could not save initial player data. Please try logging in again.");
+        if (AppModel.isOnline) {
+            String serializedPlayer = PlayerSerializer.serialize(player);
+            try {
+                Message pushResult = NetworkSession.ensureConnected().pushPlayerData(NetworkSession.getCurrentSession(), serializedPlayer);
+                if (!"SUCCESS".equals(pushResult.get("status"))) {
+                    return Result.failure("Registered, but could not save initial player data.");
+                }
+            } catch (IOException e) {
+                return Result.failure("Registered, but could not save initial player data.");
+            }
+        } else {
+            player.pendingServerSync = true;
+            new UserDatabase(username).save(player);
         }
 
         AppModel.player = player;
-        NetworkSession.setCurrentSession(session);
-
         return Result.success();
     }
 

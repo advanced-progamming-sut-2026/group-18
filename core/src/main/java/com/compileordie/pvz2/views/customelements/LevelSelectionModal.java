@@ -89,6 +89,10 @@ public class LevelSelectionModal extends BaseModal {
                     ToastManager.showError("You must unlock this level first!");
                     return;
                 }
+                if (level == LevelID.I_ZOMBIE && !AppModel.isOnline) {
+                    ToastManager.showError("This feature is unavailable in offline mode.");
+                    return;
+                }
                 hide();
                 AppModel.currentLevel = level;
                 AppModel.selectionDeck.clear();

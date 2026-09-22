@@ -33,14 +33,71 @@ public class LoginMenuController {
         try {
             AuthClient authClient = NetworkSession.ensureConnected();
             result = authClient.login(username, password);
+            AppModel.isOnline = true;
         } catch (IOException e) {
-            return Result.failure("Could not connect to the server. Please check your connection.");
+            AppModel.isOnline = false;
+            Player localUser = AuthManager.getUserByUsername(username);
+
+            if (localUser != null) {
+                AppModel.player = localUser;
+                if (stay) {
+                    PreferencesManager.rememberCredentials(username, password);
+                } else {
+                    PreferencesManager.clearDefaultUser();
+                }
+                return Result.success();
+            }
+            return Result.failure("Server unreachable and no local profile found for offline play.");
         }
 
         String status = result.get("status");
         if (status == null) {
             return Result.failure("Server did not respond. Please try again.");
         }
+
+        // --- LAZY SYNC LOGIC ---
+        // 1. SYNC NEW OFFLINE ACCOUNTS
+        if ("USER_NOT_FOUND".equals(status)) {
+            Player localUser = AuthManager.getUserByUsername(username);
+            if (localUser != null && localUser.pendingServerSync) {
+                try {
+                    AuthClient authClient = NetworkSession.ensureConnected();
+                    Message regResult = authClient.register(username, password);
+
+                    if ("SUCCESS".equals(regResult.get("status"))) {
+                        // Account registered. Push local JSON to server.
+                        String session = regResult.get("session");
+                        NetworkSession.ensureConnected().pushPlayerData(session, PlayerSerializer.serialize(localUser));
+
+                        // Re-login to grab the official session and update the result payload
+                        result = authClient.login(username, password);
+                        status = result.get("status"); // Update status for the switch block below
+
+                        // Clear local sync flag
+                        localUser.pendingServerSync = false;
+                        new com.compileordie.pvz2.models.repositories.databases.UserDatabase(username).save(localUser);
+                    }
+                } catch (IOException ignored) {}
+            }
+        }
+
+        // 2. SYNC EXISTING ACCOUNTS WITH OFFLINE PROGRESSION
+        if ("SUCCESS".equals(status)) {
+            Player localUser = AuthManager.getUserByUsername(username);
+            if (localUser != null && localUser.pendingServerSync) {
+                try {
+                    String session = result.get("session");
+                    NetworkSession.ensureConnected().pushPlayerData(session, PlayerSerializer.serialize(localUser));
+
+                    localUser.pendingServerSync = false;
+                    new com.compileordie.pvz2.models.repositories.databases.UserDatabase(username).save(localUser);
+
+                    // Overwrite the outdated server JSON in the result payload with our local one
+                    result.put("data", PlayerSerializer.serialize(localUser));
+                } catch (IOException ignored) {}
+            }
+        }
+        // --- END LAZY SYNC LOGIC ---
 
         switch (status) {
             case "USER_NOT_FOUND":

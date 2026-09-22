@@ -13,6 +13,7 @@ import java.util.Map;
 
 public class AppModel {
     public static boolean isRunning = true;
+    public static boolean isOnline = true;          // Tracks active socket availability
     public static Player player = null;
     public static ChapterType currentChapter = null;
     public static LevelID currentLevel = null;

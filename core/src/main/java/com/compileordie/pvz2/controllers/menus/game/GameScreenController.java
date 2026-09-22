@@ -135,6 +135,12 @@ public class GameScreenController {
     }
 
     public static void handleIZombieTileClick(Tile tile) {
+        if (!AppModel.isOnline) {
+            ToastManager.showError("I-Zombie multiplayer is not available offline.");
+            cancelSelection();
+            return;
+        }
+
         if (selectedZombieCard == null) return;
 
         var economy = AppModel.gameSession.gameBoard.economyManager;
