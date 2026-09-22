@@ -5,11 +5,67 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.compileordie.pvz2.Main;
 import com.compileordie.pvz2.config.Constants;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+
 /** Launches the desktop (LWJGL3) application. */
 public class Lwjgl3Launcher {
     public static void main(String[] args) {
         if (StartupHelper.startNewJvmIfRequired()) return; // This handles macOS support and helps on Windows.
+        extractAssetsIfNeeded();
         createApplication();
+    }
+
+    private static void extractAssetsIfNeeded() {
+        File marker = new File("pvz-assets", "ATLASES");
+        if (marker.exists() && marker.isDirectory()) {
+            return; // Assets already extracted or running locally
+        }
+
+        try {
+            URL location = Lwjgl3Launcher.class.getProtectionDomain().getCodeSource().getLocation();
+            File jarFile = new File(location.toURI());
+
+            // If running directly from compiled .class files in an IDE, do nothing
+            if (!jarFile.isFile()) {
+                return;
+            }
+
+            System.out.println("First-time setup: Unpacking game assets from JAR...");
+            try (JarFile jar = new JarFile(jarFile)) {
+                Enumeration<JarEntry> entries = jar.entries();
+                while (entries.hasMoreElements()) {
+                    JarEntry entry = entries.nextElement();
+                    String name = entry.getName();
+
+                    if (name.startsWith("pvz-assets/") || name.equals("assets.txt")) {
+                        File dest = new File(name);
+                        if (entry.isDirectory()) {
+                            dest.mkdirs();
+                        } else {
+                            File parent = dest.getParentFile();
+                            if (parent != null) {
+                                parent.mkdirs();
+                            }
+                            try (InputStream in = jar.getInputStream(entry);
+                                 OutputStream out = new FileOutputStream(dest)) {
+                                in.transferTo(out);
+                            }
+                        }
+                    }
+                }
+            }
+            System.out.println("Assets unpacked successfully.");
+        } catch (Exception e) {
+            System.err.println("Asset extraction failed: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private static Lwjgl3Application createApplication() {
